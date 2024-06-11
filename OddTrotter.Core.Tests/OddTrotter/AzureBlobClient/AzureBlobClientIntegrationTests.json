@@ -1,0 +1,114 @@
+{
+  // This is the configuration file for the AzureBlobClientIntegrationTests class. It is used by the tests in that class to store secrets that should not be contained in the repository. As a result, the contents of this file must be updated to run the tests. Each JSON property in this file is associated with a test in the class, and that property has a comment describing how to correctly generate a value for the test to use.
+  // Because this file stores secrets, changes to it should not be included in commits.
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Immutable storage"
+  //    e. start: the current time
+  //    f. expiry: long enough in the future for the tests to run
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "GetNoReadPermissions": "GetNoReadPermissions",
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Read"
+  //    e. start: a time in the past
+  //    f. expiry: another time in the past
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "GetExpiredSasToken": "GetExpiredSasToken",
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Create" and "Write"
+  //    e. start: a time in the past
+  //    f. expiry: another time in the past
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "PutExpiredSasToken": "PutExpiredSasToken",
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Immutable storage"
+  //    e. start: the current time
+  //    f. expiry: long enough in the future for the tests to run
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "PutNoWritePermissions": "PutNoWritePermissions",
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Read", "Create", and "Write"
+  //    e. start: the current time
+  //    f. expiry: long enough in the future for the tests to run
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "PutAndGet": "PutAndGet",
+
+  // 1. go to portal.azure.com
+  // 2. go to the "storage accounts" service
+  // 3. select the "oddtrotterabcit" account
+  // 4. under "data storage", select "containers"
+  // 5. select the "oddtrotter" container
+  // 6. select "shared access tokens"
+  // 7. generate the token:
+  //    a. signing method: "Account key"
+  //    b. signing key: "Key 1"
+  //    c. stored access policy: "None"
+  //    d. permissions: "Read", "Create", and "Write"
+  //    e. start: the current time
+  //    f. expiry: long enough in the future for the tests to run
+  //    g. allowed ip addresses:
+  //    h. allowed protocols: "HTTPS only"
+  // 8. copy the "Blob SAS token" field into this property
+  "PutAndGetWithExtraSlashes": "PutAndGetWithExtraSlashes"
+
+  // When adding a new entry to this file, ensure that the TestConfiguration class and its builder are updated with the newest property and validations for it. Also ensure that the GetTestConfiguration is update with validations against unchanged default values in the configuration file.
+}

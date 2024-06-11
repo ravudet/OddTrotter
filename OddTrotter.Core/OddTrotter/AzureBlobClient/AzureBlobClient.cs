@@ -68,16 +68,16 @@
             }
 
             this.containerUri = containerUri.OriginalString.TrimEnd('/');
+            this.sasToken = sasToken;
             try
             {
-                new Uri(new Uri(this.containerUri + '/' + "blobName"), $"?{sasToken}");
+                GenerateBlobUrl("blobName");
             }
-            catch (UriFormatException e)
+            catch (InvalidBlobNameException e)
             {
                 throw new InvalidSasTokenException(sasToken, e);
             }
 
-            this.sasToken = sasToken;
             this.apiVersion = apiVersion;
             this.blobType = settings.BlobType;
         }
@@ -186,7 +186,7 @@
         {
             try
             {
-                return new Uri(new Uri(this.containerUri + '/' + blobName), $"?{this.sasToken}");
+                return new Uri($"{this.containerUri}/{blobName}?{this.sasToken}");
             }
             catch (UriFormatException e)
             {

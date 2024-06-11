@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fx.Core", "Fx.Core\Fx.Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OddTrotter.Core.Tests", "OddTrotter.Core.Tests\OddTrotter.Core.Tests.csproj", "{A9ACAB07-BFD4-404D-B33C-036214FF4011}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.MemoryCachingInteractionLibrary", "OddTrotter.MemoryCachingInteractionLibrary\OddTrotter.MemoryCachingInteractionLibrary.csproj", "{E6F6121A-D6C9-4520-9E3B-D5E24F42B387}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OddTrotter.MemoryCachingInteractionLibrary", "OddTrotter.MemoryCachingInteractionLibrary\OddTrotter.MemoryCachingInteractionLibrary.csproj", "{E6F6121A-D6C9-4520-9E3B-D5E24F42B387}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

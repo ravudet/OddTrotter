@@ -454,6 +454,11 @@ else
             }
 
             //// TODO future work:
+            //// you need to come up with your productization checklist and then follow it
+            ////
+            //// invalidblobname doesn't seem to be throwable from azureblobclient.getasync; either remove this check or write  a unit test
+            //// invalidsastoken doesn't seem to be throwable from azureblobclient constructor; either remove this check from the constructor, or add unit tests for it
+            //// invalidblobname doesn't seem to be throwable from azureblobclient.putasync; either remove this check or write a unit test
             //// not putting "bearer" at the beginning of an MSA token results in an uncaught exception
             //// make sure documentation using statements are included
             //// use inheritdoc where available
