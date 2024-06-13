@@ -99,7 +99,7 @@
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                ));
+                )).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => azureBlobClient.GetAsync(string.Empty));
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => azureBlobClient.GetAsync(string.Empty)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -133,12 +133,12 @@
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                     null,
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                    httpContent));
+                    httpContent)).ConfigureAwait(false);
             }
         }
 
         /// <summary>
-        /// Retrieves an azure blob with <see langword="null"/> content
+        /// Writes an azure blob with <see langword="null"/> content
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -153,11 +153,11 @@
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                ));
+                )).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Retrieves an azure blob with an empty name
+        /// Writes an azure blob with an empty name
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -171,7 +171,7 @@
             {
                 await Assert.ThrowsExceptionAsync<ArgumentException>(() => azureBlobClient.PutAsync(
                     string.Empty,
-                    httpContent));
+                    httpContent)).ConfigureAwait(false);
             }
         }
     }

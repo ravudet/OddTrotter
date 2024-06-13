@@ -34,7 +34,7 @@
                 new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<InvalidSasTokenException>(() => azureBlobClient.GetAsync("someblob"));
+            await Assert.ThrowsExceptionAsync<InvalidSasTokenException>(() => azureBlobClient.GetAsync("someblob")).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@
                 new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter").ToAbsoluteUri(),
                 testConfiguration.GetExpiredSasToken,
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<SasTokenNoReadPrivilegesException>(() => azureBlobClient.GetAsync("someblob"));
+            await Assert.ThrowsExceptionAsync<SasTokenNoReadPrivilegesException>(() => azureBlobClient.GetAsync("someblob")).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@
                 new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter").ToAbsoluteUri(),
                 testConfiguration.GetNoReadPermissions,
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<SasTokenNoReadPrivilegesException>(() => azureBlobClient.GetAsync("someblob"));
+            await Assert.ThrowsExceptionAsync<SasTokenNoReadPrivilegesException>(() => azureBlobClient.GetAsync("someblob")).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@
                 new Uri("https://0.0.0.0/oddtrotter").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => azureBlobClient.GetAsync("someblob"));
+            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => azureBlobClient.GetAsync("someblob")).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@
                 "2020-02-10");
             using (var httpContent = new StringContent("some content"))
             {
-                await Assert.ThrowsExceptionAsync<InvalidSasTokenException>(() => azureBlobClient.PutAsync("someblob", httpContent));
+                await Assert.ThrowsExceptionAsync<InvalidSasTokenException>(() => azureBlobClient.PutAsync("someblob", httpContent)).ConfigureAwait(false);
             }
         }
 
@@ -112,7 +112,7 @@
                 "2020-02-10");
             using (var httpContent = new StringContent("some content"))
             {
-                await Assert.ThrowsExceptionAsync<SasTokenNoWritePrivilegesException>(() => azureBlobClient.PutAsync("someblob", httpContent));
+                await Assert.ThrowsExceptionAsync<SasTokenNoWritePrivilegesException>(() => azureBlobClient.PutAsync("someblob", httpContent)).ConfigureAwait(false);
             }
         }
 
@@ -130,7 +130,7 @@
                 "2020-02-10");
             using (var httpContent = new StringContent("some content"))
             {
-                await Assert.ThrowsExceptionAsync<SasTokenNoWritePrivilegesException>(() => azureBlobClient.PutAsync("someblob", httpContent));
+                await Assert.ThrowsExceptionAsync<SasTokenNoWritePrivilegesException>(() => azureBlobClient.PutAsync("someblob", httpContent)).ConfigureAwait(false);
             }
         }
 
@@ -147,7 +147,7 @@
                 "2020-02-10");
             using (var httpContent = new StringContent("some content"))
             {
-                await Assert.ThrowsExceptionAsync<HttpRequestException>(() => azureBlobClient.PutAsync("someblob", httpContent));
+                await Assert.ThrowsExceptionAsync<HttpRequestException>(() => azureBlobClient.PutAsync("someblob", httpContent)).ConfigureAwait(false);
             }
         }
 
@@ -169,15 +169,15 @@
 
             using (var httpContent = new StringContent(content))
             {
-                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent))
+                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
                 {
                     Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
                 }
 
-                using (var getResponse = await azureBlobClient.GetAsync(blobName))
+                using (var getResponse = await azureBlobClient.GetAsync(blobName).ConfigureAwait(false))
                 {
                     Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync();
+                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                     Assert.AreEqual(content, getResponseContent);
                 }
             }
@@ -201,15 +201,15 @@
 
             using (var httpContent = new StringContent(content))
             {
-                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent))
+                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
                 {
                     Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
                 }
 
-                using (var getResponse = await azureBlobClient.GetAsync(blobName))
+                using (var getResponse = await azureBlobClient.GetAsync(blobName).ConfigureAwait(false))
                 {
                     Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync();
+                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                     Assert.AreEqual(content, getResponseContent);
                 }
             }
