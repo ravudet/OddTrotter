@@ -455,6 +455,7 @@ else
 
             //// TODO future work:
             //// you need to come up with your productization checklist and then follow it
+            //// - configure await
             ////
             //// invalidblobname doesn't seem to be throwable from azureblobclient.getasync; either remove this check or write  a unit test
             //// invalidsastoken doesn't seem to be throwable from azureblobclient constructor; either remove this check from the constructor, or add unit tests for it
@@ -472,6 +473,7 @@ else
             //// the unit tests use Assert.ThrowsException which allows for inheritance (for example, Assert.ThrowsException<ArgumentException>(() => throw new ArgumentNullException("name")) will pass); they should be updated to use a custom assertion that is more strict
             //// do you want to separate OddTrotter.Core and OddTrotter.Common? it might make it easier to distinguish what things can go in fx.core in the future
             //// the encryptor can't really throw cryptogarphic exception during encyrption; also, the outofrangeexception can be avoided if you use a stream instead of an array
+            //// if the encryptor really can throw during encryption, then you should add unit tests for all of the consumers of that api to cover the cases where it throws
             //// you chose not to use blob storage for the todo list itself, only the timestamp, because the timestamp could sometimes lead you to either duplicating or leaving out events; if you store the timestamp *and* the event ID, this can probably be avoided
             //// don't overload exception messages
             //// graphclient is disposable but is not disposed
