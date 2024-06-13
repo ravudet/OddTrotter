@@ -1,0 +1,42 @@
+{
+  // This is the configuration file for the GraphClientIntegrationTests class. It is used by the tests in that class to store secrets that should not be contained in the repository. As a result, the contents of this file must be updated to run the tests. Each JSON property in this file is associated with a test in the class, and that property has a comment describing how to correctly generate a value for the test to use.
+  // Because this file stores secrets, changes to it should not be included in commits.
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetNonexistentUserAbsoluteUri": "GetNonexistentUserAbsoluteUri",
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetUserWithNoNetworkAbsoluteUri": "GetUserWithNoNetworkAbsoluteUri",
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetUserWithNoPermissionsAbsoluteUri": "GetUserWithNoPermissionsAbsoluteUri",
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetNonexistentUserRelativeUri": "GetNonexistentUserRelativeUri",
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetUserWithNoNetworkRelativeUri": "GetUserWithNoNetworkRelativeUri",
+
+  // 1. go to https://developer.microsoft.com/en-us/graph/graph-explorer
+  // 2. login as TODO is it ok to put the username here?
+  // 3. under the "Access token" tab, copy the acccess token
+  // 4. paste here the access token
+  "GetUserWithNoPermissionsRelativeUri": "GetUserWithNoPermissionsRelativeUri"
+
+  // When adding a new entry to this file, ensure that the TestConfiguration class and its builder are updated with the newest property and validations for it. Also ensure that the GetTestConfiguration is update with validations against unchanged default values in the configuration file.
+}

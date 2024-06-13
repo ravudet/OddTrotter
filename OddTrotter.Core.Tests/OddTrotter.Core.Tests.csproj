@@ -11,10 +11,12 @@
 
   <ItemGroup>
     <None Remove="OddTrotter\AzureBlobClient\AzureBlobClientIntegrationTests.json" />
+    <None Remove="OddTrotter\GraphClient\GraphClientIntegrationTests.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="OddTrotter\AzureBlobClient\AzureBlobClientIntegrationTests.json" />
+    <EmbeddedResource Include="OddTrotter\GraphClient\GraphClientIntegrationTests.json" />
   </ItemGroup>
 
   <ItemGroup>

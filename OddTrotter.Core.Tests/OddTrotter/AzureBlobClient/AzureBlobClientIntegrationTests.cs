@@ -237,16 +237,16 @@
                 }
                 catch (FileNotFoundException e)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The embedded resource was expected at '{resourceName}' but no embedded resource was found with that name. The repository has a JSON file at this location that contains the overall structure of the configuraiton and instructions on how to modify the configuration. Please ensure that this file exists before running these tests.", e);
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The embedded resource was expected at '{resourceName}' but no embedded resource was found with that name. The repository has a JSON file at this location that contains the overall structure of the configuraiton and instructions on how to modify the configuration. Please ensure that this file exists before running these tests.", e);
                 }
                 catch (NotImplementedException e)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The embedded resource was found at '{resourceName}' but the contents were larger than '{Int64.MaxValue}'. This indicates a misconfiguration of the JSON file. Please read the instructions in the JSON file at this location and modify it accordingly.", e);
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The embedded resource was found at '{resourceName}' but the contents were larger than '{Int64.MaxValue}'. This indicates a misconfiguration of the JSON file. Please read the instructions in the JSON file at this location and modify it accordingly.", e);
                 }
 
                 if (resourceStream == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The embedded resource was expected at '{resourceName}' but no embedded resource was found with that name. The repository has a JSON file at this location that contains the overall structure of the configuraiton and instructions on how to modify the configuration. Please ensure that this file exists before running these tests.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The embedded resource was expected at '{resourceName}' but no embedded resource was found with that name. The repository has a JSON file at this location that contains the overall structure of the configuraiton and instructions on how to modify the configuration. Please ensure that this file exists before running these tests.");
                 }
 
                 TestConfiguration.Builder? testConfigurationBuilder;
@@ -262,98 +262,98 @@
                 }
                 catch (JsonException e)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' was not valid JSON.", e);
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' was not valid JSON.", e);
                 }
                 catch (NotSupportedException e)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a JSON object that did not have a corresponding JsonConverter", e);
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a JSON object that did not have a corresponding JsonConverter", e);
                 }
 
                 if (testConfigurationBuilder == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained only the 'null' value");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained only the 'null' value");
                 }
 
                 if (testConfigurationBuilder.GetNoReadPermissions == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetNoReadPermissions)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetNoReadPermissions)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.GetExpiredSasToken == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetExpiredSasToken)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetExpiredSasToken)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.PutExpiredSasToken == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutExpiredSasToken)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutExpiredSasToken)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.PutNoWritePermissions == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutNoWritePermissions)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutNoWritePermissions)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.PutAndGet == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGet)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGet)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.PutAndGetWithExtraSlashes == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGetWithExtraSlashes)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGetWithExtraSlashes)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.GetNonexistentBlob == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetNonexistentBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetNonexistentBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (testConfigurationBuilder.PutExistingBlob == null)
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutExistingBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutExistingBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 var testConfiguration = testConfigurationBuilder.Build();
 
                 if (string.Equals(testConfiguration.GetNoReadPermissions, testName ?? nameof(testConfiguration.GetNoReadPermissions), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetNoReadPermissions)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetNoReadPermissions)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.GetExpiredSasToken, testName ?? nameof(testConfiguration.GetExpiredSasToken), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetExpiredSasToken)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetExpiredSasToken)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.PutExpiredSasToken, testName ?? nameof(testConfiguration.GetExpiredSasToken), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutExpiredSasToken)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutExpiredSasToken)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.PutNoWritePermissions, testName ?? nameof(testConfiguration.GetExpiredSasToken), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutNoWritePermissions)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutNoWritePermissions)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.PutAndGet, testName ?? nameof(testConfiguration.GetExpiredSasToken), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGet)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGet)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.PutAndGetWithExtraSlashes, testName ?? nameof(testConfiguration.PutAndGetWithExtraSlashes), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGetWithExtraSlashes)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGetWithExtraSlashes)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.GetNonexistentBlob, testName ?? nameof(testConfiguration.GetNonexistentBlob), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetNonexistentBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetNonexistentBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 if (string.Equals(testConfiguration.PutExistingBlob, testName ?? nameof(testConfiguration.PutExistingBlob), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutExistingBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                    throw new InvalidDataException($"The tests in '{testConfigurationType.Name}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutExistingBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
                 return testConfiguration;

@@ -21,7 +21,7 @@
         /// <param name="rootUrl"></param>
         /// <param name="accessToken"></param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="accessToken"/> or <paramref name="settings"/> is <see langword="null"/></exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="accessToken"/> whitespace-only characters</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="accessToken"/> whitespace-only characters or is not a valid header value</exception>
         public GraphClient(string accessToken, GraphClientSettings settings)
         {
             if (accessToken == null)
@@ -31,7 +31,7 @@
 
             if (string.IsNullOrWhiteSpace(accessToken))
             {
-                throw new ArgumentException($"{nameof(accessToken)} cannot be null or exclusively whitespace characters");
+                throw new ArgumentException($"'{nameof(accessToken)}' cannot be null or exclusively whitespace characters");
             }
 
             if (settings == null)
@@ -47,7 +47,14 @@
             try
             {
                 this.httpClient.Timeout = settings.HttpClientTimeout;
-                this.httpClient.DefaultRequestHeaders.Add("Authorization", accessToken);
+                try
+                {
+                    this.httpClient.DefaultRequestHeaders.Add("Authorization", accessToken);
+                }
+                catch (FormatException e)
+                {
+                    throw new ArgumentException($"'{nameof(accessToken)}' had a value of '{accessToken}' which is not a valid 'Authorization' header value");
+                }
             }
             catch
             {
@@ -64,19 +71,11 @@
             }
 
             this.httpClient.Dispose();
+
             this.disposed = true;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="relativeUri"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="relativeUri"/> is <see langword="null"/></exception>
-        /// <exception cref="HttpRequestException">
-        /// Thrown if the request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout
-        /// </exception>
-        /// <exception cref="InvalidAccessTokenException">Thrown if the access token used is invalid or provides insufficient privileges for the request</exception>
+        /// <inheritdoc/>
         public async Task<HttpResponseMessage> GetAsync(RelativeUri relativeUri)
         {
             if (relativeUri == null)
@@ -88,16 +87,7 @@
             return await GetAsync(requestUrl).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="absoluteUri"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="absoluteUri"/> is <see langword="null"/></exception>
-        /// <exception cref="HttpRequestException">
-        /// Thrown if the request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.
-        /// </exception>
-        /// <exception cref="InvalidAccessTokenException">Thrown if the access token used is invalid or provides insufficient privileges for the request</exception>
+        /// <inheritdoc/>
         public async Task<HttpResponseMessage> GetAsync(AbsoluteUri absoluteUri)
         {
             if (absoluteUri == null)
