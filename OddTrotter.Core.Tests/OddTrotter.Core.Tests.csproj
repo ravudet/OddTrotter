@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OddTrotter.Core\OddTrotter.Core.csproj" />
+    <ProjectReference Include="..\OddTrotter.TestCore\OddTrotter.TestCore.csproj" />
   </ItemGroup>
   
 </Project>

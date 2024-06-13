@@ -95,11 +95,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => azureBlobClient.GetAsync(
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                )).ConfigureAwait(false);
+            await new AzureBlobClientTests(() => azureBlobClient).GetNullBlobName();
         }
 
         /// <summary>
@@ -113,7 +109,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => azureBlobClient.GetAsync(string.Empty)).ConfigureAwait(false);
+            await new AzureBlobClientTests(() => azureBlobClient).GetEmptyBlobName();
         }
 
         /// <summary>
@@ -127,14 +123,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            using (var httpContent = new StringContent("somecontent"))
-            {
-                await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => azureBlobClient.PutAsync(
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                    null,
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                    httpContent)).ConfigureAwait(false);
-            }
+            await new AzureBlobClientTests(() => azureBlobClient).PutNullBlobName();
         }
 
         /// <summary>
@@ -148,12 +137,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => azureBlobClient.PutAsync(
-                "someblob",
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                )).ConfigureAwait(false);
+            await new AzureBlobClientTests(() => azureBlobClient).PutNullContent();
         }
 
         /// <summary>
@@ -167,12 +151,7 @@
                 new Uri("https://accountname.blob.core.windows.net/containername").ToAbsoluteUri(),
                 "sometoken",
                 "2020-02-10");
-            using (var httpContent = new StringContent("somecontent"))
-            {
-                await Assert.ThrowsExceptionAsync<ArgumentException>(() => azureBlobClient.PutAsync(
-                    string.Empty,
-                    httpContent)).ConfigureAwait(false);
-            }
+            await new AzureBlobClientTests(() => azureBlobClient).PutEmptyBlobName();
         }
     }
 }

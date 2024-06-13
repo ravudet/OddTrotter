@@ -163,24 +163,7 @@
                 new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter").ToAbsoluteUri(),
                 testConfiguration.PutAndGet,
                 "2020-02-10");
-            var currentTime = DateTime.UtcNow.Ticks.ToString(); // adding the current time to names and content to avoid test runs from conflicting with each other
-            var content = "some content" + currentTime;
-            var blobName = "someblob" + currentTime;
-
-            using (var httpContent = new StringContent(content))
-            {
-                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
-                }
-
-                using (var getResponse = await azureBlobClient.GetAsync(blobName).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    Assert.AreEqual(content, getResponseContent);
-                }
-            }
+            await new AzureBlobClientTests(() => azureBlobClient).PutAndGet();
         }
 
         /// <summary>
@@ -193,26 +176,35 @@
             var testConfiguration = GetAndValidateTestConfiguration();
             var azureBlobClient = new AzureBlobClient(
                 new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter/").ToAbsoluteUri(),
-                testConfiguration.PutAndGet,
+                testConfiguration.PutAndGetWithExtraSlashes,
                 "2020-02-10");
-            var currentTime = DateTime.UtcNow.Ticks.ToString(); // adding the current time to names and content to avoid test runs from conflicting with each other
-            var content = "/some content" + currentTime + "/";
-            var blobName = "someblob" + currentTime;
+            await new AzureBlobClientTests(() => azureBlobClient).PutAndGetWithExtraSlashes();
+        }
 
-            using (var httpContent = new StringContent(content))
-            {
-                using (var putResponse = await azureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
-                }
+        [TestMethod]
+        public async Task GetNonexistentBlob()
+        {
+            var testConfiguration = GetAndValidateTestConfiguration();
+            var azureBlobClient = new AzureBlobClient(
+                new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter/").ToAbsoluteUri(),
+                testConfiguration.GetNonexistentBlob,
+                "2020-02-10");
+            await new AzureBlobClientTests(() => azureBlobClient).GetNonexistentBlob();
+        }
 
-                using (var getResponse = await azureBlobClient.GetAsync(blobName).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    Assert.AreEqual(content, getResponseContent);
-                }
-            }
+        /// <summary>
+        /// Writes an azure blob and then retrieves it where all URL data contains extra slashes
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PutExistingBlob()
+        {
+            var testConfiguration = GetAndValidateTestConfiguration();
+            var azureBlobClient = new AzureBlobClient(
+                new Uri("https://oddtrotterabcit.blob.core.windows.net/oddtrotter/").ToAbsoluteUri(),
+                testConfiguration.PutExistingBlob,
+                "2020-02-10");
+            await new AzureBlobClientTests(() => azureBlobClient).PutExistingBlob();
         }
 
         /// <summary>
@@ -307,6 +299,21 @@
                     throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGet)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
+                if (testConfigurationBuilder.PutAndGetWithExtraSlashes == null)
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutAndGetWithExtraSlashes)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
+                if (testConfigurationBuilder.GetNonexistentBlob == null)
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.GetNonexistentBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
+                if (testConfigurationBuilder.PutExistingBlob == null)
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained a 'null' value for '{nameof(testConfigurationBuilder.PutExistingBlob)}'. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
                 var testConfiguration = testConfigurationBuilder.Build();
 
                 if (string.Equals(testConfiguration.GetNoReadPermissions, testName ?? nameof(testConfiguration.GetNoReadPermissions), StringComparison.OrdinalIgnoreCase))
@@ -334,6 +341,21 @@
                     throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGet)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
                 }
 
+                if (string.Equals(testConfiguration.PutAndGetWithExtraSlashes, testName ?? nameof(testConfiguration.PutAndGetWithExtraSlashes), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutAndGetWithExtraSlashes)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
+                if (string.Equals(testConfiguration.GetNonexistentBlob, testName ?? nameof(testConfiguration.GetNonexistentBlob), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.GetNonexistentBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
+                if (string.Equals(testConfiguration.PutExistingBlob, testName ?? nameof(testConfiguration.PutExistingBlob), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidDataException($"The tests in '{nameof(AzureBlobClientIntegrationTests)}' use an embedded resource to store a test configuration. The test configuration at '{resourceName}' contained its default value for the property '{nameof(testConfiguration.PutExistingBlob)}', which is not valid for the test. Please follow the instructions in the JSON file for what value is expected in this property.");
+                }
+
                 return testConfiguration;
             }
             finally
@@ -349,8 +371,8 @@
             /// </summary>
             /// <param name="azureBlobContainerExpiredSasToken"></param>
             /// <param name="getExpiredSasToken"></param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="getNoReadPermissions"/> or <paramref name="getExpiredSasToken"/> or <paramref name="putExpiredSasToken"/> or <paramref name="putNoWritePermissions"/> or <paramref name="putAndGet"/> or <paramref name="putAndGetWithExtraSlashes"/> is <see langword="null"/></exception>
-            public TestConfiguration(string getNoReadPermissions, string getExpiredSasToken, string putExpiredSasToken, string putNoWritePermissions, string putAndGet, string putAndGetWithExtraSlashes)
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="getNoReadPermissions"/> or <paramref name="getExpiredSasToken"/> or <paramref name="putExpiredSasToken"/> or <paramref name="putNoWritePermissions"/> or <paramref name="putAndGet"/> or <paramref name="putAndGetWithExtraSlashes"/> or <paramref name="getNonexistentBlob"/> or <paramref name="putExistingBlob"/> is <see langword="null"/></exception>
+            public TestConfiguration(string getNoReadPermissions, string getExpiredSasToken, string putExpiredSasToken, string putNoWritePermissions, string putAndGet, string putAndGetWithExtraSlashes, string getNonexistentBlob, string putExistingBlob)
             {
                 if (getNoReadPermissions == null)
                 {
@@ -382,12 +404,24 @@
                     throw new ArgumentNullException(nameof(putAndGetWithExtraSlashes));
                 }
 
+                if (getNonexistentBlob == null)
+                {
+                    throw new ArgumentNullException(nameof(getNonexistentBlob));
+                }
+
+                if (putExistingBlob == null)
+                {
+                    throw new ArgumentNullException(nameof(putExistingBlob));
+                }
+
                 this.GetNoReadPermissions = getNoReadPermissions;
                 this.GetExpiredSasToken = getExpiredSasToken;
                 this.PutExpiredSasToken = putExpiredSasToken;
                 this.PutNoWritePermissions = putNoWritePermissions;
                 this.PutAndGet = putAndGet;
                 this.PutAndGetWithExtraSlashes = putAndGetWithExtraSlashes;
+                this.GetNonexistentBlob = getNonexistentBlob;
+                this.PutExistingBlob = putExistingBlob;
             }
 
             public string GetNoReadPermissions { get; }
@@ -401,6 +435,10 @@
             public string PutAndGet { get; }
 
             public string PutAndGetWithExtraSlashes { get; }
+
+            public string GetNonexistentBlob { get; }
+
+            public string PutExistingBlob { get; }
 
             public sealed class Builder
             {
@@ -422,11 +460,17 @@
                 [JsonPropertyName("PutAndGetWithExtraSlashes")]
                 public string? PutAndGetWithExtraSlashes { get; set; }
 
+                [JsonPropertyName("GetNonexistentBlob")]
+                public string? GetNonexistentBlob { get; set; }
+
+                [JsonPropertyName("PutExistingBlob")]
+                public string? PutExistingBlob { get; set; }
+
                 /// <summary>
                 /// 
                 /// </summary>
                 /// <returns></returns>
-                /// <exception cref="ArgumentNullException">Thrown if <see cref="GetNoReadPermissions"/> or <see cref="GetExpiredSasToken"/> or <see cref="PutExpiredSasToken"/> or <see cref="PutNoWritePermissions"/> or <see cref="PutAndGet"/> or <see cref="PutAndGetWithExtraSlashes"/> is <see langword="null"/></exception>
+                /// <exception cref="ArgumentNullException">Thrown if <see cref="GetNoReadPermissions"/> or <see cref="GetExpiredSasToken"/> or <see cref="PutExpiredSasToken"/> or <see cref="PutNoWritePermissions"/> or <see cref="PutAndGet"/> or <see cref="PutAndGetWithExtraSlashes"/> or <see cref="GetNonexistentBlob"/> or <see cref="PutExistingBlob"/> is <see langword="null"/></exception>
                 public TestConfiguration Build()
                 {
                     if (this.GetNoReadPermissions == null)
@@ -459,7 +503,17 @@
                         throw new ArgumentNullException(nameof(this.PutAndGetWithExtraSlashes));
                     }
 
-                    return new TestConfiguration(this.GetNoReadPermissions, this.GetExpiredSasToken, this.PutExpiredSasToken, this.PutNoWritePermissions, this.PutAndGet, this.PutAndGetWithExtraSlashes);
+                    if (this.GetNonexistentBlob == null)
+                    {
+                        throw new ArgumentNullException(nameof(this.GetNonexistentBlob));
+                    }
+
+                    if (this.PutExistingBlob == null)
+                    {
+                        throw new ArgumentNullException(nameof(this.PutExistingBlob));
+                    }
+
+                    return new TestConfiguration(this.GetNoReadPermissions, this.GetExpiredSasToken, this.PutExpiredSasToken, this.PutNoWritePermissions, this.PutAndGet, this.PutAndGetWithExtraSlashes, this.GetNonexistentBlob, this.PutExistingBlob);
                 }
             }
         }

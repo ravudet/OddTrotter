@@ -42,99 +42,6 @@
         }
 
         /// <summary>
-        /// Retrieves an azure blob with a <see langword="null"/> name
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task GetNullBlobName()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => encryptedAzureBlobClient.GetAsync(
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                )).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Retrieves an azure blob with an empty name
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task GetEmptyBlobName()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => encryptedAzureBlobClient.GetAsync(string.Empty)).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Writes an azure blob with a <see langword="null"/> name
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task PutNullBlobName()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            using (var httpContent = new StringContent("somecontent"))
-            {
-                await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => encryptedAzureBlobClient.PutAsync(
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                    null,
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                    httpContent)).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Writes an azure blob with <see langword="null"/> content
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task PutNullContent()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => encryptedAzureBlobClient.PutAsync(
-                "someblob",
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                )).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Writes an azure blob with an empty name
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task PutEmptyBlobName()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            using (var httpContent = new StringContent("somecontent"))
-            {
-                await Assert.ThrowsExceptionAsync<ArgumentException>(() => encryptedAzureBlobClient.PutAsync(
-                    string.Empty,
-                    httpContent)).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves an azure blob that doesn't exist
-        /// </summary>
-        /// <returns></returns>
-        [TestMethod]
-        public async Task GetNonexistentBlob()
-        {
-            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            var blobName = "someblob";
-            using (var httpResponse = await encryptedAzureBlobClient.GetAsync(blobName).ConfigureAwait(false))
-            {
-                Assert.AreEqual(HttpStatusCode.NotFound, httpResponse.StatusCode);
-                var responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Assert.AreEqual(string.Format(MemoryBlobClient.NotFoundErrorMessageFormat, blobName), responseContent);
-            }
-        }
-
-        /// <summary>
         /// Retrieves an azure blob with data too short to have been encrypted
         /// </summary>
         /// <returns></returns>
@@ -189,6 +96,89 @@
         }
 
         /// <summary>
+        /// Retrieves an azure blob that doesn't exist
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task GetNonexistentBlobWithErrorMessage()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            var blobName = "someblob";
+            using (var httpResponse = await encryptedAzureBlobClient.GetAsync(blobName).ConfigureAwait(false))
+            {
+                Assert.AreEqual(HttpStatusCode.NotFound, httpResponse.StatusCode);
+                var responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                Assert.AreEqual(string.Format(MemoryBlobClient.NotFoundErrorMessageFormat, blobName), responseContent);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves an azure blob with a <see langword="null"/> name
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task GetNullBlobName()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).GetNullBlobName();
+        }
+
+        /// <summary>
+        /// Retrieves an azure blob with an empty name
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task GetEmptyBlobName()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).GetEmptyBlobName();
+        }
+
+        /// <summary>
+        /// Writes an azure blob with a <see langword="null"/> name
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PutNullBlobName()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutNullBlobName();
+        }
+
+        /// <summary>
+        /// Writes an azure blob with <see langword="null"/> content
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PutNullContent()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutNullContent();
+        }
+
+        /// <summary>
+        /// Writes an azure blob with an empty name
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PutEmptyBlobName()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutEmptyBlobName();
+        }
+
+        /// <summary>
+        /// Retrieves an azure blob that doesn't exist
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task GetNonexistentBlob()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).GetNonexistentBlob();
+        }
+
+        /// <summary>
         /// Writes an azure blob and then retrieves it
         /// </summary>
         /// <returns></returns>
@@ -196,24 +186,7 @@
         public async Task PutAndGet()
         {
             var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            var currentTime = DateTime.UtcNow.Ticks.ToString(); // adding the current time to names and content to avoid test runs from conflicting with each other
-            var content = "some content" + currentTime;
-            var blobName = "someblob" + currentTime;
-
-            using (var httpContent = new StringContent(content))
-            {
-                using (var putResponse = await encryptedAzureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
-                }
-
-                using (var getResponse = await encryptedAzureBlobClient.GetAsync(blobName).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    Assert.AreEqual(content, getResponseContent);
-                }
-            }
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutAndGet();
         }
 
         /// <summary>
@@ -224,24 +197,18 @@
         public async Task PutAndGetWithExtraSlashes()
         {
             var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
-            var currentTime = DateTime.UtcNow.Ticks.ToString(); // adding the current time to names and content to avoid test runs from conflicting with each other
-            var content = "/some content" + currentTime + "/";
-            var blobName = "someblob" + currentTime;
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutAndGetWithExtraSlashes();
+        }
 
-            using (var httpContent = new StringContent(content))
-            {
-                using (var putResponse = await encryptedAzureBlobClient.PutAsync(blobName, httpContent).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.Created, putResponse.StatusCode);
-                }
-
-                using (var getResponse = await encryptedAzureBlobClient.GetAsync(blobName).ConfigureAwait(false))
-                {
-                    Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-                    var getResponseContent = await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    Assert.AreEqual(content, getResponseContent);
-                }
-            }
+        /// <summary>
+        /// Writes an azure blob and then retrieves it where all URL data contains extra slashes
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PutExistingBlob()
+        {
+            var encryptedAzureBlobClient = new EncryptedAzureBlobClient(new MemoryBlobClient(), new Encryptor());
+            await new AzureBlobClientTests(() => encryptedAzureBlobClient).PutExistingBlob();
         }
     }
 }

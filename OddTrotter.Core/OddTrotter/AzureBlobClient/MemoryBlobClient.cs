@@ -106,7 +106,9 @@
                     return data;
                 });
 
-            return await Task.FromResult(new HttpResponseMessage(isUpdated ? HttpStatusCode.OK : HttpStatusCode.Created)).ConfigureAwait(false);
+            return await Task.FromResult(new HttpResponseMessage(isUpdated ? 
+                HttpStatusCode.Created : // weirdly, azure blob storage returns 201 even when an update occurs: https://learn.microsoft.com/en-us/rest/api/storageservices/put-blob?tabs=microsoft-entra-id#status-code
+                HttpStatusCode.Created)).ConfigureAwait(false);
         }
     }
 }
