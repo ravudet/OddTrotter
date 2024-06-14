@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.Extensions.Caching.Memory
 {
     using System;
+    using System.Linq.Expressions;
 
     public sealed class PartitionedMemoryCache<T> : IMemoryCache
     {
@@ -8,13 +9,26 @@
 
         private readonly T partitionId;
 
+        public PartitionedMemoryCache(Expression<Func<IMemoryCache>> delegateMemoryCacheFactory, T partitionId)
+        {
+            //// TODO what if you create a type called "nonclosure" that's a subset of expression's tree nodes, and then take in a non-closure; the non-closure will need to have an input parameter (which you will provide using an additional argument to this constructor) so that closure-like things can be provided without actually using a closure; does this solve anything? couldn't the input argument just contain the memory cache that you're trying to guard against?
+            this.delegateMemoryCache = delegateMemoryCacheFactory.Compile().Invoke();
+            var statistics = this.delegateMemoryCache.GetCurrentStatistics();
+            if (statistics?.CurrentEntryCount != 0)
+            {
+                throw new InvalidOperationException("TODO");
+            }
+
+            this.partitionId = partitionId;
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="delegateMemoryCache"></param>
         /// <param name="partitionId"></param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="delegateMemoryCache"/> or <paramref name="partitionId"/> is <see langword="null"/></exception>
-        public PartitionedMemoryCache(IMemoryCache delegateMemoryCache, T partitionId)
+        private PartitionedMemoryCache(IMemoryCache delegateMemoryCache, T partitionId)
         {
             if (delegateMemoryCache == null)
             {
@@ -38,6 +52,7 @@
 
         public void Dispose()
         {
+            //// TODO
         }
 
         public void Remove(object key)
