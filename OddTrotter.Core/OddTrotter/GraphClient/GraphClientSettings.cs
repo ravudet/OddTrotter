@@ -19,7 +19,7 @@
         {
             public Uri GraphRootUri { get; set; } = new Uri("https://graph.microsoft.com/v1.0/");
 
-            public TimeSpan HttpClientTimeout { get; set; } = TimeSpan.FromSeconds(100);
+            public TimeSpan HttpClientTimeout { get; set; } = Timeout.InfiniteTimeSpan;
 
             /// <summary>
             /// 
