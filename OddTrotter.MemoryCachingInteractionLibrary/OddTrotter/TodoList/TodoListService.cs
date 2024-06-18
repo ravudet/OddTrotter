@@ -140,7 +140,7 @@
         /// Thrown if the configured azure blob container SAS token does not have read permissions for the todo list blob
         /// </exception>
         /// <exception cref="AzureStorageException">Thrown if azure storage produced an error while reading the blob contents or writing back the blob content</exception>
-        /// <exception cref="InvalidBlobDataException">Thrown if the contents of the todo list blob were not in the expected format</exception>
+        /// <exception cref="MalformedBlobDataException">Thrown if the contents of the todo list blob were not in the expected format</exception>
         /// <exception cref="InvalidAccessTokenException">
         /// Thrown if the access token configured on the provided <see cref="IGraphClient"/> is invalid or provides insufficient privileges for the requests
         /// </exception>
@@ -281,6 +281,7 @@
             };
             using (var blobRequestContent = new StringContent(JsonSerializer.Serialize(newOddTrotterTodoList)))
             {
+                // we let all exceptions and errors from here on prevent returning the todo list because subsequent requests for the todo list will not have the latest timestamp, meaning that duplicate data may be presented to the caller in those cases; it's a shame that we did all this work for nothing, but it's better to have data consistency even if it means we waste some CPU cycles, especially considering that the caller likely doesn't have a way to consistently recover from these errors for themselves
                 using (var blobUploadResponse = await this.azureBlobClient.PutAsync(this.todoListDataBlobName, blobRequestContent).ConfigureAwait(false))
                 {
                     try
