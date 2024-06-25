@@ -459,6 +459,7 @@ else
             //// - inheritdoc
             //// - no warnings
             ////
+            //// move non-factories out of portal project if possible; test them as you move them; start with a todolistservice interface and then you coudl even have oddtrotter outside of portal
             //// do a proper code review of todolistserviceunittests
             //// address todos in todolistesrviceunittests by moving those helper methods to a core lbirary and productizing them
             //// add integration tests for todolistservice
@@ -506,6 +507,7 @@ else
             //// make the calendar that's used by the todo list service configurable
             //// version OddTrotterTodoListData
             //// version oddtrotter settings
+            //// have an encypted<t>? it wouldn't really add anything as an abstrraction because it would still need a reference to the decryptor or a factory or seomthing, but it would allow you to strongly type properties that are otherwise just strings
         }
     }
 }
