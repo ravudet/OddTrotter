@@ -23,6 +23,21 @@
     [TestClass]
     public sealed class GraphClientIntegrationTests
     {
+        [TestMethod]
+        public void Test()
+        {
+            //// TODO:
+            //// 1. you should have a script that creates a new MSA account and gets a free test tenant from that account; this will require some (minimal) user interaction from the person running the script
+            //// 2. then you should have a script that uses that tenant to create a user and an application in that tenant
+            //// 3. this user and application will be used to create the test-specific users/applications/other resources
+            ////
+            //// do the above once in-order to ensure that the steps will work
+            //// implement the above in reverse order
+            ////
+            //// all of the permissions granted should be done so using just-in-time mechanisms
+            //// jit mechanisms should be used to prevent the original super-user for maintaining their super-user permissions once the tests are done
+        }
+
         /// <summary>
         /// Retrieves a user that does not exist
         /// </summary>
