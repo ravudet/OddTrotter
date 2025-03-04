@@ -1,4 +1,5 @@
-﻿namespace System.Runtime.CompilerServices
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace System.Runtime.CompilerServices
 {
     public sealed class TaskAwaiterWrapper<T> : ITaskAwaiter<T>
     {
@@ -8,7 +9,9 @@
         /// 
         /// </summary>
         /// <param name="taskAwaiter"></param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="taskAwaiter"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="taskAwaiter"/> is <see langword="null"/>
+        /// </exception>
         public TaskAwaiterWrapper(TaskAwaiter<T> taskAwaiter)
         {
             ArgumentNullException.ThrowIfNull(taskAwaiter);
@@ -34,12 +37,16 @@
         /// <inheritdoc/>
         public void OnCompleted(Action continuation)
         {
+            ArgumentNullException.ThrowIfNull(continuation);
+
             this.taskAwaiter.OnCompleted(continuation);
         }
 
         /// <inheritdoc/>
         public void UnsafeOnCompleted(Action continuation)
         {
+            ArgumentNullException.ThrowIfNull(continuation);
+
             this.taskAwaiter.UnsafeOnCompleted(continuation);
         }
     }
