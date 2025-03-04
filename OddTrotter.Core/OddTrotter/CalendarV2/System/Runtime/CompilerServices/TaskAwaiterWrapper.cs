@@ -6,16 +6,11 @@ namespace System.Runtime.CompilerServices
         private readonly TaskAwaiter<T> taskAwaiter;
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <param name="taskAwaiter"></param>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="taskAwaiter"/> is <see langword="null"/>
-        /// </exception>
         public TaskAwaiterWrapper(TaskAwaiter<T> taskAwaiter)
         {
-            ArgumentNullException.ThrowIfNull(taskAwaiter);
-
             this.taskAwaiter = taskAwaiter;
         }
 
