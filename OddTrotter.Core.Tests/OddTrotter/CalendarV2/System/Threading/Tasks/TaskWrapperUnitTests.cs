@@ -8,6 +8,16 @@
     [TestClass]
     public sealed class TaskWrapperUnitTests
     {
+        [TestMethod]
+        public void InitializeNullTask()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() => new TaskWrapper<string>(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                null
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ));
+        }
+
         private sealed class Context : SynchronizationContext
         {
             private readonly ConcurrentQueue<(SendOrPostCallback, object?)> queue;
