@@ -449,7 +449,7 @@
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// This method and it's associated <see cref="SafeOnCompletedStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
+        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
         /// ```
         /// var synchronizationContext = new MockSynchronizationContext();
         /// SynchronizationContext.SetSynchronizationContext(synchronizationContext);
@@ -481,28 +481,130 @@
         /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still provided callers the more efficient "unsafe" variant.
         /// </remarks>
         [TestMethod]
-        public async Task SafeOnCompletedConfigureAwaitFalseWithDelay()
+        public Task SafeOnCompletedConfigureAwaitFalseWithDelay()
+        {            
+            SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine = new SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine();
+            stateMachine.builder = AsyncTaskMethodBuilder.Create();
+            stateMachine.self = this;
+            stateMachine.state = -1;
+            stateMachine.builder.Start(ref stateMachine);
+            return stateMachine.builder.Task;
+        }
+
+        [CompilerGenerated]
+        private sealed class SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine : IAsyncStateMachine
         {
-            var synchronizationContext = new MockSynchronizationContext();
-            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+            public int state;
 
-            var providedValue = "Asdf";
-            var value = await new AwaitedType<string>(providedValue).GetValue().ConfigureAwait(false);
-            Assert.AreEqual(providedValue, value);
+            public AsyncTaskMethodBuilder builder;
 
-            var currentContext = SynchronizationContext.Current;
+            public TaskWrapperUnitTests
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                self
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
 
-            // from [this article](https://blog.stephencleary.com/2023/11/configureawait-in-net-8.html?s=03):
-            // > ConfigureAwaitOptions.None is the same as ConfigureAwait(continueOnCapturedContext: false). In other words,
-            // > await will behave perfectly normally, except that it will not capture the context; assuming the await does yield
-            // > (i.e, the task is not already complete), then the async method will resume executing on any available thread
-            // > pool thread.
-            // 
-            // so, we know that, because `Task.Delay` returns an unfinished `task` and therefore does "yield", that the context
-            // will not be catpured; as a result, we can assert that the `currentContext` is *not* the same as the original
-            // context
-            Assert.AreNotEqual(synchronizationContext, currentContext);
-            Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
+            private MockSynchronizationContext
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                synchronizationContext
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
+
+            private string
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                providedValue
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
+
+            private string
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                value
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
+
+            private SynchronizationContext? currentContext;
+
+            private string
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                s5
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
+
+            private object
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                u1
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                ;
+
+            private void MoveNext()
+            {
+                int num = state;
+                try
+                {
+                    ITaskAwaiter<string> awaiter;
+                    if (num != 0)
+                    {
+                        synchronizationContext = new MockSynchronizationContext();
+                        SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+                        providedValue = "Asdf";
+                        awaiter = new AwaitedType<string>(providedValue).GetValue().ConfigureAwait(false).GetAwaiter();
+                        if (!awaiter.IsCompleted)
+                        {
+                            num = (state = 0);
+                            u1 = awaiter;
+                            SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine = this;
+                            builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        awaiter = (ITaskAwaiter<string>)u1;
+                        u1 = null!;
+                        num = (state = -1);
+                    }
+                    s5 = awaiter.GetResult();
+                    value = s5;
+                    s5 = null!;
+                    Assert.AreEqual(providedValue, value);
+                    currentContext = SynchronizationContext.Current;
+                    Assert.AreNotEqual(synchronizationContext, currentContext);
+                    Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
+                }
+                catch (Exception exception)
+                {
+                    state = -2;
+                    synchronizationContext = null!;
+                    providedValue = null!;
+                    value = null!;
+                    currentContext = null;
+                    builder.SetException(exception);
+                    return;
+                }
+                state = -2;
+                synchronizationContext = null!;
+                providedValue = null!;
+                value = null!;
+                currentContext = null;
+                builder.SetResult();
+            }
+
+            void IAsyncStateMachine.MoveNext()
+            {
+                //ILSpy generated this explicit interface implementation from .override directive in MoveNext
+                this.MoveNext();
+            }
+
+            [DebuggerHidden]
+            private void SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+            }
+
+            void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+                //ILSpy generated this explicit interface implementation from .override directive in SetStateMachine
+                this.SetStateMachine(stateMachine);
+            }
         }
 
         /// <summary>
