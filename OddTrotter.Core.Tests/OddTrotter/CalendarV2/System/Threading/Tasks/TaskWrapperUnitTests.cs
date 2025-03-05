@@ -180,30 +180,12 @@
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-        //// TODO you pull the above state machine from sharplab: https://sharplab.io/#v2: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
-
-
-
-
-
-
-        private sealed class Context : SynchronizationContext
+        private sealed class MockSynchronizationContext : SynchronizationContext
         {
             private readonly ConcurrentQueue<(SendOrPostCallback, object?)> queue;
             private readonly Thread thread;
 
-            public Context()
+            public MockSynchronizationContext()
             {
                 this.queue = new ConcurrentQueue<(SendOrPostCallback, object?)>();
                 this.thread = new Thread(Schedule);
@@ -237,11 +219,55 @@
         }
 
         [TestMethod]
+        public async Task ConfigureAwaitTrue()
+        {
+            var synchronizationContext = new MockSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+
+            await Task.Delay(100).ConfigureAwait(true);
+
+            var currentContext = SynchronizationContext.Current;
+            Assert.IsNotNull(currentContext);
+            Assert.AreEqual(synchronizationContext, currentContext);
+            Assert.AreEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
+        }
+
+        [TestMethod]
+        public async Task ConfigureAwaitFalse()
+        {
+            var synchronizationContext = new MockSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+
+            await Task.Delay(100).ConfigureAwait(false);
+
+            var currentContext = SynchronizationContext.Current;
+            Assert.AreNotEqual(synchronizationContext, currentContext);
+            //// TODO make other asertions?
+        }
+
+
+
+
+
+
+
+
+
+        //// TODO you pull the above state machine from sharplab: https://sharplab.io/#v2:CYLg1APgdghgtgUwM4AcYGMEAIACBGAVgFgAoAb1KytwAZc8A6AJQFcoAXAS0QYGEB7OCk4AbBACcAyhIBunTEgDclaiqo4AzPQBsuAExYAgkiQT2arBRLUbuLfl04ALEfEIAogEcWMEQAp+ACMAKwR0diwEAA8UMPYEYAAaLCDQ8KwMdh8RAEoLGytbagBfC1KSC00sU18E/VxtAHVxGBRY8QBVKE52ABVkdiQLQqK7XAAOBqxJGAAzBAB5KAEhMXjgPzzrUZHR6hkYcSwUcX45YASANV8WbABeLAAiY2BZx+VtvaoDo4ORW6wDxwAE4sFAEAB3IwQmA9BK9ACesQAPPgaAA+PwnM6cC7Aa7/BA5BgAcQQ7AJt02Hy+1GMpnE7AYhjcXmyWNO5yuNwQyT+txyNNG5Xy1BOnAO8WqCFqwHqhhhcOAiJRvXRoqouy+4sl2DcMGA/CgIgRWF6WH5CA+GtsVQVsPWKoQfnNlq2tM1Nr27AAFpwkAxLYCLTyhbSRZ8vlUAJI4bTItVYMkUnmbL3ULUerAAemzWAh2HBdXY/CwFzEAHMYFKS9VBOS/VAK1hfdWsCxTEgWz7sAwAHLuc3sGBIADWde7bYLWHQMCg+ZaKCwPUU+ewhwQUAA5BFMtkTemirnl6sEIgOJwmxkWyPxz23IfbQB2MGQhrNVrtBOY5OUhDR1ZNkFR8IyzHVq2wHBJjjb8k3JP8AJQfx3Q9TMPWPadZ23CIO2wAADYcxwYWZTjgNwkBYER2DwrBAjCGBcMnCIcCfLsYBvMcmOXNiRH1YBTXQQQkPJBJVyQfhkmnIs5VrXDHxsY9xMQX1L2bVsIiQYdGS7fgWAiR4oH4CJBNPdZHgndTu2wTSIKwOAMEbbAIVEEQMnCfcBN8VzfXwo0TOE9Y8Pk6hj2Un1+GAIZIyzEEGgYAARBARBgBE/DwGgaGJAQoFmTgKxYNx7R6PxZl8UxgOij0WO7f1A1DECbXKGwmtUSMqhqMQ5RwAxsty/K3GAOMivicQPzaCRYJALBY20YaJrVUgtXAqU+KNE0sF6vKCoSIbFWHQIxG/PgjT67bBtmvaJBnE6toG3aHQka1I1zPNkQouB7PEBF1We48kIwBBwpEC5xAsF6sGRbN3s+76wePZE0BaOAwXgBA7keQSctunaLoe8RHnRSHEfgH6bCqTb+pxubRsXdo/Aps77p6GADoQI6Gbu3G4SOTHTs56mUM9SqqBUgNeex87qeDcXKcly7xDDLBQJC+HL3vHpDXQbNSeoKpAn4fhXOjJAVgChJhhtCtyRtNCimq0WGBlxmuZGhhjdNtZRMaspSDh161YkDX+C1nX1C0c1kyYZBKPYNNI1t3AXwdp3+fl0lySjiiqOpH2Kl+/2oHV9hNe1yp7BcJYPZEjZ8AMTGuCgHwuCNQXLBtFl8vPdg+0okR3CiTAUGbqAGF6H1TghaNZh7kR/Hry8m84Funu9P0xZu2WmddyuhM9jZ58b6sl6gCrmt9/OIYD8Qg5DsvcBcLokDmRZll36u/Fr66L0P4fW4TjuWBdxnn3AeCAh7H1HuPfgk9p69z8AfRey9z6r1qinKmadH7Px3qZBI8CjQN0QSfRW5QWpUDvh1Oo3UNobzOsNFmYgxpfkTFNaMHMEh0NZt+RaFhlp6hlIaY0po2FywdPQtmiY0EiOZqzFeKtXrQ0OLDC+/1MBAxBn7CGUNAEw1DjmeGxNkawEQOjSRW8xEEyJocEmd9hEcIYbTCQ9MaGp1EZwiRzj0GuLEH/G0ycPFSP2mIaW/izEyNzho5EV8b6lzaloGa1NYLJmpnHAoNpqrgihMIreEhGHzUxH4rGm8XZiPTuwZJORT4lFIKQrA5CZSdXqNkmmn48lYBYU0rh5AeHX11FgVagiGgJMTIRUc1NZFUHBm9bRijdHgxUYDQ26iL6QwUV9WZ+irGGNRujEZ1MLHZgMboqoTTcniA/i7Vpuz5Y+OFjVAMVy8bBgedzYhyC5GX0LoHYuwcYlky0PrQ200TZv3WBbW5VtzC3ITmTJOa8GDPNdu7EFXtbk1OVhM1Wnzr7fNvrEs0cF2CZxjikjMaTYW1QRRIUpRLs6VKoOivRBci4lyOeXLA2CzY1zwHXfBC8j4tzBXsABQDe790HsPSBE8p7ALwd/QhFVfFwspeIBgHK96yoIfyoh4TllRJxb83WbLMHzDVe/T+CCtU3KFeITum5u6itAeAo0kroHSrgRa3+4zbAO2VQwY1L8q7rA1Xyz1ucantXqZQgwcZTmTWmjBBaXTIy8L6fwtapoE3og4qOL1kzVlKIUseCJWiPozIiQYlGxjHgjP2YciJ0RxXHxnG4WY6NhV2uAWKsBw8CZjwnvOTgswIYGJbZWtG1bbyPG1txCGphsDJSbBCfg4hgDo0brPKdhNswNu7cfVl74HFnMzdmq1ox20cE7Y6iVfbXWwNnn4EZCrbk+tvE828ry86FqZV8lld94ny0SeScpgrRjpLfCcw934H1KtvKU8pdKlZvIxd+7Fv68WsP8XY8RWa2HDT8AC1yCCA2tCyANbK8QojsFPXbF8GTqGFNoXtMRsa1TQYpbB3De0SplSJAhkhd9LwjVKpgeN8ZdIRETVqSZerNbNoQK2x4cYyC9BpewYocH5abosP+vGgGynyxzp+95kSsU3zkwppTKno5UXU5xh0+GDa5C05GDDDGBpYdgnZ4qBGv4EOI0PM65HohUY+OGrQgmJDCewDp7myJxNmizSw3g2L5C+D7EZQdCJA3H24bq0zOLzPoyacp1T6mkU4OAM5mwPnyucssFgCFq4GXSfy7J9ALaisXPECV6zanqW9aq9QCOGdeuGfKFUCL4govTVsUxzh8XJMRJk8HQrjwsnFNZj1rOfWkmaYNVQGLI09PlNC9UoAA=
+
+
+
+
+
+
+
+
+        [TestMethod]
         public async Task AnotherTest()
         {
             var current = Thread.CurrentThread;
 
-            SynchronizationContext.SetSynchronizationContext(new Context());
+            SynchronizationContext.SetSynchronizationContext(new MockSynchronizationContext());
 
             ////int hashCode;
             /*if (SynchronizationContext.Current == null)
@@ -263,7 +289,7 @@
 
             await Task.Delay(1).ConfigureAwait(true);
 
-            if (SynchronizationContext.Current is Context context)
+            if (SynchronizationContext.Current is MockSynchronizationContext context)
             {
                 var threadId2 = context.ThreadId;
             }
@@ -274,7 +300,7 @@
 
             await Task.Delay(100).ConfigureAwait(true);
 
-            if (SynchronizationContext.Current is Context context2)
+            if (SynchronizationContext.Current is MockSynchronizationContext context2)
             {
                 var threadId2 = context2.ThreadId;
             }
