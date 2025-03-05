@@ -50,6 +50,11 @@
                 await Task.Delay(100).ConfigureAwait(false);
                 return this.value;
             }
+
+            public ITask<T> GetValueNoDelay()
+            {
+                return new TaskWrapper<T>(Task.FromResult(this.value));
+            }
         }
 
         /// <summary>
@@ -224,7 +229,9 @@
             var synchronizationContext = new MockSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
 
-            await Task.Delay(100).ConfigureAwait(true);
+            var providedValue = "Asdf";
+            var value = await new AwaitedType<string>(providedValue).GetValue().ConfigureAwait(true);
+            Assert.AreEqual(providedValue, value);
 
             var currentContext = SynchronizationContext.Current;
             Assert.IsNotNull(currentContext);
@@ -238,7 +245,9 @@
             var synchronizationContext = new MockSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
 
-            await Task.Delay(100).ConfigureAwait(false);
+            var providedValue = "Asdf";
+            var value = await new AwaitedType<string>(providedValue).GetValue().ConfigureAwait(false);
+            Assert.AreEqual(providedValue, value);
 
             var currentContext = SynchronizationContext.Current;
 
@@ -263,7 +272,13 @@
             var synchronizationContext = new MockSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
 
-            var result = await Task.FromResult(100).ConfigureAwait(false);
+            var providedValue = "Asdf";
+            var value = await new AwaitedType<string>(providedValue).GetValueNoDelay().ConfigureAwait(false);
+            Assert.AreEqual(providedValue, value);
+
+            //// TODO remove these, they are just a sanity check:
+            /*var currentContext = SynchronizationContext.Current;
+            Assert.AreNotEqual(synchronizationContext, currentContext);*/
 
             // from [this article](https://blog.stephencleary.com/2023/11/configureawait-in-net-8.html?s=03):
             // > ConfigureAwaitOptions.None is the same as ConfigureAwait(continueOnCapturedContext: false). In other words,
