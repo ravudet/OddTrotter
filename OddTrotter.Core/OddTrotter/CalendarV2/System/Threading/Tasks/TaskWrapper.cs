@@ -28,7 +28,7 @@ namespace System.Threading.Tasks
         /// <inheritdoc/>
         public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
         {
-            return new ConfiguredAwaitableWrapper<T>(this.task.ConfigureAwait(false));
+            return new ConfiguredAwaitableWrapper<T>(this.task.ConfigureAwait(continueOnCapturedContext));
         }
     }
 }
