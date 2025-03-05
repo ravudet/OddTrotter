@@ -356,7 +356,7 @@
             //// TODO TOPIC should i add the "ambiguous" select methods for left and right in order to light up the comprehension syntax?
             //// TODO TOPIC should firstordefault go in its own file? i feel like i'm abusing nested classes at this point
 
-            // TODO write up code quality list and create blog posts
+            // TODO write up code quality list and create blog posts (use substack for this?)
             // code quality:
             // separate files
             // comment line at the top of the file
