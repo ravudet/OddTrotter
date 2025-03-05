@@ -241,8 +241,41 @@
             await Task.Delay(100).ConfigureAwait(false);
 
             var currentContext = SynchronizationContext.Current;
+
+            // from [this article](https://blog.stephencleary.com/2023/11/configureawait-in-net-8.html?s=03):
+            // > ConfigureAwaitOptions.None is the same as ConfigureAwait(continueOnCapturedContext: false). In other words,
+            // > await will behave perfectly normally, except that it will not capture the context; assuming the await does yield
+            // > (i.e, the task is not already complete), then the async method will resume executing on any available thread
+            // > pool thread.
+            // 
+            // so, we know that, because `Task.Delay` returns an unfinished `task` and therefore does "yield", that the context
+            // will not be catpured; as a result, we can assert that the `currentContext` is *not* the same as the original
+            // context
             Assert.AreNotEqual(synchronizationContext, currentContext);
-            //// TODO make other asertions?
+            Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
+        }
+
+
+
+        [TestMethod]
+        public async Task ConfigureAwaitFalse2()
+        {
+            var synchronizationContext = new MockSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+
+            var result = await Task.FromResult(100).ConfigureAwait(false);
+
+            // from [this article](https://blog.stephencleary.com/2023/11/configureawait-in-net-8.html?s=03):
+            // > ConfigureAwaitOptions.None is the same as ConfigureAwait(continueOnCapturedContext: false). In other words,
+            // > await will behave perfectly normally, except that it will not capture the context; assuming the await does yield
+            // > (i.e, the task is not already complete), then the async method will resume executing on any available thread
+            // > pool thread.
+            // 
+            // so, we know that, because `Task.FromResult` returns a finished `task` and therefore does  *not* "yield", that the
+            // context may or may not be preserved; as a result, we cannot assert anything about the current synchronization
+            // context at this point; however, because `synchronizationContext` has its own thread dedicated to it, we *do* know
+            // that the "continued with" delegate of the rest of this method will *not* be running on that thread, so we can assert that current thread is not the one used by `synchronizationContext`
+            Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
         }
 
 
@@ -261,64 +294,5 @@
 
 
 
-
-        [TestMethod]
-        public async Task AnotherTest()
-        {
-            var current = Thread.CurrentThread;
-
-            SynchronizationContext.SetSynchronizationContext(new MockSynchronizationContext());
-
-            ////int hashCode;
-            /*if (SynchronizationContext.Current == null)
-            {
-                var context = new SynchronizationContext();
-                SynchronizationContext.SetSynchronizationContext(context);
-                SynchronizationContext.Current?.Post(state => Console.WriteLine(state), "post");
-                hashCode = context.GetHashCode();
-            }
-            else
-            {
-                SynchronizationContext.Current.Post(state => Console.WriteLine(state), "post");
-                hashCode = SynchronizationContext.Current.GetHashCode();
-            }*/
-
-            ////var getValueTask = new AwaitedType().GetValue().ConfigureAwait(true);
-
-            var taskId = Task.CurrentId;
-
-            await Task.Delay(1).ConfigureAwait(true);
-
-            if (SynchronizationContext.Current is MockSynchronizationContext context)
-            {
-                var threadId2 = context.ThreadId;
-            }
-            else
-            {
-                Assert.Fail();
-            }
-
-            await Task.Delay(100).ConfigureAwait(true);
-
-            if (SynchronizationContext.Current is MockSynchronizationContext context2)
-            {
-                var threadId2 = context2.ThreadId;
-            }
-            else
-            {
-                Assert.Fail();
-            }
-
-            /*var value = await getValueTask;
-
-            Assert.AreEqual("asdf", value);*/
-
-            var taskId2 = Task.CurrentId;
-
-            Assert.IsNotNull(SynchronizationContext.Current);
-            ////Assert.AreEqual(hashCode, SynchronizationContext.Current.GetHashCode());
-        }
-
-        private static object Lock = new object();
     }
 }
