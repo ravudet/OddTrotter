@@ -240,7 +240,7 @@
         }
 
         [TestMethod]
-        public async Task ConfigureAwaitFalse()
+        public async Task ConfigureAwaitFalseWithDelay()
         {
             var synchronizationContext = new MockSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
@@ -267,7 +267,7 @@
 
 
         [TestMethod]
-        public async Task ConfigureAwaitFalse2()
+        public async Task ConfigureAwaitFalseWithNoDelay()
         {
             var synchronizationContext = new MockSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
