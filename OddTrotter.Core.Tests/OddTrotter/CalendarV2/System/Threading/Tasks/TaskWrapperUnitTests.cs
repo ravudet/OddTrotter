@@ -80,7 +80,8 @@ namespace System.Threading.Tasks
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// This method and it's associated <see cref="SafeOnCompletedStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
+        /// This method and it's associated <see cref="SafeOnCompletedStateMachine"/> are slightly modified code from the
+        /// compiler generated state machine for the following code:
         /// ```
         /// var providedValue = "Asdf";
         /// var value = await new AwaitedType<string>(providedValue).GetValue();
@@ -90,9 +91,11 @@ namespace System.Threading.Tasks
         /// The compiler generated code has been modified in the following way:
         /// 1. identifiers have been renamed to be legal
         /// 2. nullability issues have been suppressed, removed, or forgiven
-        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+        /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
         /// 
-        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still provided callers the more efficient "unsafe" variant.
+        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+        /// provided callers the more efficient "unsafe" variant.
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompleted()
@@ -254,7 +257,12 @@ namespace System.Threading.Tasks
                         }
                         catch
                         {
-                            // When we receive callbacks from an `await` operation, the state machine already handles exceptions, so those callbacks will not throw to us. However, because there may be other use cases for this synchronization context, we may receive callbacks that *do* throw. As a result, we need to handle those exceptions or else the thread will crash and we will not process subsequent callbacks. It is unfortunate that we cannot communicate back to the provider of the callback that an exception occurred. If this becomes possible at some pointer, we should do that.
+                            // When we receive callbacks from an `await` operation, the state machine already handles exceptions,
+                            // so those callbacks will not throw to us. However, because there may be other use cases for this
+                            // synchronization context, we may receive callbacks that *do* throw. As a result, we need to handle
+                            // those exceptions or else the thread will crash and we will not process subsequent callbacks. It is
+                            // unfortunate that we cannot communicate back to the provider of the callback that an exception
+                            // occurred. If this becomes possible at some pointer, we should do that.
                         }
                     }
                 }
@@ -325,7 +333,8 @@ namespace System.Threading.Tasks
             // so, we know that, because `Task.FromResult` returns a finished `task` and therefore does  *not* "yield", that the
             // context may or may not be preserved; as a result, we cannot assert anything about the current synchronization
             // context at this point; however, because `synchronizationContext` has its own thread dedicated to it, we *do* know
-            // that the "continued with" delegate of the rest of this method will *not* be running on that thread, so we can assert that current thread is not the one used by `synchronizationContext`
+            // that the "continued with" delegate of the rest of this method will *not* be running on that thread, so we can
+            // assert that current thread is not the one used by `synchronizationContext`
             Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
         }
 
@@ -334,7 +343,8 @@ namespace System.Threading.Tasks
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitTrueStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
+        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitTrueStateMachine"/> are slightly modified
+        /// code from the compiler generated state machine for the following code:
         /// ```
         /// var synchronizationContext = new MockSynchronizationContext();
         /// SynchronizationContext.SetSynchronizationContext(synchronizationContext);
@@ -352,9 +362,11 @@ namespace System.Threading.Tasks
         /// The compiler generated code has been modified in the following way:
         /// 1. identifiers have been renamed to be legal
         /// 2. nullability issues have been suppressed, removed, or forgiven
-        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+        /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
         /// 
-        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still provided callers the more efficient "unsafe" variant.
+        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+        /// provided callers the more efficient "unsafe" variant.
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitTrue()
@@ -489,7 +501,8 @@ namespace System.Threading.Tasks
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
+        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine"/> are slightly
+        /// modified code from the compiler generated state machine for the following code:
         /// ```
         /// var synchronizationContext = new MockSynchronizationContext();
         /// SynchronizationContext.SetSynchronizationContext(synchronizationContext);
@@ -516,14 +529,17 @@ namespace System.Threading.Tasks
         /// The compiler generated code has been modified in the following way:
         /// 1. identifiers have been renamed to be legal
         /// 2. nullability issues have been suppressed, removed, or forgiven
-        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+        /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
         /// 
-        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still provided callers the more efficient "unsafe" variant.
+        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+        /// provided callers the more efficient "unsafe" variant.
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithDelay()
         {            
-            SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine = new SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine();
+            SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine =
+                new SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
             stateMachine.self = this;
             stateMachine.state = -1;
@@ -652,7 +668,8 @@ namespace System.Threading.Tasks
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine"/> are slightly modified code from the compiler generated state machine for the following code:
+        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine"/> are slightly
+        /// modified code from the compiler generated state machine for the following code:
         /// ```
         /// var synchronizationContext = new MockSynchronizationContext();
         /// SynchronizationContext.SetSynchronizationContext(synchronizationContext);
@@ -678,14 +695,17 @@ namespace System.Threading.Tasks
         /// The compiler generated code has been modified in the following way:
         /// 1. identifiers have been renamed to be legal
         /// 2. nullability issues have been suppressed, removed, or forgiven
-        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+        /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
         /// 
-        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still provided callers the more efficient "unsafe" variant.
+        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+        /// provided callers the more efficient "unsafe" variant.
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithNoDelay()
         {
-            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine = new SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine();
+            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine = 
+                new SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
             stateMachine.self = this;
             stateMachine.state = -1;
