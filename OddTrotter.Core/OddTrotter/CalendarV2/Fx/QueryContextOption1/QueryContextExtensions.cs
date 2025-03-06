@@ -56,6 +56,7 @@
 
             public Task<IQueryResult<TResponse, TError>> Evaluate()
             {
+                
                 throw new NotImplementedException();
             }
 
@@ -67,6 +68,8 @@
 
             public RavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError> Where(Expression<Func<TValue, bool>> predicate)
             {
+
+
                 throw new NotImplementedException();
             }
 
