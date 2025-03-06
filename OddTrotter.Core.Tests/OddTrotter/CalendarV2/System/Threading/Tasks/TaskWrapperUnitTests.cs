@@ -238,7 +238,7 @@ namespace System.Threading.Tasks
             }
 
             /// <summary>
-            /// TODO you are here doing exception documentation for the code review of the tests; once this class is done, you should move onto todos for the whole file
+            /// placeholder
             /// </summary>
             private void Schedule()
             {
@@ -254,7 +254,7 @@ namespace System.Threading.Tasks
                         }
                         catch
                         {
-                            //// TODO the state machines wrap the delegates in a catch, so they will never pass callbacks that throw exceptions; however, from the paradigm of a general "synchronization context", someone could give us a callback that throws; how do we want to handle those situations?
+                            // When we receive callbacks from an `await` operation, the state machine already handles exceptions, so those callbacks will not throw to us. However, because there may be other use cases for this synchronization context, we may receive callbacks that *do* throw. As a result, we need to handle those exceptions or else the thread will crash and we will not process subsequent callbacks. It is unfortunate that we cannot communicate back to the provider of the callback that an exception occurred. If this becomes possible at some pointer, we should do that.
                         }
                     }
                 }
