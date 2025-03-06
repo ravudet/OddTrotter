@@ -1,7 +1,7 @@
 ﻿namespace Fx.QueryContextOption1
 {
     using Fx.QueryContext;
-    using Fx.QueryContextOption1.Mixins;
+    using Fx.QueryContext.Monad;
     using System;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
@@ -33,14 +33,6 @@
             }
         }
 
-        public interface IQueryContextMonad<TQueryContext, TResponse, TValue, TError> : IQueryContext<TResponse, TValue, TError> where TQueryContext : IQueryContext<TResponse, TValue, TError>
-        {
-            TQueryContext Source { get; }
-
-            Unit<TQueryContext2, TResponse2, TValue2, TError2> Unit<TQueryContext2, TResponse2, TValue2, TError2>() where TQueryContext2 : IQueryContext<TResponse2, TValue2, TError2>;
-        }
-
-        public delegate IQueryContextMonad<TQueryContext, TResponse, TValue, TError> Unit<TQueryContext, TResponse, TValue, TError>(TQueryContext queryContext) where TQueryContext : IQueryContext<TResponse, TValue, TError>;
 
         public static IQueryContextMonad<TQueryContext, TResponse, TValue, TError> Where<TQueryContext, TResponse, TValue, TError>(this IQueryContextMonad<TQueryContext, TResponse, TValue, TError> monad, Expression<Func<TValue, bool>> predicate)
             //where TQueryContext : IQueryContext<TResponse, TValue, TError>
@@ -67,7 +59,7 @@
                 throw new NotImplementedException();
             }
 
-            public Unit<TQueryContext2, TResponse2, TValue2, TError2> Unit<TQueryContext2, TResponse2, TValue2, TError2>() where TQueryContext2 : IQueryContext<TResponse2, TValue2, TError2>
+            public QueryContextUnit<TQueryContext2, TResponse2, TValue2, TError2> Unit<TQueryContext2, TResponse2, TValue2, TError2>() where TQueryContext2 : IQueryContext<TResponse2, TValue2, TError2>
             {
                 ////return context => new Bar<TQueryContext2, TResponse2, TValue2, TError2>(context);
                 return AddRavudetImprovedExtensions<TQueryContext2, TResponse2, TValue2, TError2>;

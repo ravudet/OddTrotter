@@ -1,6 +1,5 @@
-﻿namespace Fx.QueryContextOption1.Mixins
+﻿namespace Fx.QueryContext
 {
-    using Fx.QueryContext;
     using System;
     using System.Linq.Expressions;
 
