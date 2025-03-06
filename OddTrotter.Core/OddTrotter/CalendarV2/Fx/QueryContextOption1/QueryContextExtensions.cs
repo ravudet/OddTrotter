@@ -1,11 +1,11 @@
 ﻿namespace Fx.QueryContextOption1
 {
+    using Fx.QueryContext;
     using Fx.QueryContextOption1.Mixins;
     using System;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
-    using Fx.QueryContext;
 
     public static class QueryContextExtensions
     {

@@ -1,8 +1,6 @@
-﻿namespace Fx.QueryContextOption1
+﻿namespace Fx.QueryContext
 {
     using System.Threading.Tasks;
-
-    using Fx.QueryContext;
 
     public interface IQueryContext<out TResponse, out TValue, out TError>
     {
