@@ -396,6 +396,7 @@
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphOdataContext"/> is <see langword="null"/></exception>
         public GraphCalendarEventsEvaluator(IGraphOdataStructuredContext graphOdataContext)
         {
+            //// TODO to prevent needing to model all of the odata stuff, this constructor should be internal, and then there should be a public factory method that can give instances by creating its own instance of the *also* internal odata interface types; this factory method can be deprecated if needed once this constructor can be made public; it doesn't *have* to be deprecated, but it might make it easier to maintain as you expose new parameters on the constructors for the implementers of the odata interfaces
             if (graphOdataContext == null)
             {
                 throw new ArgumentNullException(nameof(graphOdataContext));
