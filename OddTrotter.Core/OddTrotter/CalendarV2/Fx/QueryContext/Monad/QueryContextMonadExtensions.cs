@@ -38,6 +38,8 @@
         public static IQueryContextMonad<TQueryContext, TResponse, TValue, TError> Where3<TQueryContext, TResponse, TValue, TError>(this IQueryContextMonad<TQueryContext, TResponse, TValue, TError> monad, Expression<Func<TValue, bool>> predicate)
             where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
+            //// TODO if monad is where mixin...
+
             return monad.Unit()(monad.Source.Where(predicate));
         }
     }
