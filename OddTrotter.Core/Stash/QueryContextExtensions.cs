@@ -1,4 +1,4 @@
-﻿namespace Fx.QueryContextOption1
+﻿namespace Stash
 {
     using Fx.QueryContext;
     using Fx.QueryContext.Monad;
@@ -49,14 +49,14 @@
         {
             public RavudetImprovedExtensions(TQueryContext queryContext)
             {
-                this.Source = queryContext;
+                Source = queryContext;
             }
 
             public TQueryContext Source { get; }
 
             public Task<IQueryResult<TResponse, TError>> Evaluate()
             {
-                
+
                 throw new NotImplementedException();
             }
 
@@ -146,13 +146,13 @@
         public static RavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError> AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>(this TQueryContext queryContext, Type<TResponse> response, Type<TValue> value, Type<TError> error)
             where TQueryContext : IQueryContext<TResponse, TValue, TError>
         {
-            return AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>(queryContext);
+            return queryContext.AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>();
         }
 
         public static RavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError> AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>(this TQueryContext queryContext, ITypeParameters<TResponse, TValue, TError> typeParameters)
             where TQueryContext : IQueryContext<TResponse, TValue, TError>
         {
-            return AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>(queryContext);
+            return queryContext.AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>();
         }
 
         public static RavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError> AddRavudetImprovedExtensions<TQueryContext, TResponse, TValue, TError>(this IHasTypeParameters2<TQueryContext, TResponse, TValue, TError> queryContext) where TQueryContext : IQueryContext<TResponse, TValue, TError>
@@ -225,7 +225,7 @@
         {
             var either = new Either<string, Exception>.Left("asdf");
             either.Select<Either<string, Exception>, string, Exception, Either<string, Nothing>, string, Nothing>(
-                val => val, 
+                val => val,
                 error => new Nothing(),
                 EitherFactory<string, Nothing>.Instance);
 
@@ -267,7 +267,7 @@
 
                 public Builder2<TLeftResult> AddLeftSelector<TLeftResult>(Func<TLeftSource, TLeftResult> leftSelector)
                 {
-                    return new Builder2<TLeftResult>(this.either, leftSelector);
+                    return new Builder2<TLeftResult>(either, leftSelector);
                 }
 
                 public sealed class Builder2<TLeftResult>
@@ -283,7 +283,7 @@
 
                     public Builder3<TRightResult> AddRightSelector<TRightResult>(Func<TRightSource, TRightResult> rightSelector)
                     {
-                        return new Builder3<TRightResult>(this.either, this.leftSelector, rightSelector);
+                        return new Builder3<TRightResult>(either, leftSelector, rightSelector);
                     }
 
                     public sealed class Builder3<TRightResult>
@@ -328,7 +328,7 @@
 
             public T Invoke()
             {
-                return this.func();
+                return func();
             }
         }
 
@@ -347,7 +347,7 @@
             where TEitherResult : IEither<TLeftResult, TRightResult>
             where TFactory : IEitherFactory<TEitherResult, TLeftResult, TRightResult>
         {
-            return Select4<TEitherSource, TLeftSource, TRightSource, TFactory, TEitherResult, TLeftResult, TRightResult>(source.Self, leftSelector, rightSelector, factory().Self);
+            return source.Self.Select4<TEitherSource, TLeftSource, TRightSource, TFactory, TEitherResult, TLeftResult, TRightResult>(leftSelector, rightSelector, factory().Self);
         }
 
         public static TEitherResult Select4<TEitherSource, TLeftSource, TRightSource, TFactory, TEitherResult, TLeftResult, TRightResult>(this TEitherSource source, Func<TLeftSource, TLeftResult> leftSelector, Func<TRightSource, TRightResult> rightSelector, TFactory factory)
