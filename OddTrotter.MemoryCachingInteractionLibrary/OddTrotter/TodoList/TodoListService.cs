@@ -402,6 +402,7 @@
             //// TODO go through stash namespace and see what you want to pull out (maybe to another repo and/or as branches with future work items)
             //// TODO write tests for todolistservice that confirm the URLs
 
+            //// TODO FUTURE add more query context mixins
             //// TODO FUTURE do you still need mockerror in the unit tests? it does provide convience that it fixes the error type, and that's *probably* what most implementers of querycontexts will do anyway is create their own concrete type with the correct error
             //// TODO FUTURE do you want to add a convenience overload for concat that uses an aggregate exception as the resulting error type?
             //// TODO FUTURE implement all (valuable?) linq queries for iqueryresult (note that you don't want to implement things like orderby (that requires the full context of the list to do correctly) because they give the wrong impression in the case where an error was encountered) (e.g. orderby can't know the first element of the result without knowing all of the elements of the list, so if there was an error, we can't know the correct order)
