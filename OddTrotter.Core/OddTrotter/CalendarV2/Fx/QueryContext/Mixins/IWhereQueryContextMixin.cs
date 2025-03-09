@@ -4,7 +4,7 @@
     using System.Linq.Expressions;
 
     /// <summary>
-    /// TODO does this need to implement iquerycontext? i'm not sure if that provides any value to the implementer
+    /// 
     /// </summary>
     /// <typeparam name="TResponse"></typeparam>
     /// <typeparam name="TValue"></typeparam>
