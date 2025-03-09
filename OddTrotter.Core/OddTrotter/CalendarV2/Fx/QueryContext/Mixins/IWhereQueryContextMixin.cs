@@ -1,4 +1,5 @@
-﻿namespace Fx.QueryContext
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Fx.QueryContext
 {
     using System;
     using System.Linq.Expressions;
@@ -13,7 +14,7 @@
     public interface IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext> : IQueryContext<TResponse, TValue, TError> where TQueryContext : IQueryContext<TResponse, TValue, TError>
     {
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
