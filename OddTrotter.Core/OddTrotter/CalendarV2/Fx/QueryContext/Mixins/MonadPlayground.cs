@@ -67,9 +67,13 @@
             public OrderByThenWhereHelpfulExtension(TQueryContext source)
             {
                 this.Source = source;
+
+                this.Self = this;
             }
 
             public TQueryContext Source { get; }
+
+            public OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> Self { get; }
 
             public ITask<IQueryResult<TResponse, TError>> Evaluate()
             {
@@ -160,6 +164,15 @@
         }
 
         public static TQueryContextMonad Where<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(
+            this IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError> extensions,
+            Expression<Func<TValue, bool>> predicate)
+            where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
+            where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
+        {
+            return extensions.Self.Where2<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(predicate);
+        }
+
+        public static TQueryContextMonad Where2<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(
             this TQueryContextMonad extensions, 
             Expression<Func<TValue, bool>> predicate)
             where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
@@ -191,99 +204,21 @@
             helpfulExtension.OrderBy(_ => _).Where(_ => true).Where(_ => false).Evaluate();
 
             // monad POC
-            helpfulExtension.Where
-                <
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse, 
-                    MockValue,
-                    MockError
-                >(
-                    _ => true);
-            helpfulExtension.Where<
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse,
-                    MockValue,
-                    MockError
-                >(
-                    _ => true)
+            helpfulExtension
+                .Where(_ => true);
+            helpfulExtension
+                .Where(_ => true)
                 .OrderBy(_ => _);
             helpfulExtension
-                .Where<
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse,
-                    MockValue,
-                    MockError
-                >(
-                    _ => true)
-                .Where<
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse,
-                    MockValue,
-                    MockError
-                >(
-                    _ => false)
+                .Where(_ => true)
+                .Where(_ => false)
                 .OrderBy(_ => _);
             helpfulExtension
-                .Where<
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse,
-                    MockValue,
-                    MockError
-                >(
-                    _ => true)
-                .Where<
-                    OrderByThenWhereHelpfulExtension
-                        <
-                            MockResponse,
-                            MockValue,
-                            MockError,
-                            WherableAndOrderbyableContext
-                        >,
-                    WherableAndOrderbyableContext,
-                    MockResponse,
-                    MockValue,
-                    MockError
-                >(
-                    _ => false)
+                .Where(_ => true)
+                .Where(_ => false)
                 .OrderBy(_ => _)
                 .Where(_ => true);
 
-            //// TODO light up type inference
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
         }
     }
@@ -293,5 +228,8 @@
         TQueryContext OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector);
     }
 
-    public interface IHasGenericTypeParameters
+    public interface IHasGenericTypeParameters<TSelf, T1, T2, T3>
+    {
+        public TSelf Self { get; }
+    }
 }
