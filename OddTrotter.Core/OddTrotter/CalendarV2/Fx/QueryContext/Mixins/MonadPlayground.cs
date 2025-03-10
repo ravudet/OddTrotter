@@ -292,4 +292,6 @@
     {
         TQueryContext OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector);
     }
+
+    public interface IHasGenericTypeParameters
 }
