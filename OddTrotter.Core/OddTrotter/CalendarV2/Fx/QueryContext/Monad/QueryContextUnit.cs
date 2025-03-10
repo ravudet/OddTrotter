@@ -1,6 +1,7 @@
 ﻿namespace Fx.QueryContext.Monad
 {
-    public delegate IQueryContextMonad<TQueryContext, TResponse, TValue, TError> QueryContextUnit<TQueryContext, TResponse, TValue, TError>(
+    public delegate TQueryContextMonad QueryContextUnit<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(
         TQueryContext queryContext)
+        where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
         where TQueryContext : IQueryContext<TResponse, TValue, TError>;
 }
