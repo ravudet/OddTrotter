@@ -222,7 +222,7 @@
                     _ => true)
                 .OrderBy(_ => _);
 
-            //// TODO now write an "heplful extension" that allows a where after the orderby is called
+            //// TODO light up type inference
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
         }
     }
