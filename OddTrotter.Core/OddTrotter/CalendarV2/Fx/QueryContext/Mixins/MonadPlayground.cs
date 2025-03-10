@@ -1,5 +1,6 @@
 ﻿namespace Fx.QueryContext.Mixins
 {
+    using Fx.QueryContext.Monad;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -57,26 +58,32 @@
         }*/
 
         public sealed class OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> :
-            IOrderByQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>
+            IOrderByQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>,
+            IQueryContextMonad<TQueryContext, TResponse, TValue, TError>
             where TQueryContext : 
                 IOrderByQueryContextMixin<TResponse, TValue, TError, TQueryContext>,
                 IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
-            private readonly TQueryContext source;
-
             public OrderByThenWhereHelpfulExtension(TQueryContext source)
             {
-                this.source = source;
+                this.Source = source;
             }
+
+            public TQueryContext Source { get; }
 
             public ITask<IQueryResult<TResponse, TError>> Evaluate()
             {
-                return this.source.Evaluate();
+                return this.Source.Evaluate();
             }
 
             public OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector)
             {
-                return OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>.Create(this.source, keySelector);
+                return OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>.Create(this.Source, keySelector);
+            }
+
+            public QueryContextUnit<TQueryContext, TResponse, TValue, TError> Unit()
+            {
+                return _ => new OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>(_);
             }
         }
 
@@ -152,6 +159,14 @@
             }
         }
 
+        public static IQueryContextMonad<TQueryContext, TResponse, TValue, TError> Where<TResponse, TValue, TError, TQueryContext>(
+            this IQueryContextMonad<TQueryContext, TResponse, TValue, TError> extensions, 
+            Expression<Func<TValue, bool>> predicate)
+            where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
+        {
+            return extensions.Unit()(extensions.Source.Where(predicate));
+        }
+
         public static void DoWork()
         {
             var context = new WherableAndOrderbyableContext();
@@ -168,10 +183,15 @@
                 >(
                     context);
 
+            // extensions POC
             helpfulExtension.Evaluate();
             helpfulExtension.OrderBy(_ => _).Evaluate();
             helpfulExtension.OrderBy(_ => _).Where(_ => true).Evaluate();
             helpfulExtension.OrderBy(_ => _).Where(_ => true).Where(_ => false).Evaluate();
+
+            // monad POC
+            helpfulExtension.Where(_ => true);
+            //// TODO make this work: helpfulExtension.Where(_ => true).OrderBy(_ => _);
 
             //// TODO now write an "heplful extension" that allows a where after the orderby is called
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
