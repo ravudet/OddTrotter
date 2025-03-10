@@ -169,6 +169,8 @@
             where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
             where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
+            //// TODO notice this:
+            //// return extensions.Unit()(extensions.Source.Where(predicate));
             return extensions.Self.Where2<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(predicate);
         }
 
@@ -179,6 +181,30 @@
             where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
             return extensions.Unit()(extensions.Source.Where(predicate));
+        }
+
+        public static TSelectedQueryContxtMonad Select2
+            <
+                TQueryContextMonad, 
+                TSourceQueryContext, 
+                TResponse, 
+                TSourceValue,
+                TError,
+                TSelectedQueryContxtMonad,
+                TResultQueryContext, 
+                TResultValue
+            >(
+                this TQueryContextMonad extensions, 
+                Expression<Func<TSourceValue, TResultValue>> selector)
+            where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TSourceQueryContext, TResponse, TSourceValue, TError>
+            where TSourceQueryContext : IQueryContext<TResponse, TSourceValue, TError>, ISelectQueryContextMixin<TResponse, TSourceValue, TError, TSourceQueryContext>
+
+
+
+            where TResultQueryContext : IQueryContext<TResponse, TResultValue, TError>
+            where TSelectedQueryContxtMonad : IQueryContextMonad<TSelectedQueryContxtMonad, TResultQueryContext, TResponse, TResultValue, TError>
+        {
+            extensions.Unit()(extensions.Source.Select<TResultQueryContext, TResultValue>(selector));
         }
 
         public static void DoWork()
@@ -226,5 +252,13 @@
     public interface IOrderByQueryContextMixin<TResponse, TValue, TError, TQueryContext> : IQueryContext<TResponse, TValue, TError> where TQueryContext : IQueryContext<TResponse, TValue, TError> //// TODO if you actually ship this, tquerycontext needs to be something that, in the framework, indicates that it is ordered so that "thenby" can be called on it
     {
         TQueryContext OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector);
+    }
+
+    public interface ISelectQueryContextMixin<TResponse, TSourceValue, TError, TSourceQueryContext> :
+        IQueryContext<TResponse, TSourceValue, TError>
+        where TSourceQueryContext : IQueryContext<TResponse, TSourceValue, TError>
+    {
+        TResultQueryContext Select<TResultQueryContext, TResultValue>(Expression<Func<TSourceValue, TResultValue>> selector)
+            where TResultQueryContext : IQueryContext<TResponse, TResultValue, TError>;
     }
 }
