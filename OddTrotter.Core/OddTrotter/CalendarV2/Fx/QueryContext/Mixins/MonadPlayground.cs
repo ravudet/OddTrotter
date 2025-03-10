@@ -227,9 +227,4 @@
     {
         TQueryContext OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector);
     }
-
-    public interface IHasGenericTypeParameters<TSelf, T1, T2, T3>
-    {
-        public TSelf Self { get; }
-    }
 }
