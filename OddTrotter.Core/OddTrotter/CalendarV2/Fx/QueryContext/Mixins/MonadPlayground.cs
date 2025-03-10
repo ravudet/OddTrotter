@@ -92,7 +92,10 @@
             public static OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> Create<TKey>(TQueryContext source, Expression<Func<TResponse, TKey>> keySelector)
             {
                 return new OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>(
-                    new Helper<TKey>(source, keySelector, Enumerable.Empty<Expression<Func<TValue, bool>>>()));
+                    new Helper<TKey>(
+                        source, 
+                        keySelector, 
+                        Enumerable.Empty<Expression<Func<TValue, bool>>>()));
             }
 
             private OrderedThenWhereHelpfulExtension(
@@ -112,7 +115,7 @@
                     this.whereable.Where(predicate));
             }
 
-            public sealed class Helper<TKey> :
+            private sealed class Helper<TKey> :
                 IQueryContext<TResponse, TValue, TError>,
                 IWhereQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>
             {
@@ -164,7 +167,11 @@
                     WherableAndOrderbyableContext
                 >(
                     context);
-            helpfulExtension.OrderBy(_ => _).Where(_ => true);
+
+            helpfulExtension.Evaluate();
+            helpfulExtension.OrderBy(_ => _).Evaluate();
+            helpfulExtension.OrderBy(_ => _).Where(_ => true).Evaluate();
+            helpfulExtension.OrderBy(_ => _).Where(_ => true).Where(_ => false).Evaluate();
 
             //// TODO now write an "heplful extension" that allows a where after the orderby is called
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
