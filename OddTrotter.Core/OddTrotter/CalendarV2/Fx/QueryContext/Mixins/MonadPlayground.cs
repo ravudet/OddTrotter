@@ -204,6 +204,7 @@
             where TResultQueryContext : IQueryContext<TResponse, TResultValue, TError>
             where TSelectedQueryContxtMonad : IQueryContextMonad<TSelectedQueryContxtMonad, TResultQueryContext, TResponse, TResultValue, TError>
         {
+            //// TODO you are here
             extensions.Unit()(extensions.Source.Select<TResultQueryContext, TResultValue>(selector));
         }
 
