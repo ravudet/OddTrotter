@@ -221,6 +221,67 @@
                 >(
                     _ => true)
                 .OrderBy(_ => _);
+            helpfulExtension
+                .Where<
+                    OrderByThenWhereHelpfulExtension
+                        <
+                            MockResponse,
+                            MockValue,
+                            MockError,
+                            WherableAndOrderbyableContext
+                        >,
+                    WherableAndOrderbyableContext,
+                    MockResponse,
+                    MockValue,
+                    MockError
+                >(
+                    _ => true)
+                .Where<
+                    OrderByThenWhereHelpfulExtension
+                        <
+                            MockResponse,
+                            MockValue,
+                            MockError,
+                            WherableAndOrderbyableContext
+                        >,
+                    WherableAndOrderbyableContext,
+                    MockResponse,
+                    MockValue,
+                    MockError
+                >(
+                    _ => false)
+                .OrderBy(_ => _);
+            helpfulExtension
+                .Where<
+                    OrderByThenWhereHelpfulExtension
+                        <
+                            MockResponse,
+                            MockValue,
+                            MockError,
+                            WherableAndOrderbyableContext
+                        >,
+                    WherableAndOrderbyableContext,
+                    MockResponse,
+                    MockValue,
+                    MockError
+                >(
+                    _ => true)
+                .Where<
+                    OrderByThenWhereHelpfulExtension
+                        <
+                            MockResponse,
+                            MockValue,
+                            MockError,
+                            WherableAndOrderbyableContext
+                        >,
+                    WherableAndOrderbyableContext,
+                    MockResponse,
+                    MockValue,
+                    MockError
+                >(
+                    _ => false)
+                .OrderBy(_ => _)
+                .Where(_ => true);
 
             //// TODO light up type inference
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
