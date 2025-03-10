@@ -21,9 +21,18 @@
         {
         }
 
-        public sealed class WherableAndOrderbyableContext : IQueryContext<MockResponse, MockValue, MockError>, IWhereQueryContextMixin<MockResponse, MockValue, MockError, WherableAndOrderbyableContext>, IOrderByQueryContextMixin<MockResponse, MockValue, MockError, OrderedResultContext>
+        public sealed class WherableAndOrderbyableContext : 
+            IQueryContext<MockResponse, MockValue, MockError>, 
+            IWhereQueryContextMixin<MockResponse, MockValue, MockError, WherableAndOrderbyableContext>,
+            ////IOrderByQueryContextMixin<MockResponse, MockValue, MockError, OrderedResultContext>
+            IOrderByQueryContextMixin<MockResponse, MockValue, MockError, WherableAndOrderbyableContext>
         {
             public ITask<IQueryResult<MockResponse, MockError>> Evaluate()
+            {
+                throw new NotImplementedException();
+            }
+
+            public WherableAndOrderbyableContext OrderBy<TKey>(Expression<Func<MockResponse, TKey>> keySelector)
             {
                 throw new NotImplementedException();
             }
@@ -33,19 +42,19 @@
                 throw new NotImplementedException();
             }
 
-            public OrderedResultContext OrderBy<TKey>(Expression<Func<MockResponse, TKey>> keySelector)
+            /*public OrderedResultContext OrderBy<TKey>(Expression<Func<MockResponse, TKey>> keySelector)
             {
                 throw new NotImplementedException();
-            }
+            }*/
         }
 
-        public sealed class OrderedResultContext : IQueryContext<MockResponse, MockValue, MockError>
+        /*public sealed class OrderedResultContext : IQueryContext<MockResponse, MockValue, MockError>
         {
             public ITask<IQueryResult<MockResponse, MockError>> Evaluate()
             {
                 throw new NotImplementedException();
             }
-        }
+        }*/
 
         public sealed class OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> :
             IOrderByQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>
@@ -146,6 +155,16 @@
 
             context.OrderBy(_ => _);
             context.Where(_ => true).OrderBy(_ => _);
+
+            var helpfulExtension = new OrderByThenWhereHelpfulExtension
+                <
+                    MockResponse, 
+                    MockValue, 
+                    MockError, 
+                    WherableAndOrderbyableContext
+                >(
+                    context);
+            helpfulExtension.OrderBy(_ => _).Where(_ => true);
 
             //// TODO now write an "heplful extension" that allows a where after the orderby is called
             //// TODO can you have a second extension so that you can ensure that the units are called recursively?
