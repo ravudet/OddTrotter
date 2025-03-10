@@ -384,6 +384,7 @@
             // do everything above for unit tests
 
             //// TODO try writing monad for orderby + where (monadplayground.cs)
+            //// TODO code review iquerycontext, the mixins namespace, and the monad namespace
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool.queueuserworkitem?view=net-9.0#system-threading-threadpool-queueuserworkitem-1(system-action((-0))-0-system-boolean) argumentnullexception throw if callback is null
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
