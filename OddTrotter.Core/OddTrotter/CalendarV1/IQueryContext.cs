@@ -12,7 +12,8 @@ namespace OddTrotter.Calendar
     using static OddTrotter.Calendar.QueryResultExtensions;
 
     using Fx.Either;
-    
+    using Fx.QueryContext;
+
     public interface IQueryContext<TValue, TError>
     {
         /// <summary>
@@ -1231,6 +1232,65 @@ namespace OddTrotter.Calendar
 
                 return new QueryResult<TValue, TErrorEnd>.Partial(context(node.Error));
             }
+        }
+
+        public static Fx.QueryContext.IQueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this IQueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
+        {
+            return new ErrorSelectQueryResult<TValue, TErrorEnd>(queryResult.Nodes.ErrorSelectIterator(selector));
+        }
+
+        private static Fx.QueryContext.IQueryResultNode<TValue, TErrorEnd> ErrorSelectIterator<TValue, TErrorStart, TErrorEnd>(this IQueryResultNode<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
+        {
+            return queryResult
+                .Select(
+                    element => new ErrorSelectElement<TValue, TErrorStart, TErrorEnd>(element, selector),
+                    terminal => terminal.SelectLeft(error => new ErrorSelectError<TErrorEnd>(selector(error.Value))))
+                .ToQueryResultNode();
+        }
+
+        private sealed class ErrorSelectElement<TValue, TErrorStart, TErrorEnd> : IElement<TValue, TErrorEnd>
+        {
+            private readonly IElement<TValue, TErrorStart> element;
+            private readonly Func<TErrorStart, TErrorEnd> selector;
+
+            public ErrorSelectElement(IElement<TValue, TErrorStart> element, Func<TErrorStart, TErrorEnd> selector)
+            {
+                this.element = element;
+                this.selector = selector;
+            }
+
+            public TValue Value
+            {
+                get
+                {
+                    return this.element.Value;
+                }
+            }
+
+            public IQueryResultNode<TValue, TErrorEnd> Next()
+            {
+                return this.element.Next().ErrorSelectIterator(this.selector);
+            }
+        }
+
+        private sealed class ErrorSelectError<TErrorEnd> : IError<TErrorEnd>
+        {
+            public ErrorSelectError(TErrorEnd value)
+            {
+                Value = value;
+            }
+
+            public TErrorEnd Value { get; }
+        }
+
+        private sealed class ErrorSelectQueryResult<TValue, TErrorEnd> : Fx.QueryContext.IQueryResult<TValue, TErrorEnd>
+        {
+            public ErrorSelectQueryResult(IQueryResultNode<TValue, TErrorEnd> nodes)
+            {
+                Nodes = nodes;
+            }
+
+            public IQueryResultNode<TValue, TErrorEnd> Nodes { get; }
         }
 
         /// <summary>

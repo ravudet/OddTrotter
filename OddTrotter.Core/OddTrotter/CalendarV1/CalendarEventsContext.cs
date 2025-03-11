@@ -191,7 +191,7 @@ namespace OddTrotter.Calendar
         /// Thrown if <paramref name="graphResponse"/> is <see langword="null"/>
         /// </exception>
         private static
-            QueryResult
+            IQueryResult
                 <
                     IEither
                         <
@@ -201,7 +201,7 @@ namespace OddTrotter.Calendar
                     CalendarEventsContextPagingException
                 >
             Adapt(
-                QueryResult
+                IQueryResult
                     <
                         IEither
                             <
