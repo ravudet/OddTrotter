@@ -1,4 +1,6 @@
-﻿namespace Fx.QueryContext.Monad
+﻿using Fx.QueryContext;
+
+namespace Stash.Monad
 {
     public delegate TQueryContextMonad QueryContextUnit<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(
         TQueryContext queryContext)

@@ -1,6 +1,6 @@
 ﻿namespace Fx.QueryContext.Mixins
 {
-    using Fx.QueryContext.Monad;
+    using Stash.Monad;
     using System;
     using System.Collections.Generic;
     using System.Linq;
