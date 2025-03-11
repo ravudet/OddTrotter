@@ -1,5 +1,5 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace Fx.QueryContext
+namespace Fx.QueryContext.Mixins
 {
     using System;
     using System.Linq.Expressions;
@@ -22,6 +22,6 @@ namespace Fx.QueryContext
         /// <exception cref="NotSupportedException">
         /// Thrown if <paramref name="predicate"/> represents a filtering that is not supported by the backing data source
         /// </exception>
-        TQueryContext Where(Expression<Func<TValue, bool>> predicate);
+        TQueryContext Where(Expression<Func<TResponse, bool>> predicate);
     }
 }

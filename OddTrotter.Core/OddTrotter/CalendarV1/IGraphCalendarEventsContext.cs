@@ -11,7 +11,7 @@
     {
         //// TODO i think you like having the "context" *and* "evaluator" types because the context is pretty specific to GET requests (is this true? what about a `$select` on a `POST` request?) //// TODO as i typed this i became less convinced, but we should try it anyway
 
-        Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Evaluate();
+        Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Evaluate();
 
         IGraphCalendarEventsContext Filter(Expression<Func<GraphCalendarEvent, bool>> filter);
 
@@ -48,7 +48,7 @@
             this.top = top;
         }
 
-        public async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Evaluate()
+        public async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Evaluate()
         {
             //// TODO do you need a queryresult extension that select errors?
             //// TODO should the context or the evaluator be the one that knows about `/events`?

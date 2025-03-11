@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.Calendar
 {
     using Fx.Either;
+    using Fx.QueryContext;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -920,7 +921,7 @@
             }
 
             /// <inheritdoc/>
-            public override QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Next()
+            public override Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Next()
             {
                 if (this.index + 1 < this.graphCalendarEventsResponse.Events.Count)
                 {
@@ -939,7 +940,7 @@
         /// <param name="graphQuery">TODO this allows <paramref name="graphQuery"/> to be a paging query; do you want to protect against that for some reason?</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphCalendarEventsContext"/> or <paramref name="graphQuery"/> is <see langword="null"</exception>
-        public static async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
+        public static async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
             this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
             GraphQuery graphQuery)
         {
@@ -963,7 +964,7 @@
         /// <param name="graphQuery">TODO this allows <paramref name="graphQuery"/> to be a paging query; do you want to protect against that for some reason?</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphCalendarEventsContext"/> or <paramref name="graphQuery"/> or <paramref name="contextGenerator"/> is <see langword="null"/></exception>
-        public static async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
+        public static async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
             this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
             GraphQuery graphQuery,
             Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator)
@@ -996,7 +997,7 @@
         /// <param name="graphQuery">TODO this allows <paramref name="graphQuery"/> to be a paging query; do you want to protect against that for some reason?</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphCalendarEventsContext"/> or <paramref name="graphQuery"/> or <paramref name="odataNextLinkVisitor"/> is <see langword="null"</exception>
-        private static async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
+        private static async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page(
             this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
             GraphQuery graphQuery,
             OdataNextLinkVisitor odataNextLinkVisitor)
@@ -1023,7 +1024,14 @@
             }
             catch (Exception exception) when (exception is HttpRequestException or GraphErrorDeserializationException or GraphSuccessDeserializationException or UnauthorizedAccessException or GraphProcessingException)
             {
-                return new QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>.Partial(new GraphPagingException("TODO", exception)); //// TODO consolidating into one exception type makes it pretty difficult for a caller to be able to write error handling code...
+                return new PageQueryResult2(
+                    Either
+                        .Left<IElement<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>()
+                        .Right(
+                            Either
+                                .Left(new PageError(new GraphPagingException("TODO", exception)))
+                                .Right<IEmpty>())
+                        .ToQueryResultNode()); //// TODO consolidating into one exception type makes it pretty difficult for a caller to be able to write error handling code...
             }
 
             if (response.Events.Count == 0)
@@ -1035,7 +1043,30 @@
             return new PageQueryResult(response, 0, odataNextLinkVisitor);
         }
 
-        private sealed class OdataNextLinkVisitor : OdataNextLink.Visitor<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>, Nothing>
+        private sealed class PageError : IError<GraphPagingException>
+        {
+            public PageError(GraphPagingException value)
+            {
+                Value = value;
+            }
+
+            public GraphPagingException Value { get; }
+        }
+
+        /// <summary>
+        /// TODO should you have a shared type for the query result concrete implementation?
+        /// </summary>
+        private sealed class PageQueryResult2 : IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>
+        {
+            public PageQueryResult2(IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> nodes)
+            {
+                this.Nodes = nodes;
+            }
+
+            public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Nodes { get; }
+        }
+
+        private sealed class OdataNextLinkVisitor : OdataNextLink.Visitor<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>, Nothing>
         {
             private readonly IGraphCalendarEventsEvaluator graphCalendarEventsContext;
             private readonly Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator;
@@ -1065,18 +1096,48 @@
             }
 
             /// <inheritdoc/>
-            protected internal override Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Null node, Nothing context)
+            protected internal override Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Null node, Nothing context)
             {
                 if (node == null)
                 {
                     throw new ArgumentNullException(nameof(node));
                 }
 
-                return Task.FromResult(new QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>.Final().AsBase());
+                return Task.FromResult<IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>(EmptyQueryResult.Instance);
+            }
+
+            private sealed class EmptyQueryResult : IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>
+            {
+                private EmptyQueryResult()
+                {
+                    this.Nodes = Either
+                    .Left<IElement<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>()
+                    .Right(
+                        Either
+                            .Left<IError<GraphPagingException>>()
+                            .Right(Empty.Instance))
+                    .ToQueryResultNode();
+                }
+
+                public static EmptyQueryResult Instance { get; } = new EmptyQueryResult();
+
+                public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Nodes { get; }
+            }
+
+            /// <summary>
+            /// TODO should this be a shared type?
+            /// </summary>
+            private sealed class Empty : Fx.QueryContext.IEmpty
+            {
+                private Empty()
+                {
+                }
+
+                public static Empty Instance { get; } = new Empty();
             }
 
             /// <inheritdoc/>
-            protected internal override async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Relative node, Nothing context)
+            protected internal override async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Relative node, Nothing context)
             {
                 if (node == null)
                 {
@@ -1093,7 +1154,7 @@
             }
 
             /// <inheritdoc/>
-            protected internal override async Task<QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Absolute node, Nothing context)
+            protected internal override async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Absolute node, Nothing context)
             {
                 if (node == null)
                 {

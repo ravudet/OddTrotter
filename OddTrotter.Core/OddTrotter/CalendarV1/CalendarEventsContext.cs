@@ -8,6 +8,7 @@ namespace OddTrotter.Calendar
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.QueryContext;
 
     /// <summary>
     /// This represents all of the calendar event invites that have an occurrence after a given timestamp. This can't be done on
@@ -15,7 +16,28 @@ namespace OddTrotter.Calendar
     /// usually be in the past.
     /// </summary>
     public sealed class CalendarEventsContext : 
-        IQueryContext
+        Fx.QueryContext.IQueryContext
+            <
+                CalendarEvent, 
+                IEither
+                    <
+                        CalendarEvent,
+                        CalendarEventsContextTranslationException
+                    >, 
+                CalendarEventsContextPagingException
+            >,
+        Fx.QueryContext.Mixins.IWhereQueryContextMixin
+            <
+                CalendarEvent,
+                IEither
+                    <
+                        CalendarEvent,
+                        CalendarEventsContextTranslationException
+                    >,
+                CalendarEventsContextPagingException,
+                CalendarEventsContext
+            >,
+        /*IQueryContext
             <
                 IEither
                     <
@@ -30,7 +52,7 @@ namespace OddTrotter.Calendar
                 CalendarEventsContextTranslationException, 
                 CalendarEventsContextPagingException, 
                 CalendarEventsContext
-            >
+            >*/
     {
         private readonly IGraphCalendarEventsEvaluator graphCalendarEventsContext;
 
@@ -117,7 +139,23 @@ namespace OddTrotter.Calendar
             this.isCancelled = isCancelled;
         }
 
-        /// <summary>
+        public ITask<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>> Evaluate()
+        {
+            //// TODO have an extension method so you don't need to write out the type
+            return new TaskWrapper<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>>(this.EvaluateImpl());
+        }
+
+        private async Task<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>> EvaluateImpl()
+        {
+            var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
+            var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
+            //// TODO FUTURE merge the sorted sequences instead of concat //// TODO these are not necessarily sorted because the
+            /// series events will come back in the order of their master start times, not the first instance start times
+            var allEvents = instanceEvents.Concat(seriesEvents);
+            return allEvents;
+        }
+
+        /*/// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -142,8 +180,8 @@ namespace OddTrotter.Calendar
             /// series events will come back in the order of their master start times, not the first instance start times
             var allEvents = instanceEvents.Concat(seriesEvents);
             return allEvents;
-        }
-
+        }*/
+        
         /// <summary>
         /// 
         /// </summary>
@@ -696,7 +734,39 @@ namespace OddTrotter.Calendar
             return Adapt(graphResponse);
         }
 
-        /// <inheritdoc/>
+        /*/// <inheritdoc/>
+        public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            if (object.ReferenceEquals(predicate, StartLessThanNow))
+            {
+                var now = DateTime.UtcNow;
+                if (this.endTime != null && this.endTime < now)
+                {
+                    // we logically can see that this will always happen (they can only call set `endTime` to `DateTime.UtcNow`, so `now` will always been more in the future than `endTime`) 
+                    return this;
+                }
+
+                return new CalendarEventsContext(this.graphCalendarEventsContext, this.calendarUriPath, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, now, this.isCancelled);
+            }
+            else if (object.ReferenceEquals(predicate, IsNotCancelled))
+            {
+                if (this.isCancelled != null)
+                {
+                    // the caller can only provide `IsNotCancelled` right now, so if `isCancelled` is already set, it won't be changing
+                    return this;
+                }
+
+                return new CalendarEventsContext(this.graphCalendarEventsContext, this.calendarUriPath, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.endTime, false);
+            }
+
+            throw new NotImplementedException("TODO");
+        }*/
+
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
         {
             if (predicate == null)
