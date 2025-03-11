@@ -1,5 +1,13 @@
 ﻿namespace Fx.QueryContext.Monad
 {
+    /// <summary>
+    /// TODO i'm skipping this for now; the monad + mixin pattern was very useful for enumerables because it allowed "extensions" on top of existing monads and/or mixins which could improve the behavior of those existing types; however, because there is no "default" implementation for the mixins, and because query contexts are really generating query strings to a backing data store, there's not really a "general purpose" implementation of any particular mixin; further, if i've done the mixins correctly, adding monads should be externally extensible, and if i've not done mixins correctly, the mixins, right now, are mere "guidance" for query context implementers of things that their query contexts might be able to do; they should be able to be easily thrown away and new interfaces created that allow for the creation of monads if needed
+    /// </summary>
+    /// <typeparam name="TQueryContextMonad"></typeparam>
+    /// <typeparam name="TQueryContext"></typeparam>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <typeparam name="TError"></typeparam>
     public interface IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError> : 
         IQueryContext<TResponse, TValue, TError> 
         where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
