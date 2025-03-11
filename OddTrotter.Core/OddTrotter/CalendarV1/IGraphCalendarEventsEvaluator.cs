@@ -881,6 +881,233 @@
         }
     }
 
+    public static class GraphCalendarEventsContextExtensions2
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graphCalendarEventsContext"></param>
+        /// <param name="graphQuery">TODO this allows <paramref name="graphQuery"/> to be a paging query; do you want to protect against that for some reason?</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphCalendarEventsContext"/> or <paramref name="graphQuery"/> is <see langword="null"</exception>
+        public static async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page2(
+            this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
+            GraphQuery graphQuery)
+        {
+            if (graphCalendarEventsContext == null)
+            {
+                throw new ArgumentNullException(nameof(graphCalendarEventsContext));
+            }
+
+            if (graphQuery == null)
+            {
+                throw new ArgumentNullException(nameof(graphQuery));
+            }
+
+            return await graphCalendarEventsContext.Page2(graphQuery, page => graphCalendarEventsContext).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graphCalendarEventsContext"></param>
+        /// <param name="graphQuery">TODO this allows <paramref name="graphQuery"/> to be a paging query; do you want to protect against that for some reason?</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="graphCalendarEventsContext"/> or <paramref name="graphQuery"/> or <paramref name="contextGenerator"/> is <see langword="null"/></exception>
+        public static async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page2(
+            this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
+            GraphQuery graphQuery,
+            Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator)
+        {
+            if (graphCalendarEventsContext == null)
+            {
+                throw new ArgumentNullException(nameof(graphCalendarEventsContext));
+            }
+
+            if (graphQuery == null)
+            {
+                throw new ArgumentNullException(nameof(graphQuery));
+            }
+
+            if (contextGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(contextGenerator));
+            }
+
+            return new PageQueryResult(
+                await 
+                    Page2Iterator(
+                        graphCalendarEventsContext,
+                        graphQuery,
+                        contextGenerator)
+                    .ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// TODO should you have a shared type for the query result concrete implementation?
+        /// </summary>
+        private sealed class PageQueryResult : IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>
+        {
+            public PageQueryResult(IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> nodes)
+            {
+                this.Nodes = nodes;
+            }
+
+            public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Nodes { get; }
+        }
+
+        private static async Task<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> Page2Iterator(
+            this IGraphCalendarEventsEvaluator graphCalendarEventsContext,
+            GraphQuery graphQuery,
+            Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator)
+        {
+            GraphCalendarEventsResponse response;
+            try
+            {
+                response = await graphCalendarEventsContext.Evaluate(graphQuery).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or GraphErrorDeserializationException or GraphSuccessDeserializationException or UnauthorizedAccessException or GraphProcessingException)
+            {
+                return Either
+                        .Left<IElement<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>()
+                        .Right(
+                            Either
+                                .Left(new PageError(new GraphPagingException("TODO", exception))) //// TODO consolidating into one exception type makes it pretty difficult for a caller to be able to write error handling code...
+                                .Right<IEmpty>())
+                        .ToQueryResultNode(); 
+            }
+
+            if (response.Events.Count == 0)
+            {
+                return await NextLinkVisitor.Instance.VisitAsync(response.NextPage, (graphCalendarEventsContext, contextGenerator)).ConfigureAwait(false);
+            }
+
+            return Either
+                .Left(new PageElement(response, 0, graphCalendarEventsContext, contextGenerator))
+                .Right<IEither<IError<GraphPagingException>, IEmpty>>()
+                .ToQueryResultNode();
+        }
+
+        private sealed class PageElement : IElement<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>
+        {
+            private readonly GraphCalendarEventsResponse graphCalendarEventsResponse;
+            private readonly int index;
+            private readonly IGraphCalendarEventsEvaluator graphCalendarEventsContext;
+            private readonly Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator;
+
+            public PageElement(
+                GraphCalendarEventsResponse graphCalendarEventsResponse, 
+                int index,
+                IGraphCalendarEventsEvaluator graphCalendarEventsContext,
+                Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator)
+            {
+                if (index >= graphCalendarEventsResponse.Events.Count)
+                {
+                    throw new Exception("tODO");
+                }
+
+                this.graphCalendarEventsResponse = graphCalendarEventsResponse;
+                this.index = index;
+                this.graphCalendarEventsContext = graphCalendarEventsContext;
+                this.contextGenerator = contextGenerator;
+            }
+
+            public IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException> Value
+            {
+                get
+                {
+                    return this.graphCalendarEventsResponse.Events[this.index];
+                }
+            }
+
+            public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Next()
+            {
+                if (this.index + 1 < this.graphCalendarEventsResponse.Events.Count)
+                {
+                    return
+                        Either
+                            .Left(new PageElement(this.graphCalendarEventsResponse, this.index + 1, this.graphCalendarEventsContext, this.contextGenerator))
+                            .Right<IEither<IError<GraphPagingException>, IEmpty>>()
+                            .ToQueryResultNode();
+                }
+
+                //// TODO figure out async `queryresultnode`s
+                return NextLinkVisitor.Instance.VisitAsync(this.graphCalendarEventsResponse.NextPage, (this.graphCalendarEventsContext, this.contextGenerator)).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+        }
+
+        /// <summary>
+        /// TODO should  you have a shared concrete type for this?
+        /// </summary>
+        private sealed class PageError : IError<GraphPagingException>
+        {
+            public PageError(GraphPagingException value)
+            {
+                Value = value;
+            }
+
+            public GraphPagingException Value { get; }
+        }
+        
+        /// <summary>
+        /// TODO should this be a shared type?
+        /// </summary>
+        private sealed class Empty : Fx.QueryContext.IEmpty
+        {
+            private Empty()
+            {
+            }
+
+            public static Empty Instance { get; } = new Empty();
+        }
+
+        private sealed class NextLinkVisitor : OdataNextLink.Visitor<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>, (IGraphCalendarEventsEvaluator graphCalendarEventsContext, Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator)>
+        {
+            private NextLinkVisitor()
+            {
+            }
+
+            public static NextLinkVisitor Instance { get; } = new NextLinkVisitor();
+
+            protected internal override Task<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Null node, (IGraphCalendarEventsEvaluator graphCalendarEventsContext, Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator) context)
+            {
+                return Task.FromResult<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>(
+                    Either
+                        .Left<IElement<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>>()
+                        .Right(
+                            Either
+                                .Left<IError<GraphPagingException>>()
+                                .Right(Empty.Instance))
+                        .ToQueryResultNode());
+            }
+
+            protected internal override async Task<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Relative node, (IGraphCalendarEventsEvaluator graphCalendarEventsContext, Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator) context)
+            {
+                return await context
+                    .graphCalendarEventsContext
+                    .Page2Iterator(
+                        new GraphQuery.Page(
+                                node.ToRelativeUri()),
+                        context.contextGenerator)
+                    .ConfigureAwait(false);
+            }
+
+            protected internal override async Task<IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Absolute node, (IGraphCalendarEventsEvaluator graphCalendarEventsContext, Func<OdataNextLink.Absolute, IGraphCalendarEventsEvaluator> contextGenerator) context)
+            {
+                var nextContext = context.contextGenerator(node);
+                return await nextContext
+                    .Page2Iterator(
+                        new GraphQuery.Page(
+                            nextContext
+                                .ServiceRoot
+                                .GetUri(
+                                    node)),
+                        context.contextGenerator)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
+
     public static class GraphCalendarEventsContextExtensions
     {
         private sealed class PageQueryResult : QueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>.Element
@@ -1043,29 +1270,6 @@
             return new PageQueryResult(response, 0, odataNextLinkVisitor);
         }
 
-        private sealed class PageError : IError<GraphPagingException>
-        {
-            public PageError(GraphPagingException value)
-            {
-                Value = value;
-            }
-
-            public GraphPagingException Value { get; }
-        }
-
-        /// <summary>
-        /// TODO should you have a shared type for the query result concrete implementation?
-        /// </summary>
-        private sealed class PageQueryResult2 : IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>
-        {
-            public PageQueryResult2(IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> nodes)
-            {
-                this.Nodes = nodes;
-            }
-
-            public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Nodes { get; }
-        }
-
         private sealed class OdataNextLinkVisitor : OdataNextLink.Visitor<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>, Nothing>
         {
             private readonly IGraphCalendarEventsEvaluator graphCalendarEventsContext;
@@ -1124,17 +1328,7 @@
                 public IQueryResultNode<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException> Nodes { get; }
             }
 
-            /// <summary>
-            /// TODO should this be a shared type?
-            /// </summary>
-            private sealed class Empty : Fx.QueryContext.IEmpty
-            {
-                private Empty()
-                {
-                }
-
-                public static Empty Instance { get; } = new Empty();
-            }
+            
 
             /// <inheritdoc/>
             protected internal override async Task<Fx.QueryContext.IQueryResult<IEither<GraphCalendarEvent, GraphCalendarEventsContextTranslationException>, GraphPagingException>> AcceptAsync(OdataNextLink.Relative node, Nothing context)
