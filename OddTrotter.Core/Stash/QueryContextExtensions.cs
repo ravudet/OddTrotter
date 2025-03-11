@@ -1,5 +1,6 @@
 ﻿namespace Stash
 {
+    using Stash.Monad;
     using Fx.QueryContext;
     using System;
     using System.Linq.Expressions;
@@ -14,7 +15,7 @@
             return queryContext.Where(predicate);
         }*/
 
-        public sealed class CalendarContext : IWhereQueryContextMixin<string, string, Exception, CalendarContext>
+        /*public sealed class CalendarContext : IWhereQueryContextMixin<string, string, Exception, CalendarContext>
         {
             public Task<IQueryResult<string, Exception>> Evaluate()
             {
@@ -239,7 +240,7 @@
             /*Parameters.Create(either).AddLeftSelector(val => val).AddRightSelector(error => new Nothing()).AddFactory(EitherFactory.Generate);
 
             either.Select4(val => val, error => new Nothing(), EitherFactory.Create);*/
-        }
+        /*}
 
         public static class Parameters
         {
@@ -357,7 +358,7 @@
             return source.Apply(
                 left => factory.MakeLeft(leftSelector(left)),
                 right => factory.MakeRight(rightSelector(right)));
-        }
+        }*/
 
         /*public static TEitherResult Select3<TEitherSource, TLeftSource, TRightSource, TEitherResult, TLeftResult, TRightResult>(this IHasGenericTypeParameters<TEitherSource, TLeftSource, TRightSource, TLeftResult, TRightResult> source, Func<TLeftSource, TLeftResult> leftSelector, Func<TRightSource, TRightResult> rightSelector)
             where TEitherSource : IEither<TLeftSource, TRightSource>
@@ -375,7 +376,7 @@
                 right => TEitherResult.MakeRight(rightSelector(right)));
         }*/
 
-        public static TEitherResult Select2<TEitherSource, TLeftSource, TRightSource, TEitherResult, TLeftResult, TRightResult>(this TEitherSource source, Func<TLeftSource, TLeftResult> leftSelector, Func<TRightSource, TRightResult> rightSelector)
+        /*public static TEitherResult Select2<TEitherSource, TLeftSource, TRightSource, TEitherResult, TLeftResult, TRightResult>(this TEitherSource source, Func<TLeftSource, TLeftResult> leftSelector, Func<TRightSource, TRightResult> rightSelector)
             where TEitherSource : IEither<TLeftSource, TRightSource>
             where TEitherResult : IEither<TLeftResult, TRightResult>, IEitherFactory2<TEitherResult, TLeftResult, TRightResult>
         {
@@ -598,6 +599,6 @@
         public interface IHasGenericTypeParameters<TSelf, T1>
         {
             TSelf Self { get; }
-        }
+        }*/
     }
 }

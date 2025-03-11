@@ -1,6 +1,6 @@
-﻿namespace Fx.QueryContext.Mixins
+﻿namespace Stash.Monad
 {
-    using Stash.Monad;
+    using Fx.QueryContext;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -22,8 +22,8 @@
         {
         }
 
-        public sealed class WherableAndOrderbyableContext : 
-            IQueryContext<MockResponse, MockValue, MockError>, 
+        public sealed class WherableAndOrderbyableContext :
+            IQueryContext<MockResponse, MockValue, MockError>,
             IWhereQueryContextMixin<MockResponse, MockValue, MockError, WherableAndOrderbyableContext>,
             ////IOrderByQueryContextMixin<MockResponse, MockValue, MockError, OrderedResultContext>
             IOrderByQueryContextMixin<MockResponse, MockValue, MockError, WherableAndOrderbyableContext>
@@ -60,15 +60,15 @@
         public sealed class OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> :
             IOrderByQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>,
             IQueryContextMonad<OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>, TQueryContext, TResponse, TValue, TError>
-            where TQueryContext : 
+            where TQueryContext :
                 IOrderByQueryContextMixin<TResponse, TValue, TError, TQueryContext>,
                 IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
             public OrderByThenWhereHelpfulExtension(TQueryContext source)
             {
-                this.Source = source;
+                Source = source;
 
-                this.Self = this;
+                Self = this;
             }
 
             public TQueryContext Source { get; }
@@ -77,12 +77,12 @@
 
             public ITask<IQueryResult<TResponse, TError>> Evaluate()
             {
-                return this.Source.Evaluate();
+                return Source.Evaluate();
             }
 
             public OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> OrderBy<TKey>(Expression<Func<TResponse, TKey>> keySelector)
             {
-                return OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>.Create(this.Source, keySelector);
+                return OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>.Create(Source, keySelector);
             }
 
             public QueryContextUnit<OrderByThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>, TQueryContext, TResponse, TValue, TError> Unit()
@@ -94,7 +94,7 @@
         public sealed class OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> :
             IQueryContext<TResponse, TValue, TError>,
             IWhereQueryContextMixin<TResponse, TValue, TError, OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>>
-            where TQueryContext : 
+            where TQueryContext :
                 IOrderByQueryContextMixin<TResponse, TValue, TError, TQueryContext>,
                 IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
         {
@@ -104,8 +104,8 @@
             {
                 return new OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>(
                     new Helper<TKey>(
-                        source, 
-                        keySelector, 
+                        source,
+                        keySelector,
                         Enumerable.Empty<Expression<Func<TValue, bool>>>()));
             }
 
@@ -117,13 +117,13 @@
 
             public ITask<IQueryResult<TResponse, TError>> Evaluate()
             {
-                return this.whereable.Evaluate();
+                return whereable.Evaluate();
             }
 
             public OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> Where(Expression<Func<TValue, bool>> predicate)
             {
                 return new OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>(
-                    this.whereable.Where(predicate));
+                    whereable.Where(predicate));
             }
 
             private sealed class Helper<TKey> :
@@ -135,8 +135,8 @@
                 private readonly IEnumerable<Expression<Func<TValue, bool>>> predicates;
 
                 public Helper(
-                    TQueryContext source, 
-                    Expression<Func<TResponse, TKey>> keySelector, 
+                    TQueryContext source,
+                    Expression<Func<TResponse, TKey>> keySelector,
                     IEnumerable<Expression<Func<TValue, bool>>> predicates)
                 {
                     this.source = source;
@@ -146,19 +146,19 @@
 
                 public ITask<IQueryResult<TResponse, TError>> Evaluate()
                 {
-                    var result = this.source;
-                    foreach (var predicate in this.predicates)
+                    var result = source;
+                    foreach (var predicate in predicates)
                     {
                         result = result.Where(predicate);
                     }
 
-                    return result.OrderBy(this.keySelector).Evaluate();
+                    return result.OrderBy(keySelector).Evaluate();
                 }
 
                 public OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext> Where(Expression<Func<TValue, bool>> predicate)
                 {
                     return new OrderedThenWhereHelpfulExtension<TResponse, TValue, TError, TQueryContext>(
-                        new Helper<TKey>(this.source, this.keySelector, this.predicates.Append(predicate)));
+                        new Helper<TKey>(source, keySelector, predicates.Append(predicate)));
                 }
             }
         }
@@ -175,7 +175,7 @@
         }
 
         public static TQueryContextMonad Where2<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>(
-            this TQueryContextMonad extensions, 
+            this TQueryContextMonad extensions,
             Expression<Func<TValue, bool>> predicate)
             where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TQueryContext, TResponse, TValue, TError>
             where TQueryContext : IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext>
@@ -183,18 +183,18 @@
             return extensions.Unit()(extensions.Source.Where(predicate));
         }
 
-        public static TSelectedQueryContxtMonad Select2
+        /*public static TSelectedQueryContxtMonad Select2
             <
-                TQueryContextMonad, 
-                TSourceQueryContext, 
-                TResponse, 
+                TQueryContextMonad,
+                TSourceQueryContext,
+                TResponse,
                 TSourceValue,
                 TError,
                 TSelectedQueryContxtMonad,
-                TResultQueryContext, 
+                TResultQueryContext,
                 TResultValue
             >(
-                this TQueryContextMonad extensions, 
+                this TQueryContextMonad extensions,
                 Expression<Func<TSourceValue, TResultValue>> selector)
             where TQueryContextMonad : IQueryContextMonad<TQueryContextMonad, TSourceQueryContext, TResponse, TSourceValue, TError>
             where TSourceQueryContext : IQueryContext<TResponse, TSourceValue, TError>, ISelectQueryContextMixin<TResponse, TSourceValue, TError, TSourceQueryContext>
@@ -206,7 +206,7 @@
         {
             //// TODO you are here
             extensions.Unit()(extensions.Source.Select<TResultQueryContext, TResultValue>(selector));
-        }
+        }*/
 
         public static void DoWork()
         {
@@ -217,9 +217,9 @@
 
             var helpfulExtension = new OrderByThenWhereHelpfulExtension
                 <
-                    MockResponse, 
-                    MockValue, 
-                    MockError, 
+                    MockResponse,
+                    MockValue,
+                    MockError,
                     WherableAndOrderbyableContext
                 >(
                     context);
