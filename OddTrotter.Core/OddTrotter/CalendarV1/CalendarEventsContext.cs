@@ -243,7 +243,7 @@ namespace OddTrotter.Calendar
         private async 
             Task
                 <
-                    QueryResult
+                    IQueryResult
                         <
                             IEither
                                 <
@@ -293,7 +293,7 @@ namespace OddTrotter.Calendar
         /// <param name="endTime"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        private async Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEvents()
+        private async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEvents()
         {
             var seriesEventMasters =
                 await this.GetSeriesEventMasters().ConfigureAwait(false);
