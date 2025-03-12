@@ -436,7 +436,7 @@ namespace OddTrotter.Calendar
         /// <param name="seriesMaster"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="seriesMaster"/> is <see langword="null"/></exception>
-        private async Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeries(CalendarEvent seriesMaster)
+        private async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeries(CalendarEvent seriesMaster)
         {
             if (seriesMaster == null)
             {
@@ -455,11 +455,11 @@ namespace OddTrotter.Calendar
             }
 
             var context = new GetInstancesInSeriesContext(this.calendarUriPath, this.isCancelled, this.graphCalendarEventsContext, seriesMaster, pageStartTime, pageEndTime, this.endTime, this.firstInstanceInSeriesLookahead);
-            var instancesInSeries = await GetInstancesInSeries(context).ConfigureAwait(false);
+            var instancesInSeries = await GetInstancesInSeriesWithinTimeSlice(context).ConfigureAwait(false);
 
-            return await GetInstancesInSeriesVisitor.Instance.VisitAsync(instancesInSeries, context).ConfigureAwait(false);
+            return instancesInSeries;
         }
-        
+
         private sealed class GetInstancesInSeriesContext
         {
             /// <summary>
@@ -570,7 +570,7 @@ namespace OddTrotter.Calendar
 
             /// <inheritdoc/>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="context"/> is <see langword="null"/></exception>
-            public override async Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> DispatchAsync(QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>.Final node, GetInstancesInSeriesContext context)
+            public override Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> DispatchAsync(QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>.Final node, GetInstancesInSeriesContext context)
             {
                 if (node == null)
                 {
@@ -601,7 +601,8 @@ namespace OddTrotter.Calendar
                     pageEndTime,
                     context.GlobalEndTime,
                     context.FirstInstanceInSeriesLookahead);
-                return await GetInstancesInSeries(nextContext).ConfigureAwait(false);
+                ////return await GetInstancesInSeriesWithinTimeSlice(nextContext).ConfigureAwait(false);
+                throw new Exception("TODO");
             }
 
             /// <inheritdoc/>
@@ -675,7 +676,7 @@ namespace OddTrotter.Calendar
         /// <param name="context"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="context"/> is <see langword="null"/></exception>
-        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeries(GetInstancesInSeriesContext context)
+        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeriesWithinTimeSlice(GetInstancesInSeriesContext context)
         {
             if (context == null)
             {
@@ -701,7 +702,26 @@ namespace OddTrotter.Calendar
                         nextLink.StartsWith(context.GraphCalendarEventsContext.ServiceRoot) ? context.GraphCalendarEventsContext : throw new Exception("TODO you need a new exception type for this probably?")) //// TODO this contextgenerator stuff was because you didn't have serviceroot on the context interface, so you wanted the caller to pass it in; now that you have it in the interface, instead of a generator, you should probably just take in the "dictionary"; the reason this is coming up is because otherwise the `page` method needs to describe how the generator should return (or throw) in the even that a context cannot be found by the caller; you really don't want the generator to throw because that defeats the purpose of the queryresult stuff
                 .ConfigureAwait(false);
 
-            return Adapt(graphResponse);
+            var pageStartTime = context.PageEndTime;
+            var pageEndTime = pageStartTime + context.FirstInstanceInSeriesLookahead;
+            if (context.GlobalEndTime != null)
+            {
+                if (context.GlobalEndTime.Value < pageEndTime)
+                {
+                    pageEndTime = context.GlobalEndTime.Value;
+                }
+            }
+
+            var nextContext = new GetInstancesInSeriesContext(
+                context.CalendarUriPath,
+                context.IsCancelled,
+                context.GraphCalendarEventsContext,
+                context.SeriesMaster,
+                pageStartTime,
+                pageEndTime,
+                context.GlobalEndTime,
+                context.FirstInstanceInSeriesLookahead);
+            return Adapt(graphResponse).Concat(await GetInstancesInSeriesWithinTimeSlice(nextContext).ConfigureAwait(false), _ => _, _ => _, (_, __) => new CalendarEventsContextPagingException("TODO", _)); //// TODO you probably should have a "concat if no errors in first" overload
         }
 
         /// <summary>
