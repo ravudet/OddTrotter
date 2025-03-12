@@ -13,6 +13,7 @@ namespace OddTrotter.Calendar
 
     using Fx.Either;
     using Fx.QueryContext;
+    using System.Net.Http.Headers;
 
     public interface IQueryContext<TValue, TError>
     {
@@ -449,6 +450,44 @@ namespace OddTrotter.Calendar
             Func<TSource, Task<TResult>> selector)
         {
             return await (await queryResult.ConfigureAwait(false)).SelectAsync(selector).ConfigureAwait(false);
+        }
+
+        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+            this Task<IQueryResult<TSource, TError>> queryResult,
+            Func<TSource, TResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(queryResult);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return (await queryResult.ConfigureAwait(false)).Select(selector);
+        }
+
+        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+            this Task<IQueryResult<TSource, TError>> queryResult,
+            Func<TSource, Task<TResult>> selector)
+        {
+            return await (await queryResult.ConfigureAwait(false)).SelectAsync(selector).ConfigureAwait(false);
+        }
+
+        public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+            this IQueryResult<TSource, TError> queryResult,
+            Func<TSource, Task<TResult>> selector)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (selector == null)
+            {
+                throw new ArgumentNullException(nameof(selector));
+            }
+
+            return
+                Task.FromResult(
+                        queryResult
+                            .Select(
+                                element => selector(element).ConfigureAwait(false).GetAwaiter().GetResult())); //// TODO make this actually async
         }
 
         /// <summary>

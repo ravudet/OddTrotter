@@ -532,7 +532,29 @@ namespace OddTrotter.Calendar
             public TimeSpan FirstInstanceInSeriesLookahead { get; }
         }
 
-        private sealed class GetInstancesInSeriesVisitor : QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>.AsyncVisitor<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>, GetInstancesInSeriesContext>
+        private sealed class GetInstancesInSeriesVisitor : 
+            QueryResult
+                <
+                    IEither
+                        <
+                            CalendarEvent, 
+                            CalendarEventsContextTranslationException
+                        >, 
+                    CalendarEventsContextPagingException
+                >
+            .AsyncVisitor
+                <
+                    QueryResult
+                        <
+                            IEither
+                                <
+                                    CalendarEvent,
+                                    CalendarEventsContextTranslationException
+                                >, 
+                            CalendarEventsContextPagingException
+                        >, 
+                    GetInstancesInSeriesContext
+                >
         {
             /// <summary>
             /// 
