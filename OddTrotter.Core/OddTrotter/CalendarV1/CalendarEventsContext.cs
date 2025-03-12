@@ -18,25 +18,25 @@ namespace OddTrotter.Calendar
     public sealed class CalendarEventsContext : 
         Fx.QueryContext.IQueryContext
             <
-                CalendarEvent, 
-                IEither
-                    <
-                        CalendarEvent,
-                        CalendarEventsContextTranslationException
-                    >, 
-                CalendarEventsContextPagingException
-            >,
-        Fx.QueryContext.Mixins.IWhereQueryContextMixin
-            <
-                CalendarEvent,
                 IEither
                     <
                         CalendarEvent,
                         CalendarEventsContextTranslationException
                     >,
+                CalendarEvent, 
+                CalendarEventsContextPagingException
+            >,
+        Fx.QueryContext.Mixins.IWhereQueryContextMixin
+            <
+                IEither
+                    <
+                        CalendarEvent,
+                        CalendarEventsContextTranslationException
+                    >,
+                CalendarEvent,
                 CalendarEventsContextPagingException,
                 CalendarEventsContext
-            >,
+            >
         /*IQueryContext
             <
                 IEither
@@ -139,19 +139,48 @@ namespace OddTrotter.Calendar
             this.isCancelled = isCancelled;
         }
 
-        public ITask<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>> Evaluate()
+        public ITask<IQueryResult<IEither
+                                <
+                                    CalendarEvent,
+                                    CalendarEventsContextTranslationException
+                                >, CalendarEventsContextPagingException>> Evaluate()
         {
             //// TODO have an extension method so you don't need to write out the type
-            return new TaskWrapper<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>>(this.EvaluateImpl());
+            return 
+                new TaskWrapper
+                    <
+                        IQueryResult
+                            <
+                                IEither
+                                    <
+                                        CalendarEvent,
+                                        CalendarEventsContextTranslationException
+                                    >, 
+                                CalendarEventsContextPagingException
+                            >
+                    >(
+                        this.EvaluateImpl());
         }
 
-        private async Task<IQueryResult<CalendarEvent, CalendarEventsContextPagingException>> EvaluateImpl()
+        private async Task<IQueryResult<IEither
+                                <
+                                    CalendarEvent,
+                                    CalendarEventsContextTranslationException
+                                >, CalendarEventsContextPagingException>> EvaluateImpl()
         {
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
             //// TODO FUTURE merge the sorted sequences instead of concat //// TODO these are not necessarily sorted because the
             /// series events will come back in the order of their master start times, not the first instance start times
-            var allEvents = instanceEvents.Concat(seriesEvents);
+            var allEvents = instanceEvents
+                .Concat(
+                    seriesEvents,
+                    firstError => firstError,
+                    secondError => secondError,
+                    (firstError, secondError) => 
+                        new CalendarEventsContextPagingException(
+                            "TODO an error occurred while paging both instances events and series events", 
+                            new AggregateException(firstError, secondError)));
             return allEvents;
         }
 

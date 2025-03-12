@@ -1,17 +1,18 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.QueryContext.Mixins
 {
+    using OddTrotter.Calendar;
     using System;
     using System.Linq.Expressions;
 
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TResponse"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
+    /// <typeparam name="TDataStoreValue"></typeparam>
+    /// <typeparam name="TClientValue"></typeparam>
     /// <typeparam name="TError"></typeparam>
     /// <typeparam name="TQueryContext"></typeparam>
-    public interface IWhereQueryContextMixin<TResponse, TValue, TError, TQueryContext> : IQueryContext<TResponse, TValue, TError> where TQueryContext : IQueryContext<TResponse, TValue, TError>
+    public interface IWhereQueryContextMixin<TClientValue, TDataStoreValue, TError, TQueryContext> : IQueryContext<TClientValue, TDataStoreValue, TError> where TQueryContext : IQueryContext<TClientValue, TDataStoreValue, TError>
     {
         /// <summary>
         /// placeholder
@@ -22,6 +23,6 @@ namespace Fx.QueryContext.Mixins
         /// <exception cref="NotSupportedException">
         /// Thrown if <paramref name="predicate"/> represents a filtering that is not supported by the backing data source
         /// </exception>
-        TQueryContext Where(Expression<Func<TResponse, bool>> predicate);
+        TQueryContext Where(Expression<Func<TDataStoreValue, bool>> predicate);
     }
 }
