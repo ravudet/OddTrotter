@@ -653,7 +653,7 @@ namespace OddTrotter.Calendar
         /// <param name="context"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="context"/> is <see langword="null"/></exception>
-        private static async Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeries(GetInstancesInSeriesContext context)
+        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetInstancesInSeries(GetInstancesInSeriesContext context)
         {
             if (context == null)
             {
@@ -739,7 +739,7 @@ namespace OddTrotter.Calendar
         /// <param name="graphClient"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        private async Task<QueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEventMasters()
+        private async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEventMasters()
         {
             var url =
                 $"{this.calendarUriPath.Path}/events?" +
