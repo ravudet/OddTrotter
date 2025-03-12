@@ -15,6 +15,8 @@ namespace OddTrotter.Calendar
     using Fx.QueryContext;
     using System.Net.Http.Headers;
     using Fx.Try;
+    using static OddTrotter.Calendar.QueryResultExtensions.FirstOrDefaultResult<TElement, TError, TDefault>;
+    using System.Linq;
 
     public interface IQueryContext<TValue, TError>
     {
@@ -1163,9 +1165,20 @@ namespace OddTrotter.Calendar
                 {
                     throw new ArgumentNullException(nameof(node));
                 }
-
                 return new FirstOrDefaultResult<TElement, TError, TDefault>.Error(node.Error);
             }
+        }
+
+        public static IEither<System.Linq.FirstOrDefault<TElement, Nothing>, TError> FirstOrDefault<TElement, TError>(this IQueryResult<TElement, TError> queryResult)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            return queryResult
+                .FirstOrDefault(
+                    new Nothing());
         }
 
         /// <summary>
