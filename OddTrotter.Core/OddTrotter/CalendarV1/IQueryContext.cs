@@ -14,6 +14,7 @@ namespace OddTrotter.Calendar
     using Fx.Either;
     using Fx.QueryContext;
     using System.Net.Http.Headers;
+    using Fx.Try;
 
     public interface IQueryContext<TValue, TError>
     {
@@ -282,6 +283,122 @@ namespace OddTrotter.Calendar
 
     public static class QueryResultAsyncExtensions
     {
+        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResult<TValue, TError> queryResult, Fx.Try.Try<TValue, TResult> @try)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (@try == null)
+            {
+                throw new ArgumentNullException(nameof(@try));
+            }
+
+            return new TrySelectQueryResult<TResult, TError>(queryResult.Nodes.TrySelectIterator(@try));
+        }
+
+        private sealed class TrySelectQueryResult<TResult, TError> : IQueryResult<TResult, TError>
+        {
+            public TrySelectQueryResult(IQueryResultNode<TResult, TError> nodes)
+            {
+                Nodes = nodes;
+            }
+
+
+            public IQueryResultNode<TResult, TError> Nodes { get; }
+        }
+
+        private static IQueryResultNode<TResult, TError> TrySelectIterator<TValue, TError, TResult>(this IQueryResultNode<TValue, TError> queryResult, Fx.Try.Try<TValue, TResult> @try)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (@try == null)
+            {
+                throw new ArgumentNullException(nameof(@try));
+            }
+
+            return queryResult.SelectLeft(
+                element =>
+                    TryCreate(
+                        element,
+                        Lift<TValue, TResult, IElement<TValue, TError>>(@try, element => element.Value), ///// TODO not sure that this is a life, and not sure that the lack of the type inference makes this useful in any way
+                        (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
+                        element => element.Next().TrySelectIterator(@try))
+                    .SelectManyRight())
+                .SelectManyLeft()
+                .ToQueryResultNode();
+        }
+
+        private static Try<TOther, TResult> Lift<TSource, TResult, TOther>(Try<TSource, TResult> @try, Func<TOther, TSource> selector)
+        {
+            return (TOther other, [MaybeNullWhen(false)] out TResult result) => @try(selector(other), out result);
+        }
+
+        private static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>( //// TODO this should go in the `either` factory methods class, if you choose to keep it
+            TValue value,
+            Try<TValue, TResult> discriminator,
+            Func<TValue, TResult, TLeft> leftFactory,
+            Func<TValue, TRight> rightFactory)
+        {
+            ArgumentNullException.ThrowIfNull(discriminator);
+            ArgumentNullException.ThrowIfNull(leftFactory);
+            ArgumentNullException.ThrowIfNull(rightFactory);
+
+            if (discriminator(value, out var result))
+            {
+                return Either.Left(leftFactory(value, result)).Right<TRight>();
+            }
+            else
+            {
+                return Either.Left<TLeft>().Right(rightFactory(value));
+            }
+        }
+
+        private sealed class TrySelectElement<TValue, TError, TResult> : IElement<TResult, TError>
+        {
+            private readonly IQueryResultNode<TValue, TError> next;
+            private readonly Try<TValue, TResult> @try;
+
+            public TrySelectElement(TResult value, IQueryResultNode<TValue, TError> next, Fx.Try.Try<TValue, TResult> @try)
+            {
+                Value = value;
+                this.next = next;
+                this.@try = @try;
+            }
+
+            public TResult Value { get; }
+
+            public IQueryResultNode<TResult, TError> Next()
+            {
+                return this.next.TrySelectIterator(this.@try);
+            }
+        }
+
+        public static async Task<IQueryResult<TValue, TError>> TrySelectAsync<TValue, TError>(this Task<IQueryResult<IEither<TValue, Nothing>, TError>> queryResult)
+        {
+            //// TODO is there a way to avoid all of this type specification through some sort of type inference? what is missing that makes type inference not work?
+            return await queryResult.TrySelectAsync((IEither<TValue, Nothing> either, [MaybeNullWhen(false)] out TValue result) => either.TryGet(out result)).ConfigureAwait(false);
+        }
+
+        public static async Task<IQueryResult<TResult, TError>> TrySelectAsync<TValue, TError, TResult>(this Task<IQueryResult<TValue, TError>> queryResult, Fx.Try.Try<TValue, TResult> @try)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (@try == null)
+            {
+                throw new ArgumentNullException(nameof(@try));
+            }
+
+            return (await queryResult).TrySelect(@try);
+        }
+
         public static async Task<QueryResult<TValue, TError>> TrySelectAsync<TValue, TError>(this Task<QueryResult<IEither<TValue, Nothing>, TError>> queryResult)
         {
             //// TODO is there a way to avoid all of this type specification through some sort of type inference? what is missing that makes type inference not work?
