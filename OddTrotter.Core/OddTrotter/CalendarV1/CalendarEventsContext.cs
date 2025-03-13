@@ -359,7 +359,7 @@ namespace OddTrotter.Calendar
                                                             .Right<CalendarEventsContextTranslationException>())
                                                     .Right<Nothing>() :
                                                 Either
-                                                    .Left<Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextPagingException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException>>()
+                                                    .Left<Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException>>()
                                                     .Right(new Nothing()),
                                         instancePagingError =>
                                             Either
@@ -369,7 +369,7 @@ namespace OddTrotter.Calendar
                                                             (
                                                                 SeriesMaster: seriesPlusInstance.SeriesMaster,
                                                                 Instance: Either
-                                                                    .Left<IEither<CalendarEvent, CalendarEventsContextPagingException>>()
+                                                                    .Left<IEither<CalendarEvent, CalendarEventsContextTranslationException>>()
                                                                     .Right(instancePagingError)
                                                             ))
                                                         .Right<CalendarEventsContextTranslationException>())
