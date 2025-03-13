@@ -343,8 +343,42 @@ namespace OddTrotter.Calendar
                         seriesPlusInstanceOrTranslationError
                             .Apply(
                                 seriesPlusInstance =>
-                                    seriesPlusInstance
-                                        .FirstInstance
+                                    seriesPlusInstance.FirstInstance.Select(
+                                        firstOrDefault =>
+                                            firstOrDefault.TryGetLeft(out var instance) ?
+                                                Either
+                                                    .Left(
+                                                        Either
+                                                            .Left(
+                                                                (
+                                                                    SeriesMaster: seriesPlusInstance.SeriesMaster,
+                                                                    Instance: Either
+                                                                        .Left(instance)
+                                                                        .Right<CalendarEventsContextPagingException>()
+                                                                ))
+                                                            .Right<CalendarEventsContextTranslationException>())
+                                                    .Right<Nothing>() :
+                                                Either
+                                                    .Left<Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextPagingException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException>>()
+                                                    .Right(new Nothing()),
+                                        instancePagingError =>
+                                            Either
+                                                .Left(
+                                                    Either
+                                                        .Left(
+                                                            (
+                                                                SeriesMaster: seriesPlusInstance.SeriesMaster,
+                                                                Instance: Either
+                                                                    .Left<CalendarEvent>()
+                                                                    .Right(instancePagingError)
+                                                            ))
+                                                        .Right<CalendarEventsContextTranslationException>())
+                                                .Right<Nothing>())
+
+
+
+
+
                                         .TryNotDefault( //// TODO i *think* both delegates here are just doing identity operations; do you want to have a `trynotdefault` convenience overload that returns bool with and out parameter of the either of the other two?
                                             instance =>
                                                 Either

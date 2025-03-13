@@ -382,6 +382,8 @@ namespace OddTrotter.Calendar
 
         public static async Task<IQueryResult<TValue, TError>> TrySelectAsync<TValue, TError>(this Task<IQueryResult<IEither<TValue, Nothing>, TError>> queryResult)
         {
+            //// TODO do you really want a tryselect overload that pretends ieithers are trys
+
             //// TODO is there a way to avoid all of this type specification through some sort of type inference? what is missing that makes type inference not work?
             return await queryResult.TrySelectAsync((IEither<TValue, Nothing> either, [MaybeNullWhen(false)] out TValue result) => either.TryGet(out result)).ConfigureAwait(false);
         }
