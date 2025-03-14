@@ -10,5 +10,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Fx.Core\Fx.Core\Fx.Core.csproj" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>OddTrotter.Core.Internals.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  
 </Project>
