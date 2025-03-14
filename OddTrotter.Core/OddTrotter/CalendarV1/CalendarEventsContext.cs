@@ -343,7 +343,7 @@ namespace OddTrotter.Calendar
                         seriesPlusInstanceOrTranslationError
                             .Apply(
                                 seriesPlusInstance =>
-                                    seriesPlusInstance.FirstInstance.Select( //// TODO this was `trynotdefault` in the old way; i think we might want to abandon that approach, but you had this note previously incase you stick with that approach: //// TODO i *think* both delegates here are just doing identity operations; do you want to have a `trynotdefault` convenience overload that returns bool with and out parameter of the either of the other two?
+                                    seriesPlusInstance.FirstInstance.Apply( //// TODO this was `trynotdefault` in the old way; i think we might want to abandon that approach, but you had this note previously incase you stick with that approach: //// TODO i *think* both delegates here are just doing identity operations; do you want to have a `trynotdefault` convenience overload that returns bool with and out parameter of the either of the other two?
                                         firstOrDefault =>
                                             firstOrDefault.TryGetLeft(out var instance) ?
                                                 Either
@@ -373,7 +373,7 @@ namespace OddTrotter.Calendar
                                                                     .Right(instancePagingError)
                                                             ))
                                                         .Right<CalendarEventsContextTranslationException>())
-                                                .Right<Nothing>())
+                                                .Right<Nothing>()),
                                 translationError => Either
                                     .Left(
                                         Either
@@ -394,7 +394,9 @@ namespace OddTrotter.Calendar
                                                 >()
                                             .Right(translationError))
                                     .Right<Nothing>()))
-                .TrySelectAsync()
+                .TrySelectAsync(
+                    (Either<Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException>, Nothing> either, [MaybeNullWhen(false)] out Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException> left) => 
+                        either.TryGetLeft(out left)) //// TODO this amount of generics is really bad, see if you can fix it
                 .SelectAsync(
                     seriesPlusInstanceOrTranslationError =>
                         seriesPlusInstanceOrTranslationError.SelectLeft(
