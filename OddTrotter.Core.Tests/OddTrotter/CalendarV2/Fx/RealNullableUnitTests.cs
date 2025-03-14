@@ -2,7 +2,6 @@
 namespace Fx
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System;
 
     [TestClass]
     public sealed class RealNullableUnitTests
