@@ -208,13 +208,20 @@
         /// <param name="queryResult"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> is <see langword="null"/></exception>
-        private static TodoListResultBuilder Convert(QueryResult<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static TodoListResultBuilder Convert(IQueryResult<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             ArgumentNullException.ThrowIfNull(queryResult);
 
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
-            while (queryResult is QueryResult<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>.Element element)
+            ConvertIterator(queryResult.Nodes, lastRecordedEventTimeStamp, builder);
+
+            return builder;
+        }
+
+        private static void ConvertIterator(IQueryResultNode<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResultNode, DateTime lastRecordedEventTimeStamp, TodoListResultBuilder builder)
+        {
+            while (queryResultNode.TryGetLeft(out var element))
             {
                 element.Value.Apply(
                     (left, context) =>
@@ -247,15 +254,16 @@
                     },
                     builder);
 
-                queryResult = element.Next();
+                queryResultNode = element.Next();
             }
 
-            if (queryResult is QueryResult<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>.Partial partial)
+            if (queryResultNode.TryGetRight(out var terminal)) //// TODO we know that this will be true because we escaped the while loop because "left" was false; see if you can use an apply to combine the two instead so that you cover all branches
             {
-                builder.PagingError = partial.Error;
+                if (terminal.TryGetLeft(out var error))
+                {
+                    builder.PagingError = error.Value;
+                }
             }
-
-            return builder;
         }
 
         private sealed class TodoListResultBuilder
