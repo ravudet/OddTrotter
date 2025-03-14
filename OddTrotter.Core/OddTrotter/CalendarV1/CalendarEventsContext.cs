@@ -102,16 +102,16 @@ namespace OddTrotter.Calendar
             DateTime startTime,
             CalendarEventsContextSettings settings)
             : this(
-                  ArgumentNullInline.ThrowIfNull(graphCalendarEventsContext),
-                  ArgumentNullInline.ThrowIfNull(calendarUriPath),
+                  ArgumentNullInline.ThrowIfNull(graphCalendarEventsContext), //// TODO shouldn't this assertion just go in the primary constructor?
+                  ArgumentNullInline.ThrowIfNull(calendarUriPath), //// TODO shouldn't this assertion just go in the primary constructor?
                   startTime,
                   ArgumentNullInline.ThrowIfNull(settings).PageSize,
-                  ArgumentNullInline.ThrowIfNull(settings).FirstInstanceInSeriesLookahead,
+                  settings.FirstInstanceInSeriesLookahead, //// TODO you only have to do the inline assertion once
                   null,
                   null)
         {
         }
-
+        
         /// <summary>
         /// 
         /// </summary>
