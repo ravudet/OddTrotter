@@ -15,7 +15,6 @@ namespace OddTrotter.Calendar
     using Fx.QueryContext;
     using System.Net.Http.Headers;
     using Fx.Try;
-    using static OddTrotter.Calendar.QueryResultExtensions.FirstOrDefaultResult<TElement, TError, TDefault>;
     using System.Linq;
 
     public interface IQueryContext<TValue, TError>

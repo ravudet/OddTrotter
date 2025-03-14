@@ -1,6 +1,7 @@
 ﻿namespace Stash.Monad
 {
     using Fx.QueryContext;
+    using Fx.QueryContext.Mixins;
     using System;
     using System.Collections.Generic;
     using System.Linq;

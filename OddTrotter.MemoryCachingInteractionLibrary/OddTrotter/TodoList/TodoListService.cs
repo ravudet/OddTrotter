@@ -14,6 +14,7 @@
     using System.Xml.Linq;
 
     using Fx.Either;
+    using Fx.QueryContext;
     using Microsoft.Extensions.Caching.Memory;
     using OddTrotter.AzureBlobClient;
     using OddTrotter.Calendar;
