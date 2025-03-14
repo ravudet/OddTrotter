@@ -396,6 +396,14 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
             //// TODO then move argumentnullinline
+            //// TODO have a separate test project for internals? 
+  
+  /*<ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>OddTrotter.Core.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>*/
+
             //// TODO then do querycontext (and move everything to use it); the query context stuff will need some diligence and effort around adding the third type parameter that allows mixins to work correctly; do query contexts next probably and just know that you're going to need to put the effort in
             //// TODO add obsolete attribute to the implicit operator on either so you get a build warning if you actually use it; is there a way to make *this specific one* a warning instead of an error?
             //// TODO write tests that assert the deferred execution of query results
