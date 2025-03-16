@@ -87,6 +87,8 @@
         {
             var code =
 """
+using System;
+
 public static class Foo
 {
 private readonly struct MockStruct
@@ -104,8 +106,7 @@ public static void Test()
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
-                .WithReferences(new[] { typeof(ArgumentNullInline).Assembly })
-                .AddImports(new[] { "System" }));
+                .WithReferences(new[] { typeof(ArgumentNullInline).Assembly }));
 
             var compilerOutput = script.Compile();
 

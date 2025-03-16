@@ -13,7 +13,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CalendarV2\System\Play.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\OddTrotter.Core\OddTrotter\CalendarV2\System\ArgumentNullInline.cs" Link="CalendarV2\System\ArgumentNullInline.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CalendarV2\System\Play.cs" />
   </ItemGroup>
 
   <ItemGroup>
