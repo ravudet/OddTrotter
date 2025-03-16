@@ -108,6 +108,9 @@ public static void Test()
                 .AddImports(new[] { "System", "_.Foo" }));
 
             var compilerOutput = script.Compile();
+
+            Assert.AreEqual(1, compilerOutput.Length);
+            Assert.AreEqual("CS0452", compilerOutput[0].Id);
         }
     }
 }
