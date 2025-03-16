@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -8,7 +8,13 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+
+    <DefineConstants>$(DefineConstants);OddTrotterCoreTestsInternal</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\OddTrotter.Core\OddTrotter\CalendarV2\System\ArgumentNullInline.cs" Link="CalendarV2\System\ArgumentNullInline.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0" />
@@ -19,7 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OddTrotter.Core\OddTrotter.Core.csproj" />
+    <ProjectReference Include="..\OddTrotter.Core\OddTrotter.Core.csproj">
+      <Aliases>OddTrotterCore</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

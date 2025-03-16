@@ -1,10 +1,14 @@
 ﻿namespace System
 {
+    extern alias OddTrotterCore;
+
+    using ArgumentNullInline2 = OddTrotterCore::System.ArgumentNullInline;
+
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class ArgumentNullInlineUnitTests
+    public sealed class ArgumentNullInline2UnitTests
     {
         [TestMethod]
         public void ThrowIfNullNullClass()
@@ -15,7 +19,7 @@
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
                 ;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline.ThrowIfNull(@class));
+            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@class));
         }
 
         private sealed class MockClass
@@ -27,7 +31,7 @@
         {
             var @class = new MockClass();
 
-            var returned = ArgumentNullInline.ThrowIfNull(@class);
+            var returned = ArgumentNullInline2.ThrowIfNull(@class);
 
             Assert.AreEqual(@class, returned);
         }
@@ -37,7 +41,7 @@
         {
             MockClass? @class = null;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline.ThrowIfNull(@class));
+            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@class));
         }
 
         [TestMethod]
@@ -45,7 +49,7 @@
         {
             MockClass? @class = new MockClass();
 
-            var returned = ArgumentNullInline.ThrowIfNull(@class);
+            var returned = ArgumentNullInline2.ThrowIfNull(@class);
 
             Assert.AreEqual(@class, returned);
         }
@@ -55,7 +59,7 @@
         {
             MockStruct? @struct = null;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline.ThrowIfNull(@struct));
+            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@struct));
         }
 
         private readonly struct MockStruct
@@ -73,7 +77,7 @@
         {
             MockStruct? @struct = new MockStruct(42);
 
-            var returned = ArgumentNullInline.ThrowIfNull(@struct);
+            var returned = ArgumentNullInline2.ThrowIfNull(@struct);
 
             Assert.AreEqual(@struct, returned);
         }
@@ -83,6 +87,8 @@
         {
             var code =
 """
+[assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("OddTrotter.Core")]
+
 public static class Foo
 {
 private readonly struct MockStruct
@@ -93,15 +99,15 @@ public static void Test()
 {
     var @struct = new MockStruct();
 
-    ArgumentNullInline.ThrowIfNull(@struct);
+    ArgumentNullInline2.ThrowIfNull(@struct);
 }
 }
 """;
             var script = CSharpScript.Create(
                 code,
-                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.WithReferences(new[] { typeof(ArgumentNullInline).Assembly }).AddImports(new[] { "System" }));
+                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.WithReferences(new[] { typeof(ArgumentNullInline2).Assembly }).AddImports(new[] { "System" }));
 
             var compilerOutput = script.Compile();
-        }       
+        }
     }
 }

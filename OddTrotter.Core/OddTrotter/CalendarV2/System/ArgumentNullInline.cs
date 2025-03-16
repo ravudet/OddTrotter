@@ -1,8 +1,9 @@
 ﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace System
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.CompilerServices;
+    using global::System;
+    using global::System.Diagnostics.CodeAnalysis;
+    using global::System.Runtime.CompilerServices;
 
     /// <summary>
     /// 
@@ -37,7 +38,12 @@ namespace System
     /// also demonstrated that either there's *no* difference for the `class` case, or that the custom implementation wins out
     /// slightly.
     /// </remarks>
-    internal static class ArgumentNullInline
+#if OddTrotterCoreTestsInternal
+    public
+#else
+    internal
+#endif
+        static class ArgumentNullInline
     {
         /// <summary>
         /// placeholder
