@@ -2,13 +2,13 @@
 {
     extern alias OddTrotterCore;
 
-    using ArgumentNullInline2 = OddTrotterCore::System.ArgumentNullInline; //// TODO can you re-use the correct name here?
+    using ExternalArgumentNullInline = OddTrotterCore::System.ArgumentNullInline; //// TODO can you re-use the correct name here?
 
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class ArgumentNullInline2UnitTests
+    public sealed class ExternalArgumentNullInlineUnitTests
     {
         [TestMethod]
         public void ThrowIfNullNullClass()
@@ -19,7 +19,7 @@
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
                 ;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@class));
+            Assert.ThrowsException<ArgumentNullException>(() => ExternalArgumentNullInline.ThrowIfNull(@class));
         }
 
         private sealed class MockClass
@@ -31,7 +31,7 @@
         {
             var @class = new MockClass();
 
-            var returned = ArgumentNullInline2.ThrowIfNull(@class);
+            var returned = ExternalArgumentNullInline.ThrowIfNull(@class);
 
             Assert.AreEqual(@class, returned);
         }
@@ -41,7 +41,7 @@
         {
             MockClass? @class = null;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@class));
+            Assert.ThrowsException<ArgumentNullException>(() => ExternalArgumentNullInline.ThrowIfNull(@class));
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@
         {
             MockClass? @class = new MockClass();
 
-            var returned = ArgumentNullInline2.ThrowIfNull(@class);
+            var returned = ExternalArgumentNullInline.ThrowIfNull(@class);
 
             Assert.AreEqual(@class, returned);
         }
@@ -59,7 +59,7 @@
         {
             MockStruct? @struct = null;
 
-            Assert.ThrowsException<ArgumentNullException>(() => ArgumentNullInline2.ThrowIfNull(@struct));
+            Assert.ThrowsException<ArgumentNullException>(() => ExternalArgumentNullInline.ThrowIfNull(@struct));
         }
 
         private readonly struct MockStruct
@@ -77,7 +77,7 @@
         {
             MockStruct? @struct = new MockStruct(42);
 
-            var returned = ArgumentNullInline2.ThrowIfNull(@struct);
+            var returned = ExternalArgumentNullInline.ThrowIfNull(@struct);
 
             Assert.AreEqual(@struct, returned);
         }
