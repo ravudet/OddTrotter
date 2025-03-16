@@ -2,7 +2,7 @@
 {
     extern alias OddTrotterCore;
 
-    using ExternalArgumentNullInline = OddTrotterCore::System.ArgumentNullInline; //// TODO can you re-use the correct name here?
+    using ExternalArgumentNullInline = OddTrotterCore::System.ArgumentNullInline;
 
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
