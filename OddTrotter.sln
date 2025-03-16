@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OddTrotter.AspNetCoreHttpIn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OddTrotter.AspNetCoreHttpInteractionLibrary.Tests", "OddTrotter.AspNetCoreHttpInteractionLibrary.Tests\OddTrotter.AspNetCoreHttpInteractionLibrary.Tests.csproj", "{05DB2BD3-7EE2-407F-9CF7-B1E3AA3D98BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.Internals.Tests", "OddTrotter.Core.Internals.Tests\OddTrotter.Core.Internals.Tests.csproj", "{E04FEC54-D3AA-456A-BF83-EF2F377724DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.Tests.Internals", "OddTrotter.Core.Tests.Internals\OddTrotter.Core.Tests.Internals.csproj", "{E04FEC54-D3AA-456A-BF83-EF2F377724DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
