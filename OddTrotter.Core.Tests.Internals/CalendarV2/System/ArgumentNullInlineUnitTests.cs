@@ -85,6 +85,7 @@
         [TestMethod]
         public void Play()
         {
+            //// TODO you have this code in `play.cs` and it's set with a build action of "none" which doesn't quite work how you want it to
             var code =
 """
 using System;
