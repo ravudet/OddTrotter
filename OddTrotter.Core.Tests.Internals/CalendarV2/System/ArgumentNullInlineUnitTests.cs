@@ -1,5 +1,6 @@
 ﻿namespace System
 {
+    using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -76,5 +77,31 @@
 
             Assert.AreEqual(@struct, returned);
         }
+
+        [TestMethod]
+        public void Play()
+        {
+            var code =
+"""
+public static class Foo
+{
+private readonly struct MockStruct
+{
+}
+
+public static void Test()
+{
+    var @struct = new MockStruct();
+
+    ArgumentNullInline.ThrowIfNull(@struct);
+}
+}
+""";
+            var script = CSharpScript.Create(
+                code,
+                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.WithReferences(new[] { typeof(ArgumentNullInline).Assembly }).AddImports(new[] { "System" }));
+
+            var compilerOutput = script.Compile();
+        }       
     }
 }
