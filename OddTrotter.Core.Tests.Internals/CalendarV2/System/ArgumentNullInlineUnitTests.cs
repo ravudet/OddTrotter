@@ -2,7 +2,7 @@
 {
     extern alias OddTrotterCore;
 
-    using ArgumentNullInline2 = OddTrotterCore::System.ArgumentNullInline;
+    using ArgumentNullInline2 = OddTrotterCore::System.ArgumentNullInline; //// TODO can you re-use the correct name here?
 
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -97,14 +97,14 @@ public static void Test()
 {
     var @struct = new MockStruct();
 
-    ArgumentNullInline2.ThrowIfNull(@struct);
+    ArgumentNullInline.ThrowIfNull(@struct);
 }
 }
 """;
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
-                .WithReferences(new[] { typeof(_.Foo.ArgumentNullInline2).Assembly }) //// the alias above makes argumentnullinline2 come from oddtrottercore; maybe that's your issue?
+                .WithReferences(new[] { typeof(_.Foo.ArgumentNullInline).Assembly }) //// the alias above makes argumentnullinline2 come from oddtrottercore; maybe that's your issue?
                 .AddImports(new[] { "System", "_.Foo" }));
 
             var compilerOutput = script.Compile();

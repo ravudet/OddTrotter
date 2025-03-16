@@ -51,13 +51,7 @@ namespace
 #else
     internal
 #endif
-        static class
-
-#if OddTrotterCoreTestsInternal
-        ArgumentNullInline2 //// TODO hopefully you can re-use the right type name
-#else
-        ArgumentNullInline
-#endif
+        static class ArgumentNullInline
     {
         /// <summary>
         /// placeholder
