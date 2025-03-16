@@ -1,6 +1,15 @@
 ﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace System
+namespace
+#if OddTrotterCoreTestsInternal
+    _.Foo //// TODO do  you need this extra namespace?
+#else
+    System
+#endif
 {
+#if OddTrotterCoreTestsInternal
+    using System; //// TODO you shouldn't need this if you are in the system namespace
+#endif
+
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
@@ -42,7 +51,13 @@ namespace System
 #else
     internal
 #endif
-        static class ArgumentNullInline
+        static class
+
+#if OddTrotterCoreTestsInternal
+        ArgumentNullInline2 //// TODO hopefully you can re-use the right type name
+#else
+        ArgumentNullInline
+#endif
     {
         /// <summary>
         /// placeholder

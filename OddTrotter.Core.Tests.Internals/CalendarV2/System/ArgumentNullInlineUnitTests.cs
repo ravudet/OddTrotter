@@ -87,8 +87,6 @@
         {
             var code =
 """
-[assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("OddTrotter.Core")]
-
 public static class Foo
 {
 private readonly struct MockStruct
@@ -105,7 +103,9 @@ public static void Test()
 """;
             var script = CSharpScript.Create(
                 code,
-                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.WithReferences(new[] { typeof(ArgumentNullInline2).Assembly }).AddImports(new[] { "System" }));
+                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
+                .WithReferences(new[] { typeof(_.Foo.ArgumentNullInline2).Assembly }) //// the alias above makes argumentnullinline2 come from oddtrottercore; maybe that's your issue?
+                .AddImports(new[] { "System", "_.Foo" }));
 
             var compilerOutput = script.Compile();
         }
