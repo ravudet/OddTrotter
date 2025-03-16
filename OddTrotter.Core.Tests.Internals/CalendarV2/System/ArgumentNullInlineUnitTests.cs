@@ -104,8 +104,8 @@ public static void Test()
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
-                .WithReferences(new[] { typeof(_.Foo.ArgumentNullInline).Assembly }) //// the alias above makes argumentnullinline2 come from oddtrottercore; maybe that's your issue?
-                .AddImports(new[] { "System", "_.Foo" }));
+                .WithReferences(new[] { typeof(ArgumentNullInline).Assembly })
+                .AddImports(new[] { "System" }));
 
             var compilerOutput = script.Compile();
 

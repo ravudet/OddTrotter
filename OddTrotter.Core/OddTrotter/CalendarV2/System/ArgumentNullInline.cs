@@ -1,15 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace
-#if OddTrotterCoreTestsInternal
-    _.Foo //// TODO do  you need this extra namespace?
-#else
-    System
-#endif
+namespace System
 {
-#if OddTrotterCoreTestsInternal
-    using System; //// TODO you shouldn't need this if you are in the system namespace
-#endif
-
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
