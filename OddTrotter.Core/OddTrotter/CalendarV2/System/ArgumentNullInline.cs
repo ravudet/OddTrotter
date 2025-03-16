@@ -1,9 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace System
 {
-    using global::System;
-    using global::System.Diagnostics.CodeAnalysis;
-    using global::System.Runtime.CompilerServices;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// 
