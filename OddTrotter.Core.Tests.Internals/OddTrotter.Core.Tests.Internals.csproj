@@ -1,5 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project>
+  
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -10,20 +12,16 @@
     <IsTestProject>true</IsTestProject>
 
     <DefineConstants>$(DefineConstants);OddTrotterCoreTestsInternal</DefineConstants>
-    <TestImplementationMode>false</TestImplementationMode>
+    <!--<TestImplementationMode>$(BuildingInsideVisualStudio)</TestImplementationMode>-->
   </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TestImplementationMode)' == 'false' ">
-    <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\OddTrotter.Core\OddTrotter\CalendarV2\System\ArgumentNullInline.cs" Link="CalendarV2\System\ArgumentNullInline.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <None Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0" />
@@ -38,5 +36,12 @@
       <Aliases>OddTrotterCore</Aliases>
     </ProjectReference>
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Target Name="BeforeBuild">
+    <ItemGroup>
+      <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
+    </ItemGroup>
+  </Target>
 
 </Project>
