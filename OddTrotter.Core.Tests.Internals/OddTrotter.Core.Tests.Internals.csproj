@@ -13,12 +13,16 @@
     <TestImplementationMode>false</TestImplementationMode>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TestImplementationMode)' == 'false' ">
-    <None Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
+  <ItemGroup>
+    <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\OddTrotter.Core\OddTrotter\CalendarV2\System\ArgumentNullInline.cs" Link="CalendarV2\System\ArgumentNullInline.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
   </ItemGroup>
 
   <ItemGroup>
