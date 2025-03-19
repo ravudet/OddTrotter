@@ -90,6 +90,8 @@
             //// TODO clean up csproj file and oddtrotter.core csproj if needed
             var code = this.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
 
+            code = V2.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
+
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
@@ -105,11 +107,13 @@
         {
             var assembly = this.GetType().Assembly;
 
-            return GetResourceString(assembly, path);
+            return V2.GetResourceString(path, assembly);
         }
 
         private static string GetResourceString(Assembly assembly, string path)
         {
+            assembly = Assembly.GetCallingAssembly();
+
             //// TODO better parameter names in all of the methods
             using (var resourceStream = GetResourceStream(assembly, path))
             {
@@ -138,6 +142,58 @@
             }
 
             return resourceStream;
+        }
+
+        private static class V2
+        {
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="path"></param>
+            /// <param name="assembly">assembly containing the resource, or `null` if the caller's assembly contains the resource TODO rewrite this</param>
+            /// <returns></returns>
+            public static string GetResourceString(string path, Assembly? assembly = null)
+            {
+                if (assembly == null)
+                {
+                    assembly = Assembly.GetCallingAssembly();
+                }
+
+                //// TODO better parameter names in all of the methods
+                using (var resourceStream = GetResourceStream(path, assembly))
+                {
+                    using (var textReader = new StreamReader(resourceStream))
+                    {
+                        return textReader.ReadToEnd();
+                    }
+                }
+            }
+
+            public static Stream GetResourceStream(string path, Assembly? assembly = null)
+            {
+                if (assembly == null)
+                {
+                    assembly = Assembly.GetCallingAssembly();
+                }
+
+                Stream? resourceStream = null;
+                try
+                {
+                    resourceStream = assembly.GetManifestResourceStream(path);
+                    if (resourceStream == null)
+                    {
+                        throw new InvalidOperationException("tODO");
+                    }
+                }
+                catch
+                {
+                    resourceStream?.Dispose();
+                    throw;
+                }
+
+                return resourceStream;
+            }
         }
     }
 }
