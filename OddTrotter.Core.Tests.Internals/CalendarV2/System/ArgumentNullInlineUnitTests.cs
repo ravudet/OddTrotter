@@ -86,40 +86,9 @@
         [TestMethod]
         public void Play()
         {
-            var code = "";
+            //// TODO clean up csproj file and oddtrotter.core csproj if needed
+            var code = GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
 
-            var assembly = this.GetType().Assembly;
-            var names = assembly.GetManifestResourceNames();
-            using (var resourceStream = assembly.GetManifestResourceStream("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs"))
-            {
-                //// TODO this is all terrible, but particularly this line
-                Assert.IsNotNull(resourceStream);
-
-                using (var textReader = new StreamReader(resourceStream))
-                {
-                    code = textReader.ReadToEnd();
-                }
-            }
-
-            //// TODO are embedded resources working?
-            /*var code =
-"""
-using System;
-
-public static class Foo
-{
-private readonly struct MockStruct
-{
-}
-
-public static void Test()
-{
-    var @struct = new MockStruct();
-
-    ArgumentNullInline.ThrowIfNull(@struct);
-}
-}
-""";*/
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
@@ -129,6 +98,38 @@ public static void Test()
 
             Assert.AreEqual(1, compilerOutput.Length);
             Assert.AreEqual("CS0452", compilerOutput[0].Id);
+        }
+
+        private string GetResourceString(string path)
+        {
+            using (var resourceStream = GetResourceStream(path))
+            {
+                using (var textReader = new StreamReader(resourceStream))
+                {
+                    return textReader.ReadToEnd();
+                }
+            }
+        }
+
+        private Stream GetResourceStream(string path)
+        {
+            var assembly = this.GetType().Assembly;
+            Stream? resourceStream = null;
+            try
+            {
+                resourceStream = assembly.GetManifestResourceStream(path);
+                if (resourceStream == null)
+                {
+                    throw new InvalidOperationException("tODO");
+                }
+            }
+            catch
+            {
+                resourceStream?.Dispose();
+                throw;
+            }
+
+            return resourceStream;
         }
     }
 }
