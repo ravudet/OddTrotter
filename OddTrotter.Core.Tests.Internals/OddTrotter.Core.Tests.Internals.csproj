@@ -13,7 +13,7 @@
     <TestImplementationMode>false</TestImplementationMode>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TestImplementationMode)' == 'false' ">
     <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
   </ItemGroup>
 
