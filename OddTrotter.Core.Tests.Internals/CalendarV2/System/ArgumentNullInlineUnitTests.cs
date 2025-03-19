@@ -7,6 +7,7 @@
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System.IO;
+    using System.Reflection;
 
     [TestClass]
     public sealed class ExternalArgumentNullInlineUnitTests
@@ -87,7 +88,7 @@
         public void Play()
         {
             //// TODO clean up csproj file and oddtrotter.core csproj if needed
-            var code = GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
+            var code = this.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
 
             var script = CSharpScript.Create(
                 code,
@@ -102,7 +103,15 @@
 
         private string GetResourceString(string path)
         {
-            using (var resourceStream = GetResourceStream(path))
+            var assembly = this.GetType().Assembly;
+
+            return GetResourceString(assembly, path);
+        }
+
+        private static string GetResourceString(Assembly assembly, string path)
+        {
+            //// TODO better parameter names in all of the methods
+            using (var resourceStream = GetResourceStream(assembly, path))
             {
                 using (var textReader = new StreamReader(resourceStream))
                 {
@@ -111,9 +120,8 @@
             }
         }
 
-        private Stream GetResourceStream(string path)
+        private static Stream GetResourceStream(Assembly assembly, string path)
         {
-            var assembly = this.GetType().Assembly;
             Stream? resourceStream = null;
             try
             {
