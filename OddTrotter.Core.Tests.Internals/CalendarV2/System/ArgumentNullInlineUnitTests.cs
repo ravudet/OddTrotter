@@ -6,6 +6,7 @@
 
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using System.IO;
 
     [TestClass]
     public sealed class ExternalArgumentNullInlineUnitTests
@@ -85,8 +86,23 @@
         [TestMethod]
         public void Play()
         {
-            //// TODO you have this code in `play.cs` and it's set with a build action of "none" which doesn't quite work how you want it to
-            var code =
+            var code = "";
+
+            var assembly = this.GetType().Assembly;
+            var names = assembly.GetManifestResourceNames();
+            using (var resourceStream = assembly.GetManifestResourceStream("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs"))
+            {
+                //// TODO this is all terrible, but particularly this line
+                Assert.IsNotNull(resourceStream);
+
+                using (var textReader = new StreamReader(resourceStream))
+                {
+                    code = textReader.ReadToEnd();
+                }
+            }
+
+            //// TODO are embedded resources working?
+            /*var code =
 """
 using System;
 
@@ -103,7 +119,7 @@ public static void Test()
     ArgumentNullInline.ThrowIfNull(@struct);
 }
 }
-""";
+""";*/
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
