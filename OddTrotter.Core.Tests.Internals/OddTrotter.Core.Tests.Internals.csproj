@@ -1,6 +1,4 @@
-﻿<Project>
-  
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -37,8 +35,7 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Target Name="BeforeBuild">
+  <Target Name="RemoveTestResources" BeforeTargets="BeforeBuild">
     <ItemGroup>
       <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
       <EmbeddedResource Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
