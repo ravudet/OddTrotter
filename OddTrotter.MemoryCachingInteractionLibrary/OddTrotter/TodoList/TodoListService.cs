@@ -409,6 +409,7 @@
             //// TODO write tests that assert the deferred execution of query results
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO you have internalsvisibleto in oddtrotter.core so that you can test argumentnullinline, but you needed to add a link in the test project so that you could conditionally make it public so that the csharpscript class could let you test it; this means that you don't actually need the internalsvisibleto; do you want to remove it? and if you do remove it, then do you need the entire oddtrotter.core.testss.internals project?
             //// TODO have a thing to set vacation day messages
             //// TODO do you like the names you've given the generic type parameters for all of the querycontext stuff (and it's dependencies)
             //// TODO should the usage of `fx.querycontext.iempty` be replaced with `nothing`?
