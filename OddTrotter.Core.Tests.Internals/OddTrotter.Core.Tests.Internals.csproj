@@ -41,6 +41,7 @@
   <Target Name="BeforeBuild">
     <ItemGroup>
       <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
+      <EmbeddedResource Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
     </ItemGroup>
   </Target>
 
