@@ -404,6 +404,7 @@
   </ItemGroup>*/
 
             //// TODO code review argumentinline unit tests
+            //// TODO did you get `either` visitor correct with `internal protected`?
             //// TODO then do querycontext (and move everything to use it); the query context stuff will need some diligence and effort around adding the third type parameter that allows mixins to work correctly; do query contexts next probably and just know that you're going to need to put the effort in
             //// TODO add obsolete attribute to the implicit operator on either so you get a build warning if you actually use it; is there a way to make *this specific one* a warning instead of an error?
             //// TODO write tests that assert the deferred execution of query results
