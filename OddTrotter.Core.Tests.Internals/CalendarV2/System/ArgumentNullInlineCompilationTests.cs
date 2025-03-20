@@ -1,8 +1,11 @@
 ﻿namespace System
 {
+    using System.Collections.Immutable;
     using System.IO;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+
+    using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,24 +18,31 @@
             //// TODO clean up csproj file and oddtrotter.core csproj if needed
             //// TODO clean up the embedded resource code
             //// TODO getcallingassembly doesn't work for "production" code, is there a different way to get at this data?
-            
-            var code = this.GetResourceString();
+
+            var compilerOutput = this.Compile();
+
+            Assert.AreEqual(1, compilerOutput.Length);
+            Assert.AreEqual("CS0452", compilerOutput[0].Id);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="callingMethod"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="callingMethod"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
+        private ImmutableArray<Diagnostic> Compile([CallerMemberName] string? callingMethod = null)
+        {
+            ArgumentNullException.ThrowIfNull(callingMethod);
+
+            var code = this.GetResourceString(callingMethod);
 
             var script = CSharpScript.Create(
                 code,
                 Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
                 .WithReferences(new[] { typeof(ArgumentNullInline).Assembly }));
 
-            var compilerOutput = script.Compile();
-
-            Assert.AreEqual(1, compilerOutput.Length);
-            Assert.AreEqual("CS0452", compilerOutput[0].Id);
-        }
-
-        [TestMethod]
-        public void  Test()
-        {
-            GetResourceString(null);
+             return script.Compile();
         }
 
         /// <summary>
