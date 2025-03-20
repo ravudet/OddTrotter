@@ -37,8 +37,8 @@
 
   <Target Name="RemoveTestResources" BeforeTargets="BeforeBuild">
     <ItemGroup>
-      <Compile Remove="CalendarV2\System\ArgumentNullInlineCompilationTestResources\**" />
-      <EmbeddedResource Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\**" />
+      <Compile Remove="System\ArgumentNullInlineCompilationTestsResources\**" />
+      <EmbeddedResource Include="System\ArgumentNullInlineCompilationTestsResources\**" />
     </ItemGroup>
   </Target>
 
