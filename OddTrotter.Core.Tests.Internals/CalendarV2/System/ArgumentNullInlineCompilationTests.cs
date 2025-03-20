@@ -15,10 +15,6 @@
         [TestMethod]
         public void ThrowIfNullStruct()
         {
-            //// TODO clean up csproj file and oddtrotter.core csproj if needed
-            //// TODO clean up the embedded resource code
-            //// TODO getcallingassembly doesn't work for "production" code, is there a different way to get at this data?
-
             var compilerOutput = this.Compile();
 
             Assert.AreEqual(1, compilerOutput.Length);
@@ -67,15 +63,10 @@
         /// 
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="assembly">assembly containing the resource, or `null` if the caller's assembly contains the resource TODO rewrite this</param>
+        /// <param name="assembly"></param>
         /// <returns></returns>
-        public static string GetResourceString(string path, Assembly? assembly = null)
+        public static string GetResourceString(string path, Assembly assembly)
         {
-            if (assembly == null)
-            {
-                assembly = Assembly.GetCallingAssembly();
-            }
-
             //// TODO better parameter names in all of the methods
             using (var resourceStream = GetResourceStream(path, assembly))
             {
@@ -86,13 +77,8 @@
             }
         }
 
-        public static Stream GetResourceStream(string path, Assembly? assembly = null)
+        public static Stream GetResourceStream(string path, Assembly assembly)
         {
-            if (assembly == null)
-            {
-                assembly = Assembly.GetCallingAssembly();
-            }
-
             Stream? resourceStream = null;
             try
             {

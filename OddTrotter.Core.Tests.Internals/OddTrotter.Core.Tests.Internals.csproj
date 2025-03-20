@@ -10,16 +10,11 @@
     <IsTestProject>true</IsTestProject>
 
     <DefineConstants>$(DefineConstants);OddTrotterCoreTestsInternal</DefineConstants>
-    <!--<TestImplementationMode>$(BuildingInsideVisualStudio)</TestImplementationMode>-->
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\OddTrotter.Core\OddTrotter\CalendarV2\System\ArgumentNullInline.cs" Link="CalendarV2\System\ArgumentNullInline.cs" />
   </ItemGroup>
-
-  <!--<ItemGroup>
-    <None Include="CalendarV2\System\ArgumentNullInlineCompilationTestResources\Play.cs" />
-  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0" />
