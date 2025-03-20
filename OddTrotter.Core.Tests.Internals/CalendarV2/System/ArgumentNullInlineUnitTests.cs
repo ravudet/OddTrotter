@@ -1,13 +1,11 @@
-﻿namespace System
+﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace System
 {
     extern alias OddTrotterCore;
 
-    using ExternalArgumentNullInline = OddTrotterCore::System.ArgumentNullInline;
-
-    using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System.IO;
-    using System.Reflection;
+
+    using ExternalArgumentNullInline = OddTrotterCore::System.ArgumentNullInline;
 
     [TestClass]
     public sealed class ArgumentNullInlineUnitTests
@@ -68,7 +66,7 @@
         {
             public MockStruct(int value)
             {
-                Value = value;
+                this.Value = value;
             }
 
             public int Value { get; }

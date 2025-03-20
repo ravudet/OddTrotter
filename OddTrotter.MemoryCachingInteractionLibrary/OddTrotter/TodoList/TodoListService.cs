@@ -371,7 +371,7 @@
             // separate files
             // comment line at the top of the file
             // namespace
-            // `using` statements
+            // `using` statements (aliases should follow imports, this was chosen in the moment arbitrarily)
             // readonly structs
             // `sealed` (classes and overriden methods)
             // readonly fields
