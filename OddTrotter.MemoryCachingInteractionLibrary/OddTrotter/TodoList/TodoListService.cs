@@ -395,13 +395,6 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool.queueuserworkitem?view=net-9.0#system-threading-threadpool-queueuserworkitem-1(system-action((-0))-0-system-boolean) argumentnullexception throw if callback is null
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
-            //// TODO unit test argumentinline; have a separate test project for internals? 
-  
-  /*<ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>OddTrotter.Core.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>*/
 
             //// TODO code review argumentinline unit tests
             //// TODO did you get `either` visitor correct with `internal protected`?
