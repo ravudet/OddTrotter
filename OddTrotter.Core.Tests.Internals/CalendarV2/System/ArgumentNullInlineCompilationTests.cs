@@ -82,6 +82,14 @@ namespace System
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
         private static Stream GetResourceStream(Assembly assembly, string path)
         {
             ArgumentNullException.ThrowIfNull(assembly);
@@ -90,6 +98,9 @@ namespace System
             Stream? resourceStream = null;
             try
             {
+                //// fileloadexception: TODO
+                //// filenotfoundexception: EcmaAssembly.Getmanifestresourcestream -> RoAssembly.getfile -> new filestream
+                //// badimageformatexception: EcmaAssembly.Getmanifestresourcestream -> EcmaModule.GetInternalManifestResourceInfo
                 resourceStream = assembly.GetManifestResourceStream(path);
                 if (resourceStream == null)
                 {
