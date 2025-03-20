@@ -1,12 +1,12 @@
 ﻿using System;
 
-public static class Foo
+public static class ThrowIfNullStruct
 {
     private readonly struct MockStruct
     {
     }
 
-    public static void Test()
+    public static void Method()
     {
         var @struct = new MockStruct();
 

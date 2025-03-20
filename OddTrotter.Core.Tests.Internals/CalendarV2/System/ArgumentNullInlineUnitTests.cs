@@ -85,14 +85,14 @@
         }
 
         [TestMethod]
-        public void Play()
+        public void ThrowIfNullStruct()
         {
             //// TODO clean up csproj file and oddtrotter.core csproj if needed
             //// TODO clean up the embedded resource code
             //// TODO getcallingassembly doesn't work for "production" code, is there a different way to get at this data?
-            var code = this.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
+            var code = this.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.ThrowIfNullStruct.cs");
 
-            code = V2.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.Play.cs");
+            code = V2.GetResourceString("CalendarV2.System.ArgumentNullInlineCompilationTestResources.ThrowIfNullStruct.cs");
 
             var script = CSharpScript.Create(
                 code,
