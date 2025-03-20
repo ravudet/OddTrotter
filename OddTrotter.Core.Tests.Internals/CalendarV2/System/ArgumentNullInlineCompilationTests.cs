@@ -145,16 +145,35 @@ namespace System
 
         public sealed class RuntimeAssembly : Assembly
         {
-            private 
+            private readonly Assembly assembly;
+
+            private RuntimeAssembly(Assembly assembly)
+            {
+                this.assembly = assembly;
+            }
+
+            public static RuntimeAssembly Create1<T>(T instance) where T : class
+            {
+                return new RuntimeAssembly(instance.GetType().Assembly);
+            }
+
+            public static RuntimeAssembly Create2<T>(T instance) where T : struct
+            {
+                return new RuntimeAssembly(instance.GetType().Assembly);
+            }
         }
 
         public sealed class RuntimeType<T> : Type
         {
+            private readonly T instance;
             private readonly Type type;
 
             private RuntimeType(T instance)
             {
                 this.type = instance!.GetType(); //// TODO why is forgiving needed here?
+                this.instance = instance;
+
+                this.RuntimeAssemblyProp = RuntimeAssembly.Create2
             }
 
             public static RuntimeType<T2> Create1<T2>(T2 instance) where T2 : class
@@ -169,7 +188,7 @@ namespace System
 
             public override Assembly Assembly => throw new NotImplementedException();
 
-            public Assembly RuntimeAssembly => throw new NotImplementedException(); //// TODO anyway to call this "assembly"?
+            public Assembly RuntimeAssemblyProp { get; } //// TODO can you get a better name?
 
             public override string? AssemblyQualifiedName => throw new NotImplementedException();
 
