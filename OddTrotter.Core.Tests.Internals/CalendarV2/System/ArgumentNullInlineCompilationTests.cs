@@ -29,8 +29,22 @@
             Assert.AreEqual("CS0452", compilerOutput[0].Id);
         }
 
+        [TestMethod]
+        public void  Test()
+        {
+            GetResourceString(null);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="callingMethod"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="callingMethod"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
         private string GetResourceString([CallerMemberName] string? callingMethod = null)
         {
+            ArgumentNullException.ThrowIfNull(callingMethod);
+
             var type = this.GetType();
             var assembly = type.Assembly;
 
