@@ -8,6 +8,7 @@ namespace System
 
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Scripting;
+    using Microsoft.CodeAnalysis.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -36,7 +37,7 @@ namespace System
 
             var script = CSharpScript.Create(
                 code,
-                Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default
+                ScriptOptions.Default
                 .WithReferences(new[] { typeof(ArgumentNullInline).Assembly }));
 
              return script.Compile();
@@ -57,7 +58,7 @@ namespace System
 
             var path = $"{type.Namespace}.{type.Name}Resources.{callingMethod}.cs";
 
-            return GetResourceString(path, assembly);
+            return GetResourceString(assembly, path);
         }
 
         /// <summary>
@@ -66,10 +67,13 @@ namespace System
         /// <param name="path"></param>
         /// <param name="assembly"></param>
         /// <returns></returns>
-        public static string GetResourceString(string path, Assembly assembly)
+        private static string GetResourceString(Assembly assembly, string path)
         {
+            ArgumentNullException.ThrowIfNull(assembly);
+            ArgumentException.ThrowIfNullOrEmpty(path);
+
             //// TODO better parameter names in all of the methods
-            using (var resourceStream = GetResourceStream(path, assembly))
+            using (var resourceStream = GetResourceStream(assembly, path))
             {
                 using (var textReader = new StreamReader(resourceStream))
                 {
@@ -78,8 +82,11 @@ namespace System
             }
         }
 
-        public static Stream GetResourceStream(string path, Assembly assembly)
+        private static Stream GetResourceStream(Assembly assembly, string path)
         {
+            ArgumentNullException.ThrowIfNull(assembly);
+            ArgumentException.ThrowIfNullOrEmpty(path);
+
             Stream? resourceStream = null;
             try
             {
