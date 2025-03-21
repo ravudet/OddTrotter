@@ -20,7 +20,7 @@ namespace System
         [TestMethod]
         public void ThrowIfNullStruct()
         {
-            var compilerOutput = this.Compile();
+            var compilerOutput = this.CompileTestResource();
 
             Assert.AreEqual(1, compilerOutput.Length);
             Assert.AreEqual("CS0452", compilerOutput[0].Id);
@@ -35,7 +35,7 @@ namespace System
         /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="testName"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
         /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="testName"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs while reading the resource for the test with name <paramref name="testName"/>.</exception>
-        private ImmutableArray<Diagnostic> Compile([CallerMemberName] string? testName = null)
+        private ImmutableArray<Diagnostic> CompileTestResource([CallerMemberName] string? testName = null)
         {
             ArgumentNullException.ThrowIfNull(testName);
 
@@ -73,32 +73,31 @@ namespace System
         /// <summary>
         /// placeholder
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="assembly"></param>
+        /// <param name="resourcePath"></param>
+        /// <param name="resourceAssembly"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
-        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
-        /// <exception cref="FileNotFoundException">Thrown if <paramref name="path"/> was not found. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
-        /// <exception cref="BadImageFormatException">Thrown if <paramref name="path"/> is not a valid assembly. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceAssembly"/> or <paramref name="resourcePath"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="resourcePath"/> is <see cref="string.Empty"/></exception>
+        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="FileNotFoundException">Thrown if <paramref name="resourcePath"/> was not found. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="BadImageFormatException">Thrown if <paramref name="resourcePath"/> is not a valid assembly. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
         /// <exception cref="NotImplementedException">Thrown if resource length is greater than <see cref="Int64.MaxValue"/>.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="path"/> embedded in <paramref name="assembly"/></exception>
+        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="resourcePath"/> embedded in <paramref name="resourceAssembly"/></exception>
         /// <exception cref="OutOfMemoryException">Thrown if there is insufficient memory to allocate a buffer for the returned <see cref="string"/>.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <remarks>
         /// you should figure out when ioexceptions occur and repro that for better documentation
         /// </remarks>
-        private static string GetResourceString(Assembly assembly, string path)
+        private static string GetResourceString(Assembly resourceAssembly, string resourcePath)
         {
-            ArgumentNullException.ThrowIfNull(assembly);
-            ArgumentException.ThrowIfNullOrEmpty(path);
+            ArgumentNullException.ThrowIfNull(resourceAssembly);
+            ArgumentException.ThrowIfNullOrEmpty(resourcePath);
 
-            //// TODO better parameter names in all of the methods
-            using (var resourceStream = GetResourceStream(assembly, path))
+            using (var resourceStream = GetResourceStream(resourceAssembly, resourcePath))
             {
-                using (var textReader = new StreamReader(resourceStream))
+                using (var streamReader = new StreamReader(resourceStream))
                 {
-                    return textReader.ReadToEnd();
+                    return streamReader.ReadToEnd();
                 }
             }
         }
@@ -106,16 +105,16 @@ namespace System
         /// <summary>
         /// placeholder
         /// </summary>
-        /// <param name="assembly"></param>
-        /// <param name="path"></param>
+        /// <param name="resourceAssembly"></param>
+        /// <param name="resourcePath"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
-        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
-        /// <exception cref="FileNotFoundException">Thrown if <paramref name="path"/> was not found. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
-        /// <exception cref="BadImageFormatException">Thrown if <paramref name="path"/> is not a valid assembly. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceAssembly"/> or <paramref name="resourcePath"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="resourcePath"/> is <see cref="string.Empty"/></exception>
+        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="FileNotFoundException">Thrown if <paramref name="resourcePath"/> was not found. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="BadImageFormatException">Thrown if <paramref name="resourcePath"/> is not a valid assembly. This won't be thrown for <paramref name="resourceAssembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
         /// <exception cref="NotImplementedException">Thrown if resource length is greater than <see cref="Int64.MaxValue"/>.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="path"/> embedded in <paramref name="assembly"/></exception>
+        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="resourcePath"/> embedded in <paramref name="resourceAssembly"/></exception>
         /// <remarks>
         /// `assembly.getmanifestresourcestream` throws some exceptions that only happen during dynamic assembly load situations (and not from stuff like `object.gettype` or `typeof`):
         /// 
@@ -127,16 +126,16 @@ namespace System
         /// 
         /// also consider fixing the msdn docs for these exceptions; things like `filenotfoundexception` and `badimageformatexception` are certainly not correct, and probably `fileloadexception` could be significantly more clear
         /// </remarks>
-        private static Stream GetResourceStream(Assembly assembly, string path)
+        private static Stream GetResourceStream(Assembly resourceAssembly, string resourcePath)
         {
-            ArgumentNullException.ThrowIfNull(assembly);
-            ArgumentException.ThrowIfNullOrEmpty(path);
+            ArgumentNullException.ThrowIfNull(resourceAssembly);
+            ArgumentException.ThrowIfNullOrEmpty(resourcePath);
 
             Stream? resourceStream = null;
             try
             {
                 
-                resourceStream = assembly.GetManifestResourceStream(path);
+                resourceStream = resourceAssembly.GetManifestResourceStream(resourcePath);
                 if (resourceStream == null)
                 {
                     throw new InvalidOperationException("tODO");
