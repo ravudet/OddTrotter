@@ -35,7 +35,6 @@ namespace System
         /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="testName"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
         /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="testName"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs while reading the resource for the test with name <paramref name="testName"/>.</exception>
-        /// 
         private ImmutableArray<Diagnostic> Compile([CallerMemberName] string? testName = null)
         {
             ArgumentNullException.ThrowIfNull(testName);

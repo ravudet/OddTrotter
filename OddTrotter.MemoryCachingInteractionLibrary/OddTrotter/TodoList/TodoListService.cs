@@ -424,6 +424,7 @@
             //// TODO FUTURE you should be able to cast QueryResult<Either<CalendarEvent, GraphCalendarEvent>, IOException> to QueryResult<Either<CalendarEvent, GraphCalendarEvent>, Exception>
             //// TODO FUTURE mixins for all of the either extensions; this will let you avoid the unnecessary closures that happen in many of the convenience overloads; it's unclear which is more "expensive" for performance, but it's probably still for the best
             //// TODO FUTURE address remarks in `assembly.getresourcestream` wrappers
+            //// TODO FUTURE do you want to document the exceptions that test methods can throw?
 
             var odataClient = new GraphClientToOdataClient(this.graphClient);
             var odataCalendarEventsContext = new OdataCalendarEventsContext(
