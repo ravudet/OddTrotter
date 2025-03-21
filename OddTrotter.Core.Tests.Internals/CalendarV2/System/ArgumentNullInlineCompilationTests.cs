@@ -70,6 +70,18 @@ namespace System
         /// <param name="path"></param>
         /// <param name="assembly"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
+        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="FileNotFoundException">Thrown if <paramref name="path"/> was not found. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="BadImageFormatException">Thrown if <paramref name="path"/> is not a valid assembly. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="NotImplementedException">Thrown if resource length is greater than <see cref="Int64.MaxValue"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="path"/> embedded in <paramref name="assembly"/></exception>
+        /// <exception cref="OutOfMemoryException">Thrown if there is insufficient memory to allocate a buffer for the returned <see cref="string"/>.</exception>
+        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
+        /// <remarks>
+        /// you should figure out when ioexceptions occur and repro that for better documentation
+        /// </remarks>
         private static string GetResourceString(Assembly assembly, string path)
         {
             ArgumentNullException.ThrowIfNull(assembly);
@@ -86,13 +98,18 @@ namespace System
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <param name="assembly"></param>
         /// <param name="path"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
+        /// <exception cref="FileLoadException">Thrown if a file that was found could not be loaded. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="FileNotFoundException">Thrown if <paramref name="path"/> was not found. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="BadImageFormatException">Thrown if <paramref name="path"/> is not a valid assembly. This won't be thrown for <paramref name="assembly"/>s that are obtained by calling <see cref="object.GetType"/> or <see langword="typeof"/></exception>
+        /// <exception cref="NotImplementedException">Thrown if resource length is greater than <see cref="Int64.MaxValue"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if no resource could be found at <paramref name="path"/> embedded in <paramref name="assembly"/></exception>
         /// <remarks>
         /// `assembly.getmanifestresourcestream` throws some exceptions that only happen during dynamic assembly load situations (and not from stuff like `object.gettype` or `typeof`):
         /// 
@@ -101,6 +118,8 @@ namespace System
         /// badimageformatexception: EcmaAssembly.Getmanifestresourcestream -> EcmaModule.GetInternalManifestResourceInfo
         /// 
         /// you should figure out how to repro these cases; you should also create a "runtimetype" that derives `type` and a `runtimeassembly` that derives `assembly` and have `runtimetype.assembly` return `runtimeassembly`; then, you can have an extension method that looks like `gettype` but returns a `runtimetype` and methods like *this* one could take in a `runtimeassembly` instead of `assembly` and know that they won't get the above 3 exceptions
+        /// 
+        /// also consider fixing the msdn docs for these exceptions; things like `filenotfoundexception` and `badimageformatexception` are certainly not correct, and probably `fileloadexception` could be significantly more clear
         /// </remarks>
         private static Stream GetResourceStream(Assembly assembly, string path)
         {
