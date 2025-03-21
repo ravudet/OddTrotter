@@ -138,7 +138,7 @@ namespace System
                 resourceStream = resourceAssembly.GetManifestResourceStream(resourcePath);
                 if (resourceStream == null)
                 {
-                    throw new InvalidOperationException("tODO");
+                    throw new InvalidOperationException($"No embeded resource was found in assembly '{resourceAssembly.FullName}' at the resource path '{resourcePath}'.");
                 }
             }
             catch
