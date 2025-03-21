@@ -82,30 +82,6 @@ namespace Fx.QueryContext
         {
             var queryResult = ToQueryResult<string, Exception>(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
 
-            /*var queryResultNode = Either
-                .Left(
-                    new MockElement(
-                        "asdf",
-                        Either
-                            .Left(
-                                new MockElement(
-                                    "qwer",
-                                    Either
-                                        .Left(
-                                            new MockElement(
-                                                "zxcv",
-                                                Either
-                                                    .Left(
-                                                        new MockElement("1234"))
-                                                    .Right<IEither<MockError, MockEmpty>>()
-                                                    .ToQueryResultNode()))
-                                        .Right<IEither<MockError, MockEmpty>>()
-                                        .ToQueryResultNode()))
-                            .Right<IEither<MockError, MockEmpty>>()
-                            .ToQueryResultNode()))
-                .Right<IEither<MockError, MockEmpty>>()
-                .ToQueryResultNode();
-            var queryResult = new MockQueryResult(queryResultNode);*/
             var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
 
             Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
