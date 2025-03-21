@@ -13,6 +13,7 @@ namespace Fx.QueryContext
     {
         private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(IReadOnlyList<TValue> list)
         {
+            //// TODO make this "production"?
             return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0));
         }
 
