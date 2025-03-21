@@ -47,11 +47,14 @@ namespace System
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <param name="callingMethod"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="callingMethod"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
+        /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="callingMethod"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
+        /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="callingMethod"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
+        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         private string GetResourceString([CallerMemberName] string? callingMethod = null)
         {
             ArgumentNullException.ThrowIfNull(callingMethod);
