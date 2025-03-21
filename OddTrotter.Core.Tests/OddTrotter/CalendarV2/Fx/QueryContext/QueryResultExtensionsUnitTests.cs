@@ -13,7 +13,6 @@ namespace Fx.QueryContext
     {
         private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(IReadOnlyList<TValue> list)
         {
-            //// TODO use generics
             return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0));
         }
 
