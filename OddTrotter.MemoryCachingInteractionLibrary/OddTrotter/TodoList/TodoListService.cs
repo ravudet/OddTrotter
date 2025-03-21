@@ -396,7 +396,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
 
-            //// TODO write tests that assert the deferred execution of query results
+            //// TODO write tests that assert the deferred execution of query results; you've started this in queryresultextensionsunittests
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO do a pass on the query context stuff to make sure you got type names, generic type parameter names, and method parameter names all reasonable and consistent

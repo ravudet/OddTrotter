@@ -67,7 +67,7 @@ namespace Fx.QueryContext
             Assert.AreEqual(0, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
             Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var firstCharacterElement));
             Assert.AreEqual('a', firstCharacterElement.Value);
-
+            Assert.AreEqual(1, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
         }
 
         private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
