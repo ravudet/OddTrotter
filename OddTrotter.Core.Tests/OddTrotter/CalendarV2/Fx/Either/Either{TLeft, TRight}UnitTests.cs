@@ -217,5 +217,33 @@ namespace Fx.Either
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                 default));
         }
+
+        [TestMethod]
+        public void ImplicitLeft()
+        {
+            Either<string, int> either =
+#pragma warning disable CS0618 // Type or member is obsolete
+                "asdf"
+#pragma warning restore CS0618 // Type or member is obsolete
+                ;
+
+            var result = MockVisitor.Instance.Visit(either, default);
+
+            Assert.AreEqual('a', result);
+        }
+
+        [TestMethod]
+        public void ImplicitRight()
+        {
+            Either<string, int> either =
+#pragma warning disable CS0618 // Type or member is obsolete
+                42
+#pragma warning restore CS0618 // Type or member is obsolete
+                ;
+
+            var result = MockVisitor.Instance.Visit(either, default);
+
+            Assert.AreEqual('4', result);
+        }
     }
 }
