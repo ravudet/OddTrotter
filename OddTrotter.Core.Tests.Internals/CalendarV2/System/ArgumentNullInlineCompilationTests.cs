@@ -93,6 +93,15 @@ namespace System
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="path"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is <see cref="string.Empty"/></exception>
+        /// <remarks>
+        /// `assembly.getmanifestresourcestream` throws some exceptions that only happen during dynamic assembly load situations (and not from stuff like `object.gettype` or `typeof`):
+        /// 
+        /// fileloadexception: EcmaAssembly.GetManifestResourceStream -> EcmaModule.GetInternalManifestResourceInfo -> MetadataLoadContext.resolveassembly -> tryresolveassembly -> resolvetoassemblyorexceptionassembly -> tryfindassemblybycallingresolvehandler
+        /// filenotfoundexception: EcmaAssembly.Getmanifestresourcestream -> RoAssembly.getfile -> new filestream
+        /// badimageformatexception: EcmaAssembly.Getmanifestresourcestream -> EcmaModule.GetInternalManifestResourceInfo
+        /// 
+        /// you should figure out how to repro these cases; you should also create a "runtimetype" that derives `type` and a `runtimeassembly` that derives `assembly` and have `runtimetype.assembly` return `runtimeassembly`; then, you can have an extension method that looks like `gettype` but returns a `runtimetype` and methods like *this* one could take in a `runtimeassembly` instead of `assembly` and know that they won't get the above 3 exceptions
+        /// </remarks>
         private static Stream GetResourceStream(Assembly assembly, string path)
         {
             ArgumentNullException.ThrowIfNull(assembly);
@@ -101,9 +110,7 @@ namespace System
             Stream? resourceStream = null;
             try
             {
-                //// fileloadexception: EcmaAssembly.GetManifestResourceStream -> EcmaModule.GetInternalManifestResourceInfo -> MetadataLoadContext.resolveassembly -> tryresolveassembly -> resolvetoassemblyorexceptionassembly -> tryfindassemblybycallingresolvehandler
-                //// filenotfoundexception: EcmaAssembly.Getmanifestresourcestream -> RoAssembly.getfile -> new filestream
-                //// badimageformatexception: EcmaAssembly.Getmanifestresourcestream -> EcmaModule.GetInternalManifestResourceInfo
+                
                 resourceStream = assembly.GetManifestResourceStream(path);
                 if (resourceStream == null)
                 {
