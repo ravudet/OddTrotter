@@ -4,7 +4,6 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
 
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,10 +11,68 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
     {
+        private static IQueryResult<string, Exception> ToQueryResult(IReadOnlyList<string> list)
+        {
+            //// TODO use generics
+            return new MockQueryResult(ToQueryResultNode(list, 0));
+        }
+
+        private static IQueryResultNode<string, Exception> ToQueryResultNode(IReadOnlyList<string> list, int index)
+        {
+            if (index < list.Count)
+            {
+                return
+                    Either
+                        .Left(
+                            new ToQueryResultNodeElement(list, index))
+                        .Right<IEither<MockError, MockEmpty>>()
+                        .ToQueryResultNode();
+            }
+            else
+            {
+                return
+                    Either
+                        .Left<IElement<string, Exception>>()
+                        .Right(
+                            Either
+                                .Left<MockError>()
+                                .Right(MockEmpty.Instance))
+                        .ToQueryResultNode();
+            }
+        }
+
+        private sealed class ToQueryResultNodeElement : IElement<string, Exception>
+        {
+            private readonly IReadOnlyList<string> list;
+
+            private readonly int index;
+
+            public ToQueryResultNodeElement(IReadOnlyList<string> list, int index)
+            {
+                this.list = list;
+                this.index = index;
+            }
+
+            public string Value
+            {
+                get
+                {
+                    return this.list[this.index];
+                }
+            }
+
+            public IQueryResultNode<string, Exception> Next()
+            {
+                return ToQueryResultNode(this.list, this.index + 1);
+            }
+        }
+
         [TestMethod]
         public void DeferredExecution()
         {
-            var queryResultNode = Either
+            var queryResult = ToQueryResult(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
+
+            /*var queryResultNode = Either
                 .Left(
                     new MockElement(
                         "asdf",
@@ -38,7 +95,7 @@ namespace Fx.QueryContext
                             .ToQueryResultNode()))
                 .Right<IEither<MockError, MockEmpty>>()
                 .ToQueryResultNode();
-            var queryResult = new MockQueryResult(queryResultNode);
+            var queryResult = new MockQueryResult(queryResultNode);*/
             var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
 
             Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
