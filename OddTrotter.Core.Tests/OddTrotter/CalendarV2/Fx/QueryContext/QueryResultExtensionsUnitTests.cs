@@ -11,49 +11,59 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
     {
-        private static IQueryResult<string, Exception> ToQueryResult(IReadOnlyList<string> list)
+        private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(IReadOnlyList<TValue> list)
         {
             //// TODO use generics
-            return new MockQueryResult(ToQueryResultNode(list, 0));
+            return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0));
         }
 
-        private static IQueryResultNode<string, Exception> ToQueryResultNode(IReadOnlyList<string> list, int index)
+        private sealed class ToQueryResultQueryResult<TValue, TError> : IQueryResult<TValue, TError>
+        {
+            public ToQueryResultQueryResult(IQueryResultNode<TValue, TError> nodes)
+            {
+                Nodes = nodes;
+            }
+
+            public IQueryResultNode<TValue, TError> Nodes { get; }
+        }
+
+        private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(IReadOnlyList<TValue> list, int index)
         {
             if (index < list.Count)
             {
                 return
                     Either
                         .Left(
-                            new ToQueryResultNodeElement(list, index))
-                        .Right<IEither<MockError, MockEmpty>>()
+                            new ToQueryResultNodeElement<TValue, TError>(list, index))
+                        .Right<IEither<IError<TError>, IEmpty>>()
                         .ToQueryResultNode();
             }
             else
             {
                 return
                     Either
-                        .Left<IElement<string, Exception>>()
+                        .Left<IElement<TValue, TError>>()
                         .Right(
                             Either
-                                .Left<MockError>()
+                                .Left<IError<TError>>()
                                 .Right(MockEmpty.Instance))
                         .ToQueryResultNode();
             }
         }
 
-        private sealed class ToQueryResultNodeElement : IElement<string, Exception>
+        private sealed class ToQueryResultNodeElement<TValue, TError> : IElement<TValue, TError>
         {
-            private readonly IReadOnlyList<string> list;
+            private readonly IReadOnlyList<TValue> list;
 
             private readonly int index;
 
-            public ToQueryResultNodeElement(IReadOnlyList<string> list, int index)
+            public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index)
             {
                 this.list = list;
                 this.index = index;
             }
 
-            public string Value
+            public TValue Value
             {
                 get
                 {
@@ -61,16 +71,16 @@ namespace Fx.QueryContext
                 }
             }
 
-            public IQueryResultNode<string, Exception> Next()
+            public IQueryResultNode<TValue, TError> Next()
             {
-                return ToQueryResultNode(this.list, this.index + 1);
+                return ToQueryResultNode<TValue, TError>(this.list, this.index + 1);
             }
         }
 
         [TestMethod]
         public void DeferredExecution()
         {
-            var queryResult = ToQueryResult(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
+            var queryResult = ToQueryResult<string, Exception>(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
 
             /*var queryResultNode = Either
                 .Left(
