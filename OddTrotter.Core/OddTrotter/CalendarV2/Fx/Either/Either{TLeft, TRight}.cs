@@ -16,6 +16,7 @@ namespace Fx.Either
         /// placeholder
         /// </summary>
         /// <param name="left"></param>
+        [Obsolete("If you are seeing this message, it means that you are using an implicit conversion from something to an `Either`. That demonstrates that there is value in having the implicit conversion.")]
         public static implicit operator Either<TLeft, TRight>(TLeft left)
         {
             return new Either<TLeft, TRight>.Left(left);
@@ -25,6 +26,7 @@ namespace Fx.Either
         /// placeholder
         /// </summary>
         /// <param name="right"></param>
+        [Obsolete("If you are seeing this message, it means that you are using an implicit conversion from something to an `Either`. That demonstrates that there is value in having the implicit conversion.")]
         public static implicit operator Either<TLeft, TRight>(TRight right)
         {
             return new Either<TLeft, TRight>.Right(right);

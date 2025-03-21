@@ -44,7 +44,7 @@ namespace Fx.Either
             /// <returns></returns>
             public Either<TLeft, TRight> Right<TRight>(TRight value)
             {
-                return value;
+                return new Either<TLeft, TRight>.Right(value);
             }
         }
 
@@ -100,7 +100,7 @@ namespace Fx.Either
                         $"This instance of '{typeof(Full<TLeft>).Namespace}.{typeof(Full<TLeft>).Name}' was initialized as a default instance and is in an invalid state.");
                 }
 
-                return this.value;
+                return new Either<TLeft, TRight>.Left(this.value);
             }
         }
 

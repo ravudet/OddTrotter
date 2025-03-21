@@ -412,6 +412,7 @@
             //// TODO do another exception documentation pass (you will likely need at least one more pass after this)
             //// TODO go through stash namespace and see what you want to pull out (maybe to another repo and/or as branches with future work items)
             //// TODO write tests for todolistservice that confirm the URLs
+            //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
 
             //// TODO FUTURE add more query context mixins
             //// TODO FUTURE do you still need mockerror in the unit tests? it does provide convience that it fixes the error type, and that's *probably* what most implementers of querycontexts will do anyway is create their own concrete type with the correct error
