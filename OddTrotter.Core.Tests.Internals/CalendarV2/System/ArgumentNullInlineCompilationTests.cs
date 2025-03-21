@@ -27,21 +27,25 @@ namespace System
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
-        /// <param name="callingMethod"></param>
+        /// <param name="testName"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="callingMethod"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
-        private ImmutableArray<Diagnostic> Compile([CallerMemberName] string? callingMethod = null)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="testName"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
+        /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="testName"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
+        /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="testName"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
+        /// <exception cref="IOException">Thrown if an I/O error occurs while reading the resource for the test with name <paramref name="testName"/>.</exception>
+        /// 
+        private ImmutableArray<Diagnostic> Compile([CallerMemberName] string? testName = null)
         {
-            ArgumentNullException.ThrowIfNull(callingMethod);
+            ArgumentNullException.ThrowIfNull(testName);
 
-            var code = this.GetResourceString(callingMethod);
+            var code = this.GetTestResourceString(testName);
 
             var script = CSharpScript.Create(
                 code,
                 ScriptOptions.Default
-                .WithReferences(new[] { typeof(ArgumentNullInline).Assembly }));
+                    .WithReferences(typeof(ArgumentNullInline).Assembly));
 
              return script.Compile();
         }
@@ -49,20 +53,20 @@ namespace System
         /// <summary>
         /// placeholder
         /// </summary>
-        /// <param name="callingMethod"></param>
+        /// <param name="testName"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="callingMethod"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
-        /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="callingMethod"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
-        /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="callingMethod"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="testName"/> was explicitly provided a <see langword="null"/> value by the caller</exception>
+        /// <exception cref="NotImplementedException">Thrown if resource length for the test with name <paramref name="testName"/> is greater than <see cref="Int64.MaxValue"/>.</exception>
+        /// <exception cref="OutOfMemoryException">Thrown if the resource for the test with name <paramref name="testName"/> cannot be loaded into memory because there is insufficient memory to allocate a buffer.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        private string GetResourceString([CallerMemberName] string? callingMethod = null)
+        private string GetTestResourceString([CallerMemberName] string? testName = null)
         {
-            ArgumentNullException.ThrowIfNull(callingMethod);
+            ArgumentNullException.ThrowIfNull(testName);
 
             var type = this.GetType();
             var assembly = type.Assembly;
 
-            var path = $"{type.Namespace}.{type.Name}Resources.{callingMethod}.cs";
+            var path = $"{type.Namespace}.{type.Name}Resources.{testName}.cs";
 
             return GetResourceString(assembly, path);
         }
