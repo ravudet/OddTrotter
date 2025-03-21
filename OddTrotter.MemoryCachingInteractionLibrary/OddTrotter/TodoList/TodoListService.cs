@@ -360,7 +360,7 @@
 
 
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
-            //// TODO TOPIC naming of `realnullable`; this really has nothing to do with null, maybe call it valuable? mark it internal if you can't find a name you like
+            //// TODO TOPIC naming of `realnullable`; this really has nothing to do with null, maybe call it valuable? mark it internal if you can't find a name you like; call it "optional"? i think i like optional best
             //// TODO TOPIC asbaseplayground
             //// TODO TOPIC should the either extensions be lazy?
             //// TODO TOPIC should i add the "ambiguous" select methods for left and right in order to light up the comprehension syntax?

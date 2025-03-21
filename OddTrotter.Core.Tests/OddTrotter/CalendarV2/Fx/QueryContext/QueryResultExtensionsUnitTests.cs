@@ -11,6 +11,22 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
     {
+        public ref struct ToQueryResultBuilder<TValue>
+        {
+            private readonly IReadOnlyList<TValue> list;
+
+            public ToQueryResultBuilder(IReadOnlyList<TValue> list)
+            {
+                this.list = list;
+            }
+
+            public IQueryResult<TValue, TError> WithError<TError>()
+            {
+                //// TODO have an overload that takes in an error?
+                return ToQueryResult<TValue, TError>(this.list);
+            }
+        }
+
         private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(IReadOnlyList<TValue> list)
         {
             //// TODO make this "production"?
@@ -80,6 +96,7 @@ namespace Fx.QueryContext
         [TestMethod]
         public void DeferredExecution()
         {
+            //// TODO finish toqueryresultbuilder...
             var queryResult = ToQueryResult<string, Exception>(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
 
             var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
