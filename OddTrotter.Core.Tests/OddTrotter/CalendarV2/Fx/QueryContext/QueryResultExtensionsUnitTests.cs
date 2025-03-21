@@ -13,6 +13,156 @@ namespace Fx.QueryContext
     public sealed class QueryResultExtensionsUnitTests
     {
         [TestMethod]
+        public void DeferredExecution()
+        {
+            var queryResultNode = Either
+                .Left(
+                    new MockElement(
+                        "asdf",
+                        Either
+                            .Left(
+                                new MockElement(
+                                    "qwer",
+                                    Either
+                                        .Left(
+                                            new MockElement(
+                                                "zxcv",
+                                                Either
+                                                    .Left(
+                                                        new MockElement("1234"))
+                                                    .Right<IEither<MockError, MockEmpty>>()
+                                                    .ToQueryResultNode()))
+                                        .Right<IEither<MockError, MockEmpty>>()
+                                        .ToQueryResultNode()))
+                            .Right<IEither<MockError, MockEmpty>>()
+                            .ToQueryResultNode()))
+                .Right<IEither<MockError, MockEmpty>>()
+                .ToQueryResultNode();
+            var queryResult = new MockQueryResult(queryResultNode);
+            var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
+
+            Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out var zeroCount));
+            Assert.AreEqual(1, zeroCount);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out zeroCount));
+            Assert.AreEqual(1, zeroCount);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(1, out var oneCount));
+            Assert.AreEqual(1, oneCount);
+
+
+
+
+
+            var secondInstrumentedQueryResult = new InstrumentedQueryResult(queryResult);
+            var firstCharacters = secondInstrumentedQueryResult.Select(element => element[0]);
+            Assert.AreEqual(0, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var firstCharacterElement));
+            Assert.AreEqual('a', firstCharacterElement.Value);
+
+        }
+
+        private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
+        {
+            private readonly InstrumentedQueryResultNode queryResultNode;
+
+            private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+
+            public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
+            {
+                this.indexToRetrievalCountMapping = new Dictionary<int, int>();
+                this.queryResultNode = new InstrumentedQueryResultNode(queryResult.Nodes, this.indexToRetrievalCountMapping, 0);
+            }
+
+            public IReadOnlyDictionary<int, int> IndexToRetrievalCountMapping
+            {
+                get
+                {
+                    return this.indexToRetrievalCountMapping;
+                }
+            }
+
+            public IQueryResultNode<string, Exception> Nodes
+            {
+                get
+                {
+                    return this.queryResultNode;
+                }
+            }
+
+            private sealed class InstrumentedQueryResultNode : IQueryResultNode<string, Exception>
+            {
+                private readonly IQueryResultNode<string, Exception> queryResultNode;
+                private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+                private readonly int index;
+
+                public InstrumentedQueryResultNode(IQueryResultNode<string, Exception> queryResultNode, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                {
+                    this.queryResultNode = queryResultNode;
+                    this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
+                    this.index = index;
+                }
+
+                public TResult Apply<TResult, TContext>(Func<IElement<string, Exception>, TContext, TResult> leftMap, Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, TContext context)
+                {
+                    if (!this.indexToRetrievalCountMapping.TryGetValue(this.index, out var count))
+                    {
+                        count = 0;
+                    }
+
+                    ++count;
+                    this.indexToRetrievalCountMapping[this.index] = count;
+
+                    return this.queryResultNode.Apply(
+                        (element, context) => 
+                            leftMap(
+                                new InstrumentedElement(element, this.indexToRetrievalCountMapping, this.index),
+                                context),
+                        (terminal, context) => 
+                            rightMap(
+                                terminal, 
+                                context),
+                        context);
+                }
+
+                private sealed class InstrumentedElement : IElement<string, Exception>
+                {
+                    private readonly IElement<string, Exception> element;
+                    private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+                    private readonly int index;
+
+                    public InstrumentedElement(IElement<string, Exception> element, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                    {
+                        this.element = element;
+                        this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
+                        this.index = index;
+                    }
+
+                    public string Value
+                    {
+                        get
+                        {
+                            return element.Value;
+                        }
+                    }
+
+                    public IQueryResultNode<string, Exception> Next()
+                    {
+                        return new InstrumentedQueryResultNode(this.element.Next(), this.indexToRetrievalCountMapping, this.index + 1);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void WhereNullSource()
         {
             IQueryResult<string, Exception> queryResult =
@@ -50,7 +200,7 @@ namespace Fx.QueryContext
         public void WhereNullPredicate()
         {
             var value = "asdf";
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left(
@@ -67,7 +217,7 @@ namespace Fx.QueryContext
         [TestMethod]
         public void WhereNoElements()
         {
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left<MockElement>()
@@ -90,7 +240,7 @@ namespace Fx.QueryContext
         public void WhereNoElementsError()
         {
             var invalidOperationException = new InvalidOperationException();
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left<MockElement>()
@@ -204,7 +354,7 @@ namespace Fx.QueryContext
         public void SelectNullSelector()
         {
             var value = "asdf";
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left(
@@ -224,7 +374,7 @@ namespace Fx.QueryContext
         [TestMethod]
         public void SelectNoElements()
         {
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left<MockElement>()
@@ -271,7 +421,7 @@ namespace Fx.QueryContext
         public void SelectNoError()
         {
             var value = "asdf";
-            var queryResult = 
+            var queryResult =
                 new MockQueryResult(
                     Either
                         .Left(
@@ -429,9 +579,9 @@ namespace Fx.QueryContext
                     first
 #pragma warning restore CS8604 // Possible null reference argument.
                         .Concat(
-                            second, 
-                            firstError => new AggregateException(firstError), 
-                            secondError => new AggregateException(secondError), 
+                            second,
+                            firstError => new AggregateException(firstError),
+                            secondError => new AggregateException(secondError),
                             (firstError, secondError) => new AggregateException(firstError, secondError)));
         }
 
@@ -481,7 +631,7 @@ namespace Fx.QueryContext
                         .ToQueryResultNode());
 
             Assert.ThrowsException<ArgumentNullException>(
-                () => 
+                () =>
                     first
                         .Concat(
                             second,
@@ -489,7 +639,7 @@ namespace Fx.QueryContext
                             null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                             ,
-                            secondError => new AggregateException(secondError), 
+                            secondError => new AggregateException(secondError),
                             (firstError, secondError) => new AggregateException(firstError, secondError)));
         }
 
@@ -574,9 +724,9 @@ namespace Fx.QueryContext
                         .ToQueryResultNode());
 
             var concated = first.Concat(
-                second, 
-                firstError => new AggregateException(firstError), 
-                secondError => new AggregateException(secondError), 
+                second,
+                firstError => new AggregateException(firstError),
+                secondError => new AggregateException(secondError),
                 (firstError, secondError) => new AggregateException(firstError, secondError));
 
             Assert.IsFalse(concated.Nodes.TryGetLeft(out var element));
@@ -609,9 +759,9 @@ namespace Fx.QueryContext
                         .ToQueryResultNode());
 
             var concated = first.Concat(
-                second, 
-                firstError => new AggregateException(firstError), 
-                secondError => new AggregateException(secondError), 
+                second,
+                firstError => new AggregateException(firstError),
+                secondError => new AggregateException(secondError),
                 (firstError, secondError) => new AggregateException(firstError, secondError));
 
             Assert.IsFalse(concated.Nodes.TryGetLeft(out var element));
@@ -643,9 +793,9 @@ namespace Fx.QueryContext
                         .ToQueryResultNode());
 
             var concated = first.Concat(
-                second, 
-                firstError => new AggregateException(firstError), 
-                secondError => new AggregateException(secondError), 
+                second,
+                firstError => new AggregateException(firstError),
+                secondError => new AggregateException(secondError),
                 (firstError, secondError) => new AggregateException(firstError, secondError));
 
             Assert.IsTrue(concated.Nodes.TryGetLeft(out var element));
@@ -1537,7 +1687,7 @@ namespace Fx.QueryContext
                                             Either
                                                 .Left<MockElement>()
                                                 .Right(
-                                                    Either 
+                                                    Either
                                                         .Left(
                                                             new MockError(invalidOperationException))
                                                         .Right<MockEmpty>())
