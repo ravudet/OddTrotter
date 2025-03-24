@@ -122,9 +122,10 @@ namespace System.Collections.Generic
             {
                 ArgumentNullException.ThrowIfNull(nodes);
 
-                Nodes = nodes;
+                this.Nodes = nodes;
             }
 
+            /// <inheritdoc/>
             public IQueryResultNode<TValue, TError> Nodes { get; }
         }
 
@@ -224,6 +225,7 @@ namespace System.Collections.Generic
                 this.possibleError = possibleError;
             }
 
+            /// <inheritdoc/>
             public TValue Value
             {
                 get
@@ -232,6 +234,7 @@ namespace System.Collections.Generic
                 }
             }
 
+            /// <inheritdoc/>
             public IQueryResultNode<TValue, TError> Next()
             {
                 return ToQueryResultNode(list, index + 1, possibleError);
