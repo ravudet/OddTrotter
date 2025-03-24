@@ -50,7 +50,7 @@ namespace System.Collections.Generic
 
                 this.list = list;
 
-                isInitialized = true;
+                this.isInitialized = true;
             }
 
             /// <summary>
@@ -64,7 +64,7 @@ namespace System.Collections.Generic
             /// </exception>
             public IQueryResult<TValue, TError> WithError<TError>(TError error)
             {
-                if (!isInitialized)
+                if (!this.isInitialized)
                 {
                     throw new InvalidOperationException(
                         $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
@@ -83,13 +83,13 @@ namespace System.Collections.Generic
             /// </exception>
             public IQueryResult<TValue, TError> WithoutError<TError>()
             {
-                if (!isInitialized)
+                if (!this.isInitialized)
                 {
                     throw new InvalidOperationException(
                         $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
                 }
 
-                return ToQueryResult(list, new RealNullable<TError>());
+                return ToQueryResult(this.list, new RealNullable<TError>());
             }
         }
 
@@ -230,14 +230,14 @@ namespace System.Collections.Generic
             {
                 get
                 {
-                    return list[index];
+                    return this.list[index];
                 }
             }
 
             /// <inheritdoc/>
             public IQueryResultNode<TValue, TError> Next()
             {
-                return ToQueryResultNode(list, index + 1, possibleError);
+                return ToQueryResultNode(this.list, this.index + 1, this.possibleError);
             }
         }
     }
