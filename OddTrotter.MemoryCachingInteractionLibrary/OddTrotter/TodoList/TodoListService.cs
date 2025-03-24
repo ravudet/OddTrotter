@@ -372,10 +372,13 @@
             // comment line at the top of the file
             // namespace
             // `using` statements (aliases should follow imports, this was chosen in the moment arbitrarily)
-            // readonly structs
-            // `sealed` (classes and overriden methods)
+            // kind
+            // - struct
+            // -- `readonly` structs
+            // -- struct default constructors
+            // - class
+            // -- `sealed` (classes and overriden methods)
             // readonly fields
-            // struct default constructors
             // dead code
             //
             // precondition checks
@@ -396,7 +399,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
             //// TODO do you use <generics> in your xmldoc? if you do, it'll break intellisense
-            
+
             //// TODO finish the toqueryresult extension you are writing to leverage in the deferred tests
             //// TODO write tests that assert the deferred execution of query results; you've started this in queryresultextensionsunittests
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
