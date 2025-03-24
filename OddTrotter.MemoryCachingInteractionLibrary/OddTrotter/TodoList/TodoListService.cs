@@ -417,7 +417,7 @@
             //// TODO go through stash namespace and see what you want to pull out (maybe to another repo and/or as branches with future work items)
             //// TODO write tests for todolistservice that confirm the URLs
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
-            //// TODO write tests for the toqueryresult extension on ireadonlylist
+            //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
 
             //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
             //// TODO FUTURE add more query context mixins
