@@ -11,217 +11,6 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
     {
-        public ref struct ToQueryResultBuilder<TValue>
-        {
-            private readonly IReadOnlyList<TValue> list;
-
-            public ToQueryResultBuilder(IReadOnlyList<TValue> list)
-            {
-                this.list = list;
-            }
-
-            public IQueryResult<TValue, TError> WithError<TError>()
-            {
-                //// TODO have an overload that takes in an error?
-                return ToQueryResult<TValue, TError>(this.list);
-            }
-        }
-
-        private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(IReadOnlyList<TValue> list)
-        {
-            //// TODO make this "production"?
-            return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0));
-        }
-
-        private sealed class ToQueryResultQueryResult<TValue, TError> : IQueryResult<TValue, TError>
-        {
-            public ToQueryResultQueryResult(IQueryResultNode<TValue, TError> nodes)
-            {
-                Nodes = nodes;
-            }
-
-            public IQueryResultNode<TValue, TError> Nodes { get; }
-        }
-
-        private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(IReadOnlyList<TValue> list, int index)
-        {
-            if (index < list.Count)
-            {
-                return
-                    Either
-                        .Left(
-                            new ToQueryResultNodeElement<TValue, TError>(list, index))
-                        .Right<IEither<IError<TError>, IEmpty>>()
-                        .ToQueryResultNode();
-            }
-            else
-            {
-                return
-                    Either
-                        .Left<IElement<TValue, TError>>()
-                        .Right(
-                            Either
-                                .Left<IError<TError>>()
-                                .Right(MockEmpty.Instance))
-                        .ToQueryResultNode();
-            }
-        }
-
-        private sealed class ToQueryResultNodeElement<TValue, TError> : IElement<TValue, TError>
-        {
-            private readonly IReadOnlyList<TValue> list;
-
-            private readonly int index;
-
-            public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index)
-            {
-                this.list = list;
-                this.index = index;
-            }
-
-            public TValue Value
-            {
-                get
-                {
-                    return this.list[this.index];
-                }
-            }
-
-            public IQueryResultNode<TValue, TError> Next()
-            {
-                return ToQueryResultNode<TValue, TError>(this.list, this.index + 1);
-            }
-        }
-
-        [TestMethod]
-        public void DeferredExecution()
-        {
-            //// TODO finish toqueryresultbuilder...
-            var queryResult = ToQueryResult<string, Exception>(new[] { "asdf", "qwer", "zxcv", "1234" }); //// TODO infer the type of value
-
-            var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
-
-            Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
-            Assert.AreEqual("asdf", element.Value);
-
-            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out var zeroCount));
-            Assert.AreEqual(1, zeroCount);
-
-            var next = element.Next();
-            Assert.IsTrue(next.TryGetLeft(out var nextElement));
-            Assert.AreEqual("qwer", nextElement.Value);
-
-            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out zeroCount));
-            Assert.AreEqual(1, zeroCount);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(1, out var oneCount));
-            Assert.AreEqual(1, oneCount);
-
-
-
-
-
-            var secondInstrumentedQueryResult = new InstrumentedQueryResult(queryResult);
-            var firstCharacters = secondInstrumentedQueryResult.Select(element => element[0]);
-            Assert.AreEqual(0, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var firstCharacterElement));
-            Assert.AreEqual('a', firstCharacterElement.Value);
-            Assert.AreEqual(1, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-        }
-
-        private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
-        {
-            private readonly InstrumentedQueryResultNode queryResultNode;
-
-            private readonly Dictionary<int, int> indexToRetrievalCountMapping;
-
-            public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
-            {
-                this.indexToRetrievalCountMapping = new Dictionary<int, int>();
-                this.queryResultNode = new InstrumentedQueryResultNode(queryResult.Nodes, this.indexToRetrievalCountMapping, 0);
-            }
-
-            public IReadOnlyDictionary<int, int> IndexToRetrievalCountMapping
-            {
-                get
-                {
-                    return this.indexToRetrievalCountMapping;
-                }
-            }
-
-            public IQueryResultNode<string, Exception> Nodes
-            {
-                get
-                {
-                    return this.queryResultNode;
-                }
-            }
-
-            private sealed class InstrumentedQueryResultNode : IQueryResultNode<string, Exception>
-            {
-                private readonly IQueryResultNode<string, Exception> queryResultNode;
-                private readonly Dictionary<int, int> indexToRetrievalCountMapping;
-                private readonly int index;
-
-                public InstrumentedQueryResultNode(IQueryResultNode<string, Exception> queryResultNode, Dictionary<int, int> indexToRetrievalCountMapping, int index)
-                {
-                    this.queryResultNode = queryResultNode;
-                    this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
-                    this.index = index;
-                }
-
-                public TResult Apply<TResult, TContext>(Func<IElement<string, Exception>, TContext, TResult> leftMap, Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, TContext context)
-                {
-                    if (!this.indexToRetrievalCountMapping.TryGetValue(this.index, out var count))
-                    {
-                        count = 0;
-                    }
-
-                    ++count;
-                    this.indexToRetrievalCountMapping[this.index] = count;
-
-                    return this.queryResultNode.Apply(
-                        (element, context) => 
-                            leftMap(
-                                new InstrumentedElement(element, this.indexToRetrievalCountMapping, this.index),
-                                context),
-                        (terminal, context) => 
-                            rightMap(
-                                terminal, 
-                                context),
-                        context);
-                }
-
-                private sealed class InstrumentedElement : IElement<string, Exception>
-                {
-                    private readonly IElement<string, Exception> element;
-                    private readonly Dictionary<int, int> indexToRetrievalCountMapping;
-                    private readonly int index;
-
-                    public InstrumentedElement(IElement<string, Exception> element, Dictionary<int, int> indexToRetrievalCountMapping, int index)
-                    {
-                        this.element = element;
-                        this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
-                        this.index = index;
-                    }
-
-                    public string Value
-                    {
-                        get
-                        {
-                            return element.Value;
-                        }
-                    }
-
-                    public IQueryResultNode<string, Exception> Next()
-                    {
-                        return new InstrumentedQueryResultNode(this.element.Next(), this.indexToRetrievalCountMapping, this.index + 1);
-                    }
-                }
-            }
-        }
-
         [TestMethod]
         public void WhereNullSource()
         {
@@ -2071,6 +1860,245 @@ namespace Fx.QueryContext
             Assert.AreEqual(invalidOperationException, nextError.Value);
             Assert.IsFalse(nextTerminal.TryGetRight(out var nextEmpty));
             Assert.IsFalse(distinctByed.Nodes.TryGetRight(out var terminal));
+        }
+
+        public readonly ref struct ToQueryResultBuilder<TValue>
+        {
+            private readonly IReadOnlyList<TValue> list;
+
+            public ToQueryResultBuilder(IReadOnlyList<TValue> list)
+            {
+                this.list = list;
+            }
+
+            public IQueryResult<TValue, TError> WithError<TError>(TError error)
+            {
+                return ToQueryResult<TValue, TError>(this.list, new RealNullable<TError>(error));
+            }
+
+            public IQueryResult<TValue, TError> WithoutError<TError>()
+            {
+                return ToQueryResult<TValue, TError>(this.list, new RealNullable<TError>());
+            }
+        }
+
+        private static ToQueryResultBuilder<TValue> ToQueryResult<TValue>(IReadOnlyList<TValue> list)
+        {
+            return new ToQueryResultBuilder<TValue>(list);
+        }
+
+        private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(
+            IReadOnlyList<TValue> list, 
+            RealNullable<TError> error)
+        {
+            //// TODO make this "production"?
+            return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0, error));
+        }
+
+        private sealed class ToQueryResultQueryResult<TValue, TError> : IQueryResult<TValue, TError>
+        {
+            public ToQueryResultQueryResult(IQueryResultNode<TValue, TError> nodes)
+            {
+                Nodes = nodes;
+            }
+
+            public IQueryResultNode<TValue, TError> Nodes { get; }
+        }
+
+        private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
+        {
+            if (index < list.Count)
+            {
+                return
+                    Either
+                        .Left(
+                            new ToQueryResultNodeElement<TValue, TError>(list, index, possibleError))
+                        .Right<IEither<IError<TError>, IEmpty>>()
+                        .ToQueryResultNode();
+            }
+            else
+            {
+                if (possibleError.TryGetValue(out var error))
+                {
+                    return
+                        Either
+                            .Left<IElement<TValue, TError>>()
+                            .Right(
+                                Either
+                                    .Left(new Error<TError>(error))
+                                    .Right<IEmpty>())
+                            .ToQueryResultNode();
+                }
+                else
+                {
+                    return
+                        Either
+                            .Left<IElement<TValue, TError>>()
+                            .Right(
+                                Either
+                                    .Left<IError<TError>>()
+                                    .Right(MockEmpty.Instance))
+                            .ToQueryResultNode();
+                }
+            }
+        }
+
+        private sealed class ToQueryResultNodeElement<TValue, TError> : IElement<TValue, TError>
+        {
+            private readonly IReadOnlyList<TValue> list;
+
+            private readonly int index;
+
+            private readonly RealNullable<TError> possibleError;
+
+            public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
+            {
+                this.list = list;
+                this.index = index;
+                this.possibleError = possibleError;
+            }
+
+            public TValue Value
+            {
+                get
+                {
+                    return this.list[this.index];
+                }
+            }
+
+            public IQueryResultNode<TValue, TError> Next()
+            {
+                return ToQueryResultNode<TValue, TError>(this.list, this.index + 1, this.possibleError);
+            }
+        }
+
+        [TestMethod]
+        public void DeferredExecution()
+        {
+            //// TODO finish toqueryresultbuilder...
+            var queryResult = ToQueryResult(new[] { "asdf", "qwer", "zxcv", "1234" }).WithoutError<Exception>();
+
+            var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
+
+            Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out var zeroCount));
+            Assert.AreEqual(1, zeroCount);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out zeroCount));
+            Assert.AreEqual(1, zeroCount);
+            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(1, out var oneCount));
+            Assert.AreEqual(1, oneCount);
+
+
+
+
+
+            var secondInstrumentedQueryResult = new InstrumentedQueryResult(queryResult);
+            var firstCharacters = secondInstrumentedQueryResult.Select(element => element[0]);
+            Assert.AreEqual(0, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var firstCharacterElement));
+            Assert.AreEqual('a', firstCharacterElement.Value);
+            Assert.AreEqual(1, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+        }
+
+        private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
+        {
+            private readonly InstrumentedQueryResultNode queryResultNode;
+
+            private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+
+            public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
+            {
+                this.indexToRetrievalCountMapping = new Dictionary<int, int>();
+                this.queryResultNode = new InstrumentedQueryResultNode(queryResult.Nodes, this.indexToRetrievalCountMapping, 0);
+            }
+
+            public IReadOnlyDictionary<int, int> IndexToRetrievalCountMapping
+            {
+                get
+                {
+                    return this.indexToRetrievalCountMapping;
+                }
+            }
+
+            public IQueryResultNode<string, Exception> Nodes
+            {
+                get
+                {
+                    return this.queryResultNode;
+                }
+            }
+
+            private sealed class InstrumentedQueryResultNode : IQueryResultNode<string, Exception>
+            {
+                private readonly IQueryResultNode<string, Exception> queryResultNode;
+                private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+                private readonly int index;
+
+                public InstrumentedQueryResultNode(IQueryResultNode<string, Exception> queryResultNode, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                {
+                    this.queryResultNode = queryResultNode;
+                    this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
+                    this.index = index;
+                }
+
+                public TResult Apply<TResult, TContext>(Func<IElement<string, Exception>, TContext, TResult> leftMap, Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, TContext context)
+                {
+                    if (!this.indexToRetrievalCountMapping.TryGetValue(this.index, out var count))
+                    {
+                        count = 0;
+                    }
+
+                    ++count;
+                    this.indexToRetrievalCountMapping[this.index] = count;
+
+                    return this.queryResultNode.Apply(
+                        (element, context) =>
+                            leftMap(
+                                new InstrumentedElement(element, this.indexToRetrievalCountMapping, this.index),
+                                context),
+                        (terminal, context) =>
+                            rightMap(
+                                terminal,
+                                context),
+                        context);
+                }
+
+                private sealed class InstrumentedElement : IElement<string, Exception>
+                {
+                    private readonly IElement<string, Exception> element;
+                    private readonly Dictionary<int, int> indexToRetrievalCountMapping;
+                    private readonly int index;
+
+                    public InstrumentedElement(IElement<string, Exception> element, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                    {
+                        this.element = element;
+                        this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
+                        this.index = index;
+                    }
+
+                    public string Value
+                    {
+                        get
+                        {
+                            return element.Value;
+                        }
+                    }
+
+                    public IQueryResultNode<string, Exception> Next()
+                    {
+                        return new InstrumentedQueryResultNode(this.element.Next(), this.indexToRetrievalCountMapping, this.index + 1);
+                    }
+                }
+            }
         }
     }
 }
