@@ -1892,7 +1892,7 @@ namespace Fx.QueryContext
             RealNullable<TError> error)
         {
             //// TODO make this "production"?
-            return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode<TValue, TError>(list, 0, error));
+            return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode(list, 0, error));
         }
 
         private sealed class ToQueryResultQueryResult<TValue, TError> : IQueryResult<TValue, TError>
@@ -1975,7 +1975,6 @@ namespace Fx.QueryContext
         [TestMethod]
         public void DeferredExecution()
         {
-            //// TODO finish toqueryresultbuilder...
             var queryResult = ToQueryResult(new[] { "asdf", "qwer", "zxcv", "1234" }).WithoutError<Exception>();
 
             var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
