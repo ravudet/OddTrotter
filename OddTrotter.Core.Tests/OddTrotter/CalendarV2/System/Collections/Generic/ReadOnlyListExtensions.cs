@@ -35,8 +35,8 @@ namespace System.Collections.Generic
             /// </exception>
             public ToQueryResultBuilder()
             {
-                throw new InvalidOperationException(
-                    $"Initializing a default instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' results in an invalid state.");
+                var message = $"Initializing a default instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' results in an invalid state.";
+                throw new InvalidOperationException(message);
             }
 
             /// <summary>
@@ -66,8 +66,8 @@ namespace System.Collections.Generic
             {
                 if (!this.isInitialized)
                 {
-                    throw new InvalidOperationException(
-                        $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
+                    var message = $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.";
+                    throw new InvalidOperationException(message);
                 }
 
                 return ToQueryResult(this.list, new RealNullable<TError>(error));
@@ -85,8 +85,8 @@ namespace System.Collections.Generic
             {
                 if (!this.isInitialized)
                 {
-                    throw new InvalidOperationException(
-                        $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
+                    var message = $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.";
+                    throw new InvalidOperationException(message);
                 }
 
                 return ToQueryResult(this.list, new RealNullable<TError>());
@@ -139,19 +139,27 @@ namespace System.Collections.Generic
         /// <param name="possibleError"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="list"/> is <see langword="null"/></exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is negative or greater than the <see cref="IReadOnlyCollection{T}.Count"/> of <paramref name="list"/></exception>
-        private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="index"/> is negative or greater than the <see cref="IReadOnlyCollection{T}.Count"/> of
+        /// <paramref name="list"/>
+        /// </exception>
+        private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(
+            IReadOnlyList<TValue> list, 
+            int index,
+            RealNullable<TError> possibleError)
         {
             ArgumentNullException.ThrowIfNull(list);
             //// TODO new version of .NET have more factories for argumentoutofrange
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.");
+                var message = $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.";
+                throw new ArgumentOutOfRangeException(nameof(index), message);
             }
 
             if (index > list.Count)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' must not be greater than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.");
+                var message = $"'{nameof(index)}' must not be greater than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.";
+                throw new ArgumentOutOfRangeException(nameof(index), message);
             }
 
             if (index < list.Count)
@@ -205,19 +213,24 @@ namespace System.Collections.Generic
             /// <param name="index"></param>
             /// <param name="possibleError"></param>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="list"/> is <see langword="null"/></exception>
-            /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is negative or greater than or equal to the <see cref="IReadOnlyCollection{T}.Count"/> of <paramref name="list"/></exception>
+            /// <exception cref="ArgumentOutOfRangeException">
+            /// Thrown if <paramref name="index"/> is negative or greater than or equal to the
+            /// <see cref="IReadOnlyCollection{T}.Count"/> of <paramref name="list"/>
+            /// </exception>
             public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
             {
                 ArgumentNullException.ThrowIfNull(list);
                 //// TODO new version of .NET have more factories for argumentoutofrange
                 if (index < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.");
+                    var message = $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.";
+                    throw new ArgumentOutOfRangeException(nameof(index), message);
                 }
 
                 if (index >= list.Count)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' must be less than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.");
+                    var message = $"'{nameof(index)}' must be less than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.";
+                    throw new ArgumentOutOfRangeException(nameof(index), message);
                 }
 
                 this.list = list;
