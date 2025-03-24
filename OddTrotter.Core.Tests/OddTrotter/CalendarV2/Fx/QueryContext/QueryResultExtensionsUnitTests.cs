@@ -1905,12 +1905,22 @@ namespace Fx.QueryContext
 
             private readonly Dictionary<int, int> indexToRetrievalCountMapping;
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="queryResult"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> is <see langword="null"/></exception>
             public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
             {
+                ArgumentNullException.ThrowIfNull(queryResult);
+
                 this.indexToRetrievalCountMapping = new Dictionary<int, int>();
                 this.queryResultNode = new InstrumentedQueryResultNode(queryResult.Nodes, this.indexToRetrievalCountMapping, 0);
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
             public IReadOnlyDictionary<int, int> IndexToRetrievalCountMapping
             {
                 get
@@ -1919,6 +1929,7 @@ namespace Fx.QueryContext
                 }
             }
 
+            /// <inheritdoc/>
             public IQueryResultNode<string, Exception> Nodes
             {
                 get
@@ -1933,15 +1944,30 @@ namespace Fx.QueryContext
                 private readonly Dictionary<int, int> indexToRetrievalCountMapping;
                 private readonly int index;
 
+                /// <summary>
+                /// placeholder
+                /// </summary>
+                /// <param name="queryResultNode"></param>
+                /// <param name="indexToRetrievalCountMapping"></param>
+                /// <param name="index"></param>
+                /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="indexToRetrievalCountMapping"/> is <see langword="null"/></exception>
                 public InstrumentedQueryResultNode(IQueryResultNode<string, Exception> queryResultNode, Dictionary<int, int> indexToRetrievalCountMapping, int index)
                 {
+                    ArgumentNullException.ThrowIfNull(queryResultNode);
+                    ArgumentNullException.ThrowIfNull(indexToRetrievalCountMapping);
+                    // we could assert that `index` is within a reasonable range (not negative, for example), but if we are instrumenting, we probably actually want to track if that sort of thing has somehow occurred
+
                     this.queryResultNode = queryResultNode;
                     this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
                     this.index = index;
                 }
 
+                /// <inheritdoc/>
                 public TResult Apply<TResult, TContext>(Func<IElement<string, Exception>, TContext, TResult> leftMap, Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, TContext context)
                 {
+                    ArgumentNullException.ThrowIfNull(leftMap);
+                    ArgumentNullException.ThrowIfNull(rightMap);
+
                     if (!this.indexToRetrievalCountMapping.TryGetValue(this.index, out var count))
                     {
                         count = 0;
@@ -1968,13 +1994,24 @@ namespace Fx.QueryContext
                     private readonly Dictionary<int, int> indexToRetrievalCountMapping;
                     private readonly int index;
 
+                    /// <summary>
+                    /// placeholder
+                    /// </summary>
+                    /// <param name="element"></param>
+                    /// <param name="indexToRetrievalCountMapping"></param>
+                    /// <param name="index"></param>
+                    /// <exception cref="ArgumentNullException">Thrown if <paramref name="element"/> or <paramref name="indexToRetrievalCountMapping"/> is <see langword="null"/></exception>
                     public InstrumentedElement(IElement<string, Exception> element, Dictionary<int, int> indexToRetrievalCountMapping, int index)
                     {
+                        ArgumentNullException.ThrowIfNull(element);
+                        ArgumentNullException.ThrowIfNull(indexToRetrievalCountMapping);
+
                         this.element = element;
                         this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
                         this.index = index;
                     }
 
+                    /// <inheritdoc/>
                     public string Value
                     {
                         get
@@ -1983,6 +2020,7 @@ namespace Fx.QueryContext
                         }
                     }
 
+                    /// <inheritdoc/>
                     public IQueryResultNode<string, Exception> Next()
                     {
                         return new InstrumentedQueryResultNode(this.element.Next(), this.indexToRetrievalCountMapping, this.index + 1);
