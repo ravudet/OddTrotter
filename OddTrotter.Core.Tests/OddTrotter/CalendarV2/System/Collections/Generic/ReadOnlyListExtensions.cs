@@ -62,6 +62,8 @@ namespace System.Collections.Generic
             IReadOnlyList<TValue> list,
             RealNullable<TError> error)
         {
+            ArgumentNullException.ThrowIfNull(list);
+
             return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode(list, 0, error));
         }
 
@@ -69,6 +71,8 @@ namespace System.Collections.Generic
         {
             public ToQueryResultQueryResult(IQueryResultNode<TValue, TError> nodes)
             {
+                ArgumentNullException.ThrowIfNull(nodes);
+
                 Nodes = nodes;
             }
 
@@ -77,6 +81,18 @@ namespace System.Collections.Generic
 
         private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
         {
+            ArgumentNullException.ThrowIfNull(list);
+            //// TODO new version of .NET have more factories for argumentoutofrange
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.");
+            }
+
+            if (index > list.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' must not be greater than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.");
+            }
+
             if (index < list.Count)
             {
                 return
@@ -123,6 +139,18 @@ namespace System.Collections.Generic
 
             public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
             {
+                ArgumentNullException.ThrowIfNull(list);
+                //// TODO new version of .NET have more factories for argumentoutofrange
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' cannot be a negative value. The provided value was '{index}'.");
+                }
+
+                if (index >= list.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), $"'{nameof(index)}' must be less than the length of '{nameof(list)}'. The provided value for '{nameof(index)}' was '{index}'. The length of '{nameof(list)}' was '{list.Count}'.");
+                }
+
                 this.list = list;
                 this.index = index;
                 this.possibleError = possibleError;

@@ -419,6 +419,7 @@
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist
 
+            //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
             //// TODO FUTURE add more query context mixins
             //// TODO FUTURE do you still need mockerror in the unit tests? it does provide convience that it fixes the error type, and that's *probably* what most implementers of querycontexts will do anyway is create their own concrete type with the correct error
             //// TODO FUTURE do you want to add a convenience overload for concat that uses an aggregate exception as the resulting error type?
