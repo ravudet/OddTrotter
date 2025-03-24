@@ -7,7 +7,6 @@ namespace Fx.QueryContext
 
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using OddTrotter.CalendarV2.System.Collections.Generic;
 
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
@@ -1909,7 +1908,9 @@ namespace Fx.QueryContext
             /// placeholder
             /// </summary>
             /// <param name="queryResult"></param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> is <see langword="null"/></exception>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="queryResult"/> is <see langword="null"/>
+            /// </exception>
             public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
             {
                 ArgumentNullException.ThrowIfNull(queryResult);
@@ -1950,12 +1951,19 @@ namespace Fx.QueryContext
                 /// <param name="queryResultNode"></param>
                 /// <param name="indexToRetrievalCountMapping"></param>
                 /// <param name="index"></param>
-                /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="indexToRetrievalCountMapping"/> is <see langword="null"/></exception>
-                public InstrumentedQueryResultNode(IQueryResultNode<string, Exception> queryResultNode, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                /// <exception cref="ArgumentNullException">
+                /// Thrown if <paramref name="queryResultNode"/> or <paramref name="indexToRetrievalCountMapping"/> is
+                /// <see langword="null"/>
+                /// </exception>
+                public InstrumentedQueryResultNode(
+                    IQueryResultNode<string, Exception> queryResultNode, 
+                    Dictionary<int, int> indexToRetrievalCountMapping, 
+                    int index)
                 {
                     ArgumentNullException.ThrowIfNull(queryResultNode);
                     ArgumentNullException.ThrowIfNull(indexToRetrievalCountMapping);
-                    // we could assert that `index` is within a reasonable range (not negative, for example), but if we are instrumenting, we probably actually want to track if that sort of thing has somehow occurred
+                    // we could assert that `index` is within a reasonable range (not negative, for example), but if we are
+                    // instrumenting, we probably actually want to track if that sort of thing has somehow occurred
 
                     this.queryResultNode = queryResultNode;
                     this.indexToRetrievalCountMapping = indexToRetrievalCountMapping;
@@ -1963,7 +1971,10 @@ namespace Fx.QueryContext
                 }
 
                 /// <inheritdoc/>
-                public TResult Apply<TResult, TContext>(Func<IElement<string, Exception>, TContext, TResult> leftMap, Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, TContext context)
+                public TResult Apply<TResult, TContext>(
+                    Func<IElement<string, Exception>, TContext, TResult> leftMap, 
+                    Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, 
+                    TContext context)
                 {
                     ArgumentNullException.ThrowIfNull(leftMap);
                     ArgumentNullException.ThrowIfNull(rightMap);
@@ -2000,8 +2011,14 @@ namespace Fx.QueryContext
                     /// <param name="element"></param>
                     /// <param name="indexToRetrievalCountMapping"></param>
                     /// <param name="index"></param>
-                    /// <exception cref="ArgumentNullException">Thrown if <paramref name="element"/> or <paramref name="indexToRetrievalCountMapping"/> is <see langword="null"/></exception>
-                    public InstrumentedElement(IElement<string, Exception> element, Dictionary<int, int> indexToRetrievalCountMapping, int index)
+                    /// <exception cref="ArgumentNullException">
+                    /// Thrown if <paramref name="element"/> or <paramref name="indexToRetrievalCountMapping"/> is 
+                    /// <see langword="null"/>
+                    /// </exception>
+                    public InstrumentedElement(
+                        IElement<string, Exception> element, 
+                        Dictionary<int, int> indexToRetrievalCountMapping, 
+                        int index)
                     {
                         ArgumentNullException.ThrowIfNull(element);
                         ArgumentNullException.ThrowIfNull(indexToRetrievalCountMapping);
@@ -2016,14 +2033,17 @@ namespace Fx.QueryContext
                     {
                         get
                         {
-                            return element.Value;
+                            return this.element.Value;
                         }
                     }
 
                     /// <inheritdoc/>
                     public IQueryResultNode<string, Exception> Next()
                     {
-                        return new InstrumentedQueryResultNode(this.element.Next(), this.indexToRetrievalCountMapping, this.index + 1);
+                        return new InstrumentedQueryResultNode(
+                            this.element.Next(), 
+                            this.indexToRetrievalCountMapping,
+                            this.index + 1);
                     }
                 }
             }
