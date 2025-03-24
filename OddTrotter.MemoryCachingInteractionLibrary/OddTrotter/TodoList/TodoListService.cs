@@ -397,6 +397,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
             //// TODO do you use <generics> in your xmldoc? if you do, it'll break intellisense
             
+            //// TODO finish the toqueryresult extension you are writing to leverage in the deferred tests
             //// TODO write tests that assert the deferred execution of query results; you've started this in queryresultextensionsunittests
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 

@@ -1,41 +1,67 @@
 ﻿namespace Fx.QueryContext
 {
+    using System;
     using System.Collections.Generic;
 
     using Fx.Either;
 
     internal static class ReadOnlyListExtensions
     {
+        public static ToQueryResultBuilder<TValue> ToQueryResult<TValue>(this IReadOnlyList<TValue> list)
+        {
+            ArgumentNullException.ThrowIfNull(list);
+
+            return new ToQueryResultBuilder<TValue>(list);
+        }
+
         public readonly ref struct ToQueryResultBuilder<TValue>
         {
             private readonly IReadOnlyList<TValue> list;
 
+            private readonly bool isInitialized;
+
+            public ToQueryResultBuilder()
+            {
+                throw new InvalidOperationException(
+                    $"Initializing a default instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' results in an invalid state.");
+            }
+
             public ToQueryResultBuilder(IReadOnlyList<TValue> list)
             {
+                ArgumentNullException.ThrowIfNull(list);
+
                 this.list = list;
+
+                this.isInitialized = true;
             }
 
             public IQueryResult<TValue, TError> WithError<TError>(TError error)
             {
-                return ToQueryResult<TValue, TError>(this.list, new RealNullable<TError>(error));
+                if (!this.isInitialized)
+                {
+                    throw new InvalidOperationException(
+                        $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
+                }
+
+                return ToQueryResult(this.list, new RealNullable<TError>(error));
             }
 
             public IQueryResult<TValue, TError> WithoutError<TError>()
             {
-                return ToQueryResult<TValue, TError>(this.list, new RealNullable<TError>());
-            }
-        }
+                if (!this.isInitialized)
+                {
+                    throw new InvalidOperationException(
+                        $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
+                }
 
-        public static ToQueryResultBuilder<TValue> ToQueryResult<TValue>(this IReadOnlyList<TValue> list)
-        {
-            return new ToQueryResultBuilder<TValue>(list);
+                return ToQueryResult(this.list, new RealNullable<TError>());
+            }
         }
 
         private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(
             IReadOnlyList<TValue> list,
             RealNullable<TError> error)
         {
-            //// TODO make this "production"?
             return new ToQueryResultQueryResult<TValue, TError>(ToQueryResultNode(list, 0, error));
         }
 
