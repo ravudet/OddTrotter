@@ -1,9 +1,9 @@
-﻿namespace Fx.QueryContext
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace System.Collections.Generic
 {
-    using System;
-    using System.Collections.Generic;
-
+    using Fx;
     using Fx.Either;
+    using Fx.QueryContext;
 
     internal static class ReadOnlyListExtensions
     {
@@ -32,29 +32,29 @@
 
                 this.list = list;
 
-                this.isInitialized = true;
+                isInitialized = true;
             }
 
             public IQueryResult<TValue, TError> WithError<TError>(TError error)
             {
-                if (!this.isInitialized)
+                if (!isInitialized)
                 {
                     throw new InvalidOperationException(
                         $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
                 }
 
-                return ToQueryResult(this.list, new RealNullable<TError>(error));
+                return ToQueryResult(list, new RealNullable<TError>(error));
             }
 
             public IQueryResult<TValue, TError> WithoutError<TError>()
             {
-                if (!this.isInitialized)
+                if (!isInitialized)
                 {
                     throw new InvalidOperationException(
                         $"This instance of '{typeof(ToQueryResultBuilder<TValue>).FullName}' was initialized as a default instance and is in an invalid state.");
                 }
 
-                return ToQueryResult(this.list, new RealNullable<TError>());
+                return ToQueryResult(list, new RealNullable<TError>());
             }
         }
 
@@ -132,13 +132,13 @@
             {
                 get
                 {
-                    return this.list[this.index];
+                    return list[index];
                 }
             }
 
             public IQueryResultNode<TValue, TError> Next()
             {
-                return ToQueryResultNode(this.list, this.index + 1, this.possibleError);
+                return ToQueryResultNode(list, index + 1, possibleError);
             }
         }
     }

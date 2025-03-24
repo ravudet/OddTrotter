@@ -7,6 +7,7 @@ namespace Fx.QueryContext
 
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using OddTrotter.CalendarV2.System.Collections.Generic;
 
     [TestClass]
     public sealed class QueryResultExtensionsUnitTests
