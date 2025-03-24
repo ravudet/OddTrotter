@@ -395,7 +395,8 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool.queueuserworkitem?view=net-9.0#system-threading-threadpool-queueuserworkitem-1(system-action((-0))-0-system-boolean) argumentnullexception throw if callback is null
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
-
+            //// TODO do you use <generics> in your xmldoc? if you do, it'll break intellisense
+            
             //// TODO write tests that assert the deferred execution of query results; you've started this in queryresultextensionsunittests
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
