@@ -138,7 +138,7 @@
 
             public IQueryResultNode<TValue, TError> Next()
             {
-                return ToQueryResultNode<TValue, TError>(this.list, this.index + 1, this.possibleError);
+                return ToQueryResultNode(this.list, this.index + 1, this.possibleError);
             }
         }
     }
