@@ -1984,6 +1984,39 @@ namespace Fx.QueryContext
             Assert.IsFalse(distinctByed.Nodes.TryGetRight(out var terminal));
         }
 
+        [TestMethod]
+        public void DistinctByDeferredExecution()
+        {
+            var queryResult = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+
+            var distincted = instrumentedQueryResult.DistinctBy(element => element[0], EqualityComparer<char>.Default);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+
+            Assert.IsTrue(distincted.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+
+            var nextNext = element.Next();
+            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.AreEqual("zxcv", nextNextElement.Value);
+            Assert.AreEqual(5, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[3]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[4]);
+        }
+
         private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
         {
             private readonly InstrumentedQueryResultNode queryResultNode;
