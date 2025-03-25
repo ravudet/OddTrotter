@@ -1467,6 +1467,42 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
+        public void ConcatDeferredExecution()
+        {
+            var first = new[] { "asdf", "qwer" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedFirst = new InstrumentedQueryResult<string, Exception>(first);
+            var second = new[] { "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentSecond = new InstrumentedQueryResult<string, Exception>(second);
+
+            var concated = instrumentedFirst.Concat(instrumentSecond, _ => _, _ => _, (_, __) => _);
+
+            Assert.AreEqual(0, instrumentedFirst.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(0, instrumentSecond.IndexToRetrievalCountMapping.Count);
+
+            Assert.IsTrue(concated.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(0, instrumentSecond.IndexToRetrievalCountMapping.Count);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(2, instrumentedFirst.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(0, instrumentSecond.IndexToRetrievalCountMapping.Count);
+
+            var nextNext = nextElement.Next();
+            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.AreEqual(3, instrumentedFirst.IndexToRetrievalCountMapping.Count); // a third access means that we went "right"
+                                                                                      // to the "terminal"
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentSecond.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentSecond.IndexToRetrievalCountMapping[0]);
+        }
+
+        [TestMethod]
         public void DistinctByNullSource()
         {
             IQueryResult<string, Exception> queryResult =
