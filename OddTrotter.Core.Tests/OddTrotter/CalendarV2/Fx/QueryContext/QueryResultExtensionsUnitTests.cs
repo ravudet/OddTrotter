@@ -184,6 +184,65 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
+        public void WhereDeferredExecutionSkippingFirstElement()
+        {
+            var queryResult = new[] { 1, 2, 3, 4 }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<int, Exception>(queryResult);
+
+            var evens = instrumentedQueryResult.Where(element => element % 2 == 0);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(evens.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual(2, element.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+
+            Assert.IsTrue(evens.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual(2, element2.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(4, nextElement.Value);
+            Assert.AreEqual(4, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[3]);
+        }
+
+        [TestMethod]
+        public void WhereDeferredExecutionTakingFirstElement()
+        {
+            var queryResult = new[] { 1, 2, 3, 4 }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<int, Exception>(queryResult);
+
+            var odds = instrumentedQueryResult.Where(element => element % 2 != 0);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(odds.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual(1, element.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            Assert.IsTrue(odds.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual(1, element2.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(3, nextElement.Value);
+            Assert.AreEqual(3, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
+        }
+
+        [TestMethod]
         public void SelectNullSource()
         {
             IQueryResult<string, Exception> queryResult =
@@ -323,6 +382,33 @@ namespace Fx.QueryContext
             Assert.AreEqual(invalidOperationException, secondError.Value);
             Assert.IsFalse(secondTerminal.TryGetRight(out var secondEmpty));
             Assert.IsFalse(selected.Nodes.TryGetRight(out var terminal));
+        }
+
+        [TestMethod]
+        public void SelectDeferredExecution()
+        {
+            var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+
+            var firstCharacters = instrumentedQueryResult.Select(element => element[0]);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual('a', element.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual('a', element2.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual('q', nextElement.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
         }
 
         [TestMethod]
@@ -1862,34 +1948,7 @@ namespace Fx.QueryContext
             Assert.IsFalse(distinctByed.Nodes.TryGetRight(out var terminal));
         }
 
-        [TestMethod]
-        public void SelectDeferredExecution()
-        {
-            var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
-            var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
-
-            var firstCharacters = instrumentedQueryResult.Select(element => element[0]);
-
-            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
-            Assert.AreEqual('a', element.Value);
-            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
-            
-            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element2));
-            Assert.AreEqual('a', element2.Value);
-            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
-
-            var next = element.Next();
-            Assert.IsTrue(next.TryGetLeft(out var nextElement));
-            Assert.AreEqual('q', nextElement.Value);
-            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
-            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
-        }
-
-        private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
+        private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
         {
             private readonly InstrumentedQueryResultNode queryResultNode;
 
@@ -1902,7 +1961,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="queryResult"/> is <see langword="null"/>
             /// </exception>
-            public InstrumentedQueryResult(IQueryResult<string, Exception> queryResult)
+            public InstrumentedQueryResult(IQueryResult<TValue, TError> queryResult)
             {
                 ArgumentNullException.ThrowIfNull(queryResult);
 
@@ -1922,7 +1981,7 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public IQueryResultNode<string, Exception> Nodes
+            public IQueryResultNode<TValue, TError> Nodes
             {
                 get
                 {
@@ -1930,9 +1989,9 @@ namespace Fx.QueryContext
                 }
             }
 
-            private sealed class InstrumentedQueryResultNode : IQueryResultNode<string, Exception>
+            private sealed class InstrumentedQueryResultNode : IQueryResultNode<TValue, TError>
             {
-                private readonly IQueryResultNode<string, Exception> queryResultNode;
+                private readonly IQueryResultNode<TValue, TError> queryResultNode;
                 private readonly Dictionary<int, int> indexToRetrievalCountMapping;
                 private readonly int index;
 
@@ -1947,7 +2006,7 @@ namespace Fx.QueryContext
                 /// <see langword="null"/>
                 /// </exception>
                 public InstrumentedQueryResultNode(
-                    IQueryResultNode<string, Exception> queryResultNode, 
+                    IQueryResultNode<TValue, TError> queryResultNode, 
                     Dictionary<int, int> indexToRetrievalCountMapping, 
                     int index)
                 {
@@ -1963,8 +2022,8 @@ namespace Fx.QueryContext
 
                 /// <inheritdoc/>
                 public TResult Apply<TResult, TContext>(
-                    Func<IElement<string, Exception>, TContext, TResult> leftMap, 
-                    Func<IEither<IError<Exception>, IEmpty>, TContext, TResult> rightMap, 
+                    Func<IElement<TValue, TError>, TContext, TResult> leftMap, 
+                    Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap, 
                     TContext context)
                 {
                     ArgumentNullException.ThrowIfNull(leftMap);
@@ -1990,9 +2049,9 @@ namespace Fx.QueryContext
                         context);
                 }
 
-                private sealed class InstrumentedElement : IElement<string, Exception>
+                private sealed class InstrumentedElement : IElement<TValue, TError>
                 {
-                    private readonly IElement<string, Exception> element;
+                    private readonly IElement<TValue, TError> element;
                     private readonly Dictionary<int, int> indexToRetrievalCountMapping;
                     private readonly int index;
 
@@ -2007,7 +2066,7 @@ namespace Fx.QueryContext
                     /// <see langword="null"/>
                     /// </exception>
                     public InstrumentedElement(
-                        IElement<string, Exception> element, 
+                        IElement<TValue, TError> element, 
                         Dictionary<int, int> indexToRetrievalCountMapping, 
                         int index)
                     {
@@ -2020,7 +2079,7 @@ namespace Fx.QueryContext
                     }
 
                     /// <inheritdoc/>
-                    public string Value
+                    public TValue Value
                     {
                         get
                         {
@@ -2029,7 +2088,7 @@ namespace Fx.QueryContext
                     }
 
                     /// <inheritdoc/>
-                    public IQueryResultNode<string, Exception> Next()
+                    public IQueryResultNode<TValue, TError> Next()
                     {
                         return new InstrumentedQueryResultNode(
                             this.element.Next(), 
