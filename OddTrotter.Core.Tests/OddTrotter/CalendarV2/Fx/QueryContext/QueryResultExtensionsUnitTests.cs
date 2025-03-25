@@ -2006,7 +2006,7 @@ namespace Fx.QueryContext
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
 
-            var nextNext = element.Next();
+            var nextNext = nextElement.Next();
             Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
             Assert.AreEqual("zxcv", nextNextElement.Value);
             Assert.AreEqual(5, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);

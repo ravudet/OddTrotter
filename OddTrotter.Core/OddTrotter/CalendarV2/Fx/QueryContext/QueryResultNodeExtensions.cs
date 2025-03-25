@@ -463,6 +463,8 @@ namespace Fx.QueryContext
             private readonly Func<TValue, TKey> keySelector;
             private readonly HashSet<TKey> hashSet;
 
+            private readonly Lazy<IQueryResultNode<TValue, TError>> nextResult;
+
             /// <summary>
             /// placeholder
             /// </summary>
@@ -481,6 +483,8 @@ namespace Fx.QueryContext
                 this.next = next;
                 this.keySelector = keySelector;
                 this.hashSet = hashSet;
+
+                this.nextResult = new Lazy<IQueryResultNode<TValue, TError>>(() => this.NextImpl());
             }
 
             /// <inheritdoc/>
@@ -489,10 +493,10 @@ namespace Fx.QueryContext
             /// <inheritdoc/>
             public IQueryResultNode<TValue, TError> Next()
             {
-                return this.next.DistinctBy(keySelector, hashSet);
+                return this.nextResult.Value;
             }
 
-            public IQueryResultNode<TValue, TError> Next()
+            private IQueryResultNode<TValue, TError> NextImpl()
             {
                 return this.next.DistinctBy(keySelector, hashSet);
             }
