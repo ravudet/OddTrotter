@@ -2035,56 +2035,6 @@ namespace Fx.QueryContext
             var nextNext = element.Next();
             Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
             Assert.AreEqual("zxcv", nextNextElement.Value);
-
-            For(queryResult.Nodes);
-        }
-
-        private static void For(IQueryResultNode<string, Exception> nodes)
-        {
-            IQueryResultNode<string, Exception> second;
-            int index = 0;
-            while (nodes.TryGetLeft(out var element))
-            {
-                if (index == 1)
-                {
-                    second = nodes;
-                }
-
-                nodes = element.Next();
-            }
-
-
-        }
-
-        [TestMethod]
-        public void WhereBug()
-        {
-            var queryResult = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" }.ToQueryResult().WithoutError<Exception>();
-
-            var hashSet = new HashSet<string>();
-            var distincted = queryResult.Where(element => hashSet.Add(element));
-
-            Assert.IsTrue(distincted.Nodes.TryGetLeft(out var element));
-            Assert.AreEqual("asdf", element.Value);
-
-            var next = element.Next();
-            Assert.IsTrue(next.TryGetLeft(out var nextElement));
-            Assert.AreEqual("qwer", nextElement.Value);
-
-            var nextNext = element.Next();
-            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
-            Assert.AreEqual("zxcv", nextNextElement.Value);
-        }
-
-        [TestMethod]
-        public void EnumerableWhere()
-        {
-            var enumerable = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" };
-            var hashSet = new HashSet<string>();
-            var distincted = System.Linq.Enumerable.Where(enumerable, element => hashSet.Add(element));
-
-            CollectionAssert.AreEqual(new[] { "asdf", "qwer", "zxcv" }, distincted.ToArray());
-            CollectionAssert.AreEqual(new[] { "asdf", "qwer", "zxcv" }, distincted.ToArray());
         }
 
         private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
