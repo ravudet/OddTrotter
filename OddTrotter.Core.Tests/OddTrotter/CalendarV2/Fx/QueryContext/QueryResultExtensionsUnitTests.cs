@@ -1874,7 +1874,19 @@ namespace Fx.QueryContext
             Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
             Assert.AreEqual('a', element.Value);
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            //// TODO more assertions
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual('a', element2.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual('q', nextElement.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
         }
 
         private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
