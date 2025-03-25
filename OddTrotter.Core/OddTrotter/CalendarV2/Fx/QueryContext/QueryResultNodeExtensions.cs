@@ -436,7 +436,66 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(comparer);
 
             var hashSet = new HashSet<TKey>(comparer);
-            return source.Where(element => hashSet.Add(keySelector(element)));
+            return source.DistinctBy(keySelector, hashSet);
+        }
+
+        private static IQueryResultNode<TValue, TError> DistinctBy<TValue, TError, TKey>(
+            this IQueryResultNode<TValue, TError> source,
+            Func<TValue, TKey> keySelector,
+            HashSet<TKey> hashSet)
+        {
+            return source
+                .SelectLeft(
+                    element => Either
+                        .Create(
+                            element,
+                            element => hashSet.Add(keySelector(element.Value)),
+                            element => new DistinctByElement<TValue, TError, TKey>(element.Value, element.Next(), keySelector, hashSet),
+                            element => element.Next().DistinctBy(keySelector, hashSet))
+                        .SelectManyRight())
+                .SelectManyLeft()
+                .ToQueryResultNode();
+        }
+
+        private sealed class DistinctByElement<TValue, TError, TKey> : IElement<TValue, TError>
+        {
+            private readonly IQueryResultNode<TValue, TError> next;
+            private readonly Func<TValue, TKey> keySelector;
+            private readonly HashSet<TKey> hashSet;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="hashSet"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="hashSet"/> is <see langword="null"/>
+            /// </exception>
+            public DistinctByElement(TValue value, IQueryResultNode<TValue, TError> next, Func<TValue, TKey> keySelector, HashSet<TKey> hashSet)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(hashSet);
+
+                this.Value = value;
+                this.next = next;
+                this.keySelector = keySelector;
+                this.hashSet = hashSet;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public IQueryResultNode<TValue, TError> Next()
+            {
+                return this.next.DistinctBy(keySelector, hashSet);
+            }
+
+            public IQueryResultNode<TValue, TError> Next()
+            {
+                return this.next.DistinctBy(keySelector, hashSet);
+            }
         }
     }
 }

@@ -401,6 +401,7 @@
             //// TODO do you use <generics> in your xmldoc? if you do, it'll break intellisense
 
             //// TODO write tests that assert the deferred execution of query results; you've started this in queryresultextensionsunittests
+            //// TODO when you're ready to code review, the actual deferred execution tests start in commit 8aac4d9a8d60f6b9906540dfa2e95b6d695d50d6
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO do a pass on the query context stuff to make sure you got type names, generic type parameter names, and method parameter names all reasonable and consistent

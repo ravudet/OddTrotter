@@ -4,7 +4,7 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-
+    using System.Linq;
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -2015,6 +2015,56 @@ namespace Fx.QueryContext
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[3]);
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[4]);
+        }
+
+        [TestMethod]
+        public void DistinctByBug()
+        {
+            var queryResult = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" }.ToQueryResult().WithoutError<Exception>();
+            
+            var distincted = queryResult.DistinctBy(element => element[0], EqualityComparer<char>.Default);
+
+            Assert.IsTrue(distincted.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+
+            var nextNext = element.Next();
+            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.AreEqual("zxcv", nextNextElement.Value);
+        }
+
+        [TestMethod]
+        public void WhereBug()
+        {
+            var queryResult = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" }.ToQueryResult().WithoutError<Exception>();
+
+            var hashSet = new HashSet<string>();
+            var distincted = queryResult.Where(element => hashSet.Add(element));
+
+            Assert.IsTrue(distincted.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+
+            var nextNext = element.Next();
+            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.AreEqual("zxcv", nextNextElement.Value);
+        }
+
+        [TestMethod]
+        public void EnumerableWhere()
+        {
+            var enumerable = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" };
+            var hashSet = new HashSet<string>();
+            var distincted = System.Linq.Enumerable.Where(enumerable, element => hashSet.Add(element));
+
+            CollectionAssert.AreEqual(new[] { "asdf", "qwer", "zxcv" }, distincted.ToArray());
+            CollectionAssert.AreEqual(new[] { "asdf", "qwer", "zxcv" }, distincted.ToArray());
         }
 
         private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
