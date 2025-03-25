@@ -5,6 +5,7 @@ namespace Fx.QueryContext
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Numerics;
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -2034,6 +2035,25 @@ namespace Fx.QueryContext
             var nextNext = element.Next();
             Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
             Assert.AreEqual("zxcv", nextNextElement.Value);
+
+            For(queryResult.Nodes);
+        }
+
+        private static void For(IQueryResultNode<string, Exception> nodes)
+        {
+            IQueryResultNode<string, Exception> second;
+            int index = 0;
+            while (nodes.TryGetLeft(out var element))
+            {
+                if (index == 1)
+                {
+                    second = nodes;
+                }
+
+                nodes = element.Next();
+            }
+
+
         }
 
         [TestMethod]

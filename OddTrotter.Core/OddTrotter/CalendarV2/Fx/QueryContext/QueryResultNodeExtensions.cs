@@ -3,6 +3,7 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
 
     using Fx;
     using Fx.Either;
@@ -435,21 +436,31 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(keySelector);
             ArgumentNullException.ThrowIfNull(comparer);
 
-            var hashSet = new HashSet<TKey>(comparer);
+            var hashSet = ImmutableHashSet.Create(comparer);
             return source.DistinctBy(keySelector, hashSet);
         }
 
         private static IQueryResultNode<TValue, TError> DistinctBy<TValue, TError, TKey>(
             this IQueryResultNode<TValue, TError> source,
             Func<TValue, TKey> keySelector,
-            HashSet<TKey> hashSet)
+            ImmutableHashSet<TKey> hashSet)
         {
             return source
                 .SelectLeft(
                     element => Either
                         .Create(
                             element,
-                            element => hashSet.Add(keySelector(element.Value)),
+                            element =>
+                            {
+                                var key = keySelector(element.Value);
+                                if (!hashSet.Contains(key))
+                                {
+                                    hashSet = hashSet.Add(key); //// TODO does immutable hashset do something like return the original instance if the item already existed?
+                                    return true;
+                                }
+
+                                return false;
+                            },
                             element => new DistinctByElement<TValue, TError, TKey>(element.Value, element.Next(), keySelector, hashSet),
                             element => element.Next().DistinctBy(keySelector, hashSet))
                         .SelectManyRight())
@@ -461,7 +472,7 @@ namespace Fx.QueryContext
         {
             private readonly IQueryResultNode<TValue, TError> next;
             private readonly Func<TValue, TKey> keySelector;
-            private readonly HashSet<TKey> hashSet;
+            private readonly ImmutableHashSet<TKey> hashSet;
 
             private readonly Lazy<IQueryResultNode<TValue, TError>> nextResult;
 
@@ -474,7 +485,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="next"/> or <paramref name="hashSet"/> is <see langword="null"/>
             /// </exception>
-            public DistinctByElement(TValue value, IQueryResultNode<TValue, TError> next, Func<TValue, TKey> keySelector, HashSet<TKey> hashSet)
+            public DistinctByElement(TValue value, IQueryResultNode<TValue, TError> next, Func<TValue, TKey> keySelector, ImmutableHashSet<TKey> hashSet)
             {
                 ArgumentNullException.ThrowIfNull(next);
                 ArgumentNullException.ThrowIfNull(hashSet);
