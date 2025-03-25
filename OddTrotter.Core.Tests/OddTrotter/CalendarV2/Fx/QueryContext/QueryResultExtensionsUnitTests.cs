@@ -2037,6 +2037,14 @@ namespace Fx.QueryContext
             Assert.AreEqual("zxcv", nextNextElement.Value);
         }
 
+        [TestMethod]
+        public void HashSetAdd()
+        {
+            System.Collections.Immutable.ImmutableHashSet.Create();
+            //// TODO write the above test correctly to cehck that immutable hash set is working
+            //// TODO check if immutable hashset returns itself if adding an element that already exists
+        }
+
         private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
         {
             private readonly InstrumentedQueryResultNode queryResultNode;
