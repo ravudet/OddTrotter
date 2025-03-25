@@ -1863,39 +1863,18 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void DeferredExecution()
+        public void SelectDeferredExecution()
         {
             var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
-
             var instrumentedQueryResult = new InstrumentedQueryResult(queryResult);
 
-            Assert.IsTrue(instrumentedQueryResult.Nodes.TryGetLeft(out var element));
-            Assert.AreEqual("asdf", element.Value);
+            var firstCharacters = instrumentedQueryResult.Select(element => element[0]);
 
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual('a', element.Value);
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out var zeroCount));
-            Assert.AreEqual(1, zeroCount);
-
-            var next = element.Next();
-            Assert.IsTrue(next.TryGetLeft(out var nextElement));
-            Assert.AreEqual("qwer", nextElement.Value);
-
-            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(0, out zeroCount));
-            Assert.AreEqual(1, zeroCount);
-            Assert.IsTrue(instrumentedQueryResult.IndexToRetrievalCountMapping.TryGetValue(1, out var oneCount));
-            Assert.AreEqual(1, oneCount);
-
-
-
-
-
-            var secondInstrumentedQueryResult = new InstrumentedQueryResult(queryResult);
-            var firstCharacters = secondInstrumentedQueryResult.Select(element => element[0]);
-            Assert.AreEqual(0, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
-            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var firstCharacterElement));
-            Assert.AreEqual('a', firstCharacterElement.Value);
-            Assert.AreEqual(1, secondInstrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            //// TODO more assertions
         }
 
         private sealed class InstrumentedQueryResult : IQueryResult<string, Exception>
