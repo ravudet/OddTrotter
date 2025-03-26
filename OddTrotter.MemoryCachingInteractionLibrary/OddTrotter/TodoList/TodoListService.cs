@@ -385,6 +385,7 @@
             //   `argumentnullexception.throwifnull`
             //   `argumentnullinline.throwifnull`
             // exception documentation (temporarily, at least put the word "placeholder" in the xmldoc summary)
+            // is there any use of `<` in your XML doc? it will break intellisense if there is
             // todos
             // anything that isn't nailed down 100% should be `internal`
             // `this.`
@@ -398,7 +399,6 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool.queueuserworkitem?view=net-9.0#system-threading-threadpool-queueuserworkitem-1(system-action((-0))-0-system-boolean) argumentnullexception throw if callback is null
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
-            //// TODO do you use <generics> in your xmldoc? if you do, it'll break intellisense
 
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
