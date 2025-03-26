@@ -17,15 +17,6 @@ namespace OddTrotter.Calendar
     using Fx.Try;
     using System.Linq;
 
-    public interface IQueryContext<TValue, TError>
-    {
-        /// <summary>
-        /// TODO should this really not throw exceptions? "partial" was intended to indicate that *some* results came back, but an intermediate network error occurred; is it ok for "partial" to just mean any error at all?
-        /// </summary>
-        /// <returns></returns>
-        Task<QueryResult<TValue, TError>> Evaluate();
-    }
-
     /// <summary>
     /// TODO is it *really* that this is modeling queryresult*nodes* and that there are really 2 types of "queryresults": one that has just values, and one that has values and an error? this would let you mostly have ienumerables running around
     /// </summary>
@@ -271,14 +262,6 @@ namespace OddTrotter.Calendar
 
                 return await visitor.DispatchAsync(this, context).ConfigureAwait(false);
             }
-        }
-    }
-
-    public static class ExceptionExtensions
-    {
-        public static Exception AsException<TException>(this TException exception) where TException : Exception
-        {
-            return exception;
         }
     }
 
