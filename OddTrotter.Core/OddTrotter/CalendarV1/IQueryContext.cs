@@ -421,7 +421,7 @@ namespace OddTrotter.Calendar
     public static class QueryResultExtensions
     {
 
-
+        //// TODO you are here
 
         private sealed class SplitVisitor<TValue, TError, TRight> : QueryResult<IEither<TValue, TRight>, TError>.Visitor<TError?, (Action<TValue>, Action<TRight>)>
         {
