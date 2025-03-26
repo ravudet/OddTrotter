@@ -380,45 +380,10 @@ namespace OddTrotter.Calendar
         }
 
 
+        //// TODO in `select`, for convenience, you have a `select` overload that *does* use a task queryresult, but *doesn't* use a task selector; that's not really relevenat for first; do you still want the "convenience method"?
+        //// TODO actually, you seem to have two dimensions: is `this` a task + is the `func` a task? and you seem to want (for convenience) all 4 variations
 
-        /*public static async Task<FirstOrDefaultResult<TElement, TError, TDefault>> FirstOrDefault<TElement, TError, TDefault>(this Task<QueryResult<TElement, TError>> queryResult)
-        {
-            //// TODO in `select`, for convenience, you have a `select` overload that *does* use a task queryresult, but *doesn't* use a task selector; that's not really relevenat for first; do you still want the "convenience method"?
-            //// TODO actually, you seem to have two dimensions: is `this` a task + is the `func` a task? and you seem to want (for convenience) all 4 variations
-            return (await queryResult.ConfigureAwait(false)).FirstOrDefault();
-        }*/
 
-        public static async Task<QueryResultExtensions.FirstOrDefaultResult<TElement, TError, TDefault>> FirstOrDefaultAsync<TElement, TError, TDefault>(this Task<QueryResult<TElement, TError>> queryResult, TDefault defaultValue)
-        {
-            return (await queryResult.ConfigureAwait(false)).FirstOrDefault(defaultValue);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TError"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryResult"></param>
-        /// <param name="selector"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> or <paramref name="selector"/> is <see langword="null"/></exception>
-        public static async Task<QueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this Task<QueryResult<TSource, TError>> queryResult,
-            Func<TSource, TResult> selector)
-        {
-            ArgumentNullException.ThrowIfNull(queryResult);
-            ArgumentNullException.ThrowIfNull(selector);
-
-            return (await queryResult.ConfigureAwait(false)).Select(selector);
-        }
-
-        public static async Task<QueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this Task<QueryResult<TSource, TError>> queryResult,
-            Func<TSource, Task<TResult>> selector)
-        {
-            return await (await queryResult.ConfigureAwait(false)).SelectAsync(selector).ConfigureAwait(false);
-        }
 
         public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
             this Task<IQueryResult<TSource, TError>> queryResult,
@@ -428,13 +393,6 @@ namespace OddTrotter.Calendar
             ArgumentNullException.ThrowIfNull(selector);
 
             return (await queryResult.ConfigureAwait(false)).Select(selector);
-        }
-
-        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this Task<IQueryResult<TSource, TError>> queryResult,
-            Func<TSource, Task<TResult>> selector)
-        {
-            return await (await queryResult.ConfigureAwait(false)).SelectAsync(selector).ConfigureAwait(false);
         }
 
         public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
