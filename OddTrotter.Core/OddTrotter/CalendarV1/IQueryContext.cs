@@ -417,66 +417,7 @@ namespace OddTrotter.Calendar
         }
     }
 
-    /// <summary>
-    /// Either
-    ///     <
-    ///         (
-    ///             CalendarEvent SeriesMaster, 
-    ///             FirstOrDefault
-    ///                 <
-    ///                     Either
-    ///                         <
-    ///                             CalendarEvent, 
-    ///                             CalendarEventsContextTranslationException
-    ///                         >,
-    ///                     CalendarEventsContextPagingException,
-    ///                     Void
-    ///                 >
-    ///         ),
-    ///         CalendarEventsContextTranslationException
-    ///     >
-    ///     
-    /// Either
-    ///     <
-    ///         (
-    ///             CalendarEvent SeriesMaster,
-    ///             Either
-    ///                 <
-    ///                     Either
-    ///                         <
-    ///                             CalendarEvent,
-    ///                             CalendarEventsContextTranslationException
-    ///                         >,
-    ///                     CalendarEVentsContextPagingException
-    ///                 >
-    ///         ),
-    ///         CalendarEventsContextTranslationException
-    ///     >
-    ///     
-    /// 
-    /// 
-    /// 
-    /// Either
-    ///     <
-    ///         (
-    ///             CalendarEvent, 
-    ///             Either
-    ///                 <
-    ///                     Either
-    ///                         <
-    ///                             CalendarEvent, 
-    ///                             CalendarEventsContextTranslationEcxeption
-    ///                         >, 
-    ///                     CAlendarEventsContextPAgingException
-    ///                 >
-    ///         ), 
-    ///         CalendarEventsContextTranslationException
-    ///     >
-    ///     
-    /// 
-    /// Either<CalendarEvent, CalendarEventsContextTranslationException>
-    /// </summary>
-
+   
     public static class QueryResultExtensions
     {
         public static bool IsElement<TElement, TError, TDefault>(this FirstOrDefaultResult<TElement, TError, TDefault> result)
