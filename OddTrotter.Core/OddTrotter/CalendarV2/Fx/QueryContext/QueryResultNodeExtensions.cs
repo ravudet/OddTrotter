@@ -440,20 +440,45 @@ namespace Fx.QueryContext
             return source.DistinctBy(keySelector, hashSet);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="keySelector"></param>
+        /// <param name="hashSet"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="hashSet"/> is
+        /// <see langword="null"/>
+        /// </exception>
         private static IQueryResultNode<TValue, TError> DistinctBy<TValue, TError, TKey>(
             this IQueryResultNode<TValue, TError> source,
             Func<TValue, TKey> keySelector,
             ImmutableHashSet<TKey> hashSet)
         {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(keySelector);
+            ArgumentNullException.ThrowIfNull(hashSet);
+
             var originalHashset = hashSet;
             return source
                 .SelectLeft(
                     element => Either
                         .Create(
                             element,
-                            element => originalHashset != (hashSet = hashSet.Add(keySelector(element.Value))),
-                            element => new DistinctByElement<TValue, TError, TKey>(element.Value, element.Next(), keySelector, hashSet),
-                            element => element.Next().DistinctBy(keySelector, hashSet))
+                            element => 
+                                originalHashset != (hashSet = hashSet.Add(keySelector(element.Value))),
+                            element => 
+                                new DistinctByElement<TValue, TError, TKey>(
+                                    element.Value, 
+                                    element.Next(), 
+                                    keySelector, 
+                                    hashSet),
+                            element => 
+                                element.Next().DistinctBy(keySelector, hashSet))
                         .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
@@ -472,11 +497,17 @@ namespace Fx.QueryContext
             /// <param name="next"></param>
             /// <param name="hashSet"></param>
             /// <exception cref="ArgumentNullException">
-            /// Thrown if <paramref name="next"/> or <paramref name="hashSet"/> is <see langword="null"/>
+            /// Thrown if <paramref name="next"/> or <paramref name="keySelector"/> or <paramref name="hashSet"/> is
+            /// <see langword="null"/>
             /// </exception>
-            public DistinctByElement(TValue value, IQueryResultNode<TValue, TError> next, Func<TValue, TKey> keySelector, ImmutableHashSet<TKey> hashSet)
+            public DistinctByElement(
+                TValue value, 
+                IQueryResultNode<TValue, TError> next,
+                Func<TValue, TKey> keySelector, 
+                ImmutableHashSet<TKey> hashSet)
             {
                 ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(keySelector);
                 ArgumentNullException.ThrowIfNull(hashSet);
 
                 this.Value = value;
