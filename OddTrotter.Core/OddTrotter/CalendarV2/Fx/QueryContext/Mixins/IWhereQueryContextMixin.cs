@@ -23,6 +23,12 @@ namespace Fx.QueryContext.Mixins
         /// <exception cref="NotSupportedException">
         /// Thrown if <paramref name="predicate"/> represents a filtering that is not supported by the backing data source
         /// </exception>
+        /// <exception cref="NotImplementedException">
+        /// Thrown if support for <paramref name="predicate"/> is not yet implemented; this *could* mean that
+        /// <paramref name="predicate"/> is not supported by the underyling data store and a validity check is not yet
+        /// implemented, or it could mean that <paramref name="predicate"/> *is* supported by the underlying data store, but
+        /// converting it to the proper query hasn't been implemented yet
+        /// </exception>
         TQueryContext Where(Expression<Func<TDataStoreValue, bool>> predicate);
     }
 }
