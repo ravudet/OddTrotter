@@ -1708,5 +1708,54 @@ namespace Fx.QueryContext
             Assert.IsFalse(nextTerminal.TryGetRight(out var nextEmpty));
             Assert.IsFalse(distinctByed.TryGetRight(out var terminal));
         }
+
+        [TestMethod]
+        public void DistinctByReusingElement()
+        {
+            var queryResult =
+                Either
+                    .Left(
+                        new MockElement(
+                            "asdf",
+                            Either
+                                .Left(
+                                    new MockElement(
+                                        "qwer",
+                                        Either
+                                            .Left(
+                                                new MockElement(
+                                                    "asdf",
+                                                    Either
+                                                        .Left(
+                                                            new MockElement(
+                                                                "asdf",
+                                                                Either
+                                                                    .Left(
+                                                                        new MockElement(
+                                                                            "zxcv"))
+                                                                    .Right<IEither<MockError, MockEmpty>>()
+                                                                    .ToQueryResultNode()))
+                                                        .Right<IEither<MockError, MockEmpty>>()
+                                                        .ToQueryResultNode()))
+                                            .Right<IEither<MockError, MockEmpty>>()
+                                            .ToQueryResultNode()))
+                                .Right<IEither<MockError, MockEmpty>>()
+                                .ToQueryResultNode()))
+                    .Right<IEither<MockError, MockEmpty>>()
+                    .ToQueryResultNode();
+
+            var distincted = queryResult.DistinctBy(element => element[0], EqualityComparer<char>.Default);
+
+            Assert.IsTrue(distincted.TryGetLeft(out var element));
+            Assert.AreEqual("asdf", element.Value);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual("qwer", nextElement.Value);
+
+            var nextNext = element.Next();
+            Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.AreEqual("qwer", nextNextElement.Value);
+        }
     }
 }

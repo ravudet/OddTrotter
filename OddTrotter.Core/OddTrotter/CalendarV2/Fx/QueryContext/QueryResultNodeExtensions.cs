@@ -445,22 +445,13 @@ namespace Fx.QueryContext
             Func<TValue, TKey> keySelector,
             ImmutableHashSet<TKey> hashSet)
         {
+            var originalHashset = hashSet;
             return source
                 .SelectLeft(
                     element => Either
                         .Create(
                             element,
-                            element =>
-                            {
-                                var key = keySelector(element.Value);
-                                if (!hashSet.Contains(key))
-                                {
-                                    hashSet = hashSet.Add(key); //// TODO does immutable hashset do something like return the original instance if the item already existed?
-                                    return true;
-                                }
-
-                                return false;
-                            },
+                            element => originalHashset != (hashSet = hashSet.Add(keySelector(element.Value))),
                             element => new DistinctByElement<TValue, TError, TKey>(element.Value, element.Next(), keySelector, hashSet),
                             element => element.Next().DistinctBy(keySelector, hashSet))
                         .SelectManyRight())

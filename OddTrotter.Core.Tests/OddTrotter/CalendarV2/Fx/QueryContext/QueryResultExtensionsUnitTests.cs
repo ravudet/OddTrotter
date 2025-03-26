@@ -2019,7 +2019,7 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void DistinctByBug()
+        public void DistinctByReusingElement()
         {
             var queryResult = new[] { "asdf", "qwer", "asdf", "asdf", "zxcv" }.ToQueryResult().WithoutError<Exception>();
             
@@ -2034,15 +2034,7 @@ namespace Fx.QueryContext
 
             var nextNext = element.Next();
             Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
-            Assert.AreEqual("zxcv", nextNextElement.Value);
-        }
-
-        [TestMethod]
-        public void HashSetAdd()
-        {
-            System.Collections.Immutable.ImmutableHashSet.Create();
-            //// TODO write the above test correctly to cehck that immutable hash set is working
-            //// TODO check if immutable hashset returns itself if adding an element that already exists
+            Assert.AreEqual("qwer", nextNextElement.Value);
         }
 
         private sealed class InstrumentedQueryResult<TValue, TError> : IQueryResult<TValue, TError>
