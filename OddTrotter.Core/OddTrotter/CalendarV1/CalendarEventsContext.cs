@@ -335,7 +335,7 @@ namespace OddTrotter.Calendar
                             async seriesMaster =>
                             {
                                 var instances = await GetInstancesInSeries(seriesMaster).ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, FirstInstance: instances.FirstOrDefault());
+                                return (SeriesMaster: seriesMaster, FirstInstance: instances.FirstOrDefault(new Nothing())); //// TODO should there be a parameterless overload for firstordefault
                             },
                             translationError => Task.FromResult(translationError))) //// TODO go through all of your lambda code and make sure they have meaningful names
                 .SelectAsync(
