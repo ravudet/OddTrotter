@@ -416,32 +416,6 @@ namespace OddTrotter.Calendar
                                 element => selector(element).ConfigureAwait(false).GetAwaiter().GetResult())); //// TODO make this actually async
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TError"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryResult"></param>
-        /// <param name="selector"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> or <paramref name="selector"/> is <see langword="null"/></exception>
-        public static async Task<QueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this QueryResult<TSource, TError> queryResult,
-            Func<TSource, Task<TResult>> selector)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (selector == null)
-            {
-                throw new ArgumentNullException(nameof(selector));
-            }
-
-            return await SelectAsyncVisitor<TSource, TError, TResult>.Instance.VisitAsync(queryResult, selector).ConfigureAwait(false);
-        }
 
         private sealed class SelectAsyncResult<TSource, TError, TResult> : QueryResult<TResult, TError>.Element
         {
