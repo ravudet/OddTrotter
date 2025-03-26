@@ -560,64 +560,6 @@ namespace OddTrotter.Calendar
             }
         }
 
-        private sealed class FirstOrDefaultVisitor<TElement, TError, TDefault> : QueryResult<TElement, TError>.Visitor<FirstOrDefaultResult<TElement, TError, TDefault>, TDefault>
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            private FirstOrDefaultVisitor()
-            {
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public static FirstOrDefaultVisitor<TElement, TError, TDefault> Instance { get; } = new FirstOrDefaultVisitor<TElement, TError, TDefault>();
-
-            /// <inheritdoc/>
-            public override FirstOrDefaultResult<TElement, TError, TDefault> Dispatch(QueryResult<TElement, TError>.Final node, TDefault context)
-            {
-                if (node == null)
-                {
-                    throw new ArgumentNullException(nameof(node));
-                }
-
-                return new FirstOrDefaultResult<TElement, TError, TDefault>.Default(context);
-            }
-
-            /// <inheritdoc/>
-            public override FirstOrDefaultResult<TElement, TError, TDefault> Dispatch(QueryResult<TElement, TError>.Element node, TDefault context)
-            {
-                if (node == null)
-                {
-                    throw new ArgumentNullException(nameof(node));
-                }
-
-                return new FirstOrDefaultResult<TElement, TError, TDefault>.First(node.Value);
-            }
-
-            /// <inheritdoc/>
-            public override FirstOrDefaultResult<TElement, TError, TDefault> Dispatch(QueryResult<TElement, TError>.Partial node, TDefault context)
-            {
-                if (node == null)
-                {
-                    throw new ArgumentNullException(nameof(node));
-                }
-                return new FirstOrDefaultResult<TElement, TError, TDefault>.Error(node.Error);
-            }
-        }
-
-        public static IEither<System.Linq.FirstOrDefault<TElement, Nothing>, TError> FirstOrDefault<TElement, TError>(this IQueryResult<TElement, TError> queryResult)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            return queryResult
-                .FirstOrDefault(
-                    new Nothing());
-        }
 
 
         private sealed class SplitVisitor<TValue, TError, TRight> : QueryResult<IEither<TValue, TRight>, TError>.Visitor<TError?, (Action<TValue>, Action<TRight>)>
