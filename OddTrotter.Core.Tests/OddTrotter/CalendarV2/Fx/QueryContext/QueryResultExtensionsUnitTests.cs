@@ -4,8 +4,7 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Numerics;
+
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -1495,8 +1494,8 @@ namespace Fx.QueryContext
 
             var nextNext = nextElement.Next();
             Assert.IsTrue(nextNext.TryGetLeft(out var nextNextElement));
-            Assert.AreEqual(3, instrumentedFirst.IndexToRetrievalCountMapping.Count); // a third access means that we went "right"
-                                                                                      // to the "terminal"
+            Assert.AreEqual(3, instrumentedFirst.IndexToRetrievalCountMapping.Count); // a third access means that we went
+                                                                                      // "right" to the "terminal"
             Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[0]);
             Assert.AreEqual(1, instrumentedFirst.IndexToRetrievalCountMapping[1]);
             Assert.AreEqual(1, instrumentSecond.IndexToRetrievalCountMapping.Count);
