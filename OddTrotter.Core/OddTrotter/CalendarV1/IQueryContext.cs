@@ -421,7 +421,6 @@ namespace OddTrotter.Calendar
     public static class QueryResultExtensions
     {
 
-        //// TODO you are here
 
 
 
@@ -523,6 +522,7 @@ namespace OddTrotter.Calendar
 
         public static Fx.QueryContext.IQueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this IQueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
         {
+            //// TODO do you like this method name? do you want to normalize with names used in `either`?
             return new ErrorSelectQueryResult<TValue, TErrorEnd>(queryResult.Nodes.ErrorSelectIterator(selector));
         }
 
@@ -580,101 +580,16 @@ namespace OddTrotter.Calendar
             public IQueryResultNode<TValue, TErrorEnd> Nodes { get; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <typeparam name="TErrorStart"></typeparam>
-        /// <typeparam name="TErrorEnd"></typeparam>
-        /// <param name="queryResult"></param>
-        /// <param name="selector"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> or <paramref name="selector"/> is <see langword="null"/></exception>
-        public static QueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this QueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
-        {
-            //// TODO do you like this method name? do you want to normalize with names used in `either`?
 
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
 
-            if (selector == null)
-            {
-                throw new ArgumentNullException(nameof(selector));
-            }
 
-            return ErrorVisitor<TValue, TErrorStart, TErrorEnd>.Instance.Visit(queryResult, selector);
-        }
+        //// TODO you previously had an `oftype` extension that went unused, likely because it had the type inference problem; maybe your `type<T>` solution can work here?
 
-        public static _OfType<TValueStart, TError> OfType<TValueStart, TError>(this QueryResult<TValueStart, TError> queryResult)
-        {
-            return new _OfType<TValueStart, TError>(queryResult);
-        }
 
-        public sealed class _OfType<TValueStart, TError>
-        {
-            private readonly QueryResult<TValueStart, TError> queryResult;
 
-            public _OfType(QueryResult<TValueStart, TError> queryResult)
-            {
-                this.queryResult = queryResult;
-            }
+        //// TODO you are here
 
-            public QueryResult<TValueEnd, TError> Invoke<TValueEnd>()
-            {
-                //// TODO is there anything you can do to make this more smooth?
-                return OfTypeVisitor<TValueStart, TError, TValueEnd>.Instance.Visit(this.queryResult, default);
-            }
-        }
 
-        private sealed class OfTypeVisitor<TValueStart, TError, TValueEnd> : QueryResult<TValueStart, TError>.Visitor<QueryResult<TValueEnd, TError>, Nothing>
-        {
-            private OfTypeVisitor()
-            {
-            }
-
-            public static OfTypeVisitor<TValueStart, TError, TValueEnd> Instance { get; } = new OfTypeVisitor<TValueStart, TError, TValueEnd>();
-
-            public override QueryResult<TValueEnd, TError> Dispatch(QueryResult<TValueStart, TError>.Final node, Nothing context)
-            {
-                return new QueryResult<TValueEnd, TError>.Final();
-            }
-
-            public override QueryResult<TValueEnd, TError> Dispatch(QueryResult<TValueStart, TError>.Element node, Nothing context)
-            {
-                if (node.Value is TValueEnd valueEnd)
-                {
-                    return new OfTypeResult<TValueStart, TError, TValueEnd>(node, valueEnd);
-                }
-                else
-                {
-                    return this.Visit(node.Next(), context);
-                }
-            }
-
-            public override QueryResult<TValueEnd, TError> Dispatch(QueryResult<TValueStart, TError>.Partial node, Nothing context)
-            {
-                return new QueryResult<TValueEnd, TError>.Partial(node.Error);
-            }
-        }
-
-        private sealed class OfTypeResult<TValueStart, TError, TValueEnd> : QueryResult<TValueEnd, TError>.Element
-        {
-            private readonly QueryResult<TValueStart, TError>.Element queryResult;
-
-            public OfTypeResult(QueryResult<TValueStart, TError>.Element queryResult, TValueEnd valueEnd)
-                : base(valueEnd)
-            {
-                this.queryResult = queryResult;
-            }
-
-            /// <inheritdoc/>
-            public override QueryResult<TValueEnd, TError> Next()
-            {
-                return OfTypeVisitor<TValueStart, TError, TValueEnd>.Instance.Visit(this.queryResult.Next(), default);
-            }
-        }
 
         public static IEither<TValue, TError> First<TValue, TError>(this QueryResult<TValue, TError> queryResult)
         {
