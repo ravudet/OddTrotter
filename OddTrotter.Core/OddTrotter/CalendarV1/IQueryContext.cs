@@ -618,6 +618,8 @@ namespace OddTrotter.Calendar
 
         public static QueryResult<TValue, TError> ToQueryResult<TValue, TError>(this IEnumerable<TValue> enumerable)
         {
+            //// TODO the implementation here is bad; you can't iterate through the `queryresult` twice because `enumerator` is mutable; further, it has issues with partially traversing, and then "traversing" the same node multiple times before continuing to the next node
+
             IEnumerator<TValue>? enumerator = null;
             try
             {
