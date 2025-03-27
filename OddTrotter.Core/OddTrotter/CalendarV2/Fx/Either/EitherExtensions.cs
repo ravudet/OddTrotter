@@ -38,9 +38,21 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(rightMap);
 
             return either.Apply(
-                (left, _) => leftMap(left),
-                (right, _) => rightMap(right),
-                new Nothing());
+                (left, context) => context.LeftMap(left),
+                (right, context) => context.RightMap(right),
+                new ApplyContext<TLeft, TRight, TResult>(leftMap, rightMap));
+        }
+
+        private sealed class ApplyContext<TLeft, TRight, TResult>
+        {
+            public ApplyContext(Func<TLeft, TResult> leftMap, Func<TRight, TResult> rightMap)
+            {
+                LeftMap = leftMap;
+                RightMap = rightMap;
+            }
+
+            public Func<TLeft, TResult> LeftMap { get; }
+            public Func<TRight, TResult> RightMap { get; }
         }
 
         /// <summary>

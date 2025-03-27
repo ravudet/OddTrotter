@@ -423,79 +423,7 @@ namespace OddTrotter.Calendar
 
         //// TODO you are here
 
-        private sealed class SplitVisitor<TValue, TError, TRight> : QueryResult<IEither<TValue, TRight>, TError>.Visitor<TError?, (Action<TValue>, Action<TRight>)>
-        {
-            private SplitVisitor()
-            {
-            }
 
-            public static SplitVisitor<TValue, TError, TRight> Instance { get; } = new SplitVisitor<TValue, TError, TRight>();
-
-            public override TError? Dispatch(QueryResult<IEither<TValue, TRight>, TError>.Final node, (Action<TValue>, Action<TRight>) context)
-            {
-                return default;
-            }
-
-            public override TError? Dispatch(QueryResult<IEither<TValue, TRight>, TError>.Element node, (Action<TValue>, Action<TRight>) context)
-            {
-                node.Value.Apply(
-                    (left, @void) =>
-                    {
-                        context.Item1(left);
-                        return new Nothing();
-                    },
-                    (right, @void) =>
-                    {
-                        context.Item2(right);
-                        return new Nothing();
-                    },
-                    new Nothing()); //// TODO shouldn't you pass in `context` instead of creating closures?
-                return default;
-            }
-
-            public override TError? Dispatch(QueryResult<IEither<TValue, TRight>, TError>.Partial node, (Action<TValue>, Action<TRight>) context)
-            {
-                return node.Error;
-            }
-        }
-
-        public static TError? Split<TValue, TError, TRight>(
-            this QueryResult<IEither<TValue, TRight>, TError> queryResult,
-            Action<TValue> leftAction,
-            Action<TRight> rightAction)
-        {
-            return SplitVisitor<TValue, TError, TRight>.Instance.Visit(queryResult, (leftAction, rightAction));
-        }
-
-        public static IEnumerable<TValue> ToEnumerable<TValue, TError>(this QueryResult<TValue, TError> queryResult)
-        {
-            while (queryResult is QueryResult<TValue, TError>.Element element)
-            {
-                yield return element.Value;
-                queryResult = element.Next();
-            }
-
-            //// TODO throw if queryresult is now partial?
-        }
-
-        private sealed class Pointer<T>
-        {
-            public Pointer(T value)
-            {
-                this.Value = value;
-            }
-
-            public T Value { get; set; }
-        }
-
-        private static IEnumerable<TValue> ToEnumerable<TValue, TError>(Pointer<QueryResult<TValue, TError>> pointer)
-        {
-            while (pointer.Value is QueryResult<TValue, TError>.Element element)
-            {
-                yield return element.Value;
-                pointer.Value = element.Next();
-            }
-        }
 
         private sealed class ErrorResult<TValue, TErrorStart, TErrorEnd> : QueryResult<TValue, TErrorEnd>.Element
         {
