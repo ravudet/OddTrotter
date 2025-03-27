@@ -19,7 +19,6 @@
     using OddTrotter.AzureBlobClient;
     using OddTrotter.Calendar;
     using OddTrotter.GraphClient;
-    using static Fx.Either.Either<TLeft, TRight>;
 
     public sealed class TodoListService
     {

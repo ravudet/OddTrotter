@@ -591,35 +591,6 @@ namespace OddTrotter.Calendar
 
 
 
-        public static IEither<TValue, TError> First<TValue, TError>(this QueryResult<TValue, TError> queryResult)
-        {
-            return FirstVisitor<TValue, TError>.Instance.Visit(queryResult, default);
-        }
-
-        private sealed class FirstVisitor<TValue, TError> : QueryResult<TValue, TError>.Visitor<IEither<TValue, TError>, Nothing>
-        {
-            private FirstVisitor()
-            {
-            }
-
-            public static FirstVisitor<TValue, TError> Instance { get; } = new FirstVisitor<TValue, TError>();
-
-            public override IEither<TValue, TError> Dispatch(QueryResult<TValue, TError>.Final node, Nothing context)
-            {
-                throw new InvalidOperationException("TODO");
-            }
-
-            public override IEither<TValue, TError> Dispatch(QueryResult<TValue, TError>.Element node, Nothing context)
-            {
-                return Either.Left(node.Value).Right<TError>();
-            }
-
-            public override IEither<TValue, TError> Dispatch(QueryResult<TValue, TError>.Partial node, Nothing context)
-            {
-                return Either.Left<TValue>().Right(node.Error);
-            }
-        }
-
         private sealed class WhereResult<TValue, TError> : QueryResult<TValue, TError>.Element
         {
             private readonly Element queryResult;
