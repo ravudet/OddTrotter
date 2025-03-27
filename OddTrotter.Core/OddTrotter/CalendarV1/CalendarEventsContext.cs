@@ -671,39 +671,6 @@ namespace OddTrotter.Calendar
             return Adapt(graphResponse);
         }
 
-        /*/// <inheritdoc/>
-        public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
-        {
-            if (predicate == null)
-            {
-                throw new ArgumentNullException(nameof(predicate));
-            }
-
-            if (object.ReferenceEquals(predicate, StartLessThanNow))
-            {
-                var now = DateTime.UtcNow;
-                if (this.endTime != null && this.endTime < now)
-                {
-                    // we logically can see that this will always happen (they can only call set `endTime` to `DateTime.UtcNow`, so `now` will always been more in the future than `endTime`) 
-                    return this;
-                }
-
-                return new CalendarEventsContext(this.graphCalendarEventsContext, this.calendarUriPath, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, now, this.isCancelled);
-            }
-            else if (object.ReferenceEquals(predicate, IsNotCancelled))
-            {
-                if (this.isCancelled != null)
-                {
-                    // the caller can only provide `IsNotCancelled` right now, so if `isCancelled` is already set, it won't be changing
-                    return this;
-                }
-
-                return new CalendarEventsContext(this.graphCalendarEventsContext, this.calendarUriPath, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.endTime, false);
-            }
-
-            throw new NotImplementedException("TODO");
-        }*/
-
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
         {
             if (predicate == null)
