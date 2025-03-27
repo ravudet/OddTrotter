@@ -307,40 +307,6 @@
             var third = first.MakeRelativeUri(second);
         }
 
-        [TestMethod]
-        public void QueryResult()
-        {
-            var items = new[] { "asdf", "qwer", "1234", "zxcv" };
-            var queryResult = items.ToQueryResult<string, bool>();
-
-            var values = new List<string>();
-            while (queryResult is QueryResult<string, bool>.Element element)
-            {
-                values.Add(element.Value);
-                queryResult = element.Next();
-            }
-
-            var concat = string.Join(",", values);
-        }
-
-        [TestMethod]
-        public void ConcatQueryResult()
-        {
-            var items = new[] { "asdf", "qwer", "1234", "zxcv" };
-            var first = items.ToQueryResult<string, bool>();
-            var second = items.Reverse().ToQueryResult<string, bool>();
-
-            var concated = first.Concat(second);
-            var values = new List<string>();
-            while (concated is QueryResult<string, bool>.Element element)
-            {
-                values.Add(element.Value);
-                concated = element.Next();
-            }
-
-            var @string = string.Join(",", values);
-        }
-
         /// <summary>
         /// Creates a <see cref="TodoListService"/> with a <see langword="null"/> memory cache
         /// </summary>

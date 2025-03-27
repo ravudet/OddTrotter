@@ -587,56 +587,19 @@ namespace OddTrotter.Calendar
 
 
 
+
+
+
+
         //// TODO you are here
 
 
 
 
-        private sealed class ToQueryResultResult<TValue, TError> : QueryResult<TValue, TError>.Element
-        {
-            private readonly IEnumerator<TValue> enumerator;
 
-            public ToQueryResultResult(IEnumerator<TValue> enumerator)
-                : base(enumerator.Current)
-            {
-                //// TODO make queryresult.final disposable?
-                this.enumerator = enumerator;
-            }
 
-            /// <inheritdoc/>
-            public override QueryResult<TValue, TError> Next()
-            {
-                if (!this.enumerator.MoveNext())
-                {
-                    return new QueryResult<TValue, TError>.Final();
-                }
 
-                //// TODO is this ok? it might not be properly immutable this way
-                return new ToQueryResultResult<TValue, TError>(this.enumerator);
-            }
-        }
 
-        public static QueryResult<TValue, TError> ToQueryResult<TValue, TError>(this IEnumerable<TValue> enumerable)
-        {
-            //// TODO the implementation here is bad; you can't iterate through the `queryresult` twice because `enumerator` is mutable; further, it has issues with partially traversing, and then "traversing" the same node multiple times before continuing to the next node
-
-            IEnumerator<TValue>? enumerator = null;
-            try
-            {
-                enumerator = enumerable.GetEnumerator();
-                if (!enumerator.MoveNext())
-                {
-                    return new QueryResult<TValue, TError>.Final();
-                }
-
-                return new ToQueryResultResult<TValue, TError>(enumerator);
-            }
-            catch
-            {
-                enumerator?.Dispose();
-                throw;
-            }
-        }
 
         private sealed class ConcatResult<TValue, TError> : QueryResult<TValue, TError>.Element
         {
