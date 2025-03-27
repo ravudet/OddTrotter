@@ -591,60 +591,6 @@ namespace OddTrotter.Calendar
 
 
 
-        private sealed class WhereResult<TValue, TError> : QueryResult<TValue, TError>.Element
-        {
-            private readonly Element queryResult;
-            private readonly Func<TValue, bool> predicate;
-
-            public WhereResult(QueryResult<TValue, TError>.Element queryResult, Func<TValue, bool> predicate)
-                : base(queryResult.Value)
-            {
-                this.queryResult = queryResult;
-                this.predicate = predicate;
-            }
-
-            /// <inheritdoc/>
-            public sealed override QueryResult<TValue, TError> Next()
-            {
-                return WhereVisitor<TValue, TError>.Instance.Visit(this.queryResult.Next(), this.predicate);
-            }
-        }
-
-        private sealed class WhereVisitor<TValue, TError> : QueryResult<TValue, TError>.Visitor<QueryResult<TValue, TError>, Func<TValue, bool>>
-        {
-            private WhereVisitor()
-            {
-            }
-
-            public static WhereVisitor<TValue, TError> Instance { get; } = new WhereVisitor<TValue, TError>();
-
-            public override QueryResult<TValue, TError> Dispatch(QueryResult<TValue, TError>.Final node, Func<TValue, bool> context)
-            {
-                return node;
-            }
-
-            public override QueryResult<TValue, TError> Dispatch(QueryResult<TValue, TError>.Element node, Func<TValue, bool> context)
-            {
-                if (context(node.Value))
-                {
-                    return new WhereResult<TValue, TError>(node, context);
-                }
-                else
-                {
-                    return this.Visit(node.Next(), context);
-                }
-            }
-
-            public override QueryResult<TValue, TError> Dispatch(QueryResult<TValue, TError>.Partial node, Func<TValue, bool> context)
-            {
-                return node;
-            }
-        }
-
-        public static QueryResult<TValue, TError> Where<TValue, TError>(this QueryResult<TValue, TError> queryResult, Func<TValue, bool> predicate)
-        {
-            return WhereVisitor<TValue, TError>.Instance.Visit(queryResult, predicate);
-        }
 
         private sealed class ToQueryResultResult<TValue, TError> : QueryResult<TValue, TError>.Element
         {
