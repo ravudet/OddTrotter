@@ -26,7 +26,7 @@ namespace OddTrotter.Calendar
                 CalendarEvent, 
                 CalendarEventsContextPagingException
             >,
-        Fx.QueryContext.Mixins.IWhereQueryContextMixin
+        Fx.QueryContext.Mixins.IWhereQueryContextMixin //// TODO rename to iquerycontextwheremixin?
             <
                 IEither
                     <
@@ -37,22 +37,6 @@ namespace OddTrotter.Calendar
                 CalendarEventsContextPagingException,
                 CalendarEventsContext
             >
-        /*IQueryContext
-            <
-                IEither
-                    <
-                        CalendarEvent,
-                        CalendarEventsContextTranslationException
-                    >, 
-                CalendarEventsContextPagingException
-            >, 
-        IWhereQueryContextMixin //// TODO rename to iquerycontextwheremixin?
-            <
-                CalendarEvent,
-                CalendarEventsContextTranslationException, 
-                CalendarEventsContextPagingException, 
-                CalendarEventsContext
-            >*/
     {
         private readonly IGraphCalendarEventsEvaluator graphCalendarEventsContext;
 
@@ -183,33 +167,6 @@ namespace OddTrotter.Calendar
                             new AggregateException(firstError, secondError)));
             return allEvents;
         }
-
-        /*/// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public async 
-            Task
-                <
-                    QueryResult
-                        <
-                            IEither
-                                <
-                                    CalendarEvent,
-                                    CalendarEventsContextTranslationException
-                                >, 
-                            CalendarEventsContextPagingException
-                        >
-                > 
-            Evaluate()
-        {
-            var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
-            var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
-            //// TODO FUTURE merge the sorted sequences instead of concat //// TODO these are not necessarily sorted because the
-            /// series events will come back in the order of their master start times, not the first instance start times
-            var allEvents = instanceEvents.Concat(seriesEvents);
-            return allEvents;
-        }*/
         
         /// <summary>
         /// 
