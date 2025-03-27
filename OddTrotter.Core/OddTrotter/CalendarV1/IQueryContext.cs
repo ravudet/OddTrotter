@@ -417,7 +417,7 @@ namespace OddTrotter.Calendar
         }
     }
 
-   
+
     public static class QueryResultExtensions
     {
 
@@ -586,4 +586,5 @@ namespace OddTrotter.Calendar
         //// TODO you previously had an `oftype` extension that went unused, likely because it had the type inference problem; maybe your `type<T>` solution can work here?
 
 
+    }
 }
