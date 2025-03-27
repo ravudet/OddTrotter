@@ -20,6 +20,75 @@ namespace OddTrotter.Calendar
 
     public static class QueryResultAsyncExtensions
     {
+        
+
+
+        public static async Task<IQueryResult<TResult, TError>> TrySelectAsync<TValue, TError, TResult>(this Task<IQueryResult<TValue, TError>> queryResult, Fx.Try.Try<TValue, TResult> @try)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (@try == null)
+            {
+                throw new ArgumentNullException(nameof(@try));
+            }
+
+            return (await queryResult).TrySelect(@try);
+        }
+
+
+        //// TODO in `select`, for convenience, you have a `select` overload that *does* use a task queryresult, but *doesn't* use a task selector; that's not really relevenat for first; do you still want the "convenience method"?
+        //// TODO actually, you seem to have two dimensions: is `this` a task + is the `func` a task? and you seem to want (for convenience) all 4 variations
+
+
+
+        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+            this Task<IQueryResult<TSource, TError>> queryResult,
+            Func<TSource, TResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(queryResult);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return (await queryResult.ConfigureAwait(false)).Select(selector);
+        }
+
+        public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+            this IQueryResult<TSource, TError> queryResult,
+            Func<TSource, Task<TResult>> selector)
+        {
+            if (queryResult == null)
+            {
+                throw new ArgumentNullException(nameof(queryResult));
+            }
+
+            if (selector == null)
+            {
+                throw new ArgumentNullException(nameof(selector));
+            }
+
+            return
+                Task.FromResult(
+                        queryResult
+                            .Select(
+                                element => selector(element).ConfigureAwait(false).GetAwaiter().GetResult())); //// TODO make this actually async
+        }
+    }
+
+
+    public static class QueryResultExtensions
+    {
+
+        //// TODO do you really want a tryselect overload that pretends ieithers are trys
+        
+
+
+
+
+
+
+
         public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResult<TValue, TError> queryResult, Fx.Try.Try<TValue, TResult> @try)
         {
             if (queryResult == null)
@@ -114,67 +183,6 @@ namespace OddTrotter.Calendar
                 return this.next.TrySelectIterator(this.@try);
             }
         }
-
-        //// TODO do you really want a tryselect overload that pretends ieithers are trys
-
-        public static async Task<IQueryResult<TResult, TError>> TrySelectAsync<TValue, TError, TResult>(this Task<IQueryResult<TValue, TError>> queryResult, Fx.Try.Try<TValue, TResult> @try)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (@try == null)
-            {
-                throw new ArgumentNullException(nameof(@try));
-            }
-
-            return (await queryResult).TrySelect(@try);
-        }
-
-
-        //// TODO in `select`, for convenience, you have a `select` overload that *does* use a task queryresult, but *doesn't* use a task selector; that's not really relevenat for first; do you still want the "convenience method"?
-        //// TODO actually, you seem to have two dimensions: is `this` a task + is the `func` a task? and you seem to want (for convenience) all 4 variations
-
-
-
-        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this Task<IQueryResult<TSource, TError>> queryResult,
-            Func<TSource, TResult> selector)
-        {
-            ArgumentNullException.ThrowIfNull(queryResult);
-            ArgumentNullException.ThrowIfNull(selector);
-
-            return (await queryResult.ConfigureAwait(false)).Select(selector);
-        }
-
-        public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this IQueryResult<TSource, TError> queryResult,
-            Func<TSource, Task<TResult>> selector)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (selector == null)
-            {
-                throw new ArgumentNullException(nameof(selector));
-            }
-
-            return
-                Task.FromResult(
-                        queryResult
-                            .Select(
-                                element => selector(element).ConfigureAwait(false).GetAwaiter().GetResult())); //// TODO make this actually async
-        }
-    }
-
-
-    public static class QueryResultExtensions
-    {
-
-
 
 
         public static Fx.QueryContext.IQueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this IQueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
