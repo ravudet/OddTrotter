@@ -400,7 +400,6 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
 
-            //// TODO you are cleaning up in the old iquerycontext.cs file; you have a "you are here" marker
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO in eitherextensions (probably other places too that you are using a discriminated union), you seem to be able to avoid closures by leveraging the `context` parameter, e.g. the `apply` extension could have an `applycontext` class that has a `leftmap` and a `rightmap` property, and then the extension could be implemented as `either.Apply((left, context) => context.LeftMap(left), (right, context) => context.RightMap(right), new ApplyContext<TLeft, TRight, TResult>(leftMap, rightMap));`; the context would now be acting as the closure, so you would have correctly limited scope, and you would only need 1 (instead of 2) new object allocations; this object allocation could even be avoided if the `ieither` interface had an `apply` overload that had `where TContext : allows ref struct` and `in TContext context`
