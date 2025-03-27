@@ -740,59 +740,7 @@ namespace OddTrotter.Calendar
 
         public static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => !calendarEvent.IsCancelled;
 
-
+        //// TODO please figure out how you want to do all this newline formatting, you can't seem to get it right and be consistent; make sur ethat you consider having too many generic type arguments
         //// TODO normalize all of your visitors with the pattern (naming, internal protected in the visitor, etc) that you are using in other repos
-        /*/// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TLeftFirst"></typeparam>
-        /// <typeparam name="TLeftSecond"></typeparam>
-        /// <typeparam name="TRight"></typeparam>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="first"/> or <paramref name="second"/> or <paramref name="rightAggregator"/> is <see langword="null"/></exception>
-        public static Either<(TLeftFirst, TLeftSecond), TRight> Zip<TLeftFirst, TLeftSecond, TRight>(this Either<TLeftFirst, TRight> first, Either<TLeftSecond, TRight> second, Func<TRight, TRight, TRight> rightAggregator)
-        {
-            //// TODO what is the right name for this method?
-
-            if (first == null)
-            {
-                throw new ArgumentNullException(nameof(first));
-            }
-
-            if (second == null)
-            {
-                throw new ArgumentNullException(nameof(second));
-            }
-
-            if (rightAggregator == null)
-            {
-                throw new ArgumentNullException(nameof(rightAggregator));
-            }
-
-            //// TODO please figure out how you want to do all this newline formatting, you can't seem to get it right and be consistent; make sur ethat you consider having too many generic type arguments
-            return first.Visit(
-                leftFirst => second
-                    .Visit(
-                        leftSecond => Either2
-                            .Right<TRight>()
-                            .Left(
-                                (leftFirst, leftSecond)),
-                        rightSecond => Either2
-                                    .Left<(TLeftFirst, TLeftSecond)>()
-                                    .Right(
-                                        rightSecond)),
-                rightFirst => second
-                    .Visit(
-                        leftSecond => Either2
-                            .Left<(TLeftFirst, TLeftSecond)>()
-                            .Right(
-                                rightFirst),
-                        rightSecond => Either2
-                            .Left<(TLeftFirst, TLeftSecond)>()
-                            .Right(
-                                rightAggregator(rightFirst, rightSecond))));
-        }*/
     }
 }
