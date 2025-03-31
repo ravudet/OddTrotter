@@ -114,7 +114,7 @@
             return await either
                     .ApplyAsync(
                         async (left, context) =>
-                            either.Factory.CreateLeft<TLeftNew, TRightNew>(await leftSelector(left).ConfigureAwait(false)),
+                            either.Factory.CreateLeft<TLeftNew, TRightNew>(await leftSelector(left).ConfigureAwait(false)), //// TODO you're using the factory instead of a monad; what you *could* do is have a monad that wraps the `fx.either.either` into the original type; whether you do this or not, you need to explore how you're going to do this analogous operation for iqueryresult since you'll want them both to be consistent
                         async (right, context) =>
                             either.Factory.CreateRight<TLeftNew, TRightNew>(await rightSelector(right).ConfigureAwait(false)),
                         new Nothing())
