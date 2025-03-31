@@ -365,6 +365,7 @@
             //// TODO TOPIC should the either extensions be lazy?
             //// TODO TOPIC should i add the "ambiguous" select methods for left and right in order to light up the comprehension syntax?
             //// TODO TOPIC should firstordefault go in its own file? i feel like i'm abusing nested classes at this point
+            //// TODO TOPIC the either extensions immediately convert whatever your `ieither` implementation is to my concrete `either` implementation; is that ok? monad would maybe fix this?
 
             // TODO write up code quality list and create blog posts (use substack for this?)
             // code quality:

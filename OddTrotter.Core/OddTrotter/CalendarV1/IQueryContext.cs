@@ -16,7 +16,9 @@ namespace OddTrotter.Calendar
     using System.Net.Http.Headers;
     using Fx.Try;
     using System.Linq;
-
+    using System.Net.Security;
+    using static OddTrotter.Calendar.OdataCollectionResponse;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public static class QueryResultAsyncExtensions
     {
@@ -81,7 +83,7 @@ namespace OddTrotter.Calendar
     {
 
         //// TODO do you really want a tryselect overload that pretends ieithers are trys
-        
+
 
 
 
@@ -131,12 +133,39 @@ namespace OddTrotter.Calendar
                 element =>
                     TryCreate(
                         element,
-                        Lift<TValue, TResult, IElement<TValue, TError>>(@try, element => element.Value), ///// TODO not sure that this is a life, and not sure that the lack of the type inference makes this useful in any way
+                        ////(IElement<TValue, TError> other, [MaybeNullWhen(false)] out TResult result) => @try(other.Value, out result),
+                        Lift<TValue, TResult, IElement<TValue, TError>>(@try, element => element.Value), ///// TODO not sure that this is a lift, and not sure that the lack of the type inference makes this useful in any way
                         (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
                         element => element.Next().TrySelectIterator(@try))
+                    /*TryCreate2(
+                        element,
+                        element => Convert2(@try)(element.Value),
+                        (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
+                        element => element.Next().TrySelectIterator(@try))*/
                     .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
+        }
+
+        private static Try2<TSource, TResult> Convert2<TSource, TResult>(Try<TSource, TResult> @try)
+        {
+            return source => @try(source, out var result) ? Tuple.Create(true, result) : Tuple.Create(false, result!);
+        }
+
+        public delegate Tuple<bool, TResult> Try2<TSource, TResult>(TSource source);
+
+        public static Try2<TOther, TResult> Lift2<TSource, TOther, TResult>(Try2<TSource, TResult> @try, Func<TOther, TSource> selector)
+        {
+            return source => @try(selector(source));
+        }
+
+        private static IEither<TLeft, TRight> TryCreate2<TValue, TResult, TLeft, TRight>( //// TODO this should go in the `either` factory methods class, if you choose to keep it
+            TValue value,
+            Try2<TValue, TResult> discriminator,
+            Func<TValue, TResult, TLeft> leftFactory,
+            Func<TValue, TRight> rightFactory)
+        {
+            throw new Exception("tODO");
         }
 
         private static Try<TOther, TResult> Lift<TSource, TResult, TOther>(Try<TSource, TResult> @try, Func<TOther, TSource> selector)
