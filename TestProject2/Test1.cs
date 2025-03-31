@@ -10,6 +10,9 @@
     using static System.Net.Mime.MediaTypeNames;
     using System.Xml.Linq;
     using System.Diagnostics.CodeAnalysis;
+    using System.Collections.Generic;
+    using System.Threading;
+    using Microsoft.VisualBasic;
 
     [TestClass]
     public sealed class Test1
@@ -17,10 +20,11 @@
         [TestMethod]
         public void TestMethod1()
         {
-            var list = new LinkedList<int>();
+            var list = new LinkedList<int>(stackalloc byte[0]);
             for (int i = 0; i < 10; ++i)
             {
-                list.Append(i);
+                Span<byte> memory = stackalloc byte[list.MemorySize];
+                list.Append(i, memory);
             }
 
             foreach (var element in list)
@@ -28,15 +32,118 @@
                 Console.WriteLine(element);
             }
         }
+
+        public sealed class Collector
+        {
+            public Collector()
+            {
+            }
+
+            ~Collector()
+            {
+                Interlocked.Increment(ref Finalized);
+            }
+        }
+
+        public static int Finalized = 0;
+
+        [TestMethod]
+        public void Test2()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Finalized = 0;
+
+            var list = new List<Pointer<Collector>>();
+            for (int i = 0; i < 10; ++i)
+            {
+                var collector = new Collector();
+                var pointer = new Pointer<Collector>(ref collector);
+                list.Add(pointer);
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.AreEqual(0, Finalized);
+        }
+
+        [TestMethod]
+        public void Test3()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Finalized = 0;
+
+            Test3Helper();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.AreEqual(0, Finalized);
+        }
+
+        private static unsafe void Test3Helper()
+        {
+            var collector = new Collector();
+
+            Collector* pointer = &collector;
+            var safePointer = new IntPtr(pointer);
+            var handle = GCHandle.FromIntPtr(safePointer);
+        }
+
+        public struct Test4Structure
+        {
+            public Test4Structure(Collector first, Collector second, Collector third)
+            {
+                First = first;
+                Second = second;
+                Third = third;
+            }
+
+            public Collector First { get; }
+            public Collector Second { get; }
+            public Collector Third { get; }
+        }
+
+        [TestMethod]
+        public unsafe void Test4()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Finalized = 0;
+
+            var length = 10;
+            byte* bytes = stackalloc byte[Unsafe.SizeOf<Test4Structure>() * length];
+            var span = new Span<Test4Structure>(bytes, length);
+            for (int i = 0; i < length; ++i)
+            {
+                var structure = new Test4Structure(
+                    new Collector(),
+                    new Collector(),
+                    new Collector());
+                span[i] = structure;
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.AreEqual(0, Finalized);
+        }
     }
 
-    public readonly ref struct Pointer<T> where T : allows ref struct
+    public readonly struct Pointer<T> where T : allows ref struct
     {
         private readonly SafeHandle? handle;
 
+        private readonly GCHandle gcHandle;
+
         public unsafe Pointer(ref T value) //// TODO would it help to remove `ref` here?
         {
-            this.handle = new SafeSocketHandle(new IntPtr(Unsafe.AsPointer(ref value)), false);
+            var pointer = new IntPtr(Unsafe.AsPointer(ref value));
+            this.handle = new SafeSocketHandle(pointer, false);
+
+            this.gcHandle = GCHandle.FromIntPtr(pointer);
         }
 
         public unsafe ref T Value
@@ -76,7 +183,37 @@
 
         public void Dispose()
         {
+            this.gcHandle.Free();
             this.handle?.Dispose();
+        }
+    }
+
+    public static class MemoryMarshal2
+    {
+        public static unsafe void Write<T>(Span<byte> destination, in T value) where T : allows ref struct
+        {
+            var typeSize = Unsafe.SizeOf<T>();
+            if (destination.Length != typeSize)
+            {
+                var message = $"The length of '{nameof(destination)}' must be the same as the size of the type of '{nameof(value)}'. The length of '{nameof(destination)}' was '{destination.Length}'. The type of '{nameof(value)}' was '{typeof(T).FullName}'; its size was '{typeSize}'.";
+                throw new ArgumentOutOfRangeException(message, (Exception?)null);
+            }
+
+            fixed (byte* pointer = destination)
+            {
+                Unsafe.Copy(pointer, in value);
+            }
+        }
+        public static ref T AsRef<T>(Span<byte> memory) where T : allows ref struct
+        {
+            var typeSize = Unsafe.SizeOf<T>();
+            if (memory.Length != typeSize)
+            {
+                var message = $"The length of '{nameof(memory)}' must be the same as the size of the type to get a reference to. The length of '{nameof(memory)}' was '{memory.Length}'. The type was '{typeof(T).FullName}'; its size was '{typeSize}'.";
+                throw new ArgumentOutOfRangeException(message, (Exception?)null);
+            }
+
+            return ref Unsafe.As<byte, T>(ref memory.GetPinnableReference());
         }
     }
 
@@ -88,11 +225,17 @@
 
         private bool hasValues;
 
-        public LinkedList()
+        public LinkedList(Span<byte> empty)
         {
+            if (empty.Length != 0)
+            {
+                throw new Exception("TODO");
+            }
         }
 
-        public unsafe void Append(T value)
+        public int MemorySize { get; } = System.Runtime.CompilerServices.Unsafe.SizeOf<Node>();
+
+        public unsafe void Append(T value, Span<byte> memory)
         {
             if (!this.hasValues)
             {
@@ -100,7 +243,11 @@
                 {
                     Value = value,
                 };
-                var pointer = new Pointer<Node>(ref node); //// TODO add `ref` to parameter list?
+
+                MemoryMarshal2.Write(memory, node);
+                var copied = MemoryMarshal2.AsRef<Node>(memory);
+
+                var pointer = new Pointer<Node>(ref copied); //// TODO add `ref` to parameter list?
 
                 this.first = pointer;
                 this.current = first;
@@ -113,7 +260,11 @@
                 {
                     Value = value,
                 };
-                var pointer = new Pointer<Node>(ref node); //// TODO add `ref` to parameter list?
+
+                MemoryMarshal2.Write(memory, node);
+                var copied = MemoryMarshal2.AsRef<Node>(memory);
+
+                var pointer = new Pointer<Node>(ref copied); //// TODO add `ref` to parameter list?
 
                 this.current.Value.Next = pointer;
                 this.current = pointer;
@@ -162,7 +313,7 @@
                 this.current = list.first;
 
                 this.moved = false;
-                
+
                 this.hasValues = list.hasValues;
             }
 
