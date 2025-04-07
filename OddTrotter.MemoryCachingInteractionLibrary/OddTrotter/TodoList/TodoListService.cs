@@ -402,6 +402,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
 
             //// TODO you are trying to get either.selectasync working; you have some stash code (stash.eithermixins) to play around with it; look for todos in there; you currently have a "you are here" marker
+            //// TODO you need to code review from the commit about starting async either implementation
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO in eitherextensions (probably other places too that you are using a discriminated union), you seem to be able to avoid closures by leveraging the `context` parameter, e.g. the `apply` extension could have an `applycontext` class that has a `leftmap` and a `rightmap` property, and then the extension could be implemented as `either.Apply((left, context) => context.LeftMap(left), (right, context) => context.RightMap(right), new ApplyContext<TLeft, TRight, TResult>(leftMap, rightMap));`; the context would now be acting as the closure, so you would have correctly limited scope, and you would only need 1 (instead of 2) new object allocations; this object allocation could even be avoided if the `ieither` interface had an `apply` overload that had `where TContext : allows ref struct` and `in TContext context`
@@ -420,6 +421,7 @@
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
 
+            //// TODO FUTURE if you move `ieither` to fx.core, you need to be open to having a v2 in order to get it "right" how you handle all of the different `apply` variants (including ones that you don't know about yet)
             //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
             //// TODO FUTURE add more query context mixins
             //// TODO FUTURE do you still need mockerror in the unit tests? it does provide convience that it fixes the error type, and that's *probably* what most implementers of querycontexts will do anyway is create their own concrete type with the correct error
