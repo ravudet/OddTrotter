@@ -401,7 +401,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
 
-            //// TODO you are trying to get either.selectasync working
+            //// TODO you are trying to get either.selectasync working; you are implementing a `select` variant for each of the 3 new extension classes on either; you will need a future item to flesh out all of these extensions
             //// TODO you need to code review from the commit about starting async either implementation
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
