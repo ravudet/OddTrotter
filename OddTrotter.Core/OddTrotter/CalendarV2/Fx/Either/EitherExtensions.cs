@@ -4,7 +4,7 @@ namespace Fx.Either
     using System;
     using System.Diagnostics.CodeAnalysis;
 
-    public static class EitherExtensions
+    public static partial class EitherExtensions
     {
         /// <summary>
         /// 
