@@ -401,7 +401,7 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
 
-            //// TODO you are trying to get either.selectasync working; you have some stash code (stash.eithermixins) to play around with it; look for todos in there; you currently have a "you are here" marker
+            //// TODO you are trying to get either.selectasync working
             //// TODO you need to code review from the commit about starting async either implementation
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
