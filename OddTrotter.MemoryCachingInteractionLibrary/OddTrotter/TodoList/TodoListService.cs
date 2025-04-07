@@ -421,7 +421,6 @@
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
 
-            //// TODO FUTURE if you move `ieither` to fx.core, you need to be open to having a v2 in order to get it "right" how you handle all of the different `apply` variants (including ones that you don't know about yet)
             //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
             //// TODO FUTURE add more query context mixins
             //// TODO FUTURE do you still need mockerror in the unit tests? it does provide convience that it fixes the error type, and that's *probably* what most implementers of querycontexts will do anyway is create their own concrete type with the correct error
