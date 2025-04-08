@@ -34,7 +34,7 @@ namespace Fx.Either
         /// This class was named so that it does not conflict with intellisense's ability to find the <see cref="Left"/> method
         /// overloads
         /// </remarks>
-        public readonly ref struct Empty<TLeft>
+        public readonly struct Empty<TLeft>
         {
             /// <summary>
             /// placeholder

@@ -115,6 +115,11 @@ namespace Stash
                 throw new NotImplementedException();
             }
 
+            public Task<TResult> ApplyAsync<TResult, TContext>(Func<T, TContext, Task<TResult>> leftMap, Func<Null<T>, TContext, Task<TResult>> rightMap, TContext context)
+            {
+                throw new NotImplementedException();
+            }
+
             public static implicit operator Nullable2<T>(T value)
             {
                 return new Nullable2<T>();
@@ -152,6 +157,11 @@ namespace Stash
                 return this.nested.Apply(leftAccept, rightAccept, context);
             }
 
+            public Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+            {
+                throw new NotImplementedException();
+            }
+
             public static implicit operator NewEither<TLeft, TRight>(EitherHelper<TLeft> left)
             {
                 return new NewEither<TLeft, TRight>(new Nested.Left(default!));
@@ -182,6 +192,11 @@ namespace Stash
                 }
 
                 public TResult Apply<TResult, TContext>(Func<TLeft, TContext, TResult> leftAccept, Func<TRight, TContext, TResult> rightAccept, TContext context)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
                 {
                     throw new NotImplementedException();
                 }

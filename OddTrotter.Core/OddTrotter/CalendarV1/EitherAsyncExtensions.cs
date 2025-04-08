@@ -41,7 +41,7 @@ namespace OddTrotter.Calendar
                 throw new ArgumentNullException(nameof(rightSelector));
             }
 
-            return await either.Apply(
+            return await either.ApplyAsync(
                 async (left, context) => Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightNew>(),
                 async (right, context) => Either.Left<TLeftNew>().Right(await rightSelector(right).ConfigureAwait(false)),
                 new Nothing()).ConfigureAwait(false);

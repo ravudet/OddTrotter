@@ -4,6 +4,7 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
 
     using Fx.Either;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -2135,6 +2136,16 @@ namespace Fx.QueryContext
                                 terminal,
                                 context),
                         context);
+                }
+
+                public Task<TResult> ApplyAsync<TResult, TContext>(Func<IElement<TValue, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
+                {
+                    // you are not implement this asynchronously because you want to track the requested indices regardless of whether the return value has been awaited
+                    return Task.FromResult(
+                        this.Apply(
+                            (element, context) => leftMap(element, context).ConfigureAwait(false).GetAwaiter().GetResult(),
+                            (terminal, context) => rightMap(terminal, context).ConfigureAwait(false).GetAwaiter().GetResult(),
+                            context));
                 }
 
                 private sealed class InstrumentedElement : IElement<TValue, TError>

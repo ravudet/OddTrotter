@@ -2,6 +2,7 @@
 namespace Fx.QueryContext
 {
     using System;
+    using System.Threading.Tasks;
 
     using Fx.Either;
 
@@ -31,6 +32,14 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(rightMap);
 
             return this.node.Apply(leftMap, rightMap, context);
+        }
+
+        public async Task<TResult> ApplyAsync<TResult, TContext>(Func<IElement<TValue, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await this.node.ApplyAsync(leftMap, rightMap, context).ConfigureAwait(false);
         }
     }
 }

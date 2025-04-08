@@ -2,6 +2,7 @@
 namespace System.Linq
 {
     using System;
+    using System.Threading.Tasks;
 
     using Fx.Either;
 
@@ -42,6 +43,14 @@ namespace System.Linq
             ArgumentNullException.ThrowIfNull(rightMap);
 
             return this.either.Apply(leftMap, rightMap, context);
+        }
+
+        public async Task<TResult> ApplyAsync<TResult, TContext>(Func<TFirst, TContext, Task<TResult>> leftMap, Func<TDefault, TContext, Task<TResult>> rightMap, TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await this.either.Apply(leftMap, rightMap, context).ConfigureAwait(false);
         }
     }
 }
