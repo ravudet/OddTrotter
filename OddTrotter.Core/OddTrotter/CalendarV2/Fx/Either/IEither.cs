@@ -2,6 +2,7 @@
 namespace Fx.Either
 {
     using System;
+    using System.Threading.Tasks;
 
     public interface IEither<out TLeft, out TRight>
     {
@@ -92,6 +93,23 @@ namespace Fx.Either
         TResult Apply<TResult, TContext>(
             Func<TLeft, TContext, TResult> leftMap, 
             Func<TRight, TContext, TResult> rightMap,
+            TContext context);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="leftMap"></param>
+        /// <param name="rightMap"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// TODO naming this `apply` because the original overload can accept async maps but will have unexpected results if callers accidentally use it instead of the async variant
+        /// </remarks>
+        Task<TResult> Apply<TResult, TContext>(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context);
     }
 }

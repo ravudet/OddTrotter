@@ -2,6 +2,7 @@
 namespace Fx.Either
 {
     using System;
+    using System.Threading.Tasks;
 
     public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
@@ -96,6 +97,22 @@ namespace Fx.Either
             protected internal abstract TResult Accept(Either<TLeft, TRight>.Right node, TContext context);
         }
 
+        protected abstract Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context);
+
+        public abstract class AsyncVisitor<TResult, TContext>
+        {
+            public async Task<TResult> VisitAsync(Either<TLeft, TRight> node, TContext context)
+            {
+                ArgumentNullException.ThrowIfNull(node);
+
+                return await node.DispatchAsync(this, context).ConfigureAwait(false);
+            }
+
+            protected internal abstract Task<TResult> AcceptAsync(Either<TLeft, TRight>.Left node, TContext context);
+
+            protected internal abstract Task<TResult> AcceptAsync(Either<TLeft, TRight>.Right node, TContext context);
+        }
+
         public sealed class Left : Either<TLeft, TRight>
         {
             /// <summary>
@@ -118,6 +135,13 @@ namespace Fx.Either
                 ArgumentNullException.ThrowIfNull(visitor);
 
                 return visitor.Accept(this, context);
+            }
+
+            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
+            {
+                ArgumentNullException.ThrowIfNull(visitor);
+
+                return await visitor.AcceptAsync(this, context).ConfigureAwait(false);
             }
         }
 
@@ -143,6 +167,13 @@ namespace Fx.Either
                 ArgumentNullException.ThrowIfNull(visitor);
 
                 return visitor.Accept(this, context);
+            }
+
+            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
+            {
+                ArgumentNullException.ThrowIfNull(visitor);
+
+                return await visitor.AcceptAsync(this, context).ConfigureAwait(false);
             }
         }
 
@@ -217,5 +248,63 @@ namespace Fx.Either
             }
         }
 
+        public async Task<TResult> Apply<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await new DelegateAsyncVisitor<TResult, TContext>(leftMap, rightMap)
+                .VisitAsync(this, context)
+                .ConfigureAwait(false);
+        }
+
+        private sealed class DelegateAsyncVisitor<TResult, TContext> : AsyncVisitor<TResult, TContext>
+        {
+            private readonly Func<TLeft, TContext, Task<TResult>> leftAccept;
+            private readonly Func<TRight, TContext, Task<TResult>> rightAccept;
+
+            public DelegateAsyncVisitor(
+                Func<TLeft, TContext, Task<TResult>> leftAccept,
+                Func<TRight, TContext, Task<TResult>> rightAccept)
+            {
+                ArgumentNullException.ThrowIfNull(leftAccept);
+                ArgumentNullException.ThrowIfNull(rightAccept);
+
+                this.leftAccept = leftAccept;
+                this.rightAccept = rightAccept;
+            }
+
+            protected internal override async Task<TResult> AcceptAsync(Left node, TContext context)
+            {
+                ArgumentNullException.ThrowIfNull(node);
+
+                try
+                {
+                    return await this.leftAccept(node.Value, context).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    throw new LeftMapException(
+                        $"An error occurred while process the left value of an {nameof(Either<TLeft, TRight>)}.",
+                        exception);
+                }
+            }
+
+            protected internal override async Task<TResult> AcceptAsync(Right node, TContext context)
+            {
+                ArgumentNullException.ThrowIfNull(node);
+
+                try
+                {
+                    return await this.rightAccept(node.Value, context).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(
+                        $"An error occurred while process the right value of an {nameof(Either<TLeft, TRight>)}.",
+                        exception);
+                }
+            }
+        }
     }
 }
