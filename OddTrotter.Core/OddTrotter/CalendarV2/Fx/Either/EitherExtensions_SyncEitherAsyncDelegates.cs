@@ -5,7 +5,7 @@
 
     public static partial class EitherExtensions
     {
-        public static IEither<TLeftResult, TRightResult> Select
+        public static Task<Either<TLeftResult, TRightResult>> SelectAsync //// TODO should return `ieither`
             <
                 TLeftValue,
                 TRightValue,
@@ -23,9 +23,9 @@
             ArgumentNullException.ThrowIfNull(rightSelector);
 
             //// TODO you are here
-            return either.Select(
-                (left, _) => leftSelector(left),
-                (right, _) => rightSelector(right),
+            return either.Apply(
+                async (left, _) => Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightResult>(),
+                async (right, _) => Either.Left<TLeftResult>().Right(await rightSelector(right).ConfigureAwait(false)),
                 new Nothing());
         }
     }
