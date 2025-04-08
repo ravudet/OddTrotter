@@ -248,7 +248,7 @@ namespace Fx.Either
             }
         }
 
-        public async Task<TResult> Apply<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+        public async Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
