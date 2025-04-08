@@ -42,8 +42,16 @@ namespace OddTrotter.Calendar
             }
 
             return await either.ApplyAsync(
-                async (left, context) => Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightNew>(),
-                async (right, context) => Either.Left<TLeftNew>().Right(await rightSelector(right).ConfigureAwait(false)),
+                async (left, context) =>
+                {
+                    var newLeft = await leftSelector(left).ConfigureAwait(false);
+                    return Either.Left(newLeft).Right<TRightNew>();
+                },
+                async (right, context) =>
+                {
+                    var newRight = await rightSelector(right).ConfigureAwait(false);
+                    return Either.Left<TLeftNew>().Right(newRight);
+                },
                 new Nothing()).ConfigureAwait(false);
 
             /*return await either

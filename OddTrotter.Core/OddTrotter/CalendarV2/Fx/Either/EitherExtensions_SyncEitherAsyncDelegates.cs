@@ -24,8 +24,17 @@
 
             //// TODO you are here
             return either.Apply(
-                async (left, _) => Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightResult>(),
-                async (right, _) => Either.Left<TLeftResult>().Right(await rightSelector(right).ConfigureAwait(false)),
+                async (left, _) =>
+                {
+                    //// TODO does using blocks instead of expression cause issues?
+                    var newLeft = await leftSelector(left).ConfigureAwait(false);
+                    return Either.Left(newLeft).Right<TRightResult>();
+                },
+                async (right, _) =>
+                {
+                    var newRight = await rightSelector(right).ConfigureAwait(false);
+                    return Either.Left<TLeftResult>().Right(newRight);
+                },
                 new Nothing());
         }
     }
