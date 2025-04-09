@@ -25,6 +25,7 @@ namespace Fx.Either
 
         public static async TaskLike<string> BarAsync()
         {
+            //// TODO make this work with `itask` (the interface, rather than a concrete type)
             return await FooAsync().ConfigureAwait(false);
         }
 

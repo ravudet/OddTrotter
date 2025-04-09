@@ -7,7 +7,7 @@
 
     public static partial class EitherExtensions
     {
-        public static async ValueTask<Either<TLeftResult, TRightResult>> SelectAsync //// TODO should return `ieither`
+        public static async Task<Either<TLeftResult, TRightResult>> SelectAsync //// TODO should return `ieither`
             <
                 TLeftValue,
                 TRightValue,
