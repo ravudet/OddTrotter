@@ -20,20 +20,16 @@ namespace Fx.Either
             Assert.AreEqual("Asdf", result);
         }
 
-        public static async TaskLike<string> FooAsync()
+        public static TaskLike<string> FooAsync()
         {
-            await Task.Delay(100).ConfigureAwait(false);
-            return await BarAsync().ConfigureAwait(false);
+            return new TaskLike<string>(Task.FromResult("Asdf")); 
         }
 
-        public static async Task<string> BarAsync()
-        {
-            return await Task.FromResult("Asdf").ConfigureAwait(false);
-        }
-
-        public readonly struct TaskLikeMethodBuilder<T>
+        public struct TaskLikeMethodBuilder<T>
         {
             private readonly AsyncTaskMethodBuilder<T> builder;
+
+            private TaskLike<T>? task;
 
             public static TaskLikeMethodBuilder<T> Create()
                 => new TaskLikeMethodBuilder<T>();
@@ -77,7 +73,7 @@ namespace Fx.Either
             {
                 get
                 {
-                    return new TaskLike<T>(builder.Task);
+                    return task ?? (task = new TaskLike<T>(builder.Task));
                 }
             }
         }
