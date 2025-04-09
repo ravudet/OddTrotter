@@ -32,7 +32,7 @@ namespace Fx.Either
 
         public struct TaskLikeMethodBuilder<T>
         {
-            private readonly AsyncTaskMethodBuilder<T> builder;
+            private AsyncTaskMethodBuilder<T> builder;
 
             private TaskLike<T>? task;
 
