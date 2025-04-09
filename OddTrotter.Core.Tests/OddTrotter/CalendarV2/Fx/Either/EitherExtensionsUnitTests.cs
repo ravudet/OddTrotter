@@ -15,20 +15,20 @@ namespace Fx.Either
         [TestMethod]
         public async Task TryTaskLike()
         {
-            var result = await FooAsync();
+            var result = await FooAsync().ConfigureAwait(false);
 
             Assert.AreEqual("Asdf", result);
         }
 
         public static async TaskLike<string> FooAsync()
         {
-            await Task.Delay(100);
-            return await BarAsync();
+            await Task.Delay(100).ConfigureAwait(false);
+            return await BarAsync().ConfigureAwait(false);
         }
 
         public static async Task<string> BarAsync()
         {
-            return await Task.FromResult("Asdf");
+            return await Task.FromResult("Asdf").ConfigureAwait(false);
         }
 
         public readonly struct TaskLikeMethodBuilder<T>
