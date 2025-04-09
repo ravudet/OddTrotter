@@ -1,6 +1,7 @@
 ﻿namespace Fx.Either
 {
     using System;
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -44,14 +45,12 @@
         public static async TaskLike<string> FooAsync()
         {
             await Task.Yield();
-            await default(TaskLike<string>);
             return "Asdf";
         }
 
-        public sealed class TaskLikeMethodBuilder<T>
+        public readonly struct TaskLikeMethodBuilder<T>
         {
-            public TaskLikeMethodBuilder()
-                => Console.WriteLine(".ctor");
+            private readonly AsyncTaskMethodBuilder<T> builder;
 
             public static TaskLikeMethodBuilder<T> Create()
                 => new TaskLikeMethodBuilder<T>();
@@ -59,44 +58,69 @@
             public void Start<TStateMachine>(ref TStateMachine stateMachine)
                 where TStateMachine : IAsyncStateMachine
             {
-                Console.WriteLine("Start");
-                stateMachine.MoveNext();
+                builder.Start(ref stateMachine);
             }
 
-            public void SetStateMachine(IAsyncStateMachine stateMachine) => throw new Exception("TODO");
+            public void SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+                builder.SetStateMachine(stateMachine);
+            }
 
-            public void SetException(Exception exception) => throw new Exception("TODO");
+            public void SetException(Exception exception)
+            {
+                builder.SetException(exception);
+            }
 
-            public void SetResult(T result) => throw new Exception("TODO");
+            public void SetResult(T result)
+            {
+                builder.SetResult(result);
+            }
 
-            public void AwaitOnCompleted<TAwaiter, TStateMachine>(
-        ref TAwaiter awaiter, ref TStateMachine stateMachine)
-        where TAwaiter : INotifyCompletion
-        where TStateMachine : IAsyncStateMachine
-                => throw new Exception("TODO");
+            public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+                where TAwaiter : INotifyCompletion
+                where TStateMachine : IAsyncStateMachine
+            {
+                builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+            }
 
-            public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
-                ref TAwaiter awaiter, ref TStateMachine stateMachine)
+            public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
                 where TAwaiter : ICriticalNotifyCompletion
                 where TStateMachine : IAsyncStateMachine
-                 => throw new Exception("TODO");
+            {
+                builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
+            }
 
-            public TaskLike<T> Task => default(TaskLike<T>);
+            public TaskLike<T> Task => new TaskLike<T>(builder.Task);
         }
 
         [System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(TaskLikeMethodBuilder<>))]
-        public struct TaskLike<T>
+        public sealed class TaskLike<T> : ITask<T>
         {
-            public TaskLikeAwaiter GetAwaiter() => default(TaskLikeAwaiter);
-        }
+            private readonly Task<T> task;
 
-        public struct TaskLikeAwaiter : INotifyCompletion
-        {
-            public void GetResult() { }
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="task"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="task"/> is <see langword="null"/></exception>
+            public TaskLike(Task<T> task)
+            {
+                ArgumentNullException.ThrowIfNull(task);
 
-            public bool IsCompleted => true;
+                this.task = task;
+            }
 
-            public void OnCompleted(Action continuation) { }
+            /// <inheritdoc/>
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiterWrapper<T>(this.task.GetAwaiter());
+            }
+
+            /// <inheritdoc/>
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitableWrapper<T>(this.task.ConfigureAwait(continueOnCapturedContext));
+            }
         }
     }
 }
