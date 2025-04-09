@@ -12,6 +12,9 @@ namespace Fx.Either
     [TestClass]
     public sealed class EitherExtensionsUnitTests
     {
+        //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
+        //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
+
         [TestMethod]
         public async Task TryTaskLike()
         {
@@ -25,16 +28,19 @@ namespace Fx.Either
             return await FooAsync().ConfigureAwait(false);
         }
 
-        public static TaskLike<string> FooAsync()
+        public static async TaskLike<string> FooAsync()
         {
-            return new TaskLike<string>(Task.FromResult("Asdf")); 
+            ////return new TaskLike<string>(Task.FromResult("Asdf"));
+
+            /*await Task.Delay(100);
+            return "Asdf";*/
+
+            return await Task.FromResult("Asdf");
         }
 
         public struct TaskLikeMethodBuilder<T>
         {
             private AsyncTaskMethodBuilder<T> builder;
-
-            private TaskLike<T>? task;
 
             public static TaskLikeMethodBuilder<T> Create()
                 => new TaskLikeMethodBuilder<T>();
@@ -78,7 +84,7 @@ namespace Fx.Either
             {
                 get
                 {
-                    return task ?? (task = new TaskLike<T>(builder.Task));
+                    return new TaskLike<T>(builder.Task);
                 }
             }
         }
