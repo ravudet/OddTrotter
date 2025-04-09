@@ -23,7 +23,12 @@ namespace Fx.Either
         public static async TaskLike<string> FooAsync()
         {
             await Task.Delay(100);
-            return "Asdf";
+            return await BarAsync();
+        }
+
+        public static async Task<string> BarAsync()
+        {
+            return await Task.FromResult("Asdf");
         }
 
         public readonly struct TaskLikeMethodBuilder<T>
