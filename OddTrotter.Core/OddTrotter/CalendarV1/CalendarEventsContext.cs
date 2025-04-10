@@ -288,13 +288,14 @@ namespace OddTrotter.Calendar
                 //// TODO and is it also ok to pass the tasks returned without awaiting them until the "very end" so to speak? https://github.com/microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD003.md
                 .SelectAsync(
                     seriesMasterOrTranslationError => seriesMasterOrTranslationError
-                        .SelectAsync(
+                        .SelectLeftAsync(
                             async seriesMaster =>
                             {
                                 var instances = await GetInstancesInSeries(seriesMaster).ConfigureAwait(false);
                                 return (SeriesMaster: seriesMaster, FirstInstance: instances.FirstOrDefault(new Nothing())); //// TODO should there be a parameterless overload for firstordefault
-                            },
-                            translationError => Task.FromResult(translationError))) //// TODO go through all of your lambda code and make sure they have meaningful names
+                            }/*,
+                            translationError => Task.FromResult(translationError))) //// TODO go through all of your lambda code and make sure they have meaningful names*/
+                            ))
                 .SelectAsync(
                     seriesPlusInstanceOrTranslationError =>
                         seriesPlusInstanceOrTranslationError
