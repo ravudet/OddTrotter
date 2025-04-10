@@ -4,119 +4,13 @@ namespace Fx.Either
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Text;
-    using System.Threading.Tasks;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public sealed class EitherExtensionsUnitTests
     {
-        [TestMethod]
-        public async Task TryTaskLike()
-        {
-            var result = await BarAsync().ConfigureAwait(false);
-
-            Assert.AreEqual("Asdf", result);
-        }
-
-        public static async TaskLike<string> BarAsync()
-        {
-            //// TODO make this work with `itask` (the interface, rather than a concrete type)
-            return await FooAsync().ConfigureAwait(false);
-        }
-
-        public static async TaskLike<string> FooAsync()
-        {
-            ////return new TaskLike<string>(Task.FromResult("Asdf"));
-
-            /*await Task.Delay(100);
-            return "Asdf";*/
-
-            return await Task.FromResult("Asdf");
-        }
-
-        public struct TaskLikeMethodBuilder<T>
-        {
-            private AsyncTaskMethodBuilder<T> builder;
-
-            public static TaskLikeMethodBuilder<T> Create()
-                => new TaskLikeMethodBuilder<T>();
-
-            public void Start<TStateMachine>(ref TStateMachine stateMachine)
-                where TStateMachine : IAsyncStateMachine
-            {
-                builder.Start(ref stateMachine);
-            }
-
-            public void SetStateMachine(IAsyncStateMachine stateMachine)
-            {
-                builder.SetStateMachine(stateMachine);
-            }
-
-            public void SetException(Exception exception)
-            {
-                builder.SetException(exception);
-            }
-
-            public void SetResult(T result)
-            {
-                builder.SetResult(result);
-            }
-
-            public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
-                where TAwaiter : INotifyCompletion
-                where TStateMachine : IAsyncStateMachine
-            {
-                builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
-            }
-
-            public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
-                where TAwaiter : ICriticalNotifyCompletion
-                where TStateMachine : IAsyncStateMachine
-            {
-                builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
-            }
-
-            public TaskLike<T> Task
-            {
-                get
-                {
-                    return new TaskLike<T>(builder.Task);
-                }
-            }
-        }
-
-        [System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(TaskLikeMethodBuilder<>))]
-        public sealed class TaskLike<T> : ITask<T>
-        {
-            private readonly Task<T> task;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="task"></param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="task"/> is <see langword="null"/></exception>
-            public TaskLike(Task<T> task)
-            {
-                ArgumentNullException.ThrowIfNull(task);
-
-                this.task = task;
-            }
-
-            /// <inheritdoc/>
-            public ITaskAwaiter<T> GetAwaiter()
-            {
-                return new TaskAwaiterWrapper<T>(this.task.GetAwaiter());
-            }
-
-            /// <inheritdoc/>
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitableWrapper<T>(this.task.ConfigureAwait(continueOnCapturedContext));
-            }
-        }
-
         [TestMethod]
         public void ApplyNoContextNullEither()
         {
