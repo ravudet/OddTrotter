@@ -1,10 +1,25 @@
-﻿using System.Threading.Tasks;
-using System;
-
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.Either
 {
+    using System;
+    using System.Threading.Tasks;
+
     public static partial class EitherExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TLeftValue"></typeparam>
+        /// <typeparam name="TRightValue"></typeparam>
+        /// <typeparam name="TLeftResult"></typeparam>
+        /// <typeparam name="TRightResult"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="either"></param>
+        /// <param name="leftSelector"></param>
+        /// <param name="rightSelector"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if TODO you are here</exception>
         public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
             <
                 TLeftValue,
