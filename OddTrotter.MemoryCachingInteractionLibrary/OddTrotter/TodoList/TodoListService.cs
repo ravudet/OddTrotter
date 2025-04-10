@@ -404,7 +404,6 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
             
-            //// TODO you are trying to get `either.selectasync` to return `ieither`, which means using `itask`; you got an async method work in `eitherextensionsunittests`, but it's using a concrete type; see if you can get it working for the interface now
             //// TODO you are trying to get either.selectasync working; you are implementing a `select` variant for each of the 3 new extension classes on either; you will need a future item to flesh out all of these extensions
             //// TODO you need to code review from the commit about starting async either implementation
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
