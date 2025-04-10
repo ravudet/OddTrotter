@@ -12,9 +12,6 @@ namespace Fx.Either
     [TestClass]
     public sealed class EitherExtensionsUnitTests
     {
-        //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
-        //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
-
         [TestMethod]
         public async Task TryTaskLike()
         {

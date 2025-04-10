@@ -401,7 +401,9 @@
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool.queueuserworkitem?view=net-9.0#system-threading-threadpool-queueuserworkitem-1(system-action((-0))-0-system-boolean) argumentnullexception throw if callback is null
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.post?view=net-9.0 argumentnullexception if d is null 
             //// TODO https://learn.microsoft.com/en-us/dotnet/api/system.threading.synchronizationcontext.send?view=net-9.0 nullreferenceexception if d is null
-
+            //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
+            //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
+            
             //// TODO you are trying to get `either.selectasync` to return `ieither`, which means using `itask`; you got an async method work in `eitherextensionsunittests`, but it's using a concrete type; see if you can get it working for the interface now
             //// TODO you are trying to get either.selectasync working; you are implementing a `select` variant for each of the 3 new extension classes on either; you will need a future item to flesh out all of these extensions
             //// TODO you need to code review from the commit about starting async either implementation
@@ -423,7 +425,7 @@
             //// TODO write tests for todolistservice that confirm the URLs
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
-            
+
             //// TODO FUTURE if you move `ieither` to fx.core, you need to be open to having a v2 in order to get it "right" how you handle all of the different `apply` variants (including ones that you don't know about yet)
             //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
             //// TODO FUTURE add more query context mixins
