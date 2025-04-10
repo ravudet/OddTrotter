@@ -29,14 +29,13 @@
                 .Apply(
                     async (left, _) =>
                     {
-                        //// TODO does using blocks instead of expression cause issues?
-                        ////var newLeft = ;
-                        return Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightResult>();
+                        var newLeft = await leftSelector(left).ConfigureAwait(false);
+                        return Either.Left(newLeft).Right<TRightResult>();
                     },
                     async (right, _) =>
                     {
-                        ////var newRight = ;
-                        return Either.Left<TLeftResult>().Right(await rightSelector(right).ConfigureAwait(false));
+                        var newRight = await rightSelector(right).ConfigureAwait(false);
+                        return Either.Left<TLeftResult>().Right(newRight);
                     },
                     new Nothing());
         }
