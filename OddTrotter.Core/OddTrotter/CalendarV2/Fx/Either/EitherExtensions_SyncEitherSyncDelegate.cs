@@ -3,8 +3,6 @@ namespace Fx.Either
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Security.Cryptography;
-    using System.Threading.Tasks;
 
     public static partial class EitherExtensions
     {
@@ -144,8 +142,8 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(leftSelector);
 
             return either.Select(
-                leftSelector, 
-                (right, _) => right, 
+                leftSelector,
+                (right, _) => right,
                 context);
         }
 
@@ -233,7 +231,7 @@ namespace Fx.Either
 
             return either.Select(
                 (left, _) => leftSelector(left),
-                (right, _) => rightSelector(right), 
+                (right, _) => rightSelector(right),
                 new Nothing());
         }
 
@@ -356,7 +354,7 @@ namespace Fx.Either
                             var selected = selector(left);
                             try
                             {
-                                return 
+                                return
                                     selected
                                         .Apply(
                                             nestedLeft => Either.Left(resultSelector(left, nestedLeft)).Right<TRight>(),
@@ -367,7 +365,7 @@ namespace Fx.Either
                                 throw leftMapException.InnerException;
                             }
                         },
-                        right => 
+                        right =>
                             Either.Left<TLeftResult>().Right(right));
         }
 
