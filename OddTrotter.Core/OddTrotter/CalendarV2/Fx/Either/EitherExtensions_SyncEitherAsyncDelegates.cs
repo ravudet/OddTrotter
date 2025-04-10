@@ -24,7 +24,6 @@
             ArgumentNullException.ThrowIfNull(leftSelector);
             ArgumentNullException.ThrowIfNull(rightSelector);
 
-            //// TODO you are here
             return await either
                 .Apply(
                     async (left, _) =>
