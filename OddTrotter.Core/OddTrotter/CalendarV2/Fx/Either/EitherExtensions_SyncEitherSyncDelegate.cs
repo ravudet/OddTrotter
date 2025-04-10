@@ -3,6 +3,8 @@ namespace Fx.Either
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Security.Cryptography;
+    using System.Threading.Tasks;
 
     public static partial class EitherExtensions
     {
