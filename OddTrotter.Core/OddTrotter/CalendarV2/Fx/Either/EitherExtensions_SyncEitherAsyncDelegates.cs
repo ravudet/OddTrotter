@@ -7,7 +7,7 @@
 
     public static partial class EitherExtensions
     {
-        public static async ITask<IEither<TLeftResult, TRightResult>> SelectAsync
+        public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
             <
                 TLeftValue,
                 TRightValue,
@@ -26,20 +26,19 @@
 
             //// TODO you are here
             return await either
-                .ApplyAsync(
+                .Apply(
                     async (left, _) =>
                     {
                         //// TODO does using blocks instead of expression cause issues?
-                        var newLeft = await leftSelector(left).ConfigureAwait(false);
-                        return Either.Left(newLeft).Right<TRightResult>();
+                        ////var newLeft = ;
+                        return Either.Left(await leftSelector(left).ConfigureAwait(false)).Right<TRightResult>();
                     },
                     async (right, _) =>
                     {
-                        var newRight = await rightSelector(right).ConfigureAwait(false);
-                        return Either.Left<TLeftResult>().Right(newRight);
+                        ////var newRight = ;
+                        return Either.Left<TLeftResult>().Right(await rightSelector(right).ConfigureAwait(false));
                     },
-                    new Nothing())
-                .ConfigureAwait(false);
+                    new Nothing());
         }
     }
 }
