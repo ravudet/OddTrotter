@@ -76,5 +76,51 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task SelectAsyncNullRightSelector()
+        {
+            var either = Either.Left("asdf").Right<int>();
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await either
+                            .SelectAsync(
+                                async (left, context) =>
+                                    await Task
+                                        .FromResult(left)
+                                        .ConfigureAwait(false),
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                                (Func<int, Nothing, Task<int>>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                                ,
+                                new Nothing())
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            either = Either.Left<string>().Right(42);
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await either
+                            .SelectAsync(
+                                async (left, context) =>
+                                    await Task
+                                        .FromResult(left)
+                                        .ConfigureAwait(false),
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                                (Func<int, Nothing, Task<int>>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                                ,
+                                new Nothing())
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
     }
 }
