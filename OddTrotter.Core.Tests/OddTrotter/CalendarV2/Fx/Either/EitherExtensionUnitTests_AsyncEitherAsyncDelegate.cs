@@ -179,5 +179,37 @@
                 tuple)
                 .ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task SelectAsyncRightMapException()
+        {
+            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+            var invalidOperationException = new InvalidOperationException();
+
+            await either
+                .SelectAsync(
+                    async (left, context) =>
+                        await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                    (Func<IEnumerable<int>, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<int>>)((right, context) =>
+                        throw invalidOperationException),
+                    tuple)
+                .ConfigureAwait(false);
+
+            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            var rightMapException = await Assert
+                .ThrowsExceptionAsync<RightMapException>(
+                    () =>
+                        either
+                            .SelectAsync(
+                                async (left, context) =>
+                                    await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                                (Func<IEnumerable<int>, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<int>>)((right, context) =>
+                                    throw invalidOperationException),
+                                tuple))
+                .ConfigureAwait(false);
+
+            Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
+        }
     }
 }
