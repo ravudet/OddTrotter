@@ -62,6 +62,26 @@
                 context).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TLeftValue"></typeparam>
+        /// <typeparam name="TRightValue"></typeparam>
+        /// <typeparam name="TLeftResult"></typeparam>
+        /// <typeparam name="TRightResult"></typeparam>
+        /// <param name="either"></param>
+        /// <param name="leftSelector"></param>
+        /// <param name="rightSelector"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> or <paramref name="rightSelector"/> is <see langword="null"/></exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
+        /// to whatever exception <paramref name="leftSelector"/> threw.
+        /// </exception>
+        /// <exception cref="RightMapException">
+        /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
+        /// set to whatever exception <paramref name="rightSelector"/> threw.
+        /// </exception>
         public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
             <
                 TLeftValue,
@@ -85,6 +105,20 @@
                 new Nothing()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TLeftValue"></typeparam>
+        /// <typeparam name="TRightValue"></typeparam>
+        /// <typeparam name="TLeftResult"></typeparam>
+        /// <param name="either"></param>
+        /// <param name="leftSelector"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> is <see langword="null"/></exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
+        /// to whatever exception <paramref name="leftSelector"/> threw.
+        /// </exception>
         public static async Task<IEither<TLeftResult, TRightValue>> SelectLeftAsync
             <
                 TLeftValue,
