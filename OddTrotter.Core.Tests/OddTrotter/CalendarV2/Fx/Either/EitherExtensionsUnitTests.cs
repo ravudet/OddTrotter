@@ -9,7 +9,7 @@ namespace Fx.Either
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class EitherExtensionsUnitTests
+    public sealed partial class EitherExtensionsUnitTests
     {
         [TestMethod]
         public void ApplyNoContextNullEither()
