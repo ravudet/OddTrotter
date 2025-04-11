@@ -224,7 +224,8 @@ namespace Fx.Either
                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) => 
                     throw invalidOperationException), 
                 (right, context) => 
-                    context.Item2 = right, tuple);
+                    context.Item2 = right, 
+                tuple);
         }
 
         [TestMethod]

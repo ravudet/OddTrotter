@@ -149,5 +149,35 @@
             Assert.IsNull(tuple.Item1);
             Assert.IsNotNull(tuple.Item2);
         }
+
+        [TestMethod]
+        public async Task SelectAsyncLeftMapException()
+        {
+            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+            var invalidOperationException = new InvalidOperationException();
+
+            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
+                async () =>
+                    await either
+                        .SelectAsync(
+                            (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
+                                throw invalidOperationException),
+                            async (right, context) =>
+                                context.Item2 = await Task.FromResult(right).ConfigureAwait(false),
+                            tuple).ConfigureAwait(false)).ConfigureAwait(false);
+
+            Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
+
+            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+
+            await either.SelectAsync(
+                (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
+                    throw invalidOperationException),
+                async (right, context) =>
+                    await Task.FromResult(context.Item2 = right).ConfigureAwait(false),
+                tuple)
+                .ConfigureAwait(false);
+        }
     }
 }
