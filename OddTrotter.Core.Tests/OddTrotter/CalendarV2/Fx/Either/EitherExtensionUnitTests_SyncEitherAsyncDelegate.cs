@@ -10,20 +10,10 @@
 
     public sealed partial class EitherExtensionsUnitTests
     {
-        private static async Task<IEither<string, IEnumerable<int>>> CreateLeft()
-        {
-            return await Task.FromResult(Either.Left("asdf").Right<IEnumerable<int>>());
-        }
-
-        private static async Task<IEither<string, IEnumerable<int>>> CreateRight()
-        {
-            return await Task.FromResult(Either.Left<string>().Right(new[] { 42 }.AsEnumerable()));
-        }
-
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNullEither()
+        public async Task SelectAsyncNullEither()
         {
-            Task<IEither<string, int>> either =
+            IEither<string, int> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -45,9 +35,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNullLeftSelector()
+        public async Task SelectAsyncNullLeftSelector()
         {
-            var either = CreateLeft();
+            var either = Either.Left("asdf").Right<int>();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -68,7 +58,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = Either.Left<string>().Right(42);
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -91,9 +81,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNullRightSelector()
+        public async Task SelectAsyncNullRightSelector()
         {
-            var either = CreateLeft();
+            var either = Either.Left("asdf").Right<int>();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -106,7 +96,7 @@
                                         .ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Nothing, Task<IEnumerable<int>>>)null
+                                (Func<int, Nothing, Task<int>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
@@ -114,7 +104,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = Either.Left<string>().Right(42);
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -127,7 +117,7 @@
                                         .ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Nothing, Task<IEnumerable<int>>>)null
+                                (Func<int, Nothing, Task<int>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
@@ -137,7 +127,7 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEither()
+        public async Task SelectAsync()
         {
             var either = Either.Left("asdf").Right<IEnumerable<int>>();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
@@ -161,7 +151,7 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherLeftMapException()
+        public async Task SelectAsyncLeftMapException()
         {
             var either = Either.Left("asdf").Right<IEnumerable<int>>();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
@@ -191,7 +181,7 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherRightMapException()
+        public async Task SelectAsyncRightMapException()
         {
             var either = Either.Left("asdf").Right<IEnumerable<int>>();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
