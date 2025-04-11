@@ -219,6 +219,7 @@ namespace Fx.Either
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
             either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             either.Select(
                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) => 
@@ -243,6 +244,8 @@ namespace Fx.Either
                 tuple);
 
             either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
             var rightMapException = Assert.ThrowsException<RightMapException>(
                 () => 
                     either
