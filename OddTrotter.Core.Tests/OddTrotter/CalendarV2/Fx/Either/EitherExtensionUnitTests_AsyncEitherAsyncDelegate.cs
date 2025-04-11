@@ -139,7 +139,7 @@
         [TestMethod]
         public async Task SelectAsyncFutureEither()
         {
-            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either.SelectAsync(
@@ -149,7 +149,7 @@
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either.SelectAsync(
@@ -163,7 +163,7 @@
         [TestMethod]
         public async Task SelectAsyncFutureEitherLeftMapException()
         {
-            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -179,7 +179,7 @@
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            either = CreateRight();
 
             await either.SelectAsync(
                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
@@ -193,7 +193,7 @@
         [TestMethod]
         public async Task SelectAsyncFutureEitherRightMapException()
         {
-            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -206,7 +206,7 @@
                     tuple)
                 .ConfigureAwait(false);
 
-            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            either = CreateRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     () =>
