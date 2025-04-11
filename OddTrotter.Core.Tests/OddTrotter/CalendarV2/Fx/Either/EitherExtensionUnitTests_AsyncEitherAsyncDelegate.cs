@@ -1,6 +1,9 @@
 ﻿namespace Fx.Either
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -121,6 +124,30 @@
                                 new Nothing())
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectAsync()
+        {
+            var either = Either.Left("asdf").Right<IEnumerable<int>>();
+            var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
+            IEither<StringBuilder, IEnumerable<int>> result = await either.SelectAsync(
+                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+
+            Assert.IsNotNull(tuple.Item1);
+            Assert.IsNull(tuple.Item2);
+
+            either = Either.Left<string>().Right(new[] { 42 }.AsEnumerable());
+            tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
+            result = await either.SelectAsync(
+                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+
+            Assert.IsNull(tuple.Item1);
+            Assert.IsNotNull(tuple.Item2);
         }
     }
 }
