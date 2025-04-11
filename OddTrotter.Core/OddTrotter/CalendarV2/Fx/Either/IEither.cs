@@ -95,6 +95,26 @@ namespace Fx.Either
             Func<TRight, TContext, TResult> rightMap,
             TContext context);
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="leftMap"></param>
+        /// <param name="rightMap"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="leftMap"/> or <paramref name="rightMap"/> is <see langword="null"/>
+        /// </exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if <paramref name="leftMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
+        /// whatever exception <paramref name="leftMap"/> threw.
+        /// </exception>
+        /// <exception cref="RightMapException">
+        /// Thrown if <paramref name="rightMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
+        /// whatever exception <paramref name="rightMap"/> threw.
+        /// </exception>
         Task<TResult> ApplyAsync<TResult, TContext>(
             Func<TLeft, TContext, Task<TResult>> leftMap,
             Func<TRight, TContext, Task<TResult>> rightMap,
