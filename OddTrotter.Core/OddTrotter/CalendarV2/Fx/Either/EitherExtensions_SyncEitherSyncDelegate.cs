@@ -7,7 +7,7 @@ namespace Fx.Either
     public static partial class EitherExtensions
     {
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeft"></typeparam>
         /// <typeparam name="TRight"></typeparam>
@@ -56,7 +56,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
@@ -106,7 +106,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
@@ -148,7 +148,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
@@ -190,7 +190,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
@@ -236,7 +236,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
@@ -273,7 +273,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
