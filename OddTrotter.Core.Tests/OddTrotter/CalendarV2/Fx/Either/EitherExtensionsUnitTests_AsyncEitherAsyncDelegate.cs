@@ -425,17 +425,18 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
-            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
-                async () =>
-                    await either
-                        .SelectAsync(
-                            (Func<string, Task<string>>)(left =>
-                                throw invalidOperationException),
-                            async right =>
-                                tuple.Item2 = await Task
-                                    .FromResult(right)
-                                    .ConfigureAwait(false))
-                        .ConfigureAwait(false))
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () =>
+                        await either
+                            .SelectAsync(
+                                (Func<string, Task<string>>)(left =>
+                                    throw invalidOperationException),
+                                async right =>
+                                    tuple.Item2 = await Task
+                                        .FromResult(right)
+                                        .ConfigureAwait(false))
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
@@ -443,11 +444,12 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            await either.SelectAsync(
-                (Func<string, Task<string>>)(left =>
-                    throw invalidOperationException),
-                async right =>
-                    await Task.FromResult(tuple.Item2 = right).ConfigureAwait(false))
+            await either
+                .SelectAsync(
+                    (Func<string, Task<string>>)(left =>
+                        throw invalidOperationException),
+                    async right =>
+                        await Task.FromResult(tuple.Item2 = right).ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
