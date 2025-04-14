@@ -151,9 +151,20 @@ namespace Fx.Either
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            IEither<StringBuilder, IEnumerable<int>> result = await either.SelectAsync(
-                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+            IEither<StringBuilder, IEnumerable<int>> result = await either
+                .SelectAsync(
+                    async (left, context) => 
+                        await Task
+                            .FromResult(
+                                context.Item1 = new StringBuilder(left))
+                            .ConfigureAwait(false),
+                    async (right, context) => 
+                        await Task
+                            .FromResult(
+                                context.Item2 = right.Select(val => val * 2))
+                            .ConfigureAwait(false), 
+                    tuple)
+                .ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
@@ -161,9 +172,20 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            result = await either.SelectAsync(
-                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+            result = await either
+                .SelectAsync(
+                    async (left, context) => 
+                        await Task
+                            .FromResult(
+                                context.Item1 = new StringBuilder(left))
+                            .ConfigureAwait(false),
+                    async (right, context) => 
+                        await Task
+                            .FromResult(
+                                context.Item2 = right.Select(val => val * 2))
+                            .ConfigureAwait(false), 
+                    tuple)
+                .ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
             Assert.IsNotNull(tuple.Item2);
