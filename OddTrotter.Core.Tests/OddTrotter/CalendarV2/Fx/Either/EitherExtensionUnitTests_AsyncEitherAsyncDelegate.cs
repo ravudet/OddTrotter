@@ -245,7 +245,14 @@ namespace Fx.Either
                             .SelectAsync(
                                 async (left, context) =>
                                     await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                                (Func<IEnumerable<int>, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<int>>)((right, context) =>
+                                (
+                                    Func
+                                        <
+                                            IEnumerable<int>, 
+                                            TupleBuilder<StringBuilder, IEnumerable<int>>, 
+                                            Task<int>
+                                        >
+                                )((right, context) =>
                                     throw invalidOperationException),
                                 tuple))
                 .ConfigureAwait(false);
@@ -370,9 +377,19 @@ namespace Fx.Either
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            IEither<StringBuilder, IEnumerable<int>> result = await either.SelectAsync(
-                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async right => await Task.FromResult(tuple.Item2 = right.Select(val => val * 2)).ConfigureAwait(false)).ConfigureAwait(false);
+            IEither<StringBuilder, IEnumerable<int>> result = await either
+                .SelectAsync(
+                    async left => 
+                        await Task
+                            .FromResult(
+                                tuple.Item1 = new StringBuilder(left))
+                            .ConfigureAwait(false),
+                    async right => 
+                        await Task
+                            .FromResult(
+                                tuple.Item2 = right.Select(val => val * 2))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
@@ -381,8 +398,17 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either.SelectAsync(
-                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async right => await Task.FromResult(tuple.Item2 = right.Select(val => val * 2)).ConfigureAwait(false)).ConfigureAwait(false);
+                async left => 
+                    await Task
+                        .FromResult(
+                            tuple.Item1 = new StringBuilder(left))
+                        .ConfigureAwait(false),
+                async right => 
+                    await Task
+                        .FromResult(
+                            tuple.Item2 = right.Select(val => val * 2))
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
             Assert.IsNotNull(tuple.Item2);
@@ -402,7 +428,11 @@ namespace Fx.Either
                             (Func<string, Task<string>>)(left =>
                                 throw invalidOperationException),
                             async right =>
-                                tuple.Item2 = await Task.FromResult(right).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
+                                tuple.Item2 = await Task
+                                    .FromResult(right)
+                                    .ConfigureAwait(false))
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
@@ -512,8 +542,12 @@ namespace Fx.Either
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            IEither<StringBuilder, IEnumerable<int>> result = await either.SelectLeftAsync(
-                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false)).ConfigureAwait(false);
+            IEither<StringBuilder, IEnumerable<int>> result = await either
+                .SelectLeftAsync(
+                    async left => await Task
+                        .FromResult(tuple.Item1 = new StringBuilder(left))
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
@@ -521,8 +555,13 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            result = await either.SelectLeftAsync(
-                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false)).ConfigureAwait(false);
+            result = await either
+                .SelectLeftAsync(
+                    async left => 
+                        await Task
+                            .FromResult(tuple.Item1 = new StringBuilder(left))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
