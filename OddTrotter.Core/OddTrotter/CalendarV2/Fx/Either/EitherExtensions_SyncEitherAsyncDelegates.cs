@@ -1,8 +1,7 @@
-﻿namespace Fx.Either
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Fx.Either
 {
     using System;
-    using System.Linq.V2;
-    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     public static partial class EitherExtensions
