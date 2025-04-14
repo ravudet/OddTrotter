@@ -404,7 +404,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
             
-            //// TODO you are code reviewing async + async with a "you are here" note unit tests
+            //// TODO you are code reviewing sync + async with a "you are here" note unit tests
             //// TODO rename eitherextensionunittests
             //// TODO you need to code review from the commit about starting async either implementation
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
