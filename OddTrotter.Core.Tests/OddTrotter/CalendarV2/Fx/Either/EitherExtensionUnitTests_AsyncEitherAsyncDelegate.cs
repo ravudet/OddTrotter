@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Stash;
 
     public sealed partial class EitherExtensionsUnitTests
     {
@@ -494,7 +495,7 @@
                 async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false)).ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
-            Assert.IsNotNull(tuple.Item2);
+            Assert.IsNull(tuple.Item2);
         }
 
         [TestMethod]
