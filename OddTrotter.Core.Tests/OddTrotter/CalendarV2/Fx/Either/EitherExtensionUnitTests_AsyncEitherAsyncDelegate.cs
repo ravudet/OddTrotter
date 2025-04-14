@@ -238,9 +238,8 @@
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
                             .SelectAsync(
-                                async (left, context) => await Task.FromResult(left).ConfigureAwait(false),
-                                async (right, context) => await Task.FromResult(right).ConfigureAwait(false),
-                                new Nothing())
+                                async left => await Task.FromResult(left).ConfigureAwait(false),
+                                async right => await Task.FromResult(right).ConfigureAwait(false))
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
@@ -257,15 +256,14 @@
                             .SelectAsync(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Nothing, Task<string>>)null
+                                (Func<string, Task<string>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
-                                async (right, context) =>
+                                async right =>
                                     await Task
                                         .FromResult(right)
-                                        .ConfigureAwait(false),
-                                new Nothing())
+                                        .ConfigureAwait(false))
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
@@ -278,15 +276,14 @@
                             .SelectAsync(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Nothing, Task<string>>)null
+                                (Func<string, Task<string>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
-                                async (right, context) =>
+                                async right =>
                                     await Task
                                         .FromResult(right)
-                                        .ConfigureAwait(false),
-                                new Nothing())
+                                        .ConfigureAwait(false))
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
@@ -301,17 +298,16 @@
                     async () =>
                         await either
                             .SelectAsync(
-                                async (left, context) =>
+                                async left =>
                                     await Task
                                         .FromResult(left)
                                         .ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Nothing, Task<IEnumerable<int>>>)null
+                                (Func<IEnumerable<int>, Task<IEnumerable<int>>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                                ,
-                                new Nothing())
+                                )
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
@@ -322,17 +318,16 @@
                     async () =>
                         await either
                             .SelectAsync(
-                                async (left, context) =>
+                                async left =>
                                     await Task
                                         .FromResult(left)
                                         .ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Nothing, Task<IEnumerable<int>>>)null
+                                (Func<IEnumerable<int>, Task<IEnumerable<int>>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                                ,
-                                new Nothing())
+                                )
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
@@ -344,8 +339,8 @@
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either.SelectAsync(
-                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                async right => await Task.FromResult(tuple.Item2 = right.Select(val => val * 2)).ConfigureAwait(false)).ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
@@ -354,12 +349,11 @@
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either.SelectAsync(
-                async (left, context) => await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
-                async (right, context) => await Task.FromResult(context.Item2 = right.Select(val => val * 2)).ConfigureAwait(false), tuple).ConfigureAwait(false);
+                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                async right => await Task.FromResult(tuple.Item2 = right.Select(val => val * 2)).ConfigureAwait(false)).ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
             Assert.IsNotNull(tuple.Item2);
-            //// TODO you are here going up removing the contexts from the next several tests
         }
 
         [TestMethod]
