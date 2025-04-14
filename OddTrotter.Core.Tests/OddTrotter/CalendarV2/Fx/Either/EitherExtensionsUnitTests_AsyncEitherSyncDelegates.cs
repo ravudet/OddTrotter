@@ -147,7 +147,7 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherLeftMapException()
+        public async Task SelectFutureEitherLeftMapException()
         {
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
@@ -156,11 +156,10 @@ namespace Fx.Either
             var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
                 async () =>
                     await either
-                        .SelectAsync(
-                            (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
+                        .Select(
+                            (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) =>
                                 throw invalidOperationException),
-                            async (right, context) =>
-                                context.Item2 = await Task.FromResult(right).ConfigureAwait(false),
+                            (right, context) => context.Item2 = right,
                             tuple).ConfigureAwait(false)).ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);

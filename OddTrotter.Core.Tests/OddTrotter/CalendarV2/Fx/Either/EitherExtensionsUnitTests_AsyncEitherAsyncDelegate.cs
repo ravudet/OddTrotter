@@ -198,15 +198,18 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
-            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
-                async () =>
-                    await either
-                        .SelectAsync(
-                            (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
-                                throw invalidOperationException),
-                            async (right, context) =>
-                                context.Item2 = await Task.FromResult(right).ConfigureAwait(false),
-                            tuple).ConfigureAwait(false)).ConfigureAwait(false);
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () =>
+                        await either
+                            .SelectAsync(
+                                (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
+                                    throw invalidOperationException),
+                                async (right, context) =>
+                                    context.Item2 = await Task.FromResult(right).ConfigureAwait(false),
+                                tuple)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
@@ -574,12 +577,14 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
-            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
-                async () =>
-                    await either
-                        .SelectLeftAsync(
-                            (Func<string, Task<string>>)(left =>
-                                throw invalidOperationException)).ConfigureAwait(false))
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () =>
+                        await either
+                            .SelectLeftAsync(
+                                (Func<string, Task<string>>)(left =>
+                                    throw invalidOperationException))
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
