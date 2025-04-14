@@ -216,7 +216,7 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullEither()
+        public async Task SelectFutureEitherNoContextNullEither()
         {
             Task<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -231,15 +231,15 @@ namespace Fx.Either
 #pragma warning disable CS8604 // Possible null reference argument.
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
-                            .SelectAsync(
-                                async left => await Task.FromResult(left).ConfigureAwait(false),
-                                async right => await Task.FromResult(right).ConfigureAwait(false))
+                            .Select(
+                                left => left,
+                                right => right)
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullLeftSelector()
+        public async Task SelectFutureEitherNoContextNullLeftSelector()
         {
             var either = CreateLeft();
 
@@ -247,17 +247,14 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Task<string>>)null
+                                (Func<string, string>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
-                                async right =>
-                                    await Task
-                                        .FromResult(right)
-                                        .ConfigureAwait(false))
+                                right => right)
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
@@ -267,23 +264,20 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Task<string>>)null
+                                (Func<string, string>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 ,
-                                async right =>
-                                    await Task
-                                        .FromResult(right)
-                                        .ConfigureAwait(false))
+                                right => right)
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullRightSelector()
+        public async Task SelectFutureEitherNoContextNullRightSelector()
         {
             var either = CreateLeft();
 
@@ -291,14 +285,11 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
-                                async left =>
-                                    await Task
-                                        .FromResult(left)
-                                        .ConfigureAwait(false),
+                            .Select(
+                                left => left,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Task<IEnumerable<int>>>)null
+                                (Func<IEnumerable<int>, IEnumerable<int>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 )
@@ -311,14 +302,11 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
-                                async left =>
-                                    await Task
-                                        .FromResult(left)
-                                        .ConfigureAwait(false),
+                            .Select(
+                                left => left,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<IEnumerable<int>, Task<IEnumerable<int>>>)null
+                                (Func<IEnumerable<int>, IEnumerable<int>>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 )
@@ -327,23 +315,15 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContext()
+        public async Task SelectFutureEitherNoContext()
         {
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
-                .SelectAsync(
-                    async left =>
-                        await Task
-                            .FromResult(
-                                tuple.Item1 = new StringBuilder(left))
-                            .ConfigureAwait(false),
-                    async right =>
-                        await Task
-                            .FromResult(
-                                tuple.Item2 = right.Select(val => val * 2))
-                            .ConfigureAwait(false))
+                .Select(
+                    left => tuple.Item1 = new StringBuilder(left),
+                    right => tuple.Item2 = right.Select(val => val * 2))
                 .ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
@@ -352,17 +332,10 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            result = await either.SelectAsync(
-                async left =>
-                    await Task
-                        .FromResult(
-                            tuple.Item1 = new StringBuilder(left))
-                        .ConfigureAwait(false),
-                async right =>
-                    await Task
-                        .FromResult(
-                            tuple.Item2 = right.Select(val => val * 2))
-                        .ConfigureAwait(false))
+            result = await either
+                .Select(
+                    left => tuple.Item1 = new StringBuilder(left),
+                    right => tuple.Item2 = right.Select(val => val * 2))
                 .ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
