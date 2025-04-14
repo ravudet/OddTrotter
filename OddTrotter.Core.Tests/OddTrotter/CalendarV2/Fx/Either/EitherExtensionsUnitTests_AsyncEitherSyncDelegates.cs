@@ -179,16 +179,15 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherRightMapException()
+        public async Task SelectFutureEitherRightMapException()
         {
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
             await either
-                .SelectAsync(
-                    async (left, context) =>
-                        await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                .Select(
+                    (left, context) => context.Item1 = new StringBuilder(left),
                     (Func<IEnumerable<int>, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<int>>)((right, context) =>
                         throw invalidOperationException),
                     tuple)
@@ -199,15 +198,14 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<RightMapException>(
                     () =>
                         either
-                            .SelectAsync(
-                                async (left, context) =>
-                                    await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
+                            .Select(
+                                (left, context) => context.Item1 = new StringBuilder(left),
                                 (
                                     Func
                                         <
                                             IEnumerable<int>,
                                             TupleBuilder<StringBuilder, IEnumerable<int>>,
-                                            Task<int>
+                                            int
                                         >
                                 )((right, context) =>
                                     throw invalidOperationException),
