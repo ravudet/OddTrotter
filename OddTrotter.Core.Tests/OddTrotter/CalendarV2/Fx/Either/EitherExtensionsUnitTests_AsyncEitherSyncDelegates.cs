@@ -153,25 +153,28 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
-            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
-                async () =>
-                    await either
-                        .Select(
-                            (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) =>
-                                throw invalidOperationException),
-                            (right, context) => context.Item2 = right,
-                            tuple).ConfigureAwait(false)).ConfigureAwait(false);
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () =>
+                        await either
+                            .Select(
+                                (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) =>
+                                    throw invalidOperationException),
+                                (right, context) => context.Item2 = right,
+                                tuple)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
             either = CreateRight();
 
-            await either.SelectAsync(
-                (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
-                    throw invalidOperationException),
-                async (right, context) =>
-                    await Task.FromResult(context.Item2 = right).ConfigureAwait(false),
-                tuple)
+            await either
+                .Select(
+                    (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, string>)((left, context) =>
+                        throw invalidOperationException),
+                    (right, context) => context.Item2 = right,
+                    tuple)
                 .ConfigureAwait(false);
         }
 
