@@ -221,6 +221,7 @@
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
         }
+
         [TestMethod]
         public async Task SelectAsyncFutureEitherNoContextNullEither()
         {
@@ -415,6 +416,111 @@
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
+        }
+        [TestMethod]
+        public async Task SelectLeftAsyncFutureEitherNoContextNullEither()
+        {
+            Task<IEither<string, int>> either =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await
+#pragma warning disable CS8604 // Possible null reference argument.
+                        either
+#pragma warning restore CS8604 // Possible null reference argument.
+                            .SelectLeftAsync(
+                                async left => await Task.FromResult(left).ConfigureAwait(false))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectLeftAsyncFutureEitherNoContextNullLeftSelector()
+        {
+            var either = CreateLeft();
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await either
+                            .SelectLeftAsync(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                                (Func<string, Task<string>>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                                )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            either = CreateRight();
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await either
+                            .SelectLeftAsync(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                                (Func<string, Task<string>>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                                )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectLeftAsyncFutureEitherNoContext()
+        {
+            var either = CreateLeft();
+            var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
+            IEither<StringBuilder, IEnumerable<int>> result = await either.SelectLeftAsync(
+                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false)).ConfigureAwait(false);
+
+            Assert.IsNotNull(tuple.Item1);
+            Assert.IsNull(tuple.Item2);
+
+            either = CreateRight();
+            tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
+            result = await either.SelectLeftAsync(
+                async left => await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false)).ConfigureAwait(false);
+
+            Assert.IsNull(tuple.Item1);
+            Assert.IsNotNull(tuple.Item2);
+        }
+
+        [TestMethod]
+        public async Task SelectLeftAsyncFutureEitherNoContextLeftMapException()
+        {
+            var either = CreateLeft();
+            var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+            var invalidOperationException = new InvalidOperationException();
+
+            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
+                async () =>
+                    await either
+                        .SelectLeftAsync(
+                            (Func<string, Task<string>>)(left =>
+                                throw invalidOperationException)).ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
+
+            either = CreateRight();
+            tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
+
+            await either.SelectLeftAsync(
+                (Func<string, Task<string>>)(left =>
+                    throw invalidOperationException))
+                .ConfigureAwait(false);
         }
     }
 }
