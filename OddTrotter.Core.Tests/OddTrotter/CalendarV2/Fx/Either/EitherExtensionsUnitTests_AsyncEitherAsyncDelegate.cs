@@ -473,13 +473,14 @@ namespace Fx.Either
 
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
-                    () =>
-                        either
+                    async () =>
+                        await either
                             .SelectAsync(
                                 async left =>
                                     await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
                                 (Func<IEnumerable<int>, Task<int>>)(right =>
-                                    throw invalidOperationException)))
+                                    throw invalidOperationException))
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
