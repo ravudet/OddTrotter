@@ -596,9 +596,10 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            await either.SelectLeftAsync(
-                (Func<string, Task<string>>)(left =>
-                    throw invalidOperationException))
+            await either
+                .SelectLeftAsync(
+                    (Func<string, Task<string>>)(left =>
+                        throw invalidOperationException))
                 .ConfigureAwait(false);
         }
     }

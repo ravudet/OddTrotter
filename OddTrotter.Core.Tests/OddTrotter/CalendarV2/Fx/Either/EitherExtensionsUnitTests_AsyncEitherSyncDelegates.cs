@@ -404,7 +404,7 @@ namespace Fx.Either
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
         }
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextNullEither()
+        public async Task SelectLeftFutureEitherNoContextNullEither()
         {
             Task<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -419,14 +419,14 @@ namespace Fx.Either
 #pragma warning disable CS8604 // Possible null reference argument.
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
-                            .SelectLeftAsync(
-                                async left => await Task.FromResult(left).ConfigureAwait(false))
+                            .SelectLeft(
+                                left => left)
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextNullLeftSelector()
+        public async Task SelectLeftFutureEitherNoContextNullLeftSelector()
         {
             var either = CreateLeft();
 
@@ -434,10 +434,10 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectLeftAsync(
+                            .SelectLeft(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Task<string>>)null
+                                (Func<string, string>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 )
@@ -450,10 +450,10 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectLeftAsync(
+                            .SelectLeft(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                                (Func<string, Task<string>>)null
+                                (Func<string, string>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                                 )
@@ -462,16 +462,14 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContext()
+        public async Task SelectLeftFutureEitherNoContext()
         {
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
-                .SelectLeftAsync(
-                    async left => await Task
-                        .FromResult(tuple.Item1 = new StringBuilder(left))
-                        .ConfigureAwait(false))
+                .SelectLeft(
+                    left => tuple.Item1 = new StringBuilder(left))
                 .ConfigureAwait(false);
 
             Assert.IsNotNull(tuple.Item1);
@@ -481,11 +479,8 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
-                .SelectLeftAsync(
-                    async left =>
-                        await Task
-                            .FromResult(tuple.Item1 = new StringBuilder(left))
-                            .ConfigureAwait(false))
+                .SelectLeft(
+                    left => tuple.Item1 = new StringBuilder(left))
                 .ConfigureAwait(false);
 
             Assert.IsNull(tuple.Item1);
@@ -493,18 +488,20 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextLeftMapException()
+        public async Task SelectLeftFutureEitherNoContextLeftMapException()
         {
             var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
-            var leftMapException = await Assert.ThrowsExceptionAsync<LeftMapException>(
-                async () =>
-                    await either
-                        .SelectLeftAsync(
-                            (Func<string, Task<string>>)(left =>
-                                throw invalidOperationException)).ConfigureAwait(false))
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () =>
+                        await either
+                            .SelectLeft(
+                                (Func<string, string>)(left =>
+                                    throw invalidOperationException))
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
@@ -512,9 +509,10 @@ namespace Fx.Either
             either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
-            await either.SelectLeftAsync(
-                (Func<string, Task<string>>)(left =>
-                    throw invalidOperationException))
+            await either
+                .SelectLeft(
+                    (Func<string, string>)(left =>
+                        throw invalidOperationException))
                 .ConfigureAwait(false);
         }
     }
