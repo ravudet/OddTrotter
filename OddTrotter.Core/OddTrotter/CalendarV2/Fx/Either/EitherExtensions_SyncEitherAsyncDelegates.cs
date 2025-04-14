@@ -19,7 +19,10 @@ namespace Fx.Either
         /// <param name="rightSelector"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> or <paramref name="rightSelector"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> or <paramref name="rightSelector"/> is 
+        /// <see langword="null"/>
+        /// </exception>
         /// <exception cref="LeftMapException">
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
@@ -72,7 +75,10 @@ namespace Fx.Either
         /// <param name="leftSelector"></param>
         /// <param name="rightSelector"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> or <paramref name="rightSelector"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> or <paramref name="rightSelector"/> is
+        /// <see langword="null"/>
+        /// </exception>
         /// <exception cref="LeftMapException">
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
@@ -113,7 +119,9 @@ namespace Fx.Either
         /// <param name="either"></param>
         /// <param name="leftSelector"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="either"/> or <paramref name="leftSelector"/> is <see langword="null"/>
+        /// </exception>
         /// <exception cref="LeftMapException">
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
