@@ -1,4 +1,5 @@
-﻿namespace Fx.Either
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Fx.Either
 {
     using System;
     using System.Collections.Generic;
@@ -7,18 +8,25 @@
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Stash;
 
     public sealed partial class EitherExtensionsUnitTests
     {
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
         private static async Task<IEither<string, IEnumerable<int>>> CreateLeft()
         {
             return await Task.FromResult(Either.Left("asdf").Right<IEnumerable<int>>());
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
         private static async Task<IEither<string, IEnumerable<int>>> CreateRight()
         {
-            return await Task.FromResult(Either.Left<string>().Right(new[] { 42 }.AsEnumerable()));
+            return await Task.FromResult(Either.Left<string>().Right(new[] { 42 }));
         }
 
         [TestMethod]
