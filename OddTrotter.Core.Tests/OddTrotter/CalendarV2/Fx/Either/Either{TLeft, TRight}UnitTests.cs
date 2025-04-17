@@ -388,19 +388,25 @@ namespace Fx.Either
             Assert.AreEqual(invalidCastException, rightMapException.InnerException);
         }
 
-        /*[TestMethod]
-        public void ApplyNullLeftMap()
+        [TestMethod]
+        public async Task ApplyAsyncNullLeftMap()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await either
+                        .ApplyAsync<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null,
+                            null,
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                (right, context) => default, default));
+                            async (right, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false), 
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void ApplyNullRightMap()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
