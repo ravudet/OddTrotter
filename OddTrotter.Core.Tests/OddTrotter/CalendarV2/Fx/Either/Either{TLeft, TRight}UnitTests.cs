@@ -406,16 +406,22 @@ namespace Fx.Either
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void ApplyNullRightMap()
+        [TestMethod]
+        public async Task ApplyAsyncNullRightMap()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>((left, context) => default,
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await either
+                        .ApplyAsync<Nothing, Nothing>(
+                            async (left, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null,
+                            null,
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                default));
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -444,6 +450,6 @@ namespace Fx.Either
             var result = MockVisitor.Instance.Visit(either, default);
 
             Assert.AreEqual('4', result);
-        }*/
+        }
     }
 }
