@@ -206,39 +206,50 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void ApplyLeftMapException()
+        [TestMethod]
+        public async Task ApplyAsyncLeftMapException()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
             var node = new QueryResultNode<string, Exception>(
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
-            var leftMapException = Assert.ThrowsException<LeftMapException>(() => node.Apply(
-                (element, context) => throw invalidOperationException,
-                (terminal, context) => terminal.Apply(
-                    (error, context) => error.Value.Message,
-                    (empty, context) => string.Empty,
-                    new Nothing()),
-                new Nothing()));
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () => await node
+                        .ApplyAsync(
+                            (element, context) => throw invalidOperationException,
+                            async (terminal, context) => await terminal
+                                .ApplyAsync(
+                                    async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
+                                    async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
+                                    new Nothing())
+                                .ConfigureAwait(false),
+                            new Nothing())
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
             node = new QueryResultNode<string, Exception>(
                 Either.Left<MockElement>().Right(Either.Left(new MockError(new Exception(value))).Right<IEmpty>()));
 
-            var result = node.Apply(
-                (element, context) => throw invalidOperationException,
-                (terminal, context) => terminal.Apply(
-                    (error, context) => error.Value.Message,
-                    (empty, context) => string.Empty,
-                    new Nothing()),
-                new Nothing());
+            var result = await node
+                .ApplyAsync(
+                    (element, context) => throw invalidOperationException,
+                    async (terminal, context) => await terminal
+                        .ApplyAsync(
+                            async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
+                            async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
+                            new Nothing())
+                        .ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void ApplyRightMapException()
         {
             var value = "asdf";
