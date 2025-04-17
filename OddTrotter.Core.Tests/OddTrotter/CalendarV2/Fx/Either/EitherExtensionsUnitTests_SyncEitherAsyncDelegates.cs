@@ -31,7 +31,6 @@
         [TestMethod]
         public async Task SelectAsyncNullEither()
         {
-            //// TODO you are here updating these copied tests to call the sync either + async delegates variants
             IEither<string, int> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
