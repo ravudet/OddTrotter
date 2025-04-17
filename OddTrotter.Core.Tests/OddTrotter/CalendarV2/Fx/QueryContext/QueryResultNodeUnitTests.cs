@@ -157,8 +157,6 @@ namespace Fx.QueryContext
             Assert.AreEqual(string.Empty, result);
         }
 
-
-
         [TestMethod]
         public async Task ApplyAsyncNullLeftMap()
         {
@@ -196,7 +194,9 @@ namespace Fx.QueryContext
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await node
                         .ApplyAsync(
-                            async (element, context) => await Task.FromResult(string.Concat(element.Value, element.Value)).ConfigureAwait(false),
+                            async (element, context) => await Task
+                                .FromResult(string.Concat(element.Value, element.Value))
+                                .ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -276,7 +276,9 @@ namespace Fx.QueryContext
                 .ThrowsExceptionAsync<RightMapException>(
                     async () => await node
                         .ApplyAsync(
-                            async (element, context) => await Task.FromResult(string.Concat(element.Value, element.Value)).ConfigureAwait(false),
+                            async (element, context) => await Task
+                                .FromResult(string.Concat(element.Value, element.Value))
+                                .ConfigureAwait(false),
                             (terminal, context) => throw invalidOperationException,
                             new Nothing())
                         .ConfigureAwait(false))
