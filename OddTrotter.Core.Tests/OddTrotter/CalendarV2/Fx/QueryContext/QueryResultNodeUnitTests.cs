@@ -249,33 +249,43 @@ namespace Fx.QueryContext
             Assert.AreEqual(value, result);
         }
 
-        /*[TestMethod]
-        public void ApplyRightMapException()
+        [TestMethod]
+        public async Task ApplyAsyncRightMapException()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
             var node = new QueryResultNode<string, Exception>(
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
-            var result = node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
-                (terminal, context) => throw invalidOperationException,
-                new Nothing());
+            var result = await node
+                .ApplyAsync(
+                    async (element, context) => await Task
+                        .FromResult(
+                            string.Concat(element.Value, element.Value))
+                        .ConfigureAwait(false),
+                    (terminal, context) => throw invalidOperationException,
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual(value + value, result);
 
             node = new QueryResultNode<string, Exception>(
                 Either.Left<MockElement>().Right(Either.Left(new MockError(new Exception(value))).Right<IEmpty>()));
 
-            var rightMapException = Assert.ThrowsException<RightMapException>(() => node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
-                (terminal, context) => throw invalidOperationException,
-                new Nothing()));
+            var rightMapException = await Assert
+                .ThrowsExceptionAsync<RightMapException>(
+                    async () => await node
+                        .ApplyAsync(
+                            async (element, context) => await Task.FromResult(string.Concat(element.Value, element.Value)).ConfigureAwait(false),
+                            (terminal, context) => throw invalidOperationException,
+                            new Nothing())
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void Apply()
         {
             var value = "asdf";
