@@ -54,9 +54,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNullLeftSelector()
+        public async Task SelectAsyncNullLeftSelector()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -77,7 +77,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -100,9 +100,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNullRightSelector()
+        public async Task SelectAsyncNullRightSelector()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -123,7 +123,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -146,9 +146,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEither()
+        public async Task SelectAsync()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -169,7 +169,7 @@
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -192,9 +192,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherLeftMapException()
+        public async Task SelectAsyncLeftMapException()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -213,7 +213,7 @@
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await either.SelectAsync(
                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
@@ -225,9 +225,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherRightMapException()
+        public async Task SelectAsyncRightMapException()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -240,7 +240,7 @@
                     tuple)
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     () =>
@@ -264,9 +264,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullEither()
+        public async Task SelectAsyncNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            IEither<string, int> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -287,9 +287,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullLeftSelector()
+        public async Task SelectAsyncNoContextNullLeftSelector()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -309,7 +309,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -331,9 +331,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextNullRightSelector()
+        public async Task SelectAsyncNoContextNullRightSelector()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -353,7 +353,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -375,9 +375,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContext()
+        public async Task SelectAsyncNoContext()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -397,7 +397,7 @@
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -419,9 +419,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextLeftMapException()
+        public async Task SelectAsyncNoContextLeftMapException()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -441,7 +441,7 @@
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
@@ -454,9 +454,9 @@
         }
 
         [TestMethod]
-        public async Task SelectAsyncFutureEitherNoContextRightMapException()
+        public async Task SelectAsyncNoContextRightMapException()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -468,7 +468,7 @@
                         throw invalidOperationException))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             var rightMapException = await Assert
@@ -486,9 +486,9 @@
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
         }
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextNullEither()
+        public async Task SelectLeftAsyncNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            IEither<string, int> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -508,9 +508,9 @@
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextNullLeftSelector()
+        public async Task SelectLeftAsyncNoContextNullLeftSelector()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -526,7 +526,7 @@
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -544,9 +544,9 @@
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContext()
+        public async Task SelectLeftAsyncNoContext()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -559,7 +559,7 @@
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -575,9 +575,9 @@
         }
 
         [TestMethod]
-        public async Task SelectLeftAsyncFutureEitherNoContextLeftMapException()
+        public async Task SelectLeftAsyncNoContextLeftMapException()
         {
-            var either = CreateAsyncLeft();
+            var either = CreateLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -593,7 +593,7 @@
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateAsyncRight();
+            either = CreateRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
