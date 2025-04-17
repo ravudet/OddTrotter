@@ -298,6 +298,7 @@ namespace Fx.Either
             }
         }
 
+        /// <inheritdoc/>
         public async Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
@@ -313,6 +314,14 @@ namespace Fx.Either
             private readonly Func<TLeft, TContext, Task<TResult>> leftAccept;
             private readonly Func<TRight, TContext, Task<TResult>> rightAccept;
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="leftAccept"></param>
+            /// <param name="rightAccept"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="leftAccept"/> or <paramref name="rightAccept"/> is <see langword="null"/>
+            /// </exception>
             public DelegateAsyncVisitor(
                 Func<TLeft, TContext, Task<TResult>> leftAccept,
                 Func<TRight, TContext, Task<TResult>> rightAccept)
