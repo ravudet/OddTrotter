@@ -17,7 +17,7 @@ namespace Fx.Either
         /// <returns></returns>
         private static async Task<IEither<string, IEnumerable<int>>> CreateAsyncLeft()
         {
-            return await Task.FromResult(Either.Left("asdf").Right<IEnumerable<int>>());
+            return await Task.FromResult(CreateLeft());
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Fx.Either
         /// <returns></returns>
         private static async Task<IEither<string, IEnumerable<int>>> CreateAsyncRight()
         {
-            return await Task.FromResult(Either.Left<string>().Right(new[] { 42 }));
+            return await Task.FromResult(CreateRight());
         }
 
         [TestMethod]

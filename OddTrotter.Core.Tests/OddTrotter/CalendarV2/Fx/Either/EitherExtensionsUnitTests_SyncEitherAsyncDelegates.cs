@@ -10,6 +10,24 @@
 
     public sealed partial class EitherExtensionsUnitTests
     {
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
+        private static IEither<string, IEnumerable<int>> CreateLeft()
+        {
+            return Either.Left("asdf").Right<IEnumerable<int>>();
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
+        private static IEither<string, IEnumerable<int>> CreateRight()
+        {
+            return Either.Left<string>().Right(new[] { 42 });
+        }
+
         [TestMethod]
         public async Task SelectAsyncNullEither()
         {
