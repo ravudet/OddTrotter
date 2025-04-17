@@ -336,17 +336,17 @@ namespace Fx.Either
             Assert.AreEqual('a', result);
         }
 
-        /*[TestMethod]
-        public void ApplyRight()
+        [TestMethod]
+        public async Task ApplyAsyncRight()
         {
             Either<string, int> either = new Either<string, int>.Right(42);
 
-            var result = either.Apply((left, context) => left[0], (right, context) => right.ToString()[0], new Nothing());
+            var result = await either.ApplyAsync(async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false), new Nothing()).ConfigureAwait(false);
 
             Assert.AreEqual('4', result);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void ApplyLeftException()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
