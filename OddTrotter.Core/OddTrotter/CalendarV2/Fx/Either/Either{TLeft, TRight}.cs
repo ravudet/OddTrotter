@@ -97,10 +97,38 @@ namespace Fx.Either
             protected internal abstract TResult Accept(Either<TLeft, TRight>.Right node, TContext context);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="visitor"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="visitor"/> is <see langword="null"/></exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if an error occurred while processing an <see cref="Either{TLeft, TRight}.Left"/> node
+        /// </exception>
+        /// <exception cref="RightMapException">
+        /// Thrown if an error occurred while processing an <see cref="Either{TLeft, TRight}.Right"/> node
+        /// </exception>
         protected abstract Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context);
 
         public abstract class AsyncVisitor<TResult, TContext>
         {
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="node"></param>
+            /// <param name="context"></param>
+            /// <returns></returns>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="node"/> is <see langword="null"/></exception>
+            /// <exception cref="LeftMapException">
+            /// Thrown if an error occurred while processing an <see cref="Either{TLeft, TRight}.Left"/> node
+            /// </exception>
+            /// <exception cref="RightMapException">
+            /// Thrown if an error occurred while processing an <see cref="Either{TLeft, TRight}.Right"/> node
+            /// </exception>
             public async Task<TResult> VisitAsync(Either<TLeft, TRight> node, TContext context)
             {
                 ArgumentNullException.ThrowIfNull(node);
@@ -108,8 +136,28 @@ namespace Fx.Either
                 return await node.DispatchAsync(this, context).ConfigureAwait(false);
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="node"></param>
+            /// <param name="context"></param>
+            /// <returns></returns>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="node"/> is <see langword="null"/></exception>
+            /// <exception cref="LeftMapException">
+            /// Thrown if an error occurred while processing <paramref name="node"/>
+            /// </exception>
             protected internal abstract Task<TResult> AcceptAsync(Either<TLeft, TRight>.Left node, TContext context);
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="node"></param>
+            /// <param name="context"></param>
+            /// <returns></returns>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="node"/> is <see langword="null"/></exception>
+            /// <exception cref="RightMapException">
+            /// Thrown if an error occurred while processing <paramref name="node"/>
+            /// </exception>
             protected internal abstract Task<TResult> AcceptAsync(Either<TLeft, TRight>.Right node, TContext context);
         }
 
@@ -137,6 +185,7 @@ namespace Fx.Either
                 return visitor.Accept(this, context);
             }
 
+            /// <inheritdoc/>
             protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
             {
                 ArgumentNullException.ThrowIfNull(visitor);
@@ -169,6 +218,7 @@ namespace Fx.Either
                 return visitor.Accept(this, context);
             }
 
+            /// <inheritdoc/>
             protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
             {
                 ArgumentNullException.ThrowIfNull(visitor);
