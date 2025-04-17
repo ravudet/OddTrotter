@@ -202,8 +202,9 @@ namespace Fx.Either
 
             Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null,
+                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ,
                 (right, context) => default, default));
         }
 
@@ -214,8 +215,9 @@ namespace Fx.Either
 
             Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>((left, context) => default,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null,
+                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ,
                 default));
         }
 
@@ -399,8 +401,9 @@ namespace Fx.Either
                     async () => await either
                         .ApplyAsync<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                            null,
+                            null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            ,
                             async (right, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false), 
                             default)
                         .ConfigureAwait(false))
@@ -418,8 +421,9 @@ namespace Fx.Either
                         .ApplyAsync<Nothing, Nothing>(
                             async (left, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                            null,
+                            null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            ,
                             default)
                         .ConfigureAwait(false))
                 .ConfigureAwait(false);
