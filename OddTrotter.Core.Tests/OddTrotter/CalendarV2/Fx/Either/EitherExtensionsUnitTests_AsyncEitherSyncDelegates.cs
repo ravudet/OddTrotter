@@ -38,7 +38,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNullLeftSelector()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -56,7 +56,7 @@ namespace Fx.Either
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -78,7 +78,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNullRightSelector()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -96,7 +96,7 @@ namespace Fx.Either
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -118,7 +118,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEither()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -132,7 +132,7 @@ namespace Fx.Either
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -149,7 +149,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherLeftMapException()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -167,7 +167,7 @@ namespace Fx.Either
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await either
                 .Select(
@@ -181,7 +181,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherRightMapException()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -193,7 +193,7 @@ namespace Fx.Either
                     tuple)
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     () =>
@@ -241,7 +241,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContextNullLeftSelector()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -258,7 +258,7 @@ namespace Fx.Either
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -279,7 +279,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContextNullRightSelector()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -296,7 +296,7 @@ namespace Fx.Either
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -317,7 +317,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContext()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -329,7 +329,7 @@ namespace Fx.Either
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -345,7 +345,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContextLeftMapException()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -362,7 +362,7 @@ namespace Fx.Either
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
@@ -376,7 +376,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContextRightMapException()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -387,7 +387,7 @@ namespace Fx.Either
                         throw invalidOperationException))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             var rightMapException = await Assert
@@ -428,7 +428,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectLeftFutureEitherNoContextNullLeftSelector()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -444,7 +444,7 @@ namespace Fx.Either
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -464,7 +464,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectLeftFutureEitherNoContext()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
@@ -475,7 +475,7 @@ namespace Fx.Either
             Assert.IsNotNull(tuple.Item1);
             Assert.IsNull(tuple.Item2);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
@@ -490,7 +490,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectLeftFutureEitherNoContextLeftMapException()
         {
-            var either = CreateLeft();
+            var either = CreateAsyncLeft();
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
             var invalidOperationException = new InvalidOperationException();
 
@@ -506,7 +506,7 @@ namespace Fx.Either
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
 
-            either = CreateRight();
+            either = CreateAsyncRight();
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
