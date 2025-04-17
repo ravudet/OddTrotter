@@ -185,22 +185,28 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void ApplyNullRightMap()
+        [TestMethod]
+        public async Task ApplyAsyncNullRightMap()
         {
             var value = "asdf";
             var node = new QueryResultNode<string, Exception>(
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
-            Assert.ThrowsException<ArgumentNullException>(() => node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await node
+                        .ApplyAsync(
+                            async (element, context) => await Task.FromResult(string.Concat(element.Value, element.Value)).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                            null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , new Nothing()));
+                            , 
+                            new Nothing())
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void ApplyLeftMapException()
         {
             var value = "asdf";
