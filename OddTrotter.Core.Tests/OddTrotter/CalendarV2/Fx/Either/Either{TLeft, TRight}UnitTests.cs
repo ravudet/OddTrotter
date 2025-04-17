@@ -283,48 +283,50 @@ namespace Fx.Either
             }
         }
 
-        /*[TestMethod]
-        public void VisitNullContext()
-        {
-            MockVisitNullContextVisitor.Instance.Visit(new Either<string, int>.Left("sadf"),
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                );
-        }
-
-        private sealed class MockVisitNullContextVisitor : Either<string, int>.Visitor<char, object>
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            private MockVisitNullContextVisitor()
-            {
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public static MockVisitNullContextVisitor Instance { get; } = new MockVisitNullContextVisitor();
-
-            /// <inheritdoc/>
-            protected sealed override char Accept(Either<string, int>.Left node, object context)
-            {
-                ArgumentNullException.ThrowIfNull(node);
-
-                return node.Value[0];
-            }
-
-            /// <inheritdoc/>
-            protected sealed override char Accept(Either<string, int>.Right node, object context)
-            {
-                ArgumentNullException.ThrowIfNull(node);
-
-                return node.Value.ToString()[0];
-            }
-        }
-
         [TestMethod]
+        public async Task VisitAsyncNullContext()
+        {
+            await MockVisitNullContextAsyncVisitor
+                .Instance
+                .VisitAsync(
+                    new Either<string, int>.Left("sadf"),
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                    null
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                )
+                .ConfigureAwait(false);
+        }
+
+        private sealed class MockVisitNullContextAsyncVisitor : Either<string, int>.AsyncVisitor<char, object>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            private MockVisitNullContextAsyncVisitor()
+            {
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public static MockVisitNullContextAsyncVisitor Instance { get; } = new MockVisitNullContextAsyncVisitor();
+
+            protected override async Task<char> AcceptAsync(Either<string, int>.Left node, object context)
+            {
+                ArgumentNullException.ThrowIfNull(node);
+
+                return await Task.FromResult(node.Value[0]).ConfigureAwait(false);
+            }
+
+            protected override async Task<char> AcceptAsync(Either<string, int>.Right node, object context)
+            {
+                ArgumentNullException.ThrowIfNull(node);
+
+                return await Task.FromResult(node.Value.ToString()[0]).ConfigureAwait(false);
+            }
+        }
+
+        /*[TestMethod]
         public void ApplyLeft()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
