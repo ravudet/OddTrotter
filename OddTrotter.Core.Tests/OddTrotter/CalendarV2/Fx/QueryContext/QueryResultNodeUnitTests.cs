@@ -285,48 +285,66 @@ namespace Fx.QueryContext
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
         }
 
-        /*[TestMethod]
-        public void Apply()
+        [TestMethod]
+        public async Task ApplyAsync()
         {
             var value = "asdf";
             var node = new QueryResultNode<string, Exception>(
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
-            var result = node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
-                (terminal, context) => terminal.Apply(
-                    (error, context) => error.Value.Message,
-                    (empty, context) => string.Empty,
-                    new Nothing()),
-                new Nothing());
+            var result = await node
+                .ApplyAsync(
+                    async (element, context) => await Task
+                        .FromResult(string.Concat(element.Value, element.Value))
+                        .ConfigureAwait(false),
+                    async (terminal, context) => await terminal
+                        .ApplyAsync(
+                            async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
+                            async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
+                            new Nothing())
+                        .ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual(value + value, result);
 
             node = new QueryResultNode<string, Exception>(
                 Either.Left<MockElement>().Right(Either.Left(new MockError(new Exception(value))).Right<IEmpty>()));
 
-            result = node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
-                (terminal, context) => terminal.Apply(
-                    (error, context) => error.Value.Message,
-                    (empty, context) => string.Empty,
-                    new Nothing()),
-                new Nothing());
+            result = await node
+                .ApplyAsync(
+                    async (element, context) => await Task
+                        .FromResult(string.Concat(element.Value, element.Value))
+                        .ConfigureAwait(false),
+                    async (terminal, context) => await terminal
+                        .ApplyAsync(
+                            async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
+                            async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
+                            new Nothing())
+                        .ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
 
             node = new QueryResultNode<string, Exception>(
                 Either.Left<MockElement>().Right(Either.Left<MockError>().Right(MockEmpty.Instance)));
 
-            result = node.Apply(
-                (element, context) => string.Concat(element.Value, element.Value),
-                (terminal, context) => terminal.Apply(
-                    (error, context) => error.Value.Message,
-                    (empty, context) => string.Empty,
-                    new Nothing()),
-                new Nothing());
+            result = await node
+                .ApplyAsync(
+                    async (element, context) => await Task
+                        .FromResult(string.Concat(element.Value, element.Value))
+                        .ConfigureAwait(false),
+                    async (terminal, context) => await terminal
+                        .ApplyAsync(
+                            async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
+                            async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
+                            new Nothing())
+                        .ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual(string.Empty, result);
-        }*/
+        }
     }
 }
