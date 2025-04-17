@@ -112,7 +112,9 @@ namespace Fx.Either
         /// <exception cref="RightMapException">
         /// Thrown if an error occurred while processing an <see cref="Either{TLeft, TRight}.Right"/> node
         /// </exception>
-        protected abstract Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context);
+        protected abstract Task<TResult> DispatchAsync<TResult, TContext>(
+            AsyncVisitor<TResult, TContext> visitor, 
+            TContext context);
 
         public abstract class AsyncVisitor<TResult, TContext>
         {
@@ -186,7 +188,9 @@ namespace Fx.Either
             }
 
             /// <inheritdoc/>
-            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
+            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(
+                AsyncVisitor<TResult, TContext> visitor, 
+                TContext context)
             {
                 ArgumentNullException.ThrowIfNull(visitor);
 
@@ -219,7 +223,9 @@ namespace Fx.Either
             }
 
             /// <inheritdoc/>
-            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(AsyncVisitor<TResult, TContext> visitor, TContext context)
+            protected sealed override async Task<TResult> DispatchAsync<TResult, TContext>(
+                AsyncVisitor<TResult, TContext> visitor, 
+                TContext context)
             {
                 ArgumentNullException.ThrowIfNull(visitor);
 
@@ -299,7 +305,10 @@ namespace Fx.Either
         }
 
         /// <inheritdoc/>
-        public async Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+        public async Task<TResult> ApplyAsync<TResult, TContext>(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap,
+            TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
