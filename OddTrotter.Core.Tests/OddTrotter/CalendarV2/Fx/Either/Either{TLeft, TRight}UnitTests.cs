@@ -334,7 +334,12 @@ namespace Fx.Either
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
-            var result = await either.ApplyAsync(async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false), new Nothing()).ConfigureAwait(false);
+            var result = await either
+                .ApplyAsync(
+                    async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), 
+                    async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual('a', result);
         }
@@ -344,7 +349,12 @@ namespace Fx.Either
         {
             Either<string, int> either = new Either<string, int>.Right(42);
 
-            var result = await either.ApplyAsync(async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false), new Nothing()).ConfigureAwait(false);
+            var result = await either
+                .ApplyAsync(
+                    async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), 
+                    async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false), 
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual('4', result);
         }
