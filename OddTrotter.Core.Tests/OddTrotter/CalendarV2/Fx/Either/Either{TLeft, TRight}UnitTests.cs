@@ -367,24 +367,28 @@ namespace Fx.Either
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
         }
 
-        /*[TestMethod]
-        public void ApplyRightException()
+        [TestMethod]
+        public async Task ApplyAsycRightException()
         {
             Either<string, int> either = new Either<string, int>.Right(42);
 
             var invalidOperationException = new InvalidOperationException();
             var invalidCastException = new InvalidCastException();
 
-            var rightMapException = Assert.ThrowsException<RightMapException>(
-                () => either.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException,
-                    (right, context) => throw invalidCastException,
-                    default));
+            var rightMapException = await Assert
+                .ThrowsExceptionAsync<RightMapException>(
+                    async () => await either
+                        .ApplyAsync<char, Nothing>(
+                            (left, context) => throw invalidOperationException,
+                            (right, context) => throw invalidCastException,
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidCastException, rightMapException.InnerException);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void ApplyNullLeftMap()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
