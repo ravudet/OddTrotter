@@ -235,21 +235,21 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void LeftAccept()
+        public async Task LeftAcceptAsync()
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
-            var result = MockVisitor.Instance.Visit(either, default);
+            var result = await MockAsyncVisitor.Instance.VisitAsync(either, default).ConfigureAwait(false);
 
             Assert.AreEqual('a', result);
         }
 
         [TestMethod]
-        public void RightAccept()
+        public async Task RightAcceptAsync()
         {
             Either<string, int> either = new Either<string, int>.Right(42);
 
-            var result = MockVisitor.Instance.Visit(either, default);
+            var result = await MockAsyncVisitor.Instance.VisitAsync(either, default).ConfigureAwait(false);
 
             Assert.AreEqual('4', result);
         }
