@@ -39,7 +39,8 @@ namespace System.Linq
 
             var result = firstOrDefault.Apply(
                 (left, context) => left[0],
-                (right, context) => right.ToString()[0], new Nothing());
+                (right, context) => right.ToString()[0], 
+                new Nothing());
 
             Assert.AreEqual('4', result);
         }
@@ -83,11 +84,14 @@ namespace System.Linq
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Left("asdf"));
 
-            Assert.ThrowsException<ArgumentNullException>(() => firstOrDefault.Apply<Nothing, Nothing>(
+            Assert.ThrowsException<ArgumentNullException>(
+                () => firstOrDefault.Apply<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                    null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , (right, context) => default, default));
+                    ,
+                    (right, context) => default, 
+                    default));
         }
 
         [TestMethod]
@@ -102,7 +106,8 @@ namespace System.Linq
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                         null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                        , default));
+                        , 
+                        default));
         }
 
         [TestMethod]
@@ -120,77 +125,99 @@ namespace System.Linq
             Assert.AreEqual('a', result);
         }
 
-        /*[TestMethod]
-        public void ApplyRight()
+        [TestMethod]
+        public async Task ApplyAsyncRight()
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Right(42));
 
-            var result = firstOrDefault.Apply(
-                (left, context) => left[0],
-                (right, context) => right.ToString()[0], new Nothing());
+            var result = await firstOrDefault
+                .ApplyAsync(
+                    async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false),
+                    async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false),
+                    new Nothing())
+                .ConfigureAwait(false);
 
             Assert.AreEqual('4', result);
         }
 
         [TestMethod]
-        public void ApplyLeftException()
+        public async Task ApplyAsyncLeftException()
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Left("asdf"));
 
             var invalidOperationException = new InvalidOperationException();
             var invalidCastException = new InvalidCastException();
 
-            var leftMapException = Assert.ThrowsException<LeftMapException>(
-                () => firstOrDefault.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException,
-                    (right, context) => throw invalidCastException,
-                    default));
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () => await firstOrDefault
+                        .ApplyAsync<char, Nothing>(
+                            (left, context) => throw invalidOperationException,
+                            (right, context) => throw invalidCastException,
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
         }
 
         [TestMethod]
-        public void ApplyRightException()
+        public async Task ApplyAsyncRightException()
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Right(42));
 
             var invalidOperationException = new InvalidOperationException();
             var invalidCastException = new InvalidCastException();
 
-            var rightMapException = Assert.ThrowsException<RightMapException>(
-                () => firstOrDefault.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException,
-                    (right, context) => throw invalidCastException,
-                    default));
+            var rightMapException = await Assert
+                .ThrowsExceptionAsync<RightMapException>(
+                    async () => await firstOrDefault
+                        .ApplyAsync<char, Nothing>(
+                            (left, context) => throw invalidOperationException,
+                            (right, context) => throw invalidCastException,
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Assert.AreEqual(invalidCastException, rightMapException.InnerException);
         }
 
         [TestMethod]
-        public void ApplyNullLeftMap()
+        public async Task ApplyAsyncNullLeftMap()
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Left("asdf"));
 
-            Assert.ThrowsException<ArgumentNullException>(() => firstOrDefault.Apply<Nothing, Nothing>(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await firstOrDefault
+                        .ApplyAsync<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                            null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , (right, context) => default, default));
+                            ,
+                            async (right, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false),
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public void ApplyNullRightMap()
+        public async Task ApplyAsyncNullRightMap()
         {
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Left("asdf"));
 
-            Assert.ThrowsException<ArgumentNullException>(
-                () =>
-                    firstOrDefault.Apply<Nothing, Nothing>(
-                        (left, context) => default,
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () =>
+                        await firstOrDefault.ApplyAsync<Nothing, Nothing>(
+                            (left, context) => Task.FromResult(new Nothing()),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                        null
+                            null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                        , default));
-        }*/
+                            , 
+                            default)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
     }
 }

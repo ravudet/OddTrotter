@@ -54,7 +54,7 @@ namespace System.Linq
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
 
-            return await this.either.Apply(leftMap, rightMap, context).ConfigureAwait(false);
+            return await this.either.ApplyAsync(leftMap, rightMap, context).ConfigureAwait(false);
         }
     }
 }
