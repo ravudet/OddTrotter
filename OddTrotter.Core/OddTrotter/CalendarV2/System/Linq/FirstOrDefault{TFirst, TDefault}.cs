@@ -45,7 +45,11 @@ namespace System.Linq
             return this.either.Apply(leftMap, rightMap, context);
         }
 
-        public async Task<TResult> ApplyAsync<TResult, TContext>(Func<TFirst, TContext, Task<TResult>> leftMap, Func<TDefault, TContext, Task<TResult>> rightMap, TContext context)
+        /// <inheritdoc/>
+        public async Task<TResult> ApplyAsync<TResult, TContext>(
+            Func<TFirst, TContext, Task<TResult>> leftMap,
+            Func<TDefault, TContext, Task<TResult>> rightMap, 
+            TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
