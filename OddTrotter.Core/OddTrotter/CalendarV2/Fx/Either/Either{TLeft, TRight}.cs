@@ -342,6 +342,7 @@ namespace Fx.Either
                 this.rightAccept = rightAccept;
             }
 
+            /// <inheritdoc/>
             protected internal override async Task<TResult> AcceptAsync(Left node, TContext context)
             {
                 ArgumentNullException.ThrowIfNull(node);
@@ -358,6 +359,7 @@ namespace Fx.Either
                 }
             }
 
+            /// <inheritdoc/>
             protected internal override async Task<TResult> AcceptAsync(Right node, TContext context)
             {
                 ArgumentNullException.ThrowIfNull(node);
