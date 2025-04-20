@@ -129,14 +129,26 @@ namespace OddTrotter.Calendar
                 throw new ArgumentNullException(nameof(@try));
             }
 
+            //// element => Lift(@try, elemement.Value)
+
             return queryResult.SelectLeft(
                 element =>
-                    TryCreate(
+                    /*TryCreate(
                         element,
                         ////(IElement<TValue, TError> other, [MaybeNullWhen(false)] out TResult result) => @try(other.Value, out result),
                         Lift<TValue, TResult, IElement<TValue, TError>>(@try, element => element.Value), ///// TODO not sure that this is a lift, and not sure that the lack of the type inference makes this useful in any way
                         (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
+                        element => element.Next().TrySelectIterator(@try))*/
+                    TryCreate3(
+                        element,
+                        Adapt(@try, _ => _.Value),
+                        (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
                         element => element.Next().TrySelectIterator(@try))
+                    /*TryCreate3(
+                        element,
+                        element => Lift3(@try, element, _ => _.Value),
+                        (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
+                        element => element.Next().TrySelectIterator(@try))*/
                     /*TryCreate2(
                         element,
                         element => Convert2(@try)(element.Value),
@@ -145,6 +157,50 @@ namespace OddTrotter.Calendar
                     .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
+        }
+
+        private static Try<IElement<TValue, TError>, TResult> Adapt<TValue, TError, TResult>(Try<TValue, TResult> @try, Func<IElement<TValue, TError>, TValue> selector)
+        {
+            return Lift(@try, selector);
+        }
+
+        public sealed class TryClass<TSource, TOutput>
+        {
+            private readonly Try<TSource, TOutput> @try;
+
+            public TryClass(Try<TSource, TOutput> @try)
+            {
+                this.@try = @try;
+            }
+
+            public bool Try(TSource source, [MaybeNullWhen(false)] out TOutput output)
+            {
+                return this.@try(source, out output);
+            }
+
+            public static implicit operator TryClass<TSource, TOutput>(Try<TSource, TOutput> @try)
+            {
+                return new TryClass<TSource, TOutput>(@try);
+            }
+
+            public static implicit operator Try<TSource, TOutput>(TryClass<TSource, TOutput> tryClass)
+            {
+                return tryClass.@try;
+            }
+        }
+
+        private static Try<TOther, TResult> Lift3<TSource, TResult, TOther>(Try<TSource, TResult> tryClass, TOther other, Func<TOther, TSource> selector)
+        {
+            return Lift<TSource, TResult, TOther>(tryClass, selector);
+        }
+
+        private static IEither<TLeft, TRight> TryCreate3<TValue, TResult, TLeft, TRight, TError>(
+            IElement<TValue, TError> value,
+            Try<IElement<TValue, TError>, TResult> discriminator,
+            Func<IElement<TValue, TError>, TResult, TLeft> leftFactory,
+            Func<IElement<TValue, TError>, TRight> rightFactory)
+        {
+            return TryCreate<IElement<TValue, TError>, TResult, TLeft, TRight>(value, discriminator, leftFactory, rightFactory);
         }
 
         private static Try2<TSource, TResult> Convert2<TSource, TResult>(Try<TSource, TResult> @try)
@@ -172,6 +228,8 @@ namespace OddTrotter.Calendar
         {
             return (TOther other, [MaybeNullWhen(false)] out TResult result) => @try(selector(other), out result);
         }
+
+
 
         private static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>( //// TODO this should go in the `either` factory methods class, if you choose to keep it
             TValue value,
