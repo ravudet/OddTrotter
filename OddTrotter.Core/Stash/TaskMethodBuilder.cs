@@ -1,6 +1,11 @@
-﻿namespace System.Runtime.CompilerServices
+﻿namespace Stash
 {
+    using System;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+
+
+    ////TODO add this to the interface: [AsyncMethodBuilder(typeof(TaskMethodBuilder<>))]
 
     public struct TaskMethodBuilder<T>
     {

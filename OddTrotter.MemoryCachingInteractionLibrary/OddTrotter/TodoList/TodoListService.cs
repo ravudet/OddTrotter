@@ -407,6 +407,7 @@
             //// TODO you are code reviewing adding applyasync to ieither; you just finished code reviewing queryresultnode
             //// TODO rename eitherextensionunittests
             //// TODO you need to code review from the commit about starting async either implementation
+            //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO go through all of the async methods (like either async extensions and queryresult async extensions and stuff) to see how you want to handle line lengths when `await` is involved
