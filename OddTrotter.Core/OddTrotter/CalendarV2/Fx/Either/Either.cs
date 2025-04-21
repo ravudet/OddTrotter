@@ -141,6 +141,22 @@ namespace Fx.Either
             }
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="discriminator"></param>
+        /// <param name="leftFactory"></param>
+        /// <param name="rightFactory"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="discriminator"/> or <paramref name="leftFactory"/> or <paramref name="rightFactory"/> is
+        /// <see langword="null"/>
+        /// </exception>
         public static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>(
             TValue value,
             Try<TValue, TResult> discriminator,
