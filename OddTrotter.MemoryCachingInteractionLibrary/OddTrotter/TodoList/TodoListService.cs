@@ -404,10 +404,13 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO you are code reviewing either.trycreate
+            //// TODO you are pulling `tryselect` out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO does `either.trycreate` need `leftfactory` to take `tvalue` *and* `tresult`?
             //// TODO implement all of the async variants for eitherextensions
             //// TODO go through all of the async methods (like either async extensions and queryresult async extensions and stuff) to see how you want to handle line lengths when `await` is involved
             //// TODO realnullable should have a `maybenullwhen` or something in the `trygetvalue` method

@@ -3,6 +3,7 @@ namespace Fx.Either
 {
     using System;
 
+    using Fx.Try;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -122,6 +123,61 @@ namespace Fx.Either
             Assert.IsFalse(either.TryGetLeft(out var left));
             Assert.IsTrue(either.TryGetRight(out var right));
             Assert.AreEqual("423423", right);
+        }
+
+        [TestMethod]
+        public void TryCreateNullDisciminator()
+        {
+            var value = "asdf";
+
+            Assert.ThrowsException<ArgumentNullException>(
+                () => 
+                    Either
+                        .TryCreate(
+                            value,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                            (Try<string, int>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            ,
+                            (value, parsed) => value, 
+                            (value) => value));
+        }
+
+        [TestMethod]
+        public void TryCreateNullLeftFactory()
+        {
+            var value = "asdf";
+
+            Assert.ThrowsException<ArgumentNullException>(
+                () =>
+                    Either
+                        .TryCreate(
+                            value,
+                            IntTryParse,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                            (Func<string, int, int>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            ,
+                            value => value));
+        }
+
+        private static Try<string, int> IntTryParse { get; } = int.TryParse;
+
+        [TestMethod]
+        public void TryCreateNullRightFactory()
+        {
+            var value = "asdf";
+
+            Assert.ThrowsException<ArgumentNullException>(
+                () => 
+                    Either
+                        .TryCreate(
+                            value,
+                            )
         }
     }
 }

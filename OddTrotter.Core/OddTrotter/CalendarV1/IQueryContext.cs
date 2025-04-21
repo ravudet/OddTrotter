@@ -125,15 +125,16 @@ namespace OddTrotter.Calendar
                 throw new ArgumentNullException(nameof(@try));
             }
 
-            return queryResult.SelectLeft(
-                element => 
-                    Either
-                        .TryCreate(
-                            element.Value, 
-                            @try, 
-                            (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
-                            nothing => element.Next().TrySelectIterator(@try))
-                        .SelectManyRight())
+            return queryResult.
+                SelectLeft(
+                    element => 
+                        Either
+                            .TryCreate(
+                                element.Value, 
+                                @try, 
+                                (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
+                                nothing => element.Next().TrySelectIterator(@try))
+                            .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
         }
