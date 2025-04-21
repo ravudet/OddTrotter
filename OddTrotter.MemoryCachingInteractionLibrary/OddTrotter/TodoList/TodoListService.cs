@@ -358,7 +358,7 @@
 
             var originalLastRecordedEventTimeStamp = oddTrotterTodoList.LastRecordedEventTimeStamp;
 
-
+            //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern
             //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
             //// TODO TOPIC naming of `realnullable`; this really has nothing to do with null, maybe call it valuable? mark it internal if you can't find a name you like; call it "optional"? i think i like optional best
@@ -404,6 +404,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 

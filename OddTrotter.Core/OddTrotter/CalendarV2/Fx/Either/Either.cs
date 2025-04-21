@@ -3,6 +3,8 @@ namespace Fx.Either
 {
     using System;
 
+    using Fx.Try;
+
     public static class Either
     {
         /// <summary>
@@ -132,6 +134,26 @@ namespace Fx.Either
             if (discriminator(value))
             {
                 return Either.Left(leftFactory(value)).Right<TRight>();
+            }
+            else
+            {
+                return Either.Left<TLeft>().Right(rightFactory(value));
+            }
+        }
+
+        public static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>(
+            TValue value,
+            Try<TValue, TResult> discriminator,
+            Func<TValue, TResult, TLeft> leftFactory,
+            Func<TValue, TRight> rightFactory)
+        {
+            ArgumentNullException.ThrowIfNull(discriminator);
+            ArgumentNullException.ThrowIfNull(leftFactory);
+            ArgumentNullException.ThrowIfNull(rightFactory);
+
+            if (discriminator(value, out var result))
+            {
+                return Either.Left(leftFactory(value, result)).Right<TRight>();
             }
             else
             {

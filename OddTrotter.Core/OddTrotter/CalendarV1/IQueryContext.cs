@@ -126,35 +126,16 @@ namespace OddTrotter.Calendar
             }
 
             return queryResult.SelectLeft(
-                element =>
-                    TryCreate(
-                        element.Value, 
-                        @try, 
-                        (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
-                        nothing => element.Next().TrySelectIterator(@try))
-                    .SelectManyRight())
+                element => 
+                    Either
+                        .TryCreate(
+                            element.Value, 
+                            @try, 
+                            (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
+                            nothing => element.Next().TrySelectIterator(@try))
+                        .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
-        }
-
-        private static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>( //// TODO this should go in the `either` factory methods class, if you choose to keep it
-            TValue value,
-            Try<TValue, TResult> discriminator,
-            Func<TValue, TResult, TLeft> leftFactory,
-            Func<TValue, TRight> rightFactory)
-        {
-            ArgumentNullException.ThrowIfNull(discriminator);
-            ArgumentNullException.ThrowIfNull(leftFactory);
-            ArgumentNullException.ThrowIfNull(rightFactory);
-
-            if (discriminator(value, out var result))
-            {
-                return Either.Left(leftFactory(value, result)).Right<TRight>();
-            }
-            else
-            {
-                return Either.Left<TLeft>().Right(rightFactory(value));
-            }
         }
 
         private sealed class TrySelectElement<TValue, TError, TResult> : IElement<TResult, TError>
