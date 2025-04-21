@@ -133,17 +133,26 @@ namespace OddTrotter.Calendar
 
             return queryResult.SelectLeft(
                 element =>
+                    Adapt4(@try)(element.Value)
+                        .Select(
+                            tried => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try),
+                            nothing => element.Next().TrySelectIterator(@try))
+
+
+
+
+
                     /*TryCreate(
                         element,
                         ////(IElement<TValue, TError> other, [MaybeNullWhen(false)] out TResult result) => @try(other.Value, out result),
                         Lift<TValue, TResult, IElement<TValue, TError>>(@try, element => element.Value), ///// TODO not sure that this is a lift, and not sure that the lack of the type inference makes this useful in any way
                         (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
                         element => element.Next().TrySelectIterator(@try))*/
-                    TryCreate3(
+                    /*TryCreate3(
                         element,
                         Adapt(@try, _ => _.Value),
                         (element, result) => new TrySelectElement<TValue, TError, TResult>(result, element.Next(), @try),
-                        element => element.Next().TrySelectIterator(@try))
+                        element => element.Next().TrySelectIterator(@try))*/
                     /*TryCreate3(
                         element,
                         element => Lift3(@try, element, _ => _.Value),
@@ -158,6 +167,26 @@ namespace OddTrotter.Calendar
                 .SelectManyLeft()
                 .ToQueryResultNode();
         }
+
+        public delegate IEither<TOutput, Nothing> TryEither<in TInput, out TOutput>(TInput input);
+
+        private static TryEither<TInput, TOutput> Adapt4<TInput, TOutput>(Try<TInput, TOutput> @try)
+        {
+            return input => TryCreate(
+                input,
+                @try, 
+                (input, output) => output,
+                (input) => new Nothing());
+        }
+
+        private static Try<TInput, TOutput> AdaptTheOtherWay4<TInput, TOutput>(TryEither<TInput, TOutput> @try)
+        {
+            return (TInput input, [MaybeNullWhen(false)] out TOutput output) => @try(input).TryGetLeft(out output);
+        }
+
+
+
+
 
         private static Try<IElement<TValue, TError>, TResult> Adapt<TValue, TError, TResult>(Try<TValue, TResult> @try, Func<IElement<TValue, TError>, TValue> selector)
         {
