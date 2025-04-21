@@ -82,10 +82,6 @@ namespace OddTrotter.Calendar
     public static class QueryResultExtensions
     {
 
-        //// TODO do you really want a tryselect overload that pretends ieithers are trys
-
-
-
 
 
 
