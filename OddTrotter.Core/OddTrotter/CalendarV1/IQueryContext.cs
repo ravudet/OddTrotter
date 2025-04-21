@@ -133,12 +133,16 @@ namespace OddTrotter.Calendar
 
             return queryResult.SelectLeft(
                 element =>
-                    Adapt4(@try)(element.Value)
+                    /*Adapt4(@try)(element.Value)
                         .Select(
                             tried => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try),
-                            nothing => element.Next().TrySelectIterator(@try))
+                            nothing => element.Next().TrySelectIterator(@try))*/
 
-
+                    TryCreate(
+                        element.Value, 
+                        @try, 
+                        (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
+                        nothing => element.Next().TrySelectIterator(@try))
 
 
 
