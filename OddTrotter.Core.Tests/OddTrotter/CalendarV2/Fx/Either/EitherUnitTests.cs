@@ -173,11 +173,50 @@ namespace Fx.Either
             var value = "asdf";
 
             Assert.ThrowsException<ArgumentNullException>(
-                () => 
+                () =>
                     Either
                         .TryCreate(
                             value,
-                            )
+                            IntTryParse,
+                            (value, parsed) => parsed,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                            (Func<string, string>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            ));
+        }
+
+        [TestMethod]
+        public void TryCreateLeft()
+        {
+            var value = "42";
+
+            var either = Either.TryCreate(
+                value,
+                IntTryParse,
+                (value, parsed) => parsed,
+                (value) => value);
+
+            Assert.IsTrue(either.TryGetLeft(out var parsed));
+            Assert.AreEqual(42, parsed);
+            Assert.IsFalse(either.TryGetRight(out var error));
+        }
+
+        [TestMethod]
+        public void TryCreateRight()
+        {
+            var value = "asdf";
+
+            var either = Either.TryCreate(
+                value,
+                IntTryParse,
+                (value, parsed) => parsed,
+                (value) => value);
+
+            Assert.IsFalse(either.TryGetLeft(out var parsed));
+            Assert.IsTrue(either.TryGetRight(out var error));
+            Assert.AreEqual(value, error);
         }
     }
 }
