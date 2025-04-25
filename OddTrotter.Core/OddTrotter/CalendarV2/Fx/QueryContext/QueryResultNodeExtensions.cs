@@ -536,8 +536,12 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="try"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/></exception>
-        public static IQueryResultNode<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResultNode<TValue, TError> source, Try<TValue, TResult> @try)
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+        /// </exception>
+        public static IQueryResultNode<TResult, TError> TrySelect<TValue, TError, TResult>(
+            this IQueryResultNode<TValue, TError> source, 
+            Try<TValue, TResult> @try)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(@try);
@@ -566,7 +570,9 @@ namespace Fx.QueryContext
             /// <param name="value"></param>
             /// <param name="next"></param>
             /// <param name="try"></param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="next"/> or <paramref name="try"/> is <see langword="null"/></exception>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="try"/> is <see langword="null"/>
+            /// </exception>
             public TrySelectElement(TResult value, IQueryResultNode<TValue, TError> next, Try<TValue, TResult> @try)
             {
                 ArgumentNullException.ThrowIfNull(next);
