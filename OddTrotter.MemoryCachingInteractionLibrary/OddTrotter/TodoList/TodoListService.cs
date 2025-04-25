@@ -406,6 +406,7 @@
 
             //// TODO you are pulling `tryselect` out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
+            //// TODO figure out diffing a current file with a previous commit of that file
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 

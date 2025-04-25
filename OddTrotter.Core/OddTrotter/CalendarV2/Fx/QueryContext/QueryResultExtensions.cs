@@ -6,6 +6,7 @@ namespace Fx.QueryContext
     using System.Linq;
 
     using Fx.Either;
+    using Fx.Try;
 
     public static class QueryResultExtensions
     {
@@ -300,6 +301,34 @@ namespace Fx.QueryContext
                 get
                 {
                     return this.source.Nodes.DistinctBy(this.keySelector, comparer);
+                }
+            }
+        }
+
+        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(@try);
+
+            return new TrySelectResult<TValue, TError, TResult>(source, @try);
+        }
+
+        private sealed class TrySelectResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
+        {
+            private readonly IQueryResult<TValue, TError> source;
+            private readonly Try<TValue, TResult> @try;
+
+            public TrySelectResult(IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
+            {
+                this.source = source;
+                this.@try = @try;
+            }
+
+            public IQueryResultNode<TResult, TError> Nodes
+            {
+                get
+                {
+                    return this.source.Nodes.TrySelect(this.@try);
                 }
             }
         }

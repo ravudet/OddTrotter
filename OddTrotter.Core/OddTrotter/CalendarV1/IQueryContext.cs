@@ -85,34 +85,6 @@ namespace OddTrotter.Calendar
 
 
 
-
-
-        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResult<TValue, TError> queryResult, Fx.Try.Try<TValue, TResult> @try)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (@try == null)
-            {
-                throw new ArgumentNullException(nameof(@try));
-            }
-
-            return new TrySelectQueryResult<TResult, TError>(queryResult.Nodes.TrySelect(@try));
-        }
-
-        private sealed class TrySelectQueryResult<TResult, TError> : IQueryResult<TResult, TError>
-        {
-            public TrySelectQueryResult(IQueryResultNode<TResult, TError> nodes)
-            {
-                Nodes = nodes;
-            }
-
-
-            public IQueryResultNode<TResult, TError> Nodes { get; }
-        }
-
         public static Fx.QueryContext.IQueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this IQueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
         {
             //// TODO do you like this method name? do you want to normalize with names used in `either`?
