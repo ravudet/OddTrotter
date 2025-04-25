@@ -305,7 +305,21 @@ namespace Fx.QueryContext
             }
         }
 
-        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="try"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+        /// </exception>
+        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(
+            this IQueryResult<TValue, TError> source, 
+            Try<TValue, TResult> @try)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(@try);
@@ -318,6 +332,14 @@ namespace Fx.QueryContext
             private readonly IQueryResult<TValue, TError> source;
             private readonly Try<TValue, TResult> @try;
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="source"></param>
+            /// <param name="try"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+            /// </exception>
             public TrySelectResult(IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
             {
                 ArgumentNullException.ThrowIfNull(source);
@@ -327,6 +349,7 @@ namespace Fx.QueryContext
                 this.@try = @try;
             }
 
+            /// <inheritdoc/>
             public IQueryResultNode<TResult, TError> Nodes
             {
                 get
