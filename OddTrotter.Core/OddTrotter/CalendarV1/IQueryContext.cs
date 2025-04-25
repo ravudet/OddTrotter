@@ -99,7 +99,7 @@ namespace OddTrotter.Calendar
                 throw new ArgumentNullException(nameof(@try));
             }
 
-            return new TrySelectQueryResult<TResult, TError>(queryResult.Nodes.TrySelectIterator(@try));
+            return new TrySelectQueryResult<TResult, TError>(queryResult.Nodes.TrySelect(@try));
         }
 
         private sealed class TrySelectQueryResult<TResult, TError> : IQueryResult<TResult, TError>
@@ -112,53 +112,6 @@ namespace OddTrotter.Calendar
 
             public IQueryResultNode<TResult, TError> Nodes { get; }
         }
-
-        private static IQueryResultNode<TResult, TError> TrySelectIterator<TValue, TError, TResult>(this IQueryResultNode<TValue, TError> queryResult, Fx.Try.Try<TValue, TResult> @try)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (@try == null)
-            {
-                throw new ArgumentNullException(nameof(@try));
-            }
-
-            return queryResult.
-                SelectLeft(
-                    element => 
-                        Either
-                            .TryCreate(
-                                element.Value, 
-                                @try, 
-                                (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try), 
-                                nothing => element.Next().TrySelectIterator(@try))
-                            .SelectManyRight())
-                .SelectManyLeft()
-                .ToQueryResultNode();
-        }
-
-        private sealed class TrySelectElement<TValue, TError, TResult> : IElement<TResult, TError>
-        {
-            private readonly IQueryResultNode<TValue, TError> next;
-            private readonly Try<TValue, TResult> @try;
-
-            public TrySelectElement(TResult value, IQueryResultNode<TValue, TError> next, Fx.Try.Try<TValue, TResult> @try)
-            {
-                Value = value;
-                this.next = next;
-                this.@try = @try;
-            }
-
-            public TResult Value { get; }
-
-            public IQueryResultNode<TResult, TError> Next()
-            {
-                return this.next.TrySelectIterator(this.@try);
-            }
-        }
-
 
         public static Fx.QueryContext.IQueryResult<TValue, TErrorEnd> ErrorSelect<TValue, TErrorStart, TErrorEnd>(this IQueryResult<TValue, TErrorStart> queryResult, Func<TErrorStart, TErrorEnd> selector)
         {
