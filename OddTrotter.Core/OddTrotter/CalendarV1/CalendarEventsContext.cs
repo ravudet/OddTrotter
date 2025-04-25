@@ -296,7 +296,7 @@ namespace OddTrotter.Calendar
                             }/*,
                             translationError => Task.FromResult(translationError))) //// TODO go through all of your lambda code and make sure they have meaningful names*/
                             ))
-                .SelectAsync(
+                .Select(
                     seriesPlusInstanceOrTranslationError =>
                         seriesPlusInstanceOrTranslationError
                             .Apply(
@@ -352,10 +352,10 @@ namespace OddTrotter.Calendar
                                                 >()
                                             .Right(translationError))
                                     .Right<Nothing>()))
-                .TrySelectAsync(
+                .TrySelect(
                     (Either<Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException>, Nothing> either, [MaybeNullWhen(false)] out Either<(CalendarEvent SeriesMaster, Either<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> Instance), CalendarEventsContextTranslationException> left) => 
                         either.TryGetLeft(out left)) //// TODO this amount of generics is really bad, see if you can fix it
-                .SelectAsync(
+                .Select(
                     seriesPlusInstanceOrTranslationError =>
                         seriesPlusInstanceOrTranslationError.SelectLeft(
                             seriesPlusInstance =>

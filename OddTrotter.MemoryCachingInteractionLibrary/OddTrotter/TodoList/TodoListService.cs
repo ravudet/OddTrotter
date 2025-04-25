@@ -404,12 +404,13 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you are pulling `tryselect` out of `iquerycontext` into `v2`
+            //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
             //// TODO figure out diffing a current file with a previous commit of that file
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO implement the result of the `queryresult` async variants
             //// TODO update test code to use the `ireadonlylist.toqueryresult` extension method when queryresults and queryresultnodes are needed
             //// TODO does `either.trycreate` need `leftfactory` to take `tvalue` *and* `tresult`?
             //// TODO implement all of the async variants for eitherextensions

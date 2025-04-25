@@ -25,36 +25,12 @@ namespace OddTrotter.Calendar
         
 
 
-        public static async Task<IQueryResult<TResult, TError>> TrySelectAsync<TValue, TError, TResult>(this Task<IQueryResult<TValue, TError>> queryResult, Fx.Try.Try<TValue, TResult> @try)
-        {
-            if (queryResult == null)
-            {
-                throw new ArgumentNullException(nameof(queryResult));
-            }
-
-            if (@try == null)
-            {
-                throw new ArgumentNullException(nameof(@try));
-            }
-
-            return (await queryResult).TrySelect(@try);
-        }
-
 
         //// TODO in `select`, for convenience, you have a `select` overload that *does* use a task queryresult, but *doesn't* use a task selector; that's not really relevenat for first; do you still want the "convenience method"?
         //// TODO actually, you seem to have two dimensions: is `this` a task + is the `func` a task? and you seem to want (for convenience) all 4 variations
 
 
 
-        public static async Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
-            this Task<IQueryResult<TSource, TError>> queryResult,
-            Func<TSource, TResult> selector)
-        {
-            ArgumentNullException.ThrowIfNull(queryResult);
-            ArgumentNullException.ThrowIfNull(selector);
-
-            return (await queryResult.ConfigureAwait(false)).Select(selector);
-        }
 
         public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
             this IQueryResult<TSource, TError> queryResult,
