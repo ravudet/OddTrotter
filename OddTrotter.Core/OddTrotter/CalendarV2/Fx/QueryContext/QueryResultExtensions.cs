@@ -320,6 +320,9 @@ namespace Fx.QueryContext
 
             public TrySelectResult(IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
             {
+                ArgumentNullException.ThrowIfNull(source);
+                ArgumentNullException.ThrowIfNull(@try);
+
                 this.source = source;
                 this.@try = @try;
             }
