@@ -7,6 +7,7 @@ namespace Fx.QueryContext
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Try;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -2205,5 +2206,26 @@ namespace Fx.QueryContext
                 }
             }
         }
+
+        [TestMethod]
+        public void TrySelectNullSource()
+        {
+            IQueryResult<string, Exception> source =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+#pragma warning disable CS8604 // Possible null reference argument.
+                source
+#pragma warning restore CS8604 // Possible null reference argument.
+                .TrySelect(IntTryParse));
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        private static Try<string, int> IntTryParse { get; } = int.TryParse;
     }
 }
