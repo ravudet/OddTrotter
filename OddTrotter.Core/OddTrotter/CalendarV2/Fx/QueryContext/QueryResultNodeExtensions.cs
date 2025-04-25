@@ -7,6 +7,7 @@ namespace Fx.QueryContext
 
     using Fx;
     using Fx.Either;
+    using Fx.Try;
 
     public static class QueryResultNodeExtensions
     {
@@ -523,6 +524,44 @@ namespace Fx.QueryContext
             public IQueryResultNode<TValue, TError> Next()
             {
                 return this.next.DistinctBy(keySelector, hashSet);
+            }
+        }
+
+        public static IQueryResultNode<TResult, TError> TrySelect<TValue, TError, TResult>(this IQueryResultNode<TValue, TError> source, Try<TValue, TResult> @try)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(@try);
+
+            return source
+                .SelectLeft(
+                    element => Either
+                        .TryCreate(
+                            element.Value,
+                            @try,
+                            (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try),
+                            elementValue => element.Next().TrySelect(@try))
+                        .SelectManyRight())
+                .SelectManyLeft()
+                .ToQueryResultNode();
+        }
+
+        private sealed class TrySelectElement<TValue, TError, TResult> : IElement<TResult, TError>
+        {
+            private readonly IQueryResultNode<TValue, TError> next;
+            private readonly Try<TValue, TResult> @try;
+
+            public TrySelectElement(TResult value, IQueryResultNode<TValue, TError> next, Try<TValue, TResult> @try)
+            {
+                Value = value;
+                this.next = next;
+                this.@try = @try;
+            }
+
+            public TResult Value { get; }
+
+            public IQueryResultNode<TResult, TError> Next()
+            {
+                return this.next.TrySelect(this.@try);
             }
         }
     }
