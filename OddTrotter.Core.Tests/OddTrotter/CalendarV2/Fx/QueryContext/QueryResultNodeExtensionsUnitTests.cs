@@ -1775,6 +1775,9 @@ namespace Fx.QueryContext
                 .TrySelect(IntTryParse));
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
         private static Try<string, int> IntTryParse { get; } = int.TryParse;
 
         [TestMethod]
