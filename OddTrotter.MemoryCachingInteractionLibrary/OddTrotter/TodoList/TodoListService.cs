@@ -409,6 +409,7 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO update test code to use the `ireadonlylist.toqueryresult` extension method when queryresults and queryresultnodes are needed
             //// TODO does `either.trycreate` need `leftfactory` to take `tvalue` *and* `tresult`?
             //// TODO implement all of the async variants for eitherextensions
             //// TODO go through all of the async methods (like either async extensions and queryresult async extensions and stuff) to see how you want to handle line lengths when `await` is involved
