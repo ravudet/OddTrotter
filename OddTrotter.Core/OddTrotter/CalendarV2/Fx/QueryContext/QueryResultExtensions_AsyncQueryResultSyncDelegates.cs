@@ -17,7 +17,9 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
+        /// </exception>
         public static async Task<IQueryResult<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
             this Task<IQueryResult<TValueSource, TError>> source,
             Func<TValueSource, TValueResult> selector)
@@ -37,7 +39,9 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="try"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+        /// </exception>
         public static async Task<IQueryResult<TResult, TError>> TrySelect<TValue, TError, TResult>(
             this Task<IQueryResult<TValue, TError>> source,
             Try<TValue, TResult> @try)
