@@ -103,7 +103,10 @@ namespace Fx.QueryContext
         {
             var value = "asdf";
             var queryResult =
-                Task.FromResult(new[] { value }.ToQueryResult().WithoutError<Exception>());
+                Task.FromResult(
+                    new[] { value }
+                        .ToQueryResult()
+                        .WithoutError<Exception>());
 
             var selected = await queryResult
                 .Select(val => val.Length)
@@ -119,29 +122,20 @@ namespace Fx.QueryContext
             Assert.IsFalse(selected.Nodes.TryGetRight(out var terminal));
         }
 
-        /*[TestMethod]
-        public void SelectElementFollowedByError()
+        [TestMethod]
+        public async Task SelectFutureEitherElementFollowedByError()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
             var queryResult =
-                new MockQueryResult(
-                    Either
-                        .Left(
-                            new MockElement(
-                                value,
-                                Either
-                                    .Left<MockElement>()
-                                    .Right(
-                                        Either
-                                            .Left(
-                                                new MockError(invalidOperationException))
-                                            .Right<MockEmpty>())
-                                    .ToQueryResultNode()))
-                        .Right<IEither<MockError, MockEmpty>>()
-                        .ToQueryResultNode());
+                Task.FromResult(
+                    new[] { value }
+                        .ToQueryResult()
+                        .WithError(invalidOperationException));
 
-            var selected = queryResult.Select(val => val.Length);
+            var selected = await queryResult
+                .Select(val => val.Length)
+                .ConfigureAwait(false);
 
             Assert.IsTrue(selected.Nodes.TryGetLeft(out var element));
             Assert.AreEqual(4, element.Value);
@@ -154,7 +148,7 @@ namespace Fx.QueryContext
             Assert.IsFalse(selected.Nodes.TryGetRight(out var terminal));
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void SelectDeferredExecution()
         {
             var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
