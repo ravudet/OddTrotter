@@ -3,6 +3,7 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -55,21 +56,19 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void SelectNoElements()
+        [TestMethod]
+        public async Task SelectFutureQueryResultNoElements()
         {
             var queryResult =
-                new MockQueryResult(
-                    Either
-                        .Left<MockElement>()
-                        .Right(
-                            Either
-                                .Left<MockError>()
-                                .Right(
-                                    MockEmpty.Instance))
-                        .ToQueryResultNode());
+                Task.FromResult(
+                    Array
+                        .Empty<string>()
+                        .ToQueryResult()
+                        .WithoutError<Exception>());
 
-            var selected = queryResult.Select(val => val.Length);
+            var selected = await queryResult
+                .Select(val => val.Length)
+                .ConfigureAwait(false);
 
             Assert.IsFalse(selected.Nodes.TryGetLeft(out var element));
             Assert.IsTrue(selected.Nodes.TryGetRight(out var terminal));
@@ -77,7 +76,7 @@ namespace Fx.QueryContext
             Assert.IsTrue(terminal.TryGetRight(out var empty));
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void SelectNoElementsError()
         {
             var invalidOperationException = new InvalidOperationException();
