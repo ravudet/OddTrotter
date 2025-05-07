@@ -11,7 +11,7 @@ namespace Fx.QueryContext
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class QueryResultExtensionsUnitTests
+    public sealed partial class QueryResultExtensionsUnitTests
     {
         [TestMethod]
         public void WhereNullSource()
