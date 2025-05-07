@@ -178,28 +178,27 @@ namespace Fx.QueryContext
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
         }
 
-        /*[TestMethod]
-        public void TrySelectNullSource()
+        [TestMethod]
+        public async Task TrySelectFutureQueryResultNullSource()
         {
-            IQueryResult<string, Exception> source =
+            Task<IQueryResult<string, Exception>> source =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
                 ;
 
-            Assert.ThrowsException<ArgumentNullException>(() =>
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
 #pragma warning disable CS8604 // Possible null reference argument.
-                source
+                        source
 #pragma warning restore CS8604 // Possible null reference argument.
-                .TrySelect(IntTryParse));
+                        .TrySelect(IntTryParse)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        private static Try<string, int> IntTryParse { get; } = int.TryParse;
-
-        [TestMethod]
+        /*[TestMethod]
         public void TrySelectNullTry()
         {
             var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>();
