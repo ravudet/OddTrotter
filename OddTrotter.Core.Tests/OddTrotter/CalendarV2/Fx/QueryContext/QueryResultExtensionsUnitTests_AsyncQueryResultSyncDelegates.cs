@@ -221,12 +221,16 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void TrySelectWithoutError()
+        [TestMethod]
+        public async Task TrySelectFutureQueryResultWithoutError()
         {
-            var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>();
+            var source = 
+                Task.FromResult(
+                    new[] { "asdf", "42", "67", "qwer" }
+                        .ToQueryResult()
+                        .WithoutError<Exception>());
 
-            var selected = source.TrySelect(IntTryParse);
+            var selected = await source.TrySelect(IntTryParse).ConfigureAwait(false);
 
             Assert.IsTrue(selected.Nodes.TryGetLeft(out var element));
             Assert.AreEqual(42, element.Value);
@@ -240,7 +244,7 @@ namespace Fx.QueryContext
             Assert.IsTrue(terminal.TryGetRight(out var empty));
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void TrySelectWithError()
         {
             var invalidOperationException = new InvalidOperationException();
