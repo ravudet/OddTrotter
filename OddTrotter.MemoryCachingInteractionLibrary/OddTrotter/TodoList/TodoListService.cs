@@ -404,13 +404,14 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
             //// TODO figure out diffing a current file with a previous commit of that file
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
-            //// TODO implement the result of the `queryresult` async variants
+            //// TODO implement the rest of the `queryresult` async variants
             //// TODO update test code to use the `ireadonlylist.toqueryresult` extension method when queryresults and queryresultnodes are needed
             //// TODO does `either.trycreate` need `leftfactory` to take `tvalue` *and* `tresult`?
             //// TODO implement all of the async variants for eitherextensions
@@ -431,6 +432,7 @@
             //// TODO write tests for todolistservice that confirm the URLs
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
+            //// TODO do you like the names of your generic type parameters? are they all in the correct and consistent order?
 
             //// TODO FUTURE is there a way to add tests for the `either.applyasync` (and others that leverage it like `queryresultnode` and `firstordefault`) that ensure that `applyasync` is called rather than `apply`?
             //// TODO FUTURE if you move `ieither` to fx.core, you need to be open to having a v2 in order to get it "right" how you handle all of the different `apply` variants (including ones that you don't know about yet)

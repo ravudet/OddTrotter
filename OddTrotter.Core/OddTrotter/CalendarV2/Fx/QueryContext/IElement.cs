@@ -1,7 +1,10 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
 namespace Fx.QueryContext
 {
-    public interface IElement<out TValue, out TError>
+    public interface IElement<TValue, TError>
     {
         /// <summary>
         /// placeholder
@@ -16,5 +19,10 @@ namespace Fx.QueryContext
         /// This method should not throw. In the event of an error, a <see cref="IError{TError}"/> should be returned instead.
         /// </remarks>
         IQueryResultNode<TValue, TError> Next();
+
+        public async Task<IQueryResultNode<TValue, TError>> NextAsync()
+        {
+            return await Task.FromResult(this.Next()).ConfigureAwait(false);
+        }
     }
 }

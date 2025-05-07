@@ -387,6 +387,33 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
+        public async Task SelectAsyncDeferredExecution()
+        {
+            var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+
+            var firstCharacters = await instrumentedQueryResult.SelectAsync(async element => await Task.FromResult(element[0]).ConfigureAwait(false)).ConfigureAwait(false);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual('a', element.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual('a', element2.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual('q', nextElement.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+        }
+
+        [TestMethod]
         public void SelectDeferredExecution()
         {
             var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();

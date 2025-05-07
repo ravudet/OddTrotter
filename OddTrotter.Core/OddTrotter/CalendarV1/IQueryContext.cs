@@ -32,7 +32,7 @@ namespace OddTrotter.Calendar
 
 
 
-        public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
+        /*public static Task<IQueryResult<TResult, TError>> SelectAsync<TSource, TError, TResult>(
             this IQueryResult<TSource, TError> queryResult,
             Func<TSource, Task<TResult>> selector)
         {
@@ -51,7 +51,7 @@ namespace OddTrotter.Calendar
                         queryResult
                             .Select(
                                 element => selector(element).ConfigureAwait(false).GetAwaiter().GetResult())); //// TODO make this actually async
-        }
+        }*/
     }
 
 

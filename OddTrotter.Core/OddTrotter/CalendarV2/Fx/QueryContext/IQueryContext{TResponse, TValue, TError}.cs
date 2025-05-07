@@ -3,7 +3,7 @@ namespace Fx.QueryContext
 {
     using System.Threading.Tasks;
 
-    public interface IQueryContext<out TClientValue, out TDataStoreValue, out TError>
+    public interface IQueryContext<TClientValue, TDataStoreValue, TError>
     {
         /// <summary>
         /// placeholder

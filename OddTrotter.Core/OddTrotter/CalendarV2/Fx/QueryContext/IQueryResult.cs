@@ -1,7 +1,7 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.QueryContext
 {
-    public interface IQueryResult<out TValue, out TError>
+    public interface IQueryResult<TValue, TError>
     {
         /// <summary>
         /// placeholder
