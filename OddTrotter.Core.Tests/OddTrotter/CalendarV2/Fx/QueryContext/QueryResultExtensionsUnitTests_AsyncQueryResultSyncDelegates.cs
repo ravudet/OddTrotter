@@ -198,21 +198,30 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        /*[TestMethod]
-        public void TrySelectNullTry()
+        [TestMethod]
+        public async Task TrySelectFutureQueryResultNullTry()
         {
-            var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>();
+            var source = 
+                Task.FromResult(
+                    new[] { "asdf", "42", "67", "qwer" }
+                        .ToQueryResult()
+                        .WithoutError<Exception>());
 
-            Assert.ThrowsException<ArgumentNullException>(() => source.TrySelect(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await source
+                        .TrySelect(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                (Try<string, int>)null
+                            (Try<string, int>)null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                ));
+                        )
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void TrySelectWithoutError()
         {
             var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>();
