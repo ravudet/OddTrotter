@@ -123,7 +123,7 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectFutureEitherElementFollowedByError()
+        public async Task SelectFutureQueryResultElementFollowedByError()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
@@ -148,13 +148,16 @@ namespace Fx.QueryContext
             Assert.IsFalse(selected.Nodes.TryGetRight(out var terminal));
         }
 
-        /*[TestMethod]
-        public void SelectDeferredExecution()
+        [TestMethod]
+        public async Task SelectFutureQueryResultDeferredExecution()
         {
             var queryResult = new[] { "asdf", "qwer", "zxcv", "1234" }.ToQueryResult().WithoutError<Exception>();
             var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+            var futureQueryResult = Task.FromResult<IQueryResult<string, Exception>>(instrumentedQueryResult);
 
-            var firstCharacters = instrumentedQueryResult.Select(element => element[0]);
+            var firstCharacters = await futureQueryResult
+                .Select(element => element[0])
+                .ConfigureAwait(false);
 
             Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
             Assert.IsTrue(firstCharacters.Nodes.TryGetLeft(out var element));
@@ -175,7 +178,7 @@ namespace Fx.QueryContext
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void TrySelectNullSource()
         {
             IQueryResult<string, Exception> source =
