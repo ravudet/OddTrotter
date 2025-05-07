@@ -98,19 +98,16 @@ namespace Fx.QueryContext
             Assert.IsFalse(terminal.TryGetRight(out var empty));
         }
 
-        /*[TestMethod]
-        public void SelectNoError()
+        [TestMethod]
+        public async Task SelectFutureQueryResultNoError()
         {
             var value = "asdf";
             var queryResult =
-                new MockQueryResult(
-                    Either
-                        .Left(
-                            new MockElement(value))
-                        .Right<IEither<MockError, MockEmpty>>()
-                        .ToQueryResultNode());
+                Task.FromResult(new[] { value }.ToQueryResult().WithoutError<Exception>());
 
-            var selected = queryResult.Select(val => val.Length);
+            var selected = await queryResult
+                .Select(val => val.Length)
+                .ConfigureAwait(false);
 
             Assert.IsTrue(selected.Nodes.TryGetLeft(out var element));
             Assert.AreEqual(4, element.Value);
@@ -122,7 +119,7 @@ namespace Fx.QueryContext
             Assert.IsFalse(selected.Nodes.TryGetRight(out var terminal));
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void SelectElementFollowedByError()
         {
             var value = "asdf";
