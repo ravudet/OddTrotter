@@ -1832,5 +1832,117 @@ namespace Fx.QueryContext
             Assert.IsTrue(terminal.TryGetLeft(out var error));
             Assert.AreEqual(invalidOperationException, error.Value);
         }
+
+        [TestMethod]
+        public void SelectErrorNullSource()
+        {
+            IQueryResultNode<string, Exception> source =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+#pragma warning disable CS8604 // Possible null reference argument.
+                source
+#pragma warning restore CS8604 // Possible null reference argument.
+                .SelectError(error => error.Message));
+        }
+
+        [TestMethod]
+        public void SelectErrorNullSelector()
+        {
+            IQueryResultNode<string, Exception> source = 
+                new[] { "asdf", "42", "67", "qwer" }
+                    .ToQueryResult()
+                    .WithoutError<Exception>()
+                    .Nodes;
+
+            Assert.ThrowsException<ArgumentNullException>(() => source.SelectError(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                (Func<Exception, string>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ));
+        }
+
+        [TestMethod]
+        public void SelectErrorNoElementsNoError()
+        {
+            IQueryResultNode<string, Exception> source = Array.Empty<string>().ToQueryResult().WithoutError<Exception>().Nodes;
+
+            IQueryResultNode<string, string> selected = source.SelectError(error => error.Message);
+
+            Assert.IsFalse(selected.TryGetLeft(out var element));
+            Assert.IsTrue(selected.TryGetRight(out var terminal));
+            Assert.IsFalse(terminal.TryGetLeft(out var error));
+            Assert.IsTrue(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public void SelectErrorNoElementsError()
+        {
+            var message = "this is a message";
+            var invalidOperationException = new InvalidOperationException(message);
+            IQueryResultNode<string, Exception> source = Array
+                .Empty<string>()
+                .ToQueryResult()
+                .WithError<Exception>(invalidOperationException)
+                .Nodes;
+
+            IQueryResultNode<string, string> selected = source.SelectError(error => error.Message);
+
+            Assert.IsFalse(selected.TryGetLeft(out var element));
+            Assert.IsTrue(selected.TryGetRight(out var terminal));
+            Assert.IsTrue(terminal.TryGetLeft(out var error));
+            Assert.AreEqual(message, error.Value);
+            Assert.IsFalse(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public void SelectErrorElementsNoError()
+        {
+            IQueryResultNode<string, Exception> source = new[] { "asdf", "42" }.ToQueryResult().WithoutError<Exception>().Nodes;
+
+            IQueryResultNode<string, string> selected = source.SelectError(error => error.Message);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            var nextNext = nextElement.Next();
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var nextNextTerminal));
+            Assert.IsFalse(nextNextTerminal.TryGetLeft(out var error));
+            Assert.IsTrue(nextNextTerminal.TryGetRight(out var empty));
+            Assert.IsFalse(next.TryGetRight(out var nextTerminal));
+            Assert.IsFalse(selected.TryGetRight(out var terminal));
+        }
+
+        [TestMethod]
+        public void SelectErrorElementsError()
+        {
+            var message = "this is a message";
+            var invalidOperationException = new InvalidOperationException(message);
+            IQueryResultNode<string, Exception> source = 
+                new[] { "asdf", "42" }
+                    .ToQueryResult()
+                    .WithError<Exception>(invalidOperationException)
+                    .Nodes;
+
+            IQueryResultNode<string, string> selected = source.SelectError(error => error.Message);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            var nextNext = nextElement.Next();
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var nextNextTerminal));
+            Assert.IsTrue(nextNextTerminal.TryGetLeft(out var error));
+            Assert.AreEqual(message, error.Value);
+            Assert.IsFalse(nextNextTerminal.TryGetRight(out var empty));
+            Assert.IsFalse(next.TryGetRight(out var nextTerminal));
+            Assert.IsFalse(selected.TryGetRight(out var terminal));
+        }
     }
 }

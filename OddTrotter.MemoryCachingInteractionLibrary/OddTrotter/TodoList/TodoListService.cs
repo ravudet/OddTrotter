@@ -358,6 +358,8 @@
 
             var originalLastRecordedEventTimeStamp = oddTrotterTodoList.LastRecordedEventTimeStamp;
 
+            //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense?
+            //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
             //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern
             //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
@@ -404,6 +406,8 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO implement tryselect deferred execution test
+            //// TODO you have paused selectasync for queryresult
             //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
@@ -411,6 +415,7 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO implement other `queryresult` "error" variants; (look at eitherextensions for other ideas) maybe selectmany and coalesce make sense? i don't think throw makes sense because, but maybe some uses will want it for convenience
             //// TODO implement the rest of the `queryresult` async variants
             //// TODO update test code to use the `ireadonlylist.toqueryresult` extension method when queryresults and queryresultnodes are needed
             //// TODO does `either.trycreate` need `leftfactory` to take `tvalue` *and* `tresult`?

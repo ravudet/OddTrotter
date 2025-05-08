@@ -200,7 +200,7 @@ namespace OddTrotter.Calendar
             ArgumentNullException.ThrowIfNull(graphResponse);
 
             return graphResponse
-                .ErrorSelect(
+                .SelectError(
                     graphPagingException =>
                         new CalendarEventsContextPagingException(
                             "An error occurred while paging through all of the calendar events.", 

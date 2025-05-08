@@ -592,5 +592,90 @@ namespace Fx.QueryContext
                 return this.next.TrySelect(this.@try);
             }
         }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TErrorSource"></typeparam>
+        /// <typeparam name="TErrorResult"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
+        /// </exception>
+        public static IQueryResultNode<TValue, TErrorResult> SelectError<TValue, TErrorSource, TErrorResult>(
+            this IQueryResultNode<TValue, TErrorSource> source,
+            Func<TErrorSource, TErrorResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return source
+                .Select(
+                    element => 
+                        new SelectErrorElement<TValue, TErrorSource, TErrorResult>(
+                            element.Value, 
+                            element.Next(), 
+                            selector),
+                    terminal => 
+                        terminal
+                            .SelectLeft(
+                                error => new SelectErrorError<TErrorResult>(selector(error.Value))))
+                .ToQueryResultNode();
+        }
+
+        private sealed class SelectErrorElement<TValue, TErrrorSource, TErrorResult> : IElement<TValue, TErrorResult>
+        {
+            private readonly IQueryResultNode<TValue, TErrrorSource> next;
+            private readonly Func<TErrrorSource, TErrorResult> selector;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="selector"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="selector"/> is <see langword="null"/>
+            /// </exception>
+            public SelectErrorElement(
+                TValue value, 
+                IQueryResultNode<TValue, TErrrorSource> next,
+                Func<TErrrorSource, TErrorResult> selector)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(selector);
+
+                this.Value = value;
+                this.next = next;
+                this.selector = selector;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public IQueryResultNode<TValue, TErrorResult> Next()
+            {
+                return this.next.SelectError(this.selector);
+            }
+        }
+
+        private sealed class SelectErrorError<TError> : IError<TError>
+        {
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            public SelectErrorError(TError value)
+            {
+                this.Value = value;
+            }
+
+            /// <inheritdoc/>
+            public TError Value { get; }
+        }
     }
 }

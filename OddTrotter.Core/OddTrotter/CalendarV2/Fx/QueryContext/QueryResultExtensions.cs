@@ -358,5 +358,61 @@ namespace Fx.QueryContext
                 }
             }
         }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TErrorSource"></typeparam>
+        /// <typeparam name="TErrorResult"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
+        /// </exception>
+        public static IQueryResult<TValue, TErrorResult> SelectError<TValue, TErrorSource, TErrorResult>(
+            this IQueryResult<TValue, TErrorSource> source,
+            Func<TErrorSource, TErrorResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return new SelectErrorResult<TValue, TErrorSource, TErrorResult>(source, selector);
+        }
+
+        private sealed class SelectErrorResult<TValue, TErrorSource, TErrorResult> : IQueryResult<TValue, TErrorResult>
+        {
+            private readonly IQueryResult<TValue, TErrorSource> source;
+            private readonly Func<TErrorSource, TErrorResult> selector;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="source"></param>
+            /// <param name="selector"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
+            /// </exception>
+            public SelectErrorResult(
+                IQueryResult<TValue, TErrorSource> source,
+                Func<TErrorSource, TErrorResult> selector)
+            {
+                ArgumentNullException.ThrowIfNull(source);
+                ArgumentNullException.ThrowIfNull(selector);
+                    
+                this.source = source;
+                this.selector = selector;
+            }
+
+            /// <inheritdoc/>
+            public IQueryResultNode<TValue, TErrorResult> Nodes
+            {
+                get
+                {
+                    return this.source.Nodes.SelectError(this.selector);
+                }
+            }
+        }
     }
 }
