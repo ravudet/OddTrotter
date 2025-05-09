@@ -70,7 +70,7 @@ namespace System.Collections.Generic
                     throw new InvalidOperationException(message);
                 }
 
-                return ToQueryResult(this.list, new RealNullable<TError>(error));
+                return ToQueryResult(this.list, new Optional<TError>(error));
             }
 
             /// <summary>
@@ -89,7 +89,7 @@ namespace System.Collections.Generic
                     throw new InvalidOperationException(message);
                 }
 
-                return ToQueryResult(this.list, new RealNullable<TError>());
+                return ToQueryResult(this.list, new Optional<TError>());
             }
         }
 
@@ -104,7 +104,7 @@ namespace System.Collections.Generic
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="list"/> is <see langword="null"/></exception>
         private static IQueryResult<TValue, TError> ToQueryResult<TValue, TError>(
             IReadOnlyList<TValue> list,
-            RealNullable<TError> error)
+            Optional<TError> error)
         {
             ArgumentNullException.ThrowIfNull(list);
 
@@ -146,7 +146,7 @@ namespace System.Collections.Generic
         private static IQueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(
             IReadOnlyList<TValue> list, 
             int index,
-            RealNullable<TError> possibleError)
+            Optional<TError> possibleError)
         {
             ArgumentNullException.ThrowIfNull(list);
             //// TODO new version of .NET have more factories for argumentoutofrange
@@ -204,7 +204,7 @@ namespace System.Collections.Generic
 
             private readonly int index;
 
-            private readonly RealNullable<TError> possibleError;
+            private readonly Optional<TError> possibleError;
 
             /// <summary>
             /// placeholder
@@ -217,7 +217,7 @@ namespace System.Collections.Generic
             /// Thrown if <paramref name="index"/> is negative or greater than or equal to the
             /// <see cref="IReadOnlyCollection{T}.Count"/> of <paramref name="list"/>
             /// </exception>
-            public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index, RealNullable<TError> possibleError)
+            public ToQueryResultNodeElement(IReadOnlyList<TValue> list, int index, Optional<TError> possibleError)
             {
                 ArgumentNullException.ThrowIfNull(list);
                 //// TODO new version of .NET have more factories for argumentoutofrange

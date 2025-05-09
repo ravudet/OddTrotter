@@ -205,7 +205,7 @@ namespace Fx.QueryContext
                             .Apply(
                                 error =>
                                     ConcatTraverseSecond(
-                                        new RealNullable<TErrorFirst>(error.Value),
+                                        new Optional<TErrorFirst>(error.Value),
                                         second, 
                                         firstErrorSelector, 
                                         secondErrorSelector, 
@@ -296,7 +296,7 @@ namespace Fx.QueryContext
                 TErrorSecond, 
                 TErrorResult
             >(
-                RealNullable<TErrorFirst> error,
+                Optional<TErrorFirst> error,
                 IQueryResultNode<TValue, TErrorSecond> second,
                 Func<TErrorFirst, TErrorResult> firstErrorSelector,
                 Func<TErrorSecond, TErrorResult> secondErrorSelector,
@@ -359,7 +359,7 @@ namespace Fx.QueryContext
         private sealed class ConcatSecondErrorElement<TValue, TErrorFirst, TErrorSecond, TErrorResult> : 
             IElement<TValue, TErrorResult>
         {
-            private readonly RealNullable<TErrorFirst> error;
+            private readonly Optional<TErrorFirst> error;
             private readonly IQueryResultNode<TValue, TErrorSecond> next;
             private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
             private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
@@ -379,7 +379,7 @@ namespace Fx.QueryContext
             /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
             /// </exception>
             public ConcatSecondErrorElement(
-                RealNullable<TErrorFirst> error, 
+                Optional<TErrorFirst> error, 
                 TValue value, 
                 IQueryResultNode<TValue, TErrorSecond> next,
                 Func<TErrorFirst, TErrorResult> firstErrorSelector,

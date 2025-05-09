@@ -1,7 +1,7 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx
 {
-    public readonly struct RealNullable<T>
+    public readonly struct Optional<T>
     {
         private readonly T value;
 
@@ -11,7 +11,7 @@ namespace Fx
         /// placeholder
         /// </summary>
         /// <param name="value"></param>
-        public RealNullable(T value)
+        public Optional(T value)
         {
             this.value = value;
 

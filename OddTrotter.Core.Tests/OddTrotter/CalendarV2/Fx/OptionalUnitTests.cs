@@ -4,31 +4,31 @@ namespace Fx
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class RealNullableUnitTests
+    public sealed class OptionalUnitTests
     {
         [TestMethod]
         public void DefaultInitializer()
         {
-            var nullable = new RealNullable<int?>();
+            var optional = new Optional<int?>();
 
-            Assert.IsFalse(nullable.TryGetValue(out var value));
+            Assert.IsFalse(optional.TryGetValue(out var value));
         }
 
         [TestMethod]
         public void Default()
         {
-            RealNullable<int?> nullable = default;
+            Optional<int?> optional = default;
 
-            Assert.IsFalse(nullable.TryGetValue(out var value));
+            Assert.IsFalse(optional.TryGetValue(out var value));
         }
 
         [TestMethod]
         public void Value()
         {
             var providedValue = 42;
-            var nullable = new RealNullable<int?>(providedValue);
+            var optional = new Optional<int?>(providedValue);
 
-            Assert.IsTrue(nullable.TryGetValue(out var value));
+            Assert.IsTrue(optional.TryGetValue(out var value));
             Assert.AreEqual(providedValue, value);
         }
 
@@ -36,9 +36,9 @@ namespace Fx
         public void Null()
         {
             int? providedValue = null;
-            var nullable = new RealNullable<int?>(providedValue);
+            var optional = new Optional<int?>(providedValue);
 
-            Assert.IsTrue(nullable.TryGetValue(out var value));
+            Assert.IsTrue(optional.TryGetValue(out var value));
             Assert.AreEqual(providedValue, value);
         }
     }
