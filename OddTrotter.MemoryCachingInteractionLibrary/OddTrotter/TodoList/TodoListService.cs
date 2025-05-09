@@ -359,11 +359,12 @@
             var originalLastRecordedEventTimeStamp = oddTrotterTodoList.LastRecordedEventTimeStamp;
 
             //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense?
-            //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
             //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern
-            //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
-            //// TODO TOPIC asbaseplayground
+            ////
+            //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
+            //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
+            //// TODO TOPIC the above 2 are kind of part of a whole category of "how to name all 4 variants"
 
             // TODO write up code quality list and create blog posts (use substack for this?)
             // code quality:
@@ -404,11 +405,12 @@
             //// TODO you have paused selectasync for queryresult Thu May 8 07:41:55
             //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
-            //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
+            //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test; further, you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this
             //// TODO figure out diffing a current file with a previous commit of that file
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO if you discover that you do want a `asbase` method, look at `asbaseplayground` in `stash` namespace; even if you don't use this code in oddtrotter, you might choose to pull it into another repo
             //// TODO implement other `queryresult` "error" variants; (look at eitherextensions for other ideas) maybe selectmany and coalesce make sense? i don't think throw makes sense because, but maybe some uses will want it for convenience
             //// TODO implement the rest of the `queryresult` async variants
             //// TODO update test code to use the `ireadonlylist.toqueryresult` extension method when queryresults and queryresultnodes are needed
@@ -432,7 +434,7 @@
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
             //// TODO do you like the names of your generic type parameters? are they all in the correct and consistent order?
-            
+
             //// TODO FUTURE    You considered making either extensions use deferred execution. You chose not to do so for 3 reasons:
             ////                1. The expense of creating an instance of a promise is likely similar to the expense of just performing the operation
             ////                2. `IEither<Lazy<T>, Lazy<U>>` should be sufficient if this behavior is necessary (and really exemplifies point 1: is it really cheaper to instantiate a `lazy` instead of just computing the value? and if it is, doesn't that really say more about `T` or `U` than it does about `ieither`? this would imply that it *should* be up to the caller to *choose* to use `lazy` when they know that `T` or `U` are expensive to generate)
