@@ -253,6 +253,15 @@ namespace Fx.Either
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
         /// </exception>
+        /// <remarks>
+        /// Although an alias for this method called `Select` could be provided to enable the LINQ comprehension syntax, I have
+        /// chosen not to do so. This method would ultimately be more "discoverable" as a result of intellisense auto-complete
+        /// and would likely create frustration for the caller when they need to disambgiuate. By having only "one way" to select
+        /// left, the caller will never have to deal with a leaked detail about the disambiguation that can happen between
+        /// <see cref="SelectLeft{TLeftValue, TRightValue, TLeftResult}(IEither{TLeftValue, TRightValue}, Func{TLeftValue, TLeftResult})"/>
+        /// and 
+        /// <see cref="SelectRight{TLeftValue, TRightValue, TRightResult}(IEither{TLeftValue, TRightValue}, Func{TRightValue, TRightResult})"/>
+        /// </remarks>
         public static IEither<TLeftResult, TRightValue> SelectLeft
             <
                 TLeftValue,
@@ -290,6 +299,15 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
         /// set to whatever exception <paramref name="rightSelector"/> threw.
         /// </exception>
+        /// <remarks>
+        /// Although an alias for this method called `Select` could be provided to enable the LINQ comprehension syntax, I have
+        /// chosen not to do so. This method would ultimately be more "discoverable" as a result of intellisense auto-complete
+        /// and would likely create frustration for the caller when they need to disambgiuate. By having only "one way" to select
+        /// right, the caller will never have to deal with a leaked detail about the disambiguation that can happen between
+        /// <see cref="SelectLeft{TLeftValue, TRightValue, TLeftResult}(IEither{TLeftValue, TRightValue}, Func{TLeftValue, TLeftResult})"/>
+        /// and 
+        /// <see cref="SelectRight{TLeftValue, TRightValue, TRightResult}(IEither{TLeftValue, TRightValue}, Func{TRightValue, TRightResult})"/>
+        /// </remarks>
         public static IEither<TLeftValue, TRightResult> SelectRight
             <
                 TLeftValue,
@@ -391,7 +409,8 @@ namespace Fx.Either
         /// <remarks>
         /// This is just an alias for
         /// <see cref="SelectMany{TLeftSource, TRight, TEither, TLeftResult}(IEither{TLeftSource, TRight}, Func{TLeftSource, IEither{TEither, TRight}}, Func{TLeftSource, TEither, TLeftResult})"/>
-        /// that is useful for disambiguating type parameters and is generally preferred when not use the LINQ query syntax.
+        /// that is useful for disambiguating type parameters and is generally preferred when not use the LINQ comprehension
+        /// syntax.
         /// </remarks>
         public static IEither<TLeftResult, TRight> SelectManyLeft<TLeftSource, TRight, TEither, TLeftResult>(
             this IEither<TLeftSource, TRight> either,
@@ -519,7 +538,8 @@ namespace Fx.Either
         /// <remarks>
         /// This is just an alias for
         /// <see cref="SelectMany{TLeft, TRightSource, TEither, TRightResult}(IEither{TLeft, TRightSource}, Func{TRightSource, IEither{TLeft, TEither}}, Func{TRightSource, TEither, TRightResult})"/>
-        /// that is useful for disambiguating type parameters and is generally preferred when not use the LINQ query syntax.
+        /// that is useful for disambiguating type parameters and is generally preferred when not use the LINQ comprehension
+        /// syntax.
         /// </remarks>
         public static IEither<TLeft, TRightResult> SelectManyRight<TLeft, TRightSource, TEither, TRightResult>(
             this IEither<TLeft, TRightSource> either,

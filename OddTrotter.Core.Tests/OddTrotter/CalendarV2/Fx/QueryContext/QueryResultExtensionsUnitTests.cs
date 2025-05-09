@@ -2309,6 +2309,65 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
+        public void TrySelectDeferredExecutionSkippingFirstElement()
+        {
+            var queryResult = new[] { "asdf", "42", "qwer", "67" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+
+            var ints = instrumentedQueryResult.TrySelect(IntTryParse);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(ints.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+
+            Assert.IsTrue(ints.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual(42, element2.Value);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            Assert.AreEqual(4, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[3]);
+        }
+        
+        [TestMethod]
+        public void TrySelectDeferredExecutionTakingFirstElement()
+        {
+            var queryResult = new[] { "42", "asdf", "67", "qwer" }.ToQueryResult().WithoutError<Exception>();
+            var instrumentedQueryResult = new InstrumentedQueryResult<string, Exception>(queryResult);
+
+            var ints = instrumentedQueryResult.TrySelect(IntTryParse);
+
+            Assert.AreEqual(0, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.IsTrue(ints.Nodes.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            Assert.IsTrue(ints.Nodes.TryGetLeft(out var element2));
+            Assert.AreEqual(42, element2.Value);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            Assert.AreEqual(3, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
+            Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[1]);
+            Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping[2]);
+        }
+        
+        [TestMethod]
         public void SelectErrorNullSource()
         {
             IQueryResult<string, Exception> source =

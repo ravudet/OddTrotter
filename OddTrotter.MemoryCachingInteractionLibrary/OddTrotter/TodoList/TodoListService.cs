@@ -365,10 +365,6 @@
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
             //// TODO TOPIC naming of `realnullable`; this really has nothing to do with null, maybe call it valuable? mark it internal if you can't find a name you like; call it "optional"? i think i like optional best
             //// TODO TOPIC asbaseplayground
-            //// TODO TOPIC should the either extensions be lazy?
-            //// TODO TOPIC should i add the "ambiguous" select methods for left and right in order to light up the comprehension syntax?
-            //// TODO TOPIC should firstordefault go in its own file? i feel like i'm abusing nested classes at this point
-            //// TODO TOPIC the either extensions immediately convert whatever your `ieither` implementation is to my concrete `either` implementation; is that ok? monad would maybe fix this?
 
             // TODO write up code quality list and create blog posts (use substack for this?)
             // code quality:
@@ -406,8 +402,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO implement tryselect deferred execution test
-            //// TODO you have paused selectasync for queryresult
+            //// TODO you have paused selectasync for queryresult Thu May 8 07:41:55
             //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test
@@ -438,7 +433,13 @@
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
             //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
             //// TODO do you like the names of your generic type parameters? are they all in the correct and consistent order?
-
+            
+            //// TODO FUTURE    You considered making either extensions use deferred execution. You chose not to do so for 3 reasons:
+            ////                1. The expense of creating an instance of a promise is likely similar to the expense of just performing the operation
+            ////                2. `IEither<Lazy<T>, Lazy<U>>` should be sufficient if this behavior is necessary (and really exemplifies point 1: is it really cheaper to instantiate a `lazy` instead of just computing the value? and if it is, doesn't that really say more about `T` or `U` than it does about `ieither`? this would imply that it *should* be up to the caller to *choose* to use `lazy` when they know that `T` or `U` are expensive to generate)
+            ////                3. Developers who want this behavior should be able to implement their own `ieither` that exhibits it
+            ////
+            ////                You should document the above. However, you can't really do so because the `ieither` extensions that are currently written will immediately replace the provided implementation with my concrete `either` implementation. You should implement mixins and a monad for `ieither` and those abstractions should be levareged by the extension methods. You can use a `DeferredEither` as your litmus test that the mixins and monad are factored correctly.
             //// TODO FUTURE is there a way to add tests for the `either.applyasync` (and others that leverage it like `queryresultnode` and `firstordefault`) that ensure that `applyasync` is called rather than `apply`?
             //// TODO FUTURE if you move `ieither` to fx.core, you need to be open to having a v2 in order to get it "right" how you handle all of the different `apply` variants (including ones that you don't know about yet)
             //// TODO future use a newer version of .net and update argumentoutofrangeexception checks
