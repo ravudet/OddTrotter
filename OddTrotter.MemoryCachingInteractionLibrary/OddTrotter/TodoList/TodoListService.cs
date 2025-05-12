@@ -287,6 +287,27 @@
             public CalendarEventsContextPagingException? PagingError { get; set; }
         }
 
+        /*private static void DoWork2(OddTrotter.CalendarEventsContext.CalendarEventsContext calendarEventsContext)
+        {
+            calendarEventsContext = calendarEventsContext
+                .Where(calendarEvent => calendarEvent.Start < DateTimeOffset.UtcNow)
+                .Where(CalendarEventsContext.IsNotCancelled);
+            //// TODO the paging exception will have the token exceptions in it; maybe the `page` method and `evaluate` should actually throw these for the first page, but not for the subsequent ones?
+            var calendarEvents = await calendarEventsContext.Evaluate().ConfigureAwait(false);
+
+            //// TODO this is actually pretty weird; you did a good job separating when the queries are in-memory vs client-based; but, in this todolistservice you actually want them all to be given to the calendareventscontext so that it can do in-memory filtering to prevent network calls when getting the series events; this further exacerbates the issue around queryresult<either, error> because in these in-memory ones, you really do want the either (and you want the caller to be able to tell us the behavior for both sides of the either) //// TODO is this last part about the either really the case? isn't it *actually* that the calendareventcontext knows that we should always surface errors, and as written we are putting the consistency burden on the todolistservice?
+            var todoListEvents2 = calendarEvents
+                .Where(calendarEvent =>
+                    calendarEvent.Apply(
+                        left => left.Subject.Contains("todo list", StringComparison.OrdinalIgnoreCase),
+                        right => true))
+                .Where(calendarEvent => //// TODO this should go in the "on the service" portion
+                    calendarEvent
+                        .Apply(
+                            left => left.Start > originalLastRecordedEventTimeStamp, // there's a bug in the graph api; it treats gt as ge, so we need to do this extra check locally
+                            right => true));
+        }*/
+
         /// <summary>
         /// 
         /// </summary>
@@ -402,6 +423,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
             //// TODO you have paused selectasync for queryresult Thu May 8 07:41:55
             //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
@@ -500,6 +522,14 @@
                 resultBuilder.TranslationErrors.Select(exception => (default(CalendarEvent)!, (Exception)exception)),
                 Enumerable.Empty<CalendarEvent>(),
                 resultBuilder.BodyParseErrors.Select(exception => (default(CalendarEvent)!, exception)));
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            ////DoWork2(null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+
+
+
 
 
 
