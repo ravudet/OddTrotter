@@ -31,7 +31,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
         /// set to whatever exception <paramref name="rightSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
+        public static async Task<IEither<TLeftResult, TRightResult>> Select
             <
                 TLeftValue,
                 TRightValue,
@@ -79,7 +79,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
         /// set to whatever exception <paramref name="rightSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
+        public static async Task<IEither<TLeftResult, TRightResult>> Select
             <
                 TLeftValue,
                 TRightValue,
@@ -115,7 +115,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightValue>> SelectLeftAsync
+        public static async Task<IEither<TLeftResult, TRightValue>> SelectLeft
             <
                 TLeftValue,
                 TRightValue,
