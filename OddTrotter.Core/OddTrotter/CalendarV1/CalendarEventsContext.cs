@@ -16,7 +16,7 @@ namespace OddTrotter.Calendar
     /// usually be in the past.
     /// </summary>
     public sealed class CalendarEventsContext : 
-        Fx.QueryContext.IQueryContext
+        Fx.QueryContext.IQueryContextAsync
             <
                 IEither
                     <
@@ -26,7 +26,7 @@ namespace OddTrotter.Calendar
                 CalendarEvent, 
                 CalendarEventsContextPagingException
             >,
-        Fx.QueryContext.Mixins.IWhereQueryContextMixin //// TODO rename to iquerycontextwheremixin?
+        Fx.QueryContext.Mixins.IWhereQueryContextAsyncMixin //// TODO rename to iquerycontextwheremixin?
             <
                 IEither
                     <
@@ -123,7 +123,7 @@ namespace OddTrotter.Calendar
             this.isCancelled = isCancelled;
         }
 
-        public ITask<IQueryResult<IEither
+        public ITask<IQueryResultAsync<IEither
                                 <
                                     CalendarEvent,
                                     CalendarEventsContextTranslationException
@@ -133,7 +133,7 @@ namespace OddTrotter.Calendar
             return 
                 new TaskWrapper
                     <
-                        IQueryResult
+                        IQueryResultAsync
                             <
                                 IEither
                                     <
@@ -146,7 +146,7 @@ namespace OddTrotter.Calendar
                         this.EvaluateImpl());
         }
 
-        private async Task<IQueryResult<IEither
+        private async Task<IQueryResultAsync<IEither
                                 <
                                     CalendarEvent,
                                     CalendarEventsContextTranslationException
@@ -279,14 +279,14 @@ namespace OddTrotter.Calendar
         /// <param name="endTime"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        private async Task<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEvents()
+        private async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> GetSeriesEvents()
         {
             var seriesEventMasters =
                 await this.GetSeriesEventMasters().ConfigureAwait(false);
-            var mastersWithInstances = await seriesEventMasters
+            var mastersWithInstances = seriesEventMasters
                 //// TODO you added these async variants for `either` and `queryresult` but you didn't actually put thought into if these work as expected; for example, does it actually make sense to await the `queryresult.selectasync` call here? or does that imply something about the lazy evaluation that you don't want to actually do; would it make sense to have a `selectasync` method overload that is on `task<queryresult>` as well so that you can chain them? //// TODO you wrote a "convenience" overload for now, but you should reall revisit this and think it all the way through; i know you have doing that, but probably unit tests will help
                 //// TODO and is it also ok to pass the tasks returned without awaiting them until the "very end" so to speak? https://github.com/microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD003.md
-                .SelectAsync(
+                .Select(
                     seriesMasterOrTranslationError => seriesMasterOrTranslationError
                         .SelectLeft(
                             async seriesMaster =>
@@ -386,8 +386,7 @@ namespace OddTrotter.Calendar
                                                 .Left<CalendarEvent>()
                                                 .Right(
                                                     new CalendarEventsContextTranslationException($"A future instance was not found for the series master with ID '{seriesPlusInstance.SeriesMaster.Id}' because an error occurred while retrieving the instances for that master. It is possible that a future instanace exists.", pagingError))))
-                        .SelectManyLeft())
-                .ConfigureAwait(false);
+                        .SelectManyLeft());
             return mastersWithInstances;
         }
 

@@ -208,18 +208,18 @@
         /// <param name="queryResult"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResult"/> is <see langword="null"/></exception>
-        private static TodoListResultBuilder Convert(IQueryResult<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static async Task<TodoListResultBuilder> Convert(IQueryResultAsync<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             ArgumentNullException.ThrowIfNull(queryResult);
 
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
-            ConvertIterator(queryResult.Nodes, lastRecordedEventTimeStamp, builder);
+            await ConvertIterator(await queryResult.GetNodes().ConfigureAwait(false), lastRecordedEventTimeStamp, builder).ConfigureAwait(false);
 
             return builder;
         }
 
-        private static void ConvertIterator(IQueryResultNode<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResultNode, DateTime lastRecordedEventTimeStamp, TodoListResultBuilder builder)
+        private static async Task ConvertIterator(IQueryResultNodeAsync<IEither<Calendar.CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException> queryResultNode, DateTime lastRecordedEventTimeStamp, TodoListResultBuilder builder)
         {
             while (queryResultNode.TryGetLeft(out var element))
             {
@@ -254,7 +254,7 @@
                     },
                     builder);
 
-                queryResultNode = element.Next();
+                queryResultNode = await element.NextAsync().ConfigureAwait(false);
             }
 
             if (queryResultNode.TryGetRight(out var terminal)) //// TODO we know that this will be true because we escaped the while loop because "left" was false; see if you can use an apply to combine the two instead so that you cover all branches
@@ -423,6 +423,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO can you rewrite the commit history to make it easier to code review?
             //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
             //// TODO you have paused selectasync for queryresult Thu May 8 07:41:55
             //// TODO you are implementing selectasync for queryresult
@@ -432,6 +433,7 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO you should have all combinations of overloads for either extensions and queryresult extensions between sync and async (for example, either.select takes 2 mapping delegates; there should be 4 overloads); you want to do this to prevent a caller from accidentally calling a sync method while providing a split of sync and async delegates
             //// TODO if you discover that you do want a `asbase` method, look at `asbaseplayground` in `stash` namespace; even if you don't use this code in oddtrotter, you might choose to pull it into another repo
             //// TODO implement other `queryresult` "error" variants; (look at eitherextensions for other ideas) maybe selectmany and coalesce make sense? i don't think throw makes sense because, but maybe some uses will want it for convenience
             //// TODO implement the rest of the `queryresult` async variants
@@ -512,7 +514,7 @@
                             left => left.Start > originalLastRecordedEventTimeStamp, // there's a bug in the graph api; it treats gt as ge, so we need to do this extra check locally
                             right => true));
 
-            var resultBuilder = Convert(todoListEvents2, originalLastRecordedEventTimeStamp);
+            var resultBuilder = await Convert(todoListEvents2, originalLastRecordedEventTimeStamp).ConfigureAwait(false);
             var result2 = new TodoListResult(
                 resultBuilder.TodoList.ToString(),
                 originalLastRecordedEventTimeStamp,
