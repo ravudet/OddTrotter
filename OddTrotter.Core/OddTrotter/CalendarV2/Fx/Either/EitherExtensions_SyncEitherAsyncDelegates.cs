@@ -31,7 +31,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
         /// set to whatever exception <paramref name="rightSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
+        public static async Task<IEither<TLeftResult, TRightResult>> Select
             <
                 TLeftValue,
                 TRightValue,
@@ -87,7 +87,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be
         /// set to whatever exception <paramref name="rightSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightResult>> SelectAsync
+        public static async Task<IEither<TLeftResult, TRightResult>> Select
             <
                 TLeftValue,
                 TRightValue,
@@ -104,7 +104,7 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(leftSelector);
             ArgumentNullException.ThrowIfNull(rightSelector);
 
-            return await either.SelectAsync(
+            return await either.Select(
                 async (left, _) => await leftSelector(left).ConfigureAwait(false),
                 async (right, _) => await rightSelector(right).ConfigureAwait(false),
                 new Nothing()).ConfigureAwait(false);
@@ -126,7 +126,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="leftSelector"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="leftSelector"/> threw.
         /// </exception>
-        public static async Task<IEither<TLeftResult, TRightValue>> SelectLeftAsync
+        public static async Task<IEither<TLeftResult, TRightValue>> SelectLeft
             <
                 TLeftValue,
                 TRightValue,
@@ -140,7 +140,7 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(either);
             ArgumentNullException.ThrowIfNull(leftSelector);
 
-            return await either.SelectAsync(
+            return await either.Select(
                 leftSelector,
                 _ => Task.FromResult(_)).ConfigureAwait(false);
         }

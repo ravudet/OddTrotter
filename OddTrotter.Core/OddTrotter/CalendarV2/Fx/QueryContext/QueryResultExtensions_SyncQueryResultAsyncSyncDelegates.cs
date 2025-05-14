@@ -111,7 +111,7 @@ namespace Fx.QueryContext
             private async Task<IQueryResultNode<TValueResult, TError>> SelectAsync()
             {
                 return (await source
-                    .SelectLeftAsync(
+                    .SelectLeft(
                         async element =>
                             new SelectAsyncElement<TValueSource, TError, TValueResult>(
                                 await selector(element.Value).ConfigureAwait(false),

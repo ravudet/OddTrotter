@@ -288,7 +288,7 @@ namespace OddTrotter.Calendar
                 //// TODO and is it also ok to pass the tasks returned without awaiting them until the "very end" so to speak? https://github.com/microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD003.md
                 .SelectAsync(
                     seriesMasterOrTranslationError => seriesMasterOrTranslationError
-                        .SelectLeftAsync(
+                        .SelectLeft(
                             async seriesMaster =>
                             {
                                 var instances = await GetInstancesInSeries(seriesMaster).ConfigureAwait(false);

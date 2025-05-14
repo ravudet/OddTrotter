@@ -45,7 +45,7 @@ namespace Fx.Either
 #pragma warning disable CS8604 // Possible null reference argument.
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
-                            .SelectAsync(
+                            .Select(
                                 async (left, context) => await Task.FromResult(left).ConfigureAwait(false),
                                 async (right, context) => await Task.FromResult(right).ConfigureAwait(false),
                                 new Nothing())
@@ -62,7 +62,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Nothing, Task<string>>)null
@@ -83,7 +83,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Nothing, Task<string>>)null
@@ -108,7 +108,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 async (left, context) =>
                                     await Task
                                         .FromResult(left)
@@ -129,7 +129,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 async (left, context) =>
                                     await Task
                                         .FromResult(left)
@@ -152,7 +152,7 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
-                .SelectAsync(
+                .Select(
                     async (left, context) =>
                         await Task
                             .FromResult(
@@ -173,7 +173,7 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
-                .SelectAsync(
+                .Select(
                     async (left, context) =>
                         await Task
                             .FromResult(
@@ -202,7 +202,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
                                     throw invalidOperationException),
                                 async (right, context) =>
@@ -215,7 +215,7 @@ namespace Fx.Either
 
             either = CreateRight();
 
-            await either.SelectAsync(
+            await either.Select(
                 (Func<string, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<string>>)((left, context) =>
                     throw invalidOperationException),
                 async (right, context) =>
@@ -232,7 +232,7 @@ namespace Fx.Either
             var invalidOperationException = new InvalidOperationException();
 
             await either
-                .SelectAsync(
+                .Select(
                     async (left, context) =>
                         await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
                     (Func<IEnumerable<int>, TupleBuilder<StringBuilder, IEnumerable<int>>, Task<int>>)((right, context) =>
@@ -245,7 +245,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<RightMapException>(
                     () =>
                         either
-                            .SelectAsync(
+                            .Select(
                                 async (left, context) =>
                                     await Task.FromResult(context.Item1 = new StringBuilder(left)).ConfigureAwait(false),
                                 (
@@ -279,7 +279,7 @@ namespace Fx.Either
 #pragma warning disable CS8604 // Possible null reference argument.
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
-                            .SelectAsync(
+                            .Select(
                                 async left => await Task.FromResult(left).ConfigureAwait(false),
                                 async right => await Task.FromResult(right).ConfigureAwait(false))
                             .ConfigureAwait(false))
@@ -295,7 +295,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Task<string>>)null
@@ -315,7 +315,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Task<string>>)null
@@ -339,7 +339,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 async left =>
                                     await Task
                                         .FromResult(left)
@@ -359,7 +359,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 async left =>
                                     await Task
                                         .FromResult(left)
@@ -381,7 +381,7 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
-                .SelectAsync(
+                .Select(
                     async left =>
                         await Task
                             .FromResult(
@@ -401,7 +401,7 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
-                .SelectAsync(
+                .Select(
                     async left =>
                         await Task
                             .FromResult(
@@ -429,7 +429,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 (Func<string, Task<string>>)(left =>
                                     throw invalidOperationException),
                                 async right =>
@@ -445,7 +445,7 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
-                .SelectAsync(
+                .Select(
                     (Func<string, Task<string>>)(left =>
                         throw invalidOperationException),
                     async right =>
@@ -461,7 +461,7 @@ namespace Fx.Either
             var invalidOperationException = new InvalidOperationException();
 
             await either
-                .SelectAsync(
+                .Select(
                     async left =>
                         await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
                     (Func<IEnumerable<int>, Task<int>>)(right =>
@@ -475,7 +475,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<RightMapException>(
                     async () =>
                         await either
-                            .SelectAsync(
+                            .Select(
                                 async left =>
                                     await Task.FromResult(tuple.Item1 = new StringBuilder(left)).ConfigureAwait(false),
                                 (Func<IEnumerable<int>, Task<int>>)(right =>
@@ -501,7 +501,7 @@ namespace Fx.Either
 #pragma warning disable CS8604 // Possible null reference argument.
                         either
 #pragma warning restore CS8604 // Possible null reference argument.
-                            .SelectLeftAsync(
+                            .SelectLeft(
                                 async left => await Task.FromResult(left).ConfigureAwait(false))
                             .ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -516,7 +516,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectLeftAsync(
+                            .SelectLeft(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Task<string>>)null
@@ -532,7 +532,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
                         await either
-                            .SelectLeftAsync(
+                            .SelectLeft(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                                 (Func<string, Task<string>>)null
@@ -550,7 +550,7 @@ namespace Fx.Either
             var tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             IEither<StringBuilder, IEnumerable<int>> result = await either
-                .SelectLeftAsync(
+                .SelectLeft(
                     async left => await Task
                         .FromResult(tuple.Item1 = new StringBuilder(left))
                         .ConfigureAwait(false))
@@ -563,7 +563,7 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             result = await either
-                .SelectLeftAsync(
+                .SelectLeft(
                     async left =>
                         await Task
                             .FromResult(tuple.Item1 = new StringBuilder(left))
@@ -585,7 +585,7 @@ namespace Fx.Either
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () =>
                         await either
-                            .SelectLeftAsync(
+                            .SelectLeft(
                                 (Func<string, Task<string>>)(left =>
                                     throw invalidOperationException))
                             .ConfigureAwait(false))
@@ -597,7 +597,7 @@ namespace Fx.Either
             tuple = new TupleBuilder<StringBuilder, IEnumerable<int>>();
 
             await either
-                .SelectLeftAsync(
+                .SelectLeft(
                     (Func<string, Task<string>>)(left =>
                         throw invalidOperationException))
                 .ConfigureAwait(false);

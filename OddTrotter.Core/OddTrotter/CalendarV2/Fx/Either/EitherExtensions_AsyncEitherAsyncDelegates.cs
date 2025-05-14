@@ -52,7 +52,7 @@ namespace Fx.Either
 
             return 
                 await (await either.ConfigureAwait(false))
-                .SelectAsync(leftSelector, rightSelector, context)
+                .Select(leftSelector, rightSelector, context)
                 .ConfigureAwait(false);
         }
 
@@ -96,7 +96,7 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(leftSelector);
             ArgumentNullException.ThrowIfNull(rightSelector);
 
-            return await (await either.ConfigureAwait(false)).SelectAsync(leftSelector, rightSelector).ConfigureAwait(false);
+            return await (await either.ConfigureAwait(false)).Select(leftSelector, rightSelector).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(either);
             ArgumentNullException.ThrowIfNull(leftSelector);
 
-            return await (await either.ConfigureAwait(false)).SelectLeftAsync(leftSelector).ConfigureAwait(false);
+            return await (await either.ConfigureAwait(false)).SelectLeft(leftSelector).ConfigureAwait(false);
         }
     }
 }
