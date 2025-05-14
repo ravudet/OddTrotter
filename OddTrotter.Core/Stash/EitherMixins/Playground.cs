@@ -15,7 +15,7 @@
 
     public interface IAsyncEither<out TLeft, out TRight>
     {
-        Task<TResult> ApplyAsync<TResult, TContext>(
+        Task<TResult> Apply<TResult, TContext>(
             Func<TLeft, TContext, Task<TResult>> leftMap,
             Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context);
@@ -57,7 +57,7 @@
             }
         }
 
-        public Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+        public Task<TResult> Apply<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
         {
             throw new NotImplementedException();
         }
@@ -104,7 +104,7 @@
             //// TODO are you ok with this? you now need to re-implement all of the either extensions, but for async, *and* you need to implement the above "adapter" to async...and you'll need to do this for all "core" either variants
             //// TODO i think trying this for "allows ref struct" will show if this is even feasible as a general pattern
             return await either
-                    .ApplyAsync(
+                    .Apply(
                         async (left, context) =>
                             either.Factory.CreateLeft<TLeftNew, TRightNew>(await leftSelector(left).ConfigureAwait(false)),
                         async (right, context) =>

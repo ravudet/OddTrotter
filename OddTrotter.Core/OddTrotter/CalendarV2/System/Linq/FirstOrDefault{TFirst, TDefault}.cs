@@ -46,7 +46,7 @@ namespace System.Linq
         }
 
         /// <inheritdoc/>
-        public async Task<TResult> ApplyAsync<TResult, TContext>(
+        public async Task<TResult> Apply<TResult, TContext>(
             Func<TFirst, TContext, Task<TResult>> leftMap,
             Func<TDefault, TContext, Task<TResult>> rightMap, 
             TContext context)
@@ -54,7 +54,7 @@ namespace System.Linq
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
 
-            return await this.either.ApplyAsync(leftMap, rightMap, context).ConfigureAwait(false);
+            return await this.either.Apply(leftMap, rightMap, context).ConfigureAwait(false);
         }
     }
 }

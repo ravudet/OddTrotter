@@ -56,8 +56,8 @@ namespace System.Linq
 
             var leftMapException = Assert.ThrowsException<LeftMapException>(
                 () => firstOrDefault.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException,
-                    (right, context) => throw invalidCastException,
+                    (string left, Nothing context) => throw invalidOperationException,
+                    (Func<int, Nothing, char>)((int right, Nothing context) => throw invalidCastException),
                     default));
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
@@ -73,8 +73,8 @@ namespace System.Linq
 
             var rightMapException = Assert.ThrowsException<RightMapException>(
                 () => firstOrDefault.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException,
-                    (right, context) => throw invalidCastException,
+                    (string left, Nothing context) => throw invalidOperationException,
+                    (Func<int, Nothing, char>)((int right, Nothing context) => throw invalidCastException),
                     default));
 
             Assert.AreEqual(invalidCastException, rightMapException.InnerException);
@@ -91,7 +91,7 @@ namespace System.Linq
                     null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                     ,
-                    (right, context) => default, 
+                    (Func<int, Nothing, Nothing>)((int right, Nothing context) => default), 
                     default));
         }
 
@@ -103,9 +103,9 @@ namespace System.Linq
             Assert.ThrowsException<ArgumentNullException>(
                 () => 
                     firstOrDefault.Apply<Nothing, Nothing>(
-                        (left, context) => default,
+                        (string left, Nothing context) => default,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                        null
+                        (Func<int, Nothing, Nothing>?)null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                         , 
                         default));
@@ -117,7 +117,7 @@ namespace System.Linq
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Left("asdf"));
 
             var result = await firstOrDefault
-                .ApplyAsync(
+                .Apply(
                     async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false),
                     async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false),
                     new Nothing())
@@ -132,7 +132,7 @@ namespace System.Linq
             IEither<string, int> firstOrDefault = new FirstOrDefault<string, int>(new Either<string, int>.Right(42));
 
             var result = await firstOrDefault
-                .ApplyAsync(
+                .Apply(
                     async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false),
                     async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false),
                     new Nothing())
@@ -152,9 +152,9 @@ namespace System.Linq
             var leftMapException = await Assert
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () => await firstOrDefault
-                        .ApplyAsync<char, Nothing>(
-                            (left, context) => throw invalidOperationException,
-                            (right, context) => throw invalidCastException,
+                        .Apply<char, Nothing>(
+                            (string left, Nothing context) => throw invalidOperationException,
+                            (Func<int, Nothing, Task<char>>)((int right, Nothing context) => throw invalidCastException),
                             default)
                         .ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -173,9 +173,9 @@ namespace System.Linq
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     async () => await firstOrDefault
-                        .ApplyAsync<char, Nothing>(
-                            (left, context) => throw invalidOperationException,
-                            (right, context) => throw invalidCastException,
+                        .Apply<char, Nothing>(
+                            (string left, Nothing context) => throw invalidOperationException,
+                            (Func<int, Nothing, Task<char>>)((int right, Nothing context) => throw invalidCastException),
                             default)
                         .ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -191,7 +191,7 @@ namespace System.Linq
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await firstOrDefault
-                        .ApplyAsync<Nothing, Nothing>(
+                        .Apply<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -210,7 +210,7 @@ namespace System.Linq
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () =>
-                        await firstOrDefault.ApplyAsync<Nothing, Nothing>(
+                        await firstOrDefault.Apply<Nothing, Nothing>(
                             (left, context) => Task.FromResult(new Nothing()),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null

@@ -167,13 +167,13 @@ namespace Fx.QueryContext
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await node
-                        .ApplyAsync(
+                        .Apply(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                             ,
                             async (terminal, context) => await terminal
-                                .ApplyAsync(
+                                .Apply(
                                     async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                                     async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                                     new Nothing())
@@ -193,7 +193,7 @@ namespace Fx.QueryContext
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await node
-                        .ApplyAsync(
+                        .Apply(
                             async (element, context) => await Task
                                 .FromResult(string.Concat(element.Value, element.Value))
                                 .ConfigureAwait(false),
@@ -217,10 +217,10 @@ namespace Fx.QueryContext
             var leftMapException = await Assert
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () => await node
-                        .ApplyAsync(
+                        .Apply(
                             (element, context) => throw invalidOperationException,
                             async (terminal, context) => await terminal
-                                .ApplyAsync(
+                                .Apply(
                                     async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                                     async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                                     new Nothing())
@@ -235,10 +235,10 @@ namespace Fx.QueryContext
                 Either.Left<MockElement>().Right(Either.Left(new MockError(new Exception(value))).Right<IEmpty>()));
 
             var result = await node
-                .ApplyAsync(
+                .Apply(
                     (element, context) => throw invalidOperationException,
                     async (terminal, context) => await terminal
-                        .ApplyAsync(
+                        .Apply(
                             async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                             async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                             new Nothing())
@@ -258,7 +258,7 @@ namespace Fx.QueryContext
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
             var result = await node
-                .ApplyAsync(
+                .Apply(
                     async (element, context) => await Task
                         .FromResult(
                             string.Concat(element.Value, element.Value))
@@ -275,7 +275,7 @@ namespace Fx.QueryContext
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     async () => await node
-                        .ApplyAsync(
+                        .Apply(
                             async (element, context) => await Task
                                 .FromResult(string.Concat(element.Value, element.Value))
                                 .ConfigureAwait(false),
@@ -295,12 +295,12 @@ namespace Fx.QueryContext
                 Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>());
 
             var result = await node
-                .ApplyAsync(
+                .Apply(
                     async (element, context) => await Task
                         .FromResult(string.Concat(element.Value, element.Value))
                         .ConfigureAwait(false),
                     async (terminal, context) => await terminal
-                        .ApplyAsync(
+                        .Apply(
                             async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                             async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                             new Nothing())
@@ -314,12 +314,12 @@ namespace Fx.QueryContext
                 Either.Left<MockElement>().Right(Either.Left(new MockError(new Exception(value))).Right<IEmpty>()));
 
             result = await node
-                .ApplyAsync(
+                .Apply(
                     async (element, context) => await Task
                         .FromResult(string.Concat(element.Value, element.Value))
                         .ConfigureAwait(false),
                     async (terminal, context) => await terminal
-                        .ApplyAsync(
+                        .Apply(
                             async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                             async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                             new Nothing())
@@ -333,12 +333,12 @@ namespace Fx.QueryContext
                 Either.Left<MockElement>().Right(Either.Left<MockError>().Right(MockEmpty.Instance)));
 
             result = await node
-                .ApplyAsync(
+                .Apply(
                     async (element, context) => await Task
                         .FromResult(string.Concat(element.Value, element.Value))
                         .ConfigureAwait(false),
                     async (terminal, context) => await terminal
-                        .ApplyAsync(
+                        .Apply(
                             async (error, context) => await Task.FromResult(error.Value.Message).ConfigureAwait(false),
                             async (empty, context) => await Task.FromResult(string.Empty).ConfigureAwait(false),
                             new Nothing())

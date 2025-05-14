@@ -90,7 +90,7 @@ namespace Fx.QueryContext
             public TResult Apply<TResult, TContext>(Func<IElement<TValueResult, TError>, TContext, TResult> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap, TContext context)
             {
                 return this
-                    .ApplyAsync(
+                    .Apply(
                         async (left, context) => await Task.FromResult(leftMap(left, context)).ConfigureAwait(false), 
                         async (right, context) => await Task.FromResult(rightMap(right, context)).ConfigureAwait(false),
                         context)
@@ -99,11 +99,11 @@ namespace Fx.QueryContext
                     .GetResult();
             }
 
-            public async Task<TResult> ApplyAsync<TResult, TContext>(Func<IElement<TValueResult, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
+            public async Task<TResult> Apply<TResult, TContext>(Func<IElement<TValueResult, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
             {
                 var selected = (await this.SelectAsync().ConfigureAwait(false));
                 
-                var applied = await selected.ApplyAsync(leftMap, rightMap, context).ConfigureAwait(false);
+                var applied = await selected.Apply(leftMap, rightMap, context).ConfigureAwait(false);
 
                 return applied;
             }

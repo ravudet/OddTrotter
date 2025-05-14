@@ -115,7 +115,7 @@ namespace Stash
                 throw new NotImplementedException();
             }
 
-            public Task<TResult> ApplyAsync<TResult, TContext>(Func<T, TContext, Task<TResult>> leftMap, Func<Null<T>, TContext, Task<TResult>> rightMap, TContext context)
+            public Task<TResult> Apply<TResult, TContext>(Func<T, TContext, Task<TResult>> leftMap, Func<Null<T>, TContext, Task<TResult>> rightMap, TContext context)
             {
                 throw new NotImplementedException();
             }
@@ -157,7 +157,7 @@ namespace Stash
                 return this.nested.Apply(leftAccept, rightAccept, context);
             }
 
-            public Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+            public Task<TResult> Apply<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
             {
                 throw new NotImplementedException();
             }
@@ -196,7 +196,7 @@ namespace Stash
                     throw new NotImplementedException();
                 }
 
-                public Task<TResult> ApplyAsync<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+                public Task<TResult> Apply<TResult, TContext>(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
                 {
                     throw new NotImplementedException();
                 }

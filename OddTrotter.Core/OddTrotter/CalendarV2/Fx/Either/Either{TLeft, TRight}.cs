@@ -305,7 +305,7 @@ namespace Fx.Either
         }
 
         /// <inheritdoc/>
-        public async Task<TResult> ApplyAsync<TResult, TContext>(
+        public async Task<TResult> Apply<TResult, TContext>(
             Func<TLeft, TContext, Task<TResult>> leftMap,
             Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context)

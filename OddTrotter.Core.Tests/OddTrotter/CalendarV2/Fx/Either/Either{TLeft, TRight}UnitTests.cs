@@ -171,8 +171,8 @@ namespace Fx.Either
 
             var leftMapException = Assert.ThrowsException<LeftMapException>(
                 () => either.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException, 
-                    (right, context) => throw invalidCastException, 
+                    (string left, Nothing context) => throw invalidOperationException, 
+                    (Func<int, Nothing, char>)((int right, Nothing context) => throw invalidCastException), 
                     default));
 
             Assert.AreEqual(invalidOperationException, leftMapException.InnerException);
@@ -188,8 +188,8 @@ namespace Fx.Either
 
             var rightMapException = Assert.ThrowsException<RightMapException>(
                 () => either.Apply<char, Nothing>(
-                    (left, context) => throw invalidOperationException, 
-                    (right, context) => throw invalidCastException, 
+                    (string left, Nothing context) => throw invalidOperationException, 
+                    (Func<int, Nothing, char>)((int right, Nothing context) => throw invalidCastException), 
                     default));
 
             Assert.AreEqual(invalidCastException, rightMapException.InnerException);
@@ -205,7 +205,7 @@ namespace Fx.Either
                 null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                 ,
-                (right, context) => default, default));
+                (Func<int, Nothing, Nothing>)((int right, Nothing context) => default), default));
         }
 
         [TestMethod]
@@ -213,9 +213,9 @@ namespace Fx.Either
         {
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>((left, context) => default,
+            Assert.ThrowsException<ArgumentNullException>(() => either.Apply<Nothing, Nothing>((string left, Nothing context) => default,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                (Func<int, Nothing, Nothing>?)null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                 ,
                 default));
@@ -339,7 +339,7 @@ namespace Fx.Either
             Either<string, int> either = new Either<string, int>.Left("asdf");
 
             var result = await either
-                .ApplyAsync(
+                .Apply(
                     async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), 
                     async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false),
                     new Nothing())
@@ -354,7 +354,7 @@ namespace Fx.Either
             Either<string, int> either = new Either<string, int>.Right(42);
 
             var result = await either
-                .ApplyAsync(
+                .Apply(
                     async (left, context) => await Task.FromResult(left[0]).ConfigureAwait(false), 
                     async (right, context) => await Task.FromResult(right.ToString()[0]).ConfigureAwait(false), 
                     new Nothing())
@@ -374,9 +374,9 @@ namespace Fx.Either
             var leftMapException = await Assert
                 .ThrowsExceptionAsync<LeftMapException>(
                     async () => await either
-                        .ApplyAsync<char, Nothing>(
-                            (left, context) => throw invalidOperationException,
-                            (right, context) => throw invalidCastException,
+                        .Apply<char, Nothing>(
+                            (string left, Nothing context) => throw invalidOperationException,
+                            (Func<int, Nothing, Task<char>>)((int right, Nothing context) => throw invalidCastException),
                             default)
                         .ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -395,9 +395,9 @@ namespace Fx.Either
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
                     async () => await either
-                        .ApplyAsync<char, Nothing>(
-                            (left, context) => throw invalidOperationException,
-                            (right, context) => throw invalidCastException,
+                        .Apply<char, Nothing>(
+                            (string left, Nothing context) => throw invalidOperationException,
+                            (Func<int, Nothing, Task<char>>)((int right, Nothing context) => throw invalidCastException),
                             default)
                         .ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -413,7 +413,7 @@ namespace Fx.Either
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await either
-                        .ApplyAsync<Nothing, Nothing>(
+                        .Apply<Nothing, Nothing>(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -432,7 +432,7 @@ namespace Fx.Either
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
                     async () => await either
-                        .ApplyAsync<Nothing, Nothing>(
+                        .Apply<Nothing, Nothing>(
                             async (left, context) => await Task.FromResult(new Nothing()).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                             null

@@ -35,7 +35,7 @@ namespace Fx.QueryContext
         }
 
         /// <inheritdoc/>
-        public async Task<TResult> ApplyAsync<TResult, TContext>(
+        public async Task<TResult> Apply<TResult, TContext>(
             Func<IElement<TValue, TError>, TContext, Task<TResult>> leftMap, 
             Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, 
             TContext context)
@@ -43,7 +43,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
 
-            return await this.node.ApplyAsync(leftMap, rightMap, context).ConfigureAwait(false);
+            return await this.node.Apply(leftMap, rightMap, context).ConfigureAwait(false);
         }
     }
 }

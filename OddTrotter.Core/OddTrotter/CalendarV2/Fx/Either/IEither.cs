@@ -115,7 +115,7 @@ namespace Fx.Either
         /// Thrown if <paramref name="rightMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
         /// whatever exception <paramref name="rightMap"/> threw.
         /// </exception>
-        Task<TResult> ApplyAsync<TResult, TContext>(
+        Task<TResult> Apply<TResult, TContext>(
             Func<TLeft, TContext, Task<TResult>> leftMap,
             Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context);

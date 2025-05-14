@@ -50,7 +50,7 @@ namespace Fx.Either
             ArgumentNullException.ThrowIfNull(leftSelector);
             ArgumentNullException.ThrowIfNull(rightSelector);
 
-            return await either.ApplyAsync(
+            return await either.Apply(
                 async (left, context) =>
                 {
                     var newLeft = await leftSelector(left, context).ConfigureAwait(false);

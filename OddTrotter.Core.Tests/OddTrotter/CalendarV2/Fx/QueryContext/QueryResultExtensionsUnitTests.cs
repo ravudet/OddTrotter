@@ -2167,7 +2167,7 @@ namespace Fx.QueryContext
                 }
 
                 /// <inheritdoc/>
-                public Task<TResult> ApplyAsync<TResult, TContext>(
+                public Task<TResult> Apply<TResult, TContext>(
                     Func<IElement<TValue, TError>, TContext, Task<TResult>> leftMap, 
                     Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap,
                     TContext context)
