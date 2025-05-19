@@ -1,18 +1,10 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.QueryContext.Mixins
 {
-    using OddTrotter.Calendar;
     using System;
     using System.Linq.Expressions;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TDataStoreValue"></typeparam>
-    /// <typeparam name="TClientValue"></typeparam>
-    /// <typeparam name="TError"></typeparam>
-    /// <typeparam name="TQueryContext"></typeparam>
-    public interface IWhereQueryContextMixin<TClientValue, TDataStoreValue, TError, TQueryContext> : IQueryContext<TClientValue, TDataStoreValue, TError> where TQueryContext : IQueryContext<TClientValue, TDataStoreValue, TError>
+    public interface IWhereQueryContextAsyncMixin<TClientValue, TDataStoreValue, TError, TQueryContext> : IQueryContextAsync<TClientValue, TDataStoreValue, TError> where TQueryContext : IQueryContextAsync<TClientValue, TDataStoreValue, TError>
     {
         /// <summary>
         /// placeholder
