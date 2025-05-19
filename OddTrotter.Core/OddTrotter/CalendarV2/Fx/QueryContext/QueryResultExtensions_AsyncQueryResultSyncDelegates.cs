@@ -165,7 +165,7 @@ namespace Fx.QueryContext
         {
             return (await source
                 .SelectLeft(
-                    element => Either
+                    element => Either2
                         .TryCreate( //// TODO this needs an overload that takes async delegates
                             element.Value,
                             @try,
@@ -566,7 +566,7 @@ namespace Fx.QueryContext
 
             return (await source
                 .SelectLeft(
-                    element => Either
+                    element => Either2
                         .Create(
                             element,
                             element => predicate(element.Value),
