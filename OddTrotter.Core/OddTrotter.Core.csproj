@@ -17,8 +17,4 @@
     </AssemblyAttribute>
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="OddTrotter\CalendarV1\Async\" />
-  </ItemGroup>
-  
 </Project>
