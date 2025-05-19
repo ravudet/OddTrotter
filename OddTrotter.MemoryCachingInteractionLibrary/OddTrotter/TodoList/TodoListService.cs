@@ -433,6 +433,31 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO `try`s should really be covariants:
+            //// ```
+            //// public delegate bool TestTry<in TInput, out TOutput>(TInput input);
+            //// 
+            //// public class Animal
+            //// {
+            //// }
+            //// 
+            //// public class Dog : Animal
+            //// {
+            //// }
+            //// 
+            //// public class Husky : Dog
+            //// {
+            //// }
+            //// 
+            //// public static void Foo(TestTry<string, Dog> testTry)
+            //// {
+            //// Bar(Either.Left(testTry).Right<Exception>());
+            //// }
+            //// 
+            //// public static void Bar(IEither<TestTry<string, Animal>, Exception> either)
+            //// {
+            //// }
+            //// ```
             //// TODO you should have all combinations of overloads for either extensions and queryresult extensions between sync and async (for example, either.select takes 2 mapping delegates; there should be 4 overloads); you want to do this to prevent a caller from accidentally calling a sync method while providing a split of sync and async delegates
             //// TODO if you discover that you do want a `asbase` method, look at `asbaseplayground` in `stash` namespace; even if you don't use this code in oddtrotter, you might choose to pull it into another repo
             //// TODO implement other `queryresult` "error" variants; (look at eitherextensions for other ideas) maybe selectmany and coalesce make sense? i don't think throw makes sense because, but maybe some uses will want it for convenience
