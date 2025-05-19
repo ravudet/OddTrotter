@@ -423,8 +423,8 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO code review everything that's *not* async from 61cd991917ba2ed30745d2be82ab5c18ed9f2d3a
-            //// TODO move the async stuff back to v1
+            //// TODO move everything that's async from 61cd991917ba2ed30745d2be82ab5c18ed9f2d3a to v1
+            //// TODO code review everything that's *not* async
             //// TODO start using feature branches
             //// TODO move the async stuff to v2 "correctly"
             //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
