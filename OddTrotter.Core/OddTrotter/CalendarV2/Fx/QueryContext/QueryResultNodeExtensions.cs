@@ -9,7 +9,7 @@ namespace Fx.QueryContext
     using Fx.Either;
     using Fx.Try;
 
-    public static class QueryResultNodeExtensions
+    public static partial class QueryResultNodeExtensions
     {
         /// <summary>
         /// placeholder
