@@ -2,6 +2,7 @@
 namespace Fx.QueryContext
 {
     using System;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using Fx.Either;
     using Fx.Try;
@@ -165,18 +166,49 @@ namespace Fx.QueryContext
         {
             return (await source
                 .SelectLeft(
-                    element => Either2
+                    element => 
+                        @try
+                            .ToEither()(element.Value)
+                            .Select(
+                                async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.NextAsync().ConfigureAwait(false), @try),
+                                async nothing => await (await element.NextAsync().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                            .ToTaskWrapper()
+                            .SelectManyRight())
+
+
+
+
+                    /*Either2
                         .TryCreate( //// TODO this needs an overload that takes async delegates
                             element.Value,
                             @try,
                             async (elementValue, tried) => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
                             async elementValue => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
                         .ToTaskWrapper()
-                        .SelectManyRight())
+                        .SelectManyRight())*/
                 .ToTaskWrapper()
                 .SelectManyLeft()
                 .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
+        }
+
+        private static IEither<TResult, Nothing> ToEither<TValue, TResult>(this Try<TValue, TResult> @try, TValue value)
+        {
+            //// TODO this isn't a great name; maybe this should return a func?
+            if (@try(value, out var result))
+            {
+                return Either.Left(result).Right<Nothing>();
+            }
+            else
+            {
+                return Either.Left<TResult>().Right(new Nothing());
+            }
+        }
+
+        private static Func<TValue, IEither<TResult, Nothing>> ToEither<TValue, TResult>(this Try<TValue, TResult> @try)
+        {
+            //// TODO this isn't a great name because it returns a func not an either
+            return value => ToEither(@try, value);
         }
 
         private sealed class TrySelectElement2<TValue, TError, TResult> : IElementAsync<TResult, TError>
@@ -568,7 +600,14 @@ namespace Fx.QueryContext
 
             return (await source
                 .SelectLeft(
-                    element => Either2
+                    element => 
+                        predicate
+                            .ToEither()(element.Value)
+                            .Select(
+                                async value => new WhereElementAsync<TValue, TError>(value, await element.NextAsync().ConfigureAwait(false), predicate),
+                                async nothing => await (await element.NextAsync().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
+
+                    /*Either
                         .Create(
                             element,
                             element => predicate(element.Value),
@@ -580,6 +619,11 @@ namespace Fx.QueryContext
                 .SelectManyLeft()
                 .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
+        }
+
+        private static Func<TValue, IEither<TValue, Nothing>> ToEither<TValue>(this Func<TValue, bool> predicate)
+        {
+            return value => predicate(value) ? Either.Left(value).Right<Nothing>() : Either.Left<TValue>().Right(new Nothing());
         }
 
         private sealed class WhereElementAsync<TValue, TError> : IElementAsync<TValue, TError>
