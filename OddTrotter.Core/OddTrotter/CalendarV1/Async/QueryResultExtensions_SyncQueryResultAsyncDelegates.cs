@@ -72,7 +72,7 @@ namespace Fx.QueryContext
 
             public TValueResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 //// TODO task
                 return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.next.Select(this.selector));

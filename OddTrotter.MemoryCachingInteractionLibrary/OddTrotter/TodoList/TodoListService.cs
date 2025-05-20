@@ -254,7 +254,7 @@
                     },
                     builder);
 
-                queryResultNode = await element.NextAsync().ConfigureAwait(false);
+                queryResultNode = await element.Next().ConfigureAwait(false);
             }
 
             if (queryResultNode.TryGetRight(out var terminal)) //// TODO we know that this will be true because we escaped the while loop because "left" was false; see if you can use an apply to combine the two instead so that you cover all branches
