@@ -24,7 +24,7 @@ namespace Fx.QueryContext
                             .Left<IError<Exception>>()
                             .Right(
                                 MockEmpty.Instance))
-                    .ToQueryResultNodeAsync()) //// TODO this should use the *new* extension
+                    .ToQueryResultNodeAsync())
         {
         }
 
