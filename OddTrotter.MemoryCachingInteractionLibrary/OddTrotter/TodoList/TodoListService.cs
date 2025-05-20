@@ -423,7 +423,6 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO start using feature branches
             //// TODO move the async stuff to v2 "correctly"
             //// TODO don't forget about QueryResultExtensionsUnitTests_AsyncQueryResultSyncDelegates, this is async stuff that needs to be "moved"
             //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
@@ -435,6 +434,7 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO move queryresult to its own namespace (probably queryresultnode should go in the same namespace); make a note that you are not moving the async stuff to its own namespace because you don't want someone accidentally using the sync extensions with async delegates
             //// TODO `try`s should really be covariants:
             //// ```
             //// public delegate bool TestTry<in TInput, out TOutput>(TInput input);
