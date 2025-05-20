@@ -7,12 +7,6 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultExtensions
     {
-        public static IQueryResultNodeAsync<TValue, TError> ToQueryResultNodeAsync<TValue, TError>(
-            this IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
-        {
-            return new QueryResultNodeAsync<TValue, TError>(source);
-        }
-
         public static IQueryResultAsync<TValueResult, TError> Select<TValueSource, TError, TValueResult>(
             this IQueryResult<TValueSource, TError> source,
             Func<TValueSource, Task<TValueResult>> selector)

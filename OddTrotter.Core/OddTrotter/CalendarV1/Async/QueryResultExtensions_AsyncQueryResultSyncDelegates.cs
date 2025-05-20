@@ -282,7 +282,7 @@ namespace Fx.QueryContext
             }
         }
 
-        public static Task<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+        public static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
@@ -309,7 +309,8 @@ namespace Fx.QueryContext
                                     secondErrorSelector,
                                     errorAggregator))
                             .Right<IEither<IError<TErrorResult>, IEmpty>>()
-                            .ToQueryResultNodeAsync()),
+                            .ToQueryResultNodeAsync())
+                        .ToTaskWrapper(),
                     terminal =>
                         terminal
                             .Apply(
@@ -378,11 +379,11 @@ namespace Fx.QueryContext
             /// <inheritdoc/>
             public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
             {
-                return this.next.Concat(this.second, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator).ToTaskWrapper();
+                return this.next.Concat(this.second, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
             }
         }
 
-        private static Task<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
+        private static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,
                 TErrorFirst,
@@ -447,7 +448,8 @@ namespace Fx.QueryContext
                                                 Either
                                                     .Left<IError<TErrorResult>>()
                                                     .Right(empty))
-                                            .ToQueryResultNodeAsync())));
+                                            .ToQueryResultNodeAsync())))
+                .ToTaskWrapper();
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
@@ -504,7 +506,7 @@ namespace Fx.QueryContext
                     this.next,
                     this.firstErrorSelector,
                     this.secondErrorSelector,
-                    this.errorAggregator).ToTaskWrapper();
+                    this.errorAggregator);
             }
         }
 
