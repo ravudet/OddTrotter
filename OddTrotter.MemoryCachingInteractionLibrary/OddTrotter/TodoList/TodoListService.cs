@@ -254,7 +254,7 @@
                     },
                     builder);
 
-                queryResultNode = await element.NextAsync().ConfigureAwait(false);
+                queryResultNode = await element.Next().ConfigureAwait(false);
             }
 
             if (queryResultNode.TryGetRight(out var terminal)) //// TODO we know that this will be true because we escaped the while loop because "left" was false; see if you can use an apply to combine the two instead so that you cover all branches
@@ -423,6 +423,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO mockelementasync should use await
             //// TODO move the async stuff to v2 "correctly"
             //// TODO don't forget about QueryResultExtensionsUnitTests_AsyncQueryResultSyncDelegates, this is async stuff that needs to be "moved"
             //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps

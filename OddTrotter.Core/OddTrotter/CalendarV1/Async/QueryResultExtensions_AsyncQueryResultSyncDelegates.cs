@@ -76,7 +76,7 @@ namespace Fx.QueryContext
                     async element =>
                         new SelectElement2<TValueSource, TError, TValueResult>(
                             selector(element.Value),
-                            await element.NextAsync().ConfigureAwait(false),
+                            await element.Next().ConfigureAwait(false),
                             selector))
                 .ConfigureAwait(false);
             return result.ToQueryResultNodeAsync();
@@ -99,7 +99,7 @@ namespace Fx.QueryContext
 
             public TValueResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 //// TODO task
                 return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.next.Select(this.selector));
@@ -169,8 +169,8 @@ namespace Fx.QueryContext
                         .TryCreate( //// TODO this needs an overload that takes async delegates
                             element.Value,
                             @try,
-                            async (elementValue, tried) => new TrySelectElement2<TValue, TError, TResult>(tried, await element.NextAsync().ConfigureAwait(false), @try),
-                            async elementValue => await (await element.NextAsync().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                            async (elementValue, tried) => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
+                            async elementValue => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
                         .ToTaskWrapper()
                         .SelectManyRight())
                 .ToTaskWrapper()
@@ -193,7 +193,7 @@ namespace Fx.QueryContext
 
             public TResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TResult, TError>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TResult, TError>> Next()
             {
                 //// TODO task
                 return new TaskWrapper<IQueryResultNodeAsync<TResult, TError>>(this.next.TrySelect(this.@try));
@@ -282,7 +282,7 @@ namespace Fx.QueryContext
             }
         }
 
-        public static Task<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+        public static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
@@ -309,7 +309,8 @@ namespace Fx.QueryContext
                                     secondErrorSelector,
                                     errorAggregator))
                             .Right<IEither<IError<TErrorResult>, IEmpty>>()
-                            .ToQueryResultNodeAsync()),
+                            .ToQueryResultNodeAsync())
+                        .ToTaskWrapper(),
                     terminal =>
                         terminal
                             .Apply(
@@ -376,13 +377,13 @@ namespace Fx.QueryContext
             public TValue Value { get; }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
             {
-                return this.next.Concat(this.second, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator).ToTaskWrapper();
+                return this.next.Concat(this.second, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
             }
         }
 
-        private static Task<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
+        private static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,
                 TErrorFirst,
@@ -408,7 +409,7 @@ namespace Fx.QueryContext
                                 new ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
                                     error,
                                     element.Value,
-                                    await element.NextAsync().ConfigureAwait(false),
+                                    await element.Next().ConfigureAwait(false),
                                     firstErrorSelector,
                                     secondErrorSelector,
                                     errorAggregator))
@@ -447,7 +448,8 @@ namespace Fx.QueryContext
                                                 Either
                                                     .Left<IError<TErrorResult>>()
                                                     .Right(empty))
-                                            .ToQueryResultNodeAsync())));
+                                            .ToQueryResultNodeAsync())))
+                .ToTaskWrapper();
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
@@ -497,14 +499,14 @@ namespace Fx.QueryContext
             public TValue Value { get; }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
             {
                 return ConcatTraverseSecond(
                     this.error,
                     this.next,
                     this.firstErrorSelector,
                     this.secondErrorSelector,
-                    this.errorAggregator).ToTaskWrapper();
+                    this.errorAggregator);
             }
         }
 
@@ -570,8 +572,8 @@ namespace Fx.QueryContext
                         .Create(
                             element,
                             element => predicate(element.Value),
-                            async element => new WhereElementAsync<TValue, TError>(element.Value, await element.NextAsync().ConfigureAwait(false), predicate),
-                            async element => await (await element.NextAsync().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
+                            async element => new WhereElementAsync<TValue, TError>(element.Value, await element.Next().ConfigureAwait(false), predicate),
+                            async element => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
                         .ToTaskWrapper()
                         .SelectManyRight())
                 .ToTaskWrapper()
@@ -608,7 +610,7 @@ namespace Fx.QueryContext
             public TValue Value { get; }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TError>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValue, TError>> Next()
             {
                 return this.next.Where(predicate).ToTaskWrapper();
             }

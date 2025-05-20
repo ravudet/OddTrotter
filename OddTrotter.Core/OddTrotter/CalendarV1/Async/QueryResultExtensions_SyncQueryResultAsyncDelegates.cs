@@ -7,32 +7,6 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultExtensions
     {
-        public static IQueryResultNodeAsync<TValue, TError> ToQueryResultNodeAsync<TValue, TError>(
-            this IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
-        {
-            return new QueryResultNodeAsync<TValue, TError>(source);
-        }
-
-        public sealed class QueryResultNodeAsync<TValue, TError> : IQueryResultNodeAsync<TValue, TError>
-        {
-            private readonly IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source;
-
-            public QueryResultNodeAsync(IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
-            {
-                this.source = source;
-            }
-
-            public TResult Apply<TResult, TContext>(Func<IElementAsync<TValue, TError>, TContext, TResult> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap, TContext context)
-            {
-                return this.source.Apply(leftMap, rightMap, context);
-            }
-
-            public Task<TResult> Apply<TResult, TContext>(Func<IElementAsync<TValue, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
-            {
-                return this.source.Apply(leftMap, rightMap, context);
-            }
-        }
-
         public static IQueryResultAsync<TValueResult, TError> Select<TValueSource, TError, TValueResult>(
             this IQueryResult<TValueSource, TError> source,
             Func<TValueSource, Task<TValueResult>> selector)
@@ -92,7 +66,7 @@ namespace Fx.QueryContext
 
             public TValueResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> NextAsync()
+            public ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 //// TODO task
                 return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.next.Select(this.selector));

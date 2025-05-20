@@ -213,7 +213,7 @@ namespace Fx.QueryContext
             Assert.AreEqual(1, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);
             Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping[0]);
 
-            var next = await element.NextAsync().ConfigureAwait(false);
+            var next = await element.Next().ConfigureAwait(false);
             Assert.IsTrue(next.TryGetLeft(out var nextElement));
             Assert.AreEqual('q', nextElement.Value);
             Assert.AreEqual(2, instrumentedQueryResult.IndexToRetrievalCountMapping.Count);

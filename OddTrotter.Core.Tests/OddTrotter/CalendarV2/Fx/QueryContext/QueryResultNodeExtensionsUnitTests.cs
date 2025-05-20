@@ -10,7 +10,7 @@ namespace Fx.QueryContext
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public sealed class QueryResultNodeExtensionsUnitTests
+    public sealed partial class QueryResultNodeExtensionsUnitTests
     {
         [TestMethod]
         public void ToQueryResultNodeNullNode()
