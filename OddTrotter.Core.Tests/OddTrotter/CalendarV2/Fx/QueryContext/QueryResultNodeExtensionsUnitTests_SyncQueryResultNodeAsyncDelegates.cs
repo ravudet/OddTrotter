@@ -1,4 +1,5 @@
-﻿namespace Fx.QueryContext
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Fx.QueryContext
 {
     using System;
 
@@ -27,7 +28,10 @@
         public void ToQueryResultNodeAsync()
         {
             var value = "asdf";
-            var node = Either.Left(new MockElementAsync(value)).Right<IEither<IError<Exception>, IEmpty>>().ToQueryResultNodeAsync();
+            var node = Either
+                .Left(new MockElementAsync(value))
+                .Right<IEither<IError<Exception>, IEmpty>>()
+                .ToQueryResultNodeAsync();
 
             var result = node.Apply(
                 (element, context) => string.Concat(element.Value, element.Value),
