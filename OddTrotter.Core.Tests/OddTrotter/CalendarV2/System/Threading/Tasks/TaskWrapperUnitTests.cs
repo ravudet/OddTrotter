@@ -822,5 +822,35 @@ namespace System.Threading.Tasks
                 this.SetStateMachine(stateMachine);
             }
         }
+
+        [TestMethod]
+        public async Task AwaitInterface()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValue().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+        }
+
+        private sealed class AwaiterType<T>
+        {
+            private readonly T value;
+
+            public AwaiterType(T value)
+            {
+                this.value = value;
+            }
+
+            public async ITask<T> GetValue()
+            {
+                return await Task.FromResult(this.value).ConfigureAwait(false);
+            }
+
+            public async ITask<T> GetValueWithDelay()
+            {
+                await Task.Delay(100).ConfigureAwait(false);
+                //// TODO get 100% code coverage
+            }
+        }
     }
 }
