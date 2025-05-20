@@ -23,7 +23,10 @@ namespace Fx.QueryContext
         }
 
         /// <inheritdoc/>
-        public TResult Apply<TResult, TContext>(Func<IElementAsync<TValue, TError>, TContext, TResult> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap, TContext context)
+        public TResult Apply<TResult, TContext>(
+            Func<IElementAsync<TValue, TError>, TContext, TResult> leftMap, 
+            Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap,
+            TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
@@ -32,7 +35,10 @@ namespace Fx.QueryContext
         }
 
         /// <inheritdoc/>
-        public Task<TResult> Apply<TResult, TContext>(Func<IElementAsync<TValue, TError>, TContext, Task<TResult>> leftMap, Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, TContext context)
+        public Task<TResult> Apply<TResult, TContext>(
+            Func<IElementAsync<TValue, TError>, TContext, Task<TResult>> leftMap, 
+            Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap,
+            TContext context)
         {
             ArgumentNullException.ThrowIfNull(leftMap);
             ArgumentNullException.ThrowIfNull(rightMap);
