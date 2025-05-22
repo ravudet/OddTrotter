@@ -832,6 +832,24 @@ namespace System.Threading.Tasks
             Assert.AreEqual(value, result);
         }
 
+        [TestMethod]
+        public async Task AwaitInterfaceWithDelay()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValueWithDelay().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+        }
+
+        [TestMethod]
+        public async Task AwaitInterfaceWithNested()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValueFromNested().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+        }
+
         private sealed class AwaiterType<T>
         {
             private readonly T value;
@@ -849,7 +867,13 @@ namespace System.Threading.Tasks
             public async ITask<T> GetValueWithDelay()
             {
                 await Task.Delay(100).ConfigureAwait(false);
+                return this.value;
                 //// TODO get 100% code coverage
+            }
+
+            public async ITask<T> GetValueFromNested()
+            {
+                return await this.GetValue().ConfigureAwait(false);
             }
         }
     }
