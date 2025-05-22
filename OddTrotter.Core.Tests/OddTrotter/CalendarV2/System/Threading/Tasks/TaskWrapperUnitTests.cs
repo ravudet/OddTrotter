@@ -537,7 +537,7 @@ namespace System.Threading.Tasks
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithDelay()
-        {            
+        {
             SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine =
                 new SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
@@ -704,7 +704,7 @@ namespace System.Threading.Tasks
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithNoDelay()
         {
-            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine = 
+            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine =
                 new SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
             stateMachine.self = this;
@@ -832,41 +832,6 @@ namespace System.Threading.Tasks
             Assert.AreEqual(value, result);
         }
 
-        [TestMethod]
-        public async Task AwaitInterfaceWithDelay()
-        {
-            var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValueWithDelay().ConfigureAwait(false);
-
-            Assert.AreEqual(value, result);
-        }
-
-        [TestMethod]
-        public async Task AwaitInterfaceWithNested()
-        {
-            var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValueFromNested().ConfigureAwait(false);
-
-            Assert.AreEqual(value, result);
-        }
-
-        [TestMethod]
-        public async Task AwaitInterfaceWithException()
-        {
-            var message = "a message";
-            var exception = new InvalidOperationException(message);
-
-            var thrownException = 
-                await Assert
-                    .ThrowsExceptionAsync<InvalidOperationException>(
-                        async () => await new AwaiterType<string>("asdf")
-                            .GetValueWithException(exception)
-                            .ConfigureAwait(false))
-                    .ConfigureAwait(false);
-
-            Assert.AreEqual(exception, thrownException);
-        }
-
         private sealed class AwaiterType<T>
         {
             private readonly T value;
@@ -903,6 +868,88 @@ namespace System.Threading.Tasks
             {
                 throw exception;
             }
+        }
+
+        [TestMethod]
+        public async Task AwaitInterfaceWithDelay()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValueWithDelay().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+        }
+
+        [TestMethod]
+        public async Task AwaitInterfaceWithNested()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValueFromNested().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+        }
+
+        [TestMethod]
+        public async Task AwaitInterfaceWithException()
+        {
+            var message = "a message";
+            var exception = new InvalidOperationException(message);
+
+            var thrownException =
+                await Assert
+                    .ThrowsExceptionAsync<InvalidOperationException>(
+                        async () => await new AwaiterType<string>("asdf")
+                            .GetValueWithException(exception)
+                            .ConfigureAwait(false))
+                    .ConfigureAwait(false);
+
+            Assert.AreEqual(exception, thrownException);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// This method and it's associated <see cref="SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine"/> are slightly
+        /// modified code from the compiler generated state machine for the following code:
+        /// ```
+        /// var synchronizationContext = new MockSynchronizationContext();
+        /// SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+        /// 
+        /// var providedValue = "Asdf";
+        /// var value = await new AwaitedType<string>(providedValue).GetValueNoDelay().ConfigureAwait(false);
+        /// Assert.AreEqual(providedValue, value);
+        /// 
+        /// // from [this article](https://blog.stephencleary.com/2023/11/configureawait-in-net-8.html?s=03):
+        /// // > ConfigureAwaitOptions.None is the same as ConfigureAwait(continueOnCapturedContext: false). In other words,
+        /// // > await will behave perfectly normally, except that it will not capture the context; assuming the await does yield
+        /// // > (i.e, the task is not already complete), then the async method will resume executing on any available thread
+        /// // > pool thread.
+        /// // 
+        /// // so, we know that, because `Task.FromResult` returns a finished `task` and therefore does  *not* "yield", that the
+        /// // context may or may not be preserved; as a result, we cannot assert anything about the current synchronization
+        /// // context at this point; however, because `synchronizationContext` has its own thread dedicated to it, we *do* know
+        /// // that the "continued with" delegate of the rest of this method will *not* be running on that thread, so we can
+        /// // assert that current thread is not the one used by `synchronizationContext`
+        /// Assert.AreNotEqual(synchronizationContext.ThreadId, Thread.CurrentThread.ManagedThreadId);
+        /// ```
+        /// 
+        /// The compiler generated code has been modified in the following way:
+        /// 1. identifiers have been renamed to be legal
+        /// 2. nullability issues have been suppressed, removed, or forgiven
+        /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+        /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+        /// 
+        /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+        /// provided callers the more efficient "unsafe" variant.
+        /// </remarks>
+        [TestMethod]
+        public async Task AwaitInterfaceWithStructStateMachine()
+        {
+            var value = "asdf";
+            var result = await new AwaiterType<string>(value).GetValue().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
         }
     }
 }
