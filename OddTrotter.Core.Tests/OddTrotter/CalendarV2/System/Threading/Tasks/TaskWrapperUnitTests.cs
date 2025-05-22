@@ -850,6 +850,23 @@ namespace System.Threading.Tasks
             Assert.AreEqual(value, result);
         }
 
+        [TestMethod]
+        public async Task AwaitInterfaceWithException()
+        {
+            var message = "a message";
+            var exception = new InvalidOperationException(message);
+
+            var thrownException = 
+                await Assert
+                    .ThrowsExceptionAsync<InvalidOperationException>(
+                        async () => await new AwaiterType<string>("asdf")
+                            .GetValueWithException(exception)
+                            .ConfigureAwait(false))
+                    .ConfigureAwait(false);
+
+            Assert.AreEqual(exception, thrownException);
+        }
+
         private sealed class AwaiterType<T>
         {
             private readonly T value;
@@ -874,6 +891,17 @@ namespace System.Threading.Tasks
             public async ITask<T> GetValueFromNested()
             {
                 return await this.GetValue().ConfigureAwait(false);
+            }
+
+            public async ITask<T> GetValueWithException(Exception exception)
+            {
+                Throw(exception);
+                return await this.GetValue().ConfigureAwait(false);
+            }
+
+            private static void Throw(Exception exception)
+            {
+                throw exception;
             }
         }
     }
