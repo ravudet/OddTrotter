@@ -16,10 +16,13 @@
             builder.Start(ref stateMachine);
         }
 
-        [ExcludeFromCodeCoverage(Justification = "TODO")]
+        private const string setStateMachineMessage = "TODO";
+
+        [ExcludeFromCodeCoverage(Justification = setStateMachineMessage)]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
-            builder.SetStateMachine(stateMachine);
+            throw new NotSupportedException(setStateMachineMessage);
+            ////builder.SetStateMachine(stateMachine);
         }
 
         public void SetException(Exception exception)
