@@ -34,6 +34,5 @@ namespace UnitTestProject1
 
             Assert.AreEqual(value, result);
         }
-
     }
 }
