@@ -1017,7 +1017,9 @@ namespace System.Threading.Tasks
             var value = "asdf";
             var result = await new AwaiterType<string>(value).GetValueDecompiled().ConfigureAwait(false);
 
-            Assert.AreEqual(value, result);
+            Assert.AreEqual(8, result);
         }
+
+        //// TODO https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
     }
 }
