@@ -1,6 +1,7 @@
 ﻿namespace Stash
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@
             builder.Start(ref stateMachine);
         }
 
+        [ExcludeFromCodeCoverage(Justification = "TODO")]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
             builder.SetStateMachine(stateMachine);
