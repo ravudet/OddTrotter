@@ -22,6 +22,7 @@
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
             throw new NotSupportedException(setStateMachineMessage);
+            //// TODO have some way to track framework compatibility issues?
             ////builder.SetStateMachine(stateMachine);
         }
 
