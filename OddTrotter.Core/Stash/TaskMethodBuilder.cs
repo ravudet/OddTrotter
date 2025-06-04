@@ -21,7 +21,6 @@
             builder.Start(ref stateMachine);
         }
 
-        [ExcludeFromCodeCoverage(Justification = "TODO")]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
             builder.SetStateMachine(stateMachine);

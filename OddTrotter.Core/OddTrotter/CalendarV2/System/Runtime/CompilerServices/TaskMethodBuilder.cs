@@ -1,5 +1,6 @@
 ﻿namespace System.Runtime.CompilerServices
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
     public struct TaskMethodBuilder<T>
@@ -15,6 +16,7 @@
             builder.Start(ref stateMachine);
         }
 
+        [ExcludeFromCodeCoverage(Justification = "TODO")]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
             builder.SetStateMachine(stateMachine);
