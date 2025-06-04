@@ -18,7 +18,7 @@
 
         private const string setStateMachineMessage =
 $$"""
-'{nameof(SetStateMachine)}' is not supported. '{nameof(TaskMethodBuilder<T>)}' is only intended to target the .NET runtime, which doesn't make use of the '{nameof(SetStateMachine)}' call; only .NET framework runtime will make use of the '{nameof(SetStateMachine)}' call. You can find more details [here](https://devblogs.microsoft.com/dotnet/how-async-await-really-works/):
+'{nameof(SetStateMachine)}' is not supported. '{nameof(TaskMethodBuilder<T>)}' is only intended to target the .NET runtime, which doesn't make use of the '{nameof(SetStateMachine)}' call; only the .NET framework runtime will make use of the '{nameof(SetStateMachine)}' call. You can find more details [here](https://devblogs.microsoft.com/dotnet/how-async-await-really-works/):
 
 > Note that line which the source comments as "important". This takes the place of that complicated SetStateMachine dance in .NET Framework, **such that `SetStateMachine` isn't actually used at all in .NET Core.**
 
