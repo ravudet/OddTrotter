@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace UnitTestProject1
 {
-    [TestClass]
     public class UnitTest1
     {
         private sealed class AwaiterType<T>
@@ -26,7 +25,6 @@ namespace UnitTestProject1
             }
         }
 
-        [TestMethod]
         public async Task AwaitInterfaceWithDelay()
         {
             var value = "asdf";

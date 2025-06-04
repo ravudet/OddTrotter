@@ -974,6 +974,90 @@ namespace System.Threading.Tasks
                     this.SetStateMachine(stateMachine);
                 }
             }
+
+            [StructLayout(LayoutKind.Auto)]
+            [CompilerGenerated]
+            private struct _003CGetValueWithDelay_003Ed__2 : IAsyncStateMachine
+            {
+                public int _003C_003E1__state;
+
+                public TaskMethodBuilder<T> _003C_003Et__builder;
+
+                public AwaiterType<T> _003C_003E4__this;
+
+                private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _003C_003Eu__1;
+
+                private void MoveNext()
+                {
+                    int num = _003C_003E1__state;
+                    AwaiterType<T> awaiterType = _003C_003E4__this;
+                    T value;
+                    try
+                    {
+                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter;
+                        if (num != 0)
+                        {
+                            awaiter = Task.Delay(100).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter();
+                            if (!awaiter.IsCompleted)
+                            {
+                                num = (_003C_003E1__state = 0);
+                                _003C_003Eu__1 = awaiter;
+                                _003C_003Et__builder.AwaitUnsafeOnCompleted<ConfiguredTaskAwaitable.ConfiguredTaskAwaiter, _003CGetValueWithDelay_003Ed__2>(ref awaiter, ref this);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            awaiter = _003C_003Eu__1;
+                            _003C_003Eu__1 = default(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter);
+                            num = (_003C_003E1__state = -1);
+                        }
+
+                        awaiter.GetResult();
+                        value = awaiterType.value;
+                    }
+                    catch (Exception exception)
+                    {
+                        _003C_003E1__state = -2;
+                        _003C_003Et__builder.SetException(exception);
+                        return;
+                    }
+
+                    _003C_003E1__state = -2;
+                    _003C_003Et__builder.SetResult(value);
+                }
+
+                void IAsyncStateMachine.MoveNext()
+                {
+                    //ILSpy generated this explicit interface implementation from .override directive in MoveNext
+                    this.MoveNext();
+                }
+
+                [DebuggerHidden]
+                private void SetStateMachine(IAsyncStateMachine stateMachine)
+                {
+                    _003C_003Et__builder.SetStateMachine(stateMachine);
+                }
+
+                void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
+                {
+                    //ILSpy generated this explicit interface implementation from .override directive in SetStateMachine
+                    this.SetStateMachine(stateMachine);
+                }
+            }
+
+            [AsyncStateMachine(typeof(AwaiterType<>._003CGetValueWithDelay_003Ed__2))]
+            public ITask<T> Decompiled2()
+            {
+                //IL_0002: Unknown result type (might be due to invalid IL or missing references)
+                //IL_0007: Unknown result type (might be due to invalid IL or missing references)
+                _003CGetValueWithDelay_003Ed__2 _003CGetValueWithDelay_003Ed__ = default(_003CGetValueWithDelay_003Ed__2);
+                _003CGetValueWithDelay_003Ed__._003C_003Et__builder = TaskMethodBuilder<T>.Create();
+                _003CGetValueWithDelay_003Ed__._003C_003E4__this = this;
+                _003CGetValueWithDelay_003Ed__._003C_003E1__state = -1;
+                _003CGetValueWithDelay_003Ed__._003C_003Et__builder.Start<_003CGetValueWithDelay_003Ed__2>(ref _003CGetValueWithDelay_003Ed__);
+                return _003CGetValueWithDelay_003Ed__._003C_003Et__builder.Task;
+            }
         }
 
         [TestMethod]
@@ -1015,9 +1099,9 @@ namespace System.Threading.Tasks
         public async Task AwaitInterfaceWithStructStateMachine()
         {
             var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValueDecompiled().ConfigureAwait(false);
+            var result = await new AwaiterType<string>(value).Decompiled2().ConfigureAwait(false);
 
-            Assert.AreEqual(8, result);
+            Assert.AreEqual(value, result);
         }
 
         //// TODO https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
