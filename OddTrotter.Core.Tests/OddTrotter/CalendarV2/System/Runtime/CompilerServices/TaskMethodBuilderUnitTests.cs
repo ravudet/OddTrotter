@@ -179,4 +179,5 @@
             Assert.AreEqual(value, result);
 
         }
+    }
 }
