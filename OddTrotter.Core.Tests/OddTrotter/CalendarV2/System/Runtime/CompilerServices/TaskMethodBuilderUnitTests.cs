@@ -11,16 +11,16 @@
         public async Task AwaitInterface()
         {
             var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValue().ConfigureAwait(false);
+            var result = await new AwaitedType<string>(value).GetValue().ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
         }
 
-        private sealed class AwaiterType<T>
+        private sealed class AwaitedType<T>
         {
             private readonly T value;
 
-            public AwaiterType(T value)
+            public AwaitedType(T value)
             {
                 this.value = value;
             }
@@ -57,7 +57,7 @@
         public async Task AwaitInterfaceWithDelay()
         {
             var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValueWithDelay().ConfigureAwait(false);
+            var result = await new AwaitedType<string>(value).GetValueWithDelay().ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
         }
@@ -66,7 +66,7 @@
         public async Task AwaitInterfaceWithNested()
         {
             var value = "asdf";
-            var result = await new AwaiterType<string>(value).GetValueFromNested().ConfigureAwait(false);
+            var result = await new AwaitedType<string>(value).GetValueFromNested().ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
         }
@@ -80,12 +80,21 @@
             var thrownException =
                 await Assert
                     .ThrowsExceptionAsync<InvalidOperationException>(
-                        async () => await new AwaiterType<string>("asdf")
+                        async () => await new AwaitedType<string>("asdf")
                             .GetValueWithException(exception)
                             .ConfigureAwait(false))
                     .ConfigureAwait(false);
 
             Assert.AreEqual(exception, thrownException);
+        }
+
+        [TestMethod]
+        public async Task SafeOnCompleted()
+        {
+            var value = "asdf";
+            var result = await new AwaitedType<string>(value).GetValue().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
         }
     }
 }
