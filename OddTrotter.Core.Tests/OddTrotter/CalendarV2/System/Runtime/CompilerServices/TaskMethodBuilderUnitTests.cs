@@ -1,5 +1,6 @@
 ﻿namespace System.Runtime.CompilerServices
 {
+    using System.Diagnostics;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,6 +35,87 @@
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 return this.value;
+            }
+
+            [AsyncStateMachine(typeof(AwaitedType<>.GetValueWithDelaySafeOnCompletedStateMachine))]
+            [DebuggerStepThrough]
+            public ITask<T> GetValueWithDelaySafeOnCompleted()
+            {
+                GetValueWithDelaySafeOnCompletedStateMachine stateMachine = new GetValueWithDelaySafeOnCompletedStateMachine();
+                stateMachine.builder = TaskMethodBuilder<T>.Create();
+                stateMachine.self = this;
+                stateMachine.state = -1;
+                stateMachine.builder.Start(ref stateMachine);
+                return stateMachine.builder.Task;
+            }
+
+            [CompilerGenerated]
+            private sealed class GetValueWithDelaySafeOnCompletedStateMachine : IAsyncStateMachine
+            {
+                public int state;
+
+                public TaskMethodBuilder<T> builder;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+                public AwaitedType<T> self;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+                private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter u1;
+
+                private void MoveNext()
+                {
+                    int num = state;
+                    T value;
+                    try
+                    {
+                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter;
+                        if (num != 0)
+                        {
+                            awaiter = Task.Delay(100).ConfigureAwait(false).GetAwaiter();
+                            if (!awaiter.IsCompleted)
+                            {
+                                num = (state = 0);
+                                u1 = awaiter;
+                                GetValueWithDelaySafeOnCompletedStateMachine stateMachine = this;
+                                builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            awaiter = u1;
+                            u1 = default(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter);
+                            num = (state = -1);
+                        }
+                        awaiter.GetResult();
+                        value = self.value;
+                    }
+                    catch (Exception exception)
+                    {
+                        state = -2;
+                        builder.SetException(exception);
+                        return;
+                    }
+                    state = -2;
+                    builder.SetResult(value);
+                }
+
+                void IAsyncStateMachine.MoveNext()
+                {
+                    //ILSpy generated this explicit interface implementation from .override directive in MoveNext
+                    this.MoveNext();
+                }
+
+                [DebuggerHidden]
+                private void SetStateMachine(IAsyncStateMachine stateMachine)
+                {
+                }
+
+                void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
+                {
+                    //ILSpy generated this explicit interface implementation from .override directive in SetStateMachine
+                    this.SetStateMachine(stateMachine);
+                }
             }
 
             public async ITask<T> GetValueFromNested()
@@ -88,13 +170,122 @@
             Assert.AreEqual(exception, thrownException);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public async Task SafeOnCompleted()
         {
             var value = "asdf";
-            var result = await new AwaitedType<string>(value).GetValue().ConfigureAwait(false);
+            var result = await new AwaitedType<string>(value).GetValueWithDelay().ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
+        }*/
+
+        [TestMethod]
+        public async Task GetValueWithDelaySafeOnCompleted()
+        {
+            var value = "asdf";
+            var result = await new AwaitedType<string>(value).GetValueWithDelaySafeOnCompleted().ConfigureAwait(false);
+
+            Assert.AreEqual(value, result);
+
+        }
+
+        [TestMethod]
+        public Task SafeOnCompleted()
+        {
+            SafeOnCompletedStateMachine stateMachine = new SafeOnCompletedStateMachine();
+            stateMachine.builder = AsyncTaskMethodBuilder.Create();
+            stateMachine.self = this;
+            stateMachine.state = -1;
+            stateMachine.builder.Start(ref stateMachine);
+            return stateMachine.builder.Task;
+        }
+
+        private sealed class SafeOnCompletedStateMachine : IAsyncStateMachine
+        {
+            public int state;
+
+            public AsyncTaskMethodBuilder builder;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            public TaskMethodBuilderUnitTests self;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            private string value;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            private string result;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            private string s3;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            private object u1;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+            private void MoveNext()
+            {
+                int num = state;
+                try
+                {
+                    ITaskAwaiter<string> awaiter;
+                    if (num != 0)
+                    {
+                        value = "asdf";
+                        awaiter = new AwaitedType<string>(value).GetValueWithDelay().ConfigureAwait(false).GetAwaiter();
+                        if (!awaiter.IsCompleted)
+                        {
+                            num = (state = 0);
+                            u1 = awaiter;
+                            SafeOnCompletedStateMachine stateMachine = this;
+                            builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        awaiter = (ITaskAwaiter<string>)u1;
+                        u1 = null!;
+                        num = (state = -1);
+                    }
+                    s3 = awaiter.GetResult();
+                    result = s3;
+                    s3 = null!;
+                    Assert.AreEqual(value, result);
+                }
+                catch (Exception exception)
+                {
+                    state = -2;
+                    value = null!;
+                    result = null!;
+                    builder.SetException(exception);
+                    return;
+                }
+                state = -2;
+                value = null!;
+                result = null!;
+                builder.SetResult();
+            }
+
+            void IAsyncStateMachine.MoveNext()
+            {
+                //ILSpy generated this explicit interface implementation from .override directive in MoveNext
+                this.MoveNext();
+            }
+
+            [DebuggerHidden]
+            private void SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+            }
+
+            void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+                //ILSpy generated this explicit interface implementation from .override directive in SetStateMachine
+                this.SetStateMachine(stateMachine);
+            }
         }
     }
 }
