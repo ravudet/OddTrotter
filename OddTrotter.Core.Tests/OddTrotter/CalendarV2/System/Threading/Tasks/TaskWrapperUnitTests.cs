@@ -4,7 +4,7 @@ namespace System.Threading.Tasks
     using System.Collections.Concurrent;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
