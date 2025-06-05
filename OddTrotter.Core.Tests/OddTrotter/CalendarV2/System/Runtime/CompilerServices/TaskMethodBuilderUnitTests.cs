@@ -37,6 +37,27 @@
                 return this.value;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            /// <remarks>
+            /// This method and it's associated <see cref="GetValueWithDelaySafeOnCompletedStateMachine"/> are slightly modified
+            /// code from the compiler generated state machine for the following code:
+            /// ```
+            /// await Task.Delay(100).ConfigureAwait(false);
+            /// return this.value;
+            /// ```
+            /// 
+            /// The compiler generated code has been modified in the following way:
+            /// 1. identifiers have been renamed to be legal
+            /// 2. nullability issues have been suppressed, removed, or forgiven
+            /// 3. the line `builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);` has been changed to
+            /// `builder.AwaitOnCompleted(ref awaiter, ref stateMachine);`
+            /// 
+            /// The intent is to have a test which covers the case where the "safe" `OnCompleted` variant is called while still
+            /// providing callers the more efficient "unsafe" variant.
+            /// </remarks>
             [AsyncStateMachine(typeof(AwaitedType<>.GetValueWithDelaySafeOnCompletedStateMachine))]
             [DebuggerStepThrough]
             public ITask<T> GetValueWithDelaySafeOnCompleted()
