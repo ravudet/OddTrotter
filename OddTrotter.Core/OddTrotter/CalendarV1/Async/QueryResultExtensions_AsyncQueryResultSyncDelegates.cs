@@ -165,7 +165,22 @@ namespace Fx.QueryContext
         {
             return (await source
                 .SelectLeft(
-                    element => Either2
+                    async element => await element
+                        .Value
+                        .ToMaybe(@try)
+                        .Select(
+                            async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
+                            async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                        .ToTaskWrapper()
+                        .SelectManyRight()
+                        .ConfigureAwait(false)))
+                .SelectManyLeft()
+                .ToQueryResultNodeAsync();
+
+
+
+
+                    /*element => Either2
                         .TryCreate( //// TODO this needs an overload that takes async delegates
                             element.Value,
                             @try,
@@ -176,7 +191,7 @@ namespace Fx.QueryContext
                 .ToTaskWrapper()
                 .SelectManyLeft()
                 .ConfigureAwait(false))
-                .ToQueryResultNodeAsync();
+                .ToQueryResultNodeAsync();*/
         }
 
         private sealed class TrySelectElement2<TValue, TError, TResult> : IElementAsync<TResult, TError>
@@ -568,6 +583,12 @@ namespace Fx.QueryContext
 
             return (await source
                 .SelectLeft(
+                    element => element
+                        .ToEither(_ => predicate(_.Value))
+                        .Select(
+                            async _ => new WhereElementAsync<TValue, TError>(_.Value, await _.Next().ConfigureAwait(false), predicate),
+                            async element => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
+
                     element => Either2
                         .Create(
                             element,

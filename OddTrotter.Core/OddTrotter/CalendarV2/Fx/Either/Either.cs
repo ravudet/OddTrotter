@@ -141,6 +141,92 @@ namespace Fx.Either
             }
         }
 
+        public interface IMaybe<out TValue> : IEither<TValue, Nothing>
+        {
+        }
+
+        public static Attempt<TInput, TOutput> ToAttempt<TInput, TOutput>(this Try<TInput, TOutput> @try)
+        {
+            return input => @try(input, out var output) ? Maybe.Value(output) : Maybe.Nothing<TOutput>();
+        }
+
+        public delegate IMaybe<TOutput> Attempt<in TInput, out TOutput>(TInput input);
+
+        private static class Maybe
+        {
+            public static Maybe<T> Value<T>(T value)
+            {
+                return new Maybe<T>(Either.Left(value).Right<Nothing>());
+            }
+
+            public static Maybe<T> Nothing<T>()
+            {
+                //// TODO this could be a singleton //// TODO you could have static analysis automation that recognizes singletons and propagates them
+                return new Maybe<T>(Either.Left<T>().Right(new Nothing()));
+            }
+        }
+
+        private sealed class Maybe<T> : IMaybe<T>
+        {
+            private readonly IEither<T, Nothing> either;
+
+            public Maybe(IEither<T, Nothing> either)
+            {
+                this.either = either;
+            }
+
+            public TResult Apply<TResult, TContext>(Func<T, TContext, TResult> leftMap, Func<Nothing, TContext, TResult> rightMap, TContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public System.Threading.Tasks.Task<TResult> Apply<TResult, TContext>(Func<T, TContext, System.Threading.Tasks.Task<TResult>> leftMap, Func<Nothing, TContext, System.Threading.Tasks.Task<TResult>> rightMap, TContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public static IMaybe<TOutput> ToMaybe<TInput, TOutput>(this TInput input, Attempt<TInput, TOutput> attempt)
+        {
+            return attempt(input);
+        }
+
+        public static IMaybe<TOutput> ToMaybe<TInput, TOutput>(this TInput input, Try<TInput, TOutput> @try)
+        {
+            if (@try(input, out var output))
+            {
+                return new Maybe<TOutput>(Either.Left(output).Right<Nothing>());
+            }
+            else
+            {
+                return new Maybe<TOutput>(Either.Left<TOutput>().Right(new Nothing()));
+            }
+        }
+
+        public static IEither<TLeft, Nothing> ToEither<TLeft>(this TLeft value, Func<TLeft, bool> discriminator)
+        {
+            if (discriminator(value))
+            {
+                return Either.Left(value).Right<Nothing>();
+            }
+            else
+            {
+                return Either.Left<TLeft>().Right(new Nothing());
+            }
+        }
+
+        public static IEither<TLeft, TResult> ToEither<TLeft, TResult>(this TLeft value, Try<TLeft, TResult> @try)
+        {
+            if (@try(value, out var result))
+            {
+                return Either.Left<TLeft>().Right(result);
+            }
+            else
+            {
+                return Either.Left(value).Right<TResult>();
+            }
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>
