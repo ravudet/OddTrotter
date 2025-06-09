@@ -2,7 +2,7 @@
 namespace Fx.Either
 {
     using System;
-    using System.Threading.Tasks;
+
     using Fx.Try;
 
     public static class Either
@@ -106,8 +106,19 @@ namespace Fx.Either
             }
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="try"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="try"/> is <see langword="null"/></exception>
         public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Try<TValue, TResult> @try)
         {
+            ArgumentNullException.ThrowIfNull(@try);
+
             if (@try(value, out var output))
             {
                 return Either.Left(output).Right<Nothing>();
@@ -118,8 +129,18 @@ namespace Fx.Either
             }
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="predicate">assumed to not throw exceptions</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="predicate"/> is <see langword="null"/></exception>
         public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
         {
+            ArgumentNullException.ThrowIfNull(predicate);
+
             if (predicate(value))
             {
                 return Either.Left(value).Right<Nothing>();
@@ -127,77 +148,6 @@ namespace Fx.Either
             else
             {
                 return Either.Left<TValue>().Right(new Nothing());
-            }
-        }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <typeparam name="TLeft"></typeparam>
-        /// <typeparam name="TRight"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="discriminator">assumed to not throw exceptions</param>
-        /// <param name="leftFactory">assumed to not throw exceptions</param>
-        /// <param name="rightFactory">assumed to not throw exceptions</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="discriminator"/> or <paramref name="leftFactory"/> or <paramref name="rightFactory"/> is
-        /// <see langword="null"/>
-        /// </exception>
-        public static IEither<TLeft, TRight> Create<TValue, TLeft, TRight>(
-            TValue value, 
-            Func<TValue, bool> discriminator, 
-            Func<TValue, TLeft> leftFactory, 
-            Func<TValue, TRight> rightFactory)
-        {
-            ArgumentNullException.ThrowIfNull(discriminator);
-            ArgumentNullException.ThrowIfNull(leftFactory);
-            ArgumentNullException.ThrowIfNull(rightFactory);
-
-            if (discriminator(value))
-            {
-                return Either.Left(leftFactory(value)).Right<TRight>();
-            }
-            else
-            {
-                return Either.Left<TLeft>().Right(rightFactory(value));
-            }
-        }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="TLeft"></typeparam>
-        /// <typeparam name="TRight"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="discriminator"></param>
-        /// <param name="leftFactory"></param>
-        /// <param name="rightFactory"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="discriminator"/> or <paramref name="leftFactory"/> or <paramref name="rightFactory"/> is
-        /// <see langword="null"/>
-        /// </exception>
-        public static IEither<TLeft, TRight> TryCreate<TValue, TResult, TLeft, TRight>(
-            TValue value,
-            Try<TValue, TResult> discriminator,
-            Func<TValue, TResult, TLeft> leftFactory,
-            Func<TValue, TRight> rightFactory)
-        {
-            ArgumentNullException.ThrowIfNull(discriminator);
-            ArgumentNullException.ThrowIfNull(leftFactory);
-            ArgumentNullException.ThrowIfNull(rightFactory);
-
-            if (discriminator(value, out var result))
-            {
-                return Either.Left(leftFactory(value, result)).Right<TRight>();
-            }
-            else
-            {
-                return Either.Left<TLeft>().Right(rightFactory(value));
             }
         }
     }
