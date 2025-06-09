@@ -46,10 +46,9 @@ namespace Fx.QueryContext
         public string Value { get; }
 
         /// <inheritdoc/>
-        public ITask<IQueryResultNodeAsync<string, Exception>> Next()
+        public async ITask<IQueryResultNodeAsync<string, Exception>> Next()
         {
-            //// TODO you should use `await` here
-            return new TaskWrapper<IQueryResultNodeAsync<string, Exception>>(Task.FromResult(this.next));
+            return await Task.FromResult(this.next).ConfigureAwait(false);
         }
     }
 }

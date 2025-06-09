@@ -537,7 +537,7 @@ namespace System.Threading.Tasks
         /// </remarks>
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithDelay()
-        {            
+        {
             SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine stateMachine =
                 new SafeOnCompletedConfigureAwaitFalseWithDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
@@ -704,7 +704,7 @@ namespace System.Threading.Tasks
         [TestMethod]
         public Task SafeOnCompletedConfigureAwaitFalseWithNoDelay()
         {
-            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine = 
+            SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine stateMachine =
                 new SafeOnCompletedConfigureAwaitFalseWithNoDelayStateMachine();
             stateMachine.builder = AsyncTaskMethodBuilder.Create();
             stateMachine.self = this;
