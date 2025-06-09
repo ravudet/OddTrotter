@@ -10,7 +10,53 @@ namespace System.Runtime.CompilerServices
         /// 
         /// </summary>
         /// <remarks>
-        /// must be mutable because TODO
+        /// Must not be `readonly` because the underlying type mutates its state. I can't find any reference material that explains this, but the behavior can be reproduced using the following code:
+        /// ```
+        /// [TestMethod]
+        /// public void SetVal()
+        /// {
+        ///     var customBuilder = new CustomBuilder();
+        ///     customBuilder.AwaitOnCompleted();
+        /// 
+        ///     Assert.AreEqual(42, customBuilder.Task);
+        /// }
+        /// 
+        /// public struct CustomBuilder
+        /// {
+        ///     private readonly BuildInBuilder builtInBuilder;
+        /// 
+        ///     public void AwaitOnCompleted()
+        ///     {
+        ///         this.builtInBuilder.AwaitOnCompleted();
+        ///     }
+        /// 
+        ///     public int Task
+        ///     {
+        ///         get
+        ///         {
+        ///             return this.builtInBuilder.Task;
+        ///         }
+        ///     }
+        /// }
+        /// 
+        /// public struct BuildInBuilder
+        /// {
+        ///     private int task;
+        /// 
+        ///     public void AwaitOnCompleted()
+        ///     {
+        ///         this.task = 42;
+        ///     }
+        /// 
+        ///     public int Task
+        ///     {
+        ///         get
+        ///         {
+        ///             return this.task;
+        ///         }
+        ///     }
+        /// }
+        /// ```
         /// </remarks>
         private AsyncTaskMethodBuilder<T> builder;
 
