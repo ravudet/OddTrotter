@@ -118,8 +118,6 @@ namespace Fx.Either
             }
         }
 
-        //// TODO add variants of both `toeither`s that allow mapping to an intermediate value to avoid closures
-
         public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
         {
             if (predicate(value))
