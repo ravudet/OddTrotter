@@ -60,5 +60,11 @@ namespace Fx.Either
         {
             Assert.ThrowsException<InvalidOperationException>(() => default(Either.Full<string>).Right<int>());
         }
+
+        [TestMethod]
+        public void ToEitherPredicateNullPredicate()
+        {
+
+        }
     }
 }
