@@ -106,6 +106,30 @@ namespace Fx.Either
             }
         }
 
+        public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Try<TValue, TResult> @try)
+        {
+            if (@try(value, out var output))
+            {
+                return Either.Left(output).Right<Nothing>();
+            }
+            else
+            {
+                return Either.Left<TResult>().Right(new Nothing());
+            }
+        }
+
+        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
+        {
+            if (predicate(value))
+            {
+                return Either.Left(value).Right<Nothing>();
+            }
+            else
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>
