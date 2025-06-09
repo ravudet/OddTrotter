@@ -228,7 +228,6 @@ namespace System.Runtime.CompilerServices
             var result = await new AwaitedType<string>(value).GetValueWithDelaySafeOnCompleted().ConfigureAwait(false);
 
             Assert.AreEqual(value, result);
-
         }
     }
 }
