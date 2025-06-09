@@ -7,10 +7,11 @@ namespace System.Runtime.CompilerServices
     public struct TaskMethodBuilder<T>
     {
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <remarks>
-        /// Must not be `readonly` because the underlying type mutates its state. I can't find any reference material that explains this, but the behavior can be reproduced using the following code:
+        /// Must not be `readonly` because the underlying type mutates its state. I can't find any reference material that
+        /// explains this, but the behavior can be reproduced using the following code:
         /// ```
         /// [TestMethod]
         /// public void SetVal()
@@ -60,13 +61,17 @@ namespace System.Runtime.CompilerServices
         /// </remarks>
         private AsyncTaskMethodBuilder<T> builder;
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Create"/>
         public static TaskMethodBuilder<T> Create()
             => new TaskMethodBuilder<T>();
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Start{TStateMachine}(ref TStateMachine)"/>
         public void Start<TStateMachine>(ref TStateMachine stateMachine)
             where TStateMachine : IAsyncStateMachine
         {
-            builder.Start(ref stateMachine);
+            ArgumentNullException.ThrowIfNull(stateMachine);
+
+            this.builder.Start(ref stateMachine);
         }
 
         private const string setStateMachineMessage =
@@ -120,41 +125,58 @@ public sealed class Test
 ```
 """;
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="stateMachine"></param>
+        /// <exception cref="NotSupportedException">
+        /// Always thrown because this method is not supported by the currently supported .NET runtimes
+        /// </exception>
+        /// <remarks>
+        /// This method always throws <see cref="NotSupportedException"/>
+        /// </remarks>
         [ExcludeFromCodeCoverage(Justification = setStateMachineMessage)]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
             throw new NotSupportedException(setStateMachineMessage);
         }
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.SetException(Exception)"/>
         public void SetException(Exception exception)
         {
-            builder.SetException(exception);
+            ArgumentNullException.ThrowIfNull(exception);
+
+            this.builder.SetException(exception);
         }
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.SetResult(TResult)"/>
         public void SetResult(T result)
         {
-            builder.SetResult(result);
+            this.builder.SetResult(result);
         }
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.AwaitOnCompleted{TAwaiter, TStateMachine}(ref TAwaiter, ref TStateMachine)"/>
         public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
             where TAwaiter : INotifyCompletion
             where TStateMachine : IAsyncStateMachine
         {
-            builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+            this.builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
         }
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.AwaitUnsafeOnCompleted{TAwaiter, TStateMachine}(ref TAwaiter, ref TStateMachine)"/>
         public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
             where TAwaiter : ICriticalNotifyCompletion
             where TStateMachine : IAsyncStateMachine
         {
-            builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
+            this.builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
         }
 
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Task"/>
         public ITask<T> Task
         {
             get
             {
-                return new TaskWrapper<T>(builder.Task);
+                return new TaskWrapper<T>(this.builder.Task);
             }
         }
     }
