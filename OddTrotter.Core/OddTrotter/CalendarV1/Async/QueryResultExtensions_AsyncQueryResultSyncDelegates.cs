@@ -170,8 +170,8 @@ namespace Fx.QueryContext
                         @try
                             .ToEither()(element.Value)
                             .Select(
-                                async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.NextAsync().ConfigureAwait(false), @try),
-                                async nothing => await (await element.NextAsync().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                                async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
+                                async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
                             .ToTaskWrapper()
                             .SelectManyRight())
 
@@ -604,15 +604,15 @@ namespace Fx.QueryContext
                         predicate
                             .ToEither()(element.Value)
                             .Select(
-                                async value => new WhereElementAsync<TValue, TError>(value, await element.NextAsync().ConfigureAwait(false), predicate),
-                                async nothing => await (await element.NextAsync().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
+                                async value => new WhereElementAsync<TValue, TError>(value, await element.Next().ConfigureAwait(false), predicate),
+                                async nothing => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
 
                     /*Either
                         .Create(
                             element,
                             element => predicate(element.Value),
                             async element => new WhereElementAsync<TValue, TError>(element.Value, await element.Next().ConfigureAwait(false), predicate),
-                            async element => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
+                            async element => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))*/
                         .ToTaskWrapper()
                         .SelectManyRight())
                 .ToTaskWrapper()
