@@ -1,4 +1,5 @@
-﻿namespace System.Runtime.CompilerServices
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace System.Runtime.CompilerServices
 {
     using System.Diagnostics;
     using System.Threading.Tasks;
@@ -21,16 +22,28 @@
         {
             private readonly T value;
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
             public AwaitedType(T value)
             {
                 this.value = value;
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <returns></returns>
             public async ITask<T> GetValue()
             {
                 return await Task.FromResult(this.value).ConfigureAwait(false);
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <returns></returns>
             public async ITask<T> GetValueWithDelay()
             {
                 await Task.Delay(100).ConfigureAwait(false);
@@ -38,7 +51,7 @@
             }
 
             /// <summary>
-            /// 
+            /// placeholder
             /// </summary>
             /// <returns></returns>
             /// <remarks>
@@ -139,18 +152,33 @@
                 }
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <returns></returns>
             public async ITask<T> GetValueFromNested()
             {
                 return await this.GetValue().ConfigureAwait(false);
             }
 
-            public async ITask<T> GetValueWithException(Exception exception)
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="exception"></param>
+            /// <returns></returns>
+            /// <exception cref="TException">Throws <paramref name="exception"/></exception>
+            public async ITask<T> GetValueWithException<TException>(TException exception) where TException : Exception
             {
                 Throw(exception);
                 return await this.GetValue().ConfigureAwait(false);
             }
 
-            private static void Throw(Exception exception)
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="exception"></param>
+            /// <exception cref="TException">Throws <paramref name="exception"/></exception>
+            private static void Throw<TException>(TException exception) where TException : Exception
             {
                 throw exception;
             }
