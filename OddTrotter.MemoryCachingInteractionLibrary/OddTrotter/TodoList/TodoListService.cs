@@ -382,7 +382,6 @@
             //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense?
             //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
-            //// TODO TOPIC which variation of either.trycreate is better? QueryResultExtensions_AsyncQueryResultSyncDelegates.cs `where` and `tryselect`
             ////
             //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
             //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
