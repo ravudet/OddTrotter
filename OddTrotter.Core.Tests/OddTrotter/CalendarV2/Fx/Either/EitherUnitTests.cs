@@ -62,161 +62,100 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void CreateNullDisciminator()
+        public void ToEitherPredicateNullPredicate()
         {
-            var value = "Asfd";
+            var value = "asdf";
 
-            Assert.ThrowsException<ArgumentNullException>(() => Either.Create(value,
+            Assert.ThrowsException<ArgumentNullException>(() => value.ToEither(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 null
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , int.Parse, val => string.Concat(val, val)));
-        }
-
-        [TestMethod]
-        public void CreateNullLeftFactory()
-        {
-            var value = "asdf";
-
-            Assert.ThrowsException<ArgumentNullException>(() => Either.Create(value, val => val.Length % 2 == 0,
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                (Func<string, int>)null
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , val => string.Concat(val, val)));
-        }
-
-        [TestMethod]
-        public void CreateNullRightFactory()
-        {
-            var value = "asdf";
-
-            Assert.ThrowsException<ArgumentNullException>(() => Either.Create(value, val => val.Length % 2 == 0, int.Parse,
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                (Func<string, string>)null
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
                 ));
         }
 
         [TestMethod]
-        public void CreateWithDiscriminatorLeft()
+        public void ToEitherPredicateBranchTaken()
         {
-            var value = "42";
+            var value = "asdf";
 
-            var either = Either.Create(value, val => val.Length % 2 == 0, int.Parse, val => string.Concat(val, val));
+            var either = value.ToEither(_ => _.Length % 2 == 0);
 
             Assert.IsTrue(either.TryGetLeft(out var left));
-            Assert.AreEqual(42, left);
+            Assert.AreEqual(value, left);
             Assert.IsFalse(either.TryGetRight(out var right));
         }
 
         [TestMethod]
-        public void CreateWithDiscriminatorRight()
+        public void ToEitherPredicateBranchNotTaken()
         {
-            var value = "423";
+            var value = "asdfa";
 
-            var either = Either.Create(value, val => val.Length % 2 == 0, int.Parse, val => string.Concat(val, val));
+            var either = value.ToEither(_ => _.Length % 2 == 0);
 
             Assert.IsFalse(either.TryGetLeft(out var left));
             Assert.IsTrue(either.TryGetRight(out var right));
-            Assert.AreEqual("423423", right);
+            Assert.AreNotEqual(value, right);
         }
 
         [TestMethod]
-        public void TryCreateNullDisciminator()
+        public void ToEitherTryNullPredicate()
         {
             var value = "asdf";
 
-            Assert.ThrowsException<ArgumentNullException>(
-                () => 
-                    Either
-                        .TryCreate(
-                            value,
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            Assert.ThrowsException<ArgumentNullException>(() => value.ToEither(
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                            (Try<string, int>)null
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                            ,
-                            (value, parsed) => value, 
-                            (value) => value));
-        }
-
-        [TestMethod]
-        public void TryCreateNullLeftFactory()
-        {
-            var value = "asdf";
-
-            Assert.ThrowsException<ArgumentNullException>(
-                () =>
-                    Either
-                        .TryCreate(
-                            value,
-                            IntTryParse,
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                            (Func<string, int, int>)null
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                (Try<string, int>)null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                            ,
-                            value => value));
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ));
         }
 
-        private static Try<string, int> IntTryParse { get; } = int.TryParse;
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/></exception>
+        private static bool TryGetLength(string value, out int length)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            if (value.Length % 2 == 0)
+            {
+                length = value.Length;
+                return true;
+            }
+            else
+            {
+                length = default;
+                return false;
+            }
+        }
 
         [TestMethod]
-        public void TryCreateNullRightFactory()
+        public void ToEitherTryBranchTaken()
         {
             var value = "asdf";
 
-            Assert.ThrowsException<ArgumentNullException>(
-                () =>
-                    Either
-                        .TryCreate(
-                            value,
-                            IntTryParse,
-                            (value, parsed) => parsed,
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                            (Func<string, string>)null
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                            ));
+            var either = value.ToEither<string, int>(TryGetLength);
+
+            Assert.IsTrue(either.TryGetLeft(out var left));
+            Assert.AreEqual(value.Length, left);
+            Assert.IsFalse(either.TryGetRight(out var right));
         }
 
         [TestMethod]
-        public void TryCreateLeft()
+        public void ToEitherTryBranchNotTaken()
         {
-            var value = "42";
+            var value = "asdfa";
 
-            var either = Either.TryCreate(
-                value,
-                IntTryParse,
-                (value, parsed) => parsed,
-                (value) => value);
+            var either = value.ToEither<string, int>(TryGetLength);
 
-            Assert.IsTrue(either.TryGetLeft(out var parsed));
-            Assert.AreEqual(42, parsed);
-            Assert.IsFalse(either.TryGetRight(out var error));
-        }
-
-        [TestMethod]
-        public void TryCreateRight()
-        {
-            var value = "asdf";
-
-            var either = Either.TryCreate(
-                value,
-                IntTryParse,
-                (value, parsed) => parsed,
-                (value) => value);
-
-            Assert.IsFalse(either.TryGetLeft(out var parsed));
-            Assert.IsTrue(either.TryGetRight(out var error));
-            Assert.AreEqual(value, error);
+            Assert.IsFalse(either.TryGetLeft(out var left));
+            Assert.IsTrue(either.TryGetRight(out var right));
+            Assert.AreNotEqual(value.Length, right);
         }
     }
 }

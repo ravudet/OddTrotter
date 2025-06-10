@@ -47,12 +47,12 @@ namespace Fx.QueryContext
 
             return source
                 .SelectLeft(
-                    element => Either
-                        .Create(
-                            element,
-                            element => predicate(element.Value),
-                            element => new WhereElement<TValue, TError>(element.Value, element.Next(), predicate),
-                            element => element.Next().Where(predicate))
+                    element => element
+                        .Value
+                        .ToEither(predicate)
+                        .Select(
+                            elementValue => new WhereElement<TValue, TError>(elementValue, element.Next(), predicate),
+                            nothing => element.Next().Where(predicate))
                         .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
@@ -467,18 +467,17 @@ namespace Fx.QueryContext
             var originalHashset = hashSet;
             return source
                 .SelectLeft(
-                    element => Either
-                        .Create(
-                            element,
-                            element => 
-                                originalHashset != (hashSet = hashSet.Add(keySelector(element.Value))),
+                    element => element
+                        .ToEither(
+                            _element => originalHashset != (hashSet = hashSet.Add(keySelector(_element.Value))))
+                        .Select(
                             element => 
                                 new DistinctByElement<TValue, TError, TKey>(
                                     element.Value, 
                                     element.Next(), 
                                     keySelector, 
                                     hashSet),
-                            element => 
+                            nothing => 
                                 element.Next().DistinctBy(keySelector, hashSet))
                         .SelectManyRight())
                 .SelectManyLeft()
@@ -548,12 +547,12 @@ namespace Fx.QueryContext
 
             return source
                 .SelectLeft(
-                    element => Either
-                        .TryCreate(
-                            element.Value,
-                            @try,
-                            (elementValue, tried) => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try),
-                            elementValue => element.Next().TrySelect(@try))
+                    element => element
+                        .Value
+                        .ToEither(@try)
+                        .Select(
+                            tried => new TrySelectElement<TValue, TError, TResult>(tried, element.Next(), @try),
+                            nothing => element.Next().TrySelect(@try))
                         .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNode();
