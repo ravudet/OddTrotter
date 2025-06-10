@@ -243,7 +243,7 @@ namespace Fx.Either
             either = CreateRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
-                    () =>
+                    async () => await
                         either
                             .Select(
                                 async (left, context) =>
@@ -257,7 +257,8 @@ namespace Fx.Either
                                         >
                                 )((right, context) =>
                                     throw invalidOperationException),
-                                tuple))
+                                tuple)
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
