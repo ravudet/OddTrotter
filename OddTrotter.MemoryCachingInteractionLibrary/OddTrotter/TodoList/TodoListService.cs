@@ -423,6 +423,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO put "factory" extensions in a static class with the same name as the thing being created; document the use of this pattern
             //// TODO move the async stuff to v2 "correctly"
             //// TODO don't forget about QueryResultExtensionsUnitTests_AsyncQueryResultSyncDelegates, this is async stuff that needs to be "moved"
             //// TODO i think you want `delegate maybe<output> try<input, output>(input)` where `maybe<output> : either<output, nothing>``; but you don't want to call it `try` because that pattern already exists and people will mostly use `maybe` by calling `trygetleft`; i like "attempt" but that's a noun; find a verb that means the same; and then you can easily adapt a try to an attempt inline if there's maybe.value and maybe.nothing like input => try(input, out var output) ? maybe.value(output) : maybe.nothing<output>(). i'm unclear if the "base" inplementation should be `try` or `attempt`; implement `tryselect` and `attemptselect` and then implement them again where the call each other and whichever has better type inference should be the pattern; you should have a method that converts an `ieither<t, nothing>` into a `maybe<t>`; you should come up with a naming convention for this class of method (where it adapts; `to` methods are for "conversions")
