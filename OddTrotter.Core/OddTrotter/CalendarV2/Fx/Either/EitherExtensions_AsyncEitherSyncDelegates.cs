@@ -129,20 +129,36 @@ namespace Fx.Either
             return (await either.ConfigureAwait(false)).SelectLeft(leftSelector);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <param name="either"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> is <see langword="null"/></exception>
         public static async ITask<IEither<TLeft, TRight>> SelectManyLeft<TLeft, TRight>(
             this ITask<IEither<IEither<TLeft, TRight>, TRight>> either)
         {
             ArgumentNullException.ThrowIfNull(either);
 
-            return (await either.ConfigureAwait(false)).SelectManyLeft(left => left);
+            return (await either.ConfigureAwait(false)).SelectManyLeft();
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <param name="either"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> is <see langword="null"/></exception>
         public static async ITask<IEither<TLeft, TRight>> SelectManyRight<TLeft, TRight>(
             this ITask<IEither<TLeft, IEither<TLeft, TRight>>> either)
         {
             ArgumentNullException.ThrowIfNull(either);
 
-            return (await either.ConfigureAwait(false)).SelectManyRight(right => right);
+            return (await either.ConfigureAwait(false)).SelectManyRight();
         }
     }
 }
