@@ -111,8 +111,17 @@ namespace Fx.Either
                 ));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/></exception>
         private static bool TryGetLength(string value, out int length)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value.Length % 2 == 0)
             {
                 length = value.Length;
