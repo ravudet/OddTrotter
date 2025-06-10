@@ -423,7 +423,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you are in writing unit tests for the new selectmanyleft and selectmanyright
+            //// TODO you are in writing unit tests for the new selectmanyleft and selectmanyright (you haven't written any yet)
             //// TODO put "factory" extensions in a static class with the same name as the thing being created; document the use of this pattern
             //// TODO move the async stuff to v2 "correctly"
             //// TODO don't forget about QueryResultExtensionsUnitTests_AsyncQueryResultSyncDelegates, this is async stuff that needs to be "moved"
