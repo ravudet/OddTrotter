@@ -160,7 +160,7 @@ namespace Fx.QueryContext
             return new TaskWrapper<T>(task);
         }
 
-        public static async Task<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
@@ -193,10 +193,9 @@ namespace Fx.QueryContext
 
             public TResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TResult, TError>> Next()
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
             {
-                //// TODO task
-                return new TaskWrapper<IQueryResultNodeAsync<TResult, TError>>(this.next.TrySelect(this.@try));
+                return await this.next.TrySelect(this.@try).ConfigureAwait(false);
             }
         }
 
@@ -559,7 +558,7 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async Task<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
+        public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
             this IQueryResultNodeAsync<TValue, TError> source,
             Func<TValue, bool> predicate)
         {
@@ -609,9 +608,9 @@ namespace Fx.QueryContext
             public TValue Value { get; }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TError>> Next()
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> Next()
             {
-                return this.next.Where(predicate).ToTaskWrapper();
+                return await this.next.Where(predicate).ConfigureAwait(false);
             }
         }
     }
