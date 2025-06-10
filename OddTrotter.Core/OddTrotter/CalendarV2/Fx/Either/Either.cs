@@ -110,6 +110,28 @@ namespace Fx.Either
         /// placeholder
         /// </summary>
         /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="predicate">assumed to not throw exceptions</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="predicate"/> is <see langword="null"/></exception>
+        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
+        {
+            ArgumentNullException.ThrowIfNull(predicate);
+
+            if (predicate(value))
+            {
+                return Either.Left(value).Right<Nothing>();
+            }
+            else
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="value"></param>
         /// <param name="try"></param>
@@ -126,28 +148,6 @@ namespace Fx.Either
             else
             {
                 return Either.Left<TResult>().Right(new Nothing());
-            }
-        }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="predicate">assumed to not throw exceptions</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="predicate"/> is <see langword="null"/></exception>
-        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(predicate);
-
-            if (predicate(value))
-            {
-                return Either.Left(value).Right<Nothing>();
-            }
-            else
-            {
-                return Either.Left<TValue>().Right(new Nothing());
             }
         }
     }

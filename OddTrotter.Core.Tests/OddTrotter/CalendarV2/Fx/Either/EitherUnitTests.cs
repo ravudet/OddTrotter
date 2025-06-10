@@ -64,7 +64,37 @@ namespace Fx.Either
         [TestMethod]
         public void ToEitherPredicateNullPredicate()
         {
+            var value = "asdf";
 
+            Assert.ThrowsException<ArgumentNullException>(() => value.ToEither(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                null
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ));
+        }
+
+        [TestMethod]
+        public void ToEitherPredicateBranchTaken()
+        {
+            var value = "asdf";
+
+            var either = value.ToEither(_ => _.Length % 2 == 0);
+
+            Assert.IsTrue(either.TryGetLeft(out var left));
+            Assert.AreEqual(value, left);
+            Assert.IsFalse(either.TryGetRight(out var right));
+        }
+
+        [TestMethod]
+        public void ToEitherPredicateBranchNotTaken()
+        {
+            var value = "asdf";
+
+            var either = value.ToEither(_ => _.Length % 2 == 1);
+
+            Assert.IsFalse(either.TryGetLeft(out var left));
+            Assert.IsTrue(either.TryGetRight(out var right));
+            Assert.AreNotEqual(value, right);
         }
     }
 }
