@@ -128,5 +128,21 @@ namespace Fx.Either
 
             return (await either.ConfigureAwait(false)).SelectLeft(leftSelector);
         }
+
+        public static async ITask<IEither<TLeft, TRight>> SelectManyLeft<TLeft, TRight>(
+            this ITask<IEither<IEither<TLeft, TRight>, TRight>> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            return (await either.ConfigureAwait(false)).SelectManyLeft(left => left);
+        }
+
+        public static async ITask<IEither<TLeft, TRight>> SelectManyRight<TLeft, TRight>(
+            this ITask<IEither<TLeft, IEither<TLeft, TRight>>> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            return (await either.ConfigureAwait(false)).SelectManyRight(right => right);
+        }
     }
 }
