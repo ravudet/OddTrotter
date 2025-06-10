@@ -112,7 +112,7 @@ namespace Fx.Either
         }
 
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <param name="value"></param>
         /// <param name="length"></param>
