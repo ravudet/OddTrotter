@@ -15,7 +15,7 @@ namespace Fx.Either
         /// placeholder
         /// </summary>
         /// <returns></returns>
-        private static async Task<IEither<string, IEnumerable<int>>> CreateAsyncLeft()
+        private static async ITask<IEither<string, IEnumerable<int>>> CreateAsyncLeft()
         {
             return await Task.FromResult(CreateLeft());
         }
@@ -24,7 +24,7 @@ namespace Fx.Either
         /// placeholder
         /// </summary>
         /// <returns></returns>
-        private static async Task<IEither<string, IEnumerable<int>>> CreateAsyncRight()
+        private static async ITask<IEither<string, IEnumerable<int>>> CreateAsyncRight()
         {
             return await Task.FromResult(CreateRight());
         }
@@ -32,7 +32,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectAsyncFutureEitherNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -243,7 +243,7 @@ namespace Fx.Either
             either = CreateAsyncRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
-                    () =>
+                    async () => await
                         either
                             .Select(
                                 async (left, context) =>
@@ -257,7 +257,8 @@ namespace Fx.Either
                                         >
                                 )((right, context) =>
                                     throw invalidOperationException),
-                                tuple))
+                                tuple)
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
@@ -266,7 +267,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectAsyncFutureEitherNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -488,7 +489,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectLeftAsyncFutureEitherNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
