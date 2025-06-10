@@ -166,13 +166,14 @@ namespace Fx.QueryContext
         {
             return (await source
                 .SelectLeft(
-                    element => element
+                    async element => await element
                         .Value
                         .ToEither(@try)
                         .Select(
                             async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
                             async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
-                        .SelectManyRight())
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
                 .SelectManyLeft()
                 .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
@@ -567,20 +568,14 @@ namespace Fx.QueryContext
 
             return (await source
                 .SelectLeft(
-                    element => element
+                    async element => await element
                         .Value
                         .ToEither(predicate)
                         .Select(
                             async value => new WhereElementAsync<TValue, TError>(value, await element.Next().ConfigureAwait(false), predicate),
                             async nothing => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))
-
-                    /*Either
-                        .Create(
-                            element,
-                            element => predicate(element.Value),
-                            async element => new WhereElementAsync<TValue, TError>(element.Value, await element.Next().ConfigureAwait(false), predicate),
-                            async element => await (await element.Next().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false))*/
-                        .SelectManyRight())
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
                 .SelectManyLeft()
                 .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
