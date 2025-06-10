@@ -380,7 +380,7 @@
             var originalLastRecordedEventTimeStamp = oddTrotterTodoList.LastRecordedEventTimeStamp;
 
             //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense?
-            //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern
+            //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern; you got rid of `trycreate`, maybe call `tryselect` `selectwhere`
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
             ////
             //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
