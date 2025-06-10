@@ -14,7 +14,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -196,7 +196,7 @@ namespace Fx.Either
             either = CreateAsyncRight();
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
-                    () =>
+                    async () => await
                         either
                             .Select(
                                 (left, context) => context.Item1 = new StringBuilder(left),
@@ -209,7 +209,8 @@ namespace Fx.Either
                                         >
                                 )((right, context) =>
                                     throw invalidOperationException),
-                                tuple))
+                                tuple)
+                            .ConfigureAwait(false))
                 .ConfigureAwait(false);
 
             Assert.AreEqual(invalidOperationException, rightMapException.InnerException);
@@ -218,7 +219,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectFutureEitherNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -406,7 +407,7 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectLeftFutureEitherNoContextNullEither()
         {
-            Task<IEither<string, int>> either =
+            ITask<IEither<string, int>> either =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
