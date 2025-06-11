@@ -563,5 +563,52 @@ namespace Fx.Either
             Assert.IsTrue(result.TryGetRight(out rightValue));
             Assert.AreEqual(invalidCastException, rightValue);
         }
+
+        [TestMethod]
+        public async Task SelectManyRightFutureEitherNoSelectorsNullEither()
+        {
+            ITask<Either<Exception, Either<Exception, string>>> either =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await 
+#pragma warning disable CS8604 // Possible null reference argument.
+                        either
+#pragma warning restore CS8604 // Possible null reference argument.
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public void SelectManyRightFutureEitherNoSelectors()
+        {
+            var either = Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"));
+
+            IEither<Exception, string> result = either.SelectManyRight();
+
+            Assert.IsTrue(result.TryGetRight(out var rightValue));
+            Assert.AreEqual("asdf", rightValue);
+
+            var invalidOperationException = new InvalidOperationException();
+            either = Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>());
+
+            result = either.SelectManyRight();
+
+            Assert.IsTrue(result.TryGetLeft(out var leftValue));
+            Assert.AreEqual(invalidOperationException, leftValue);
+
+            var invalidCastException = new InvalidCastException();
+            either = Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>();
+
+            result = either.SelectManyRight();
+
+            Assert.IsTrue(result.TryGetLeft(out leftValue));
+            Assert.AreEqual(invalidCastException, leftValue);
+        }
     }
 }
