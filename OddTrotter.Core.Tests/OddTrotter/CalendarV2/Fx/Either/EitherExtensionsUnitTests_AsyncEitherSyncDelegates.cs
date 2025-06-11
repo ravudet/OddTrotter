@@ -585,27 +585,27 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void SelectManyRightFutureEitherNoSelectors()
+        public async Task SelectManyRightFutureEitherNoSelectors()
         {
-            var either = Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"));
+            var either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"))));
 
-            IEither<Exception, string> result = either.SelectManyRight();
+            IEither<Exception, string> result = await either.SelectManyRight().ConfigureAwait(false);
 
             Assert.IsTrue(result.TryGetRight(out var rightValue));
             Assert.AreEqual("asdf", rightValue);
 
             var invalidOperationException = new InvalidOperationException();
-            either = Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>());
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>())));
 
-            result = either.SelectManyRight();
+            result = await either.SelectManyRight().ConfigureAwait(false);
 
             Assert.IsTrue(result.TryGetLeft(out var leftValue));
             Assert.AreEqual(invalidOperationException, leftValue);
 
             var invalidCastException = new InvalidCastException();
-            either = Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>();
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>()));
 
-            result = either.SelectManyRight();
+            result = await either.SelectManyRight().ConfigureAwait(false);
 
             Assert.IsTrue(result.TryGetLeft(out leftValue));
             Assert.AreEqual(invalidCastException, leftValue);
