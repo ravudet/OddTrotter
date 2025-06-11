@@ -1,8 +1,10 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.QueryContext
 {
-    using Fx.Either;
     using System;
+    using System.Threading.Tasks;
+
+    using Fx.Either;
 
     public static partial class QueryResultNodeExtensions
     {
@@ -20,6 +22,17 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(source);
 
             return new QueryResultNodeAsync<TValue, TError>(source);
+        }
+
+
+        //// TODO are these operations all "lifts"? as in, we have `ToQueryResultNodeAsync`, so we should also be able to do it on `itask<input>` and get back an `itask<result>`
+
+        public static async ITask<QueryResultNodeAsync<TValue, TError>> ToQueryResultNodeAsync<TValue, TError>(
+            this ITask<IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>>> source)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+
+            return new QueryResultNodeAsync<TValue, TError>(await source.ConfigureAwait(false));
         }
     }
 }

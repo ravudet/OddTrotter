@@ -3,13 +3,14 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using Fx.Either;
     using Fx.Try;
     using Stash.Monad;
     using static System.Runtime.InteropServices.JavaScript.JSType;
 
-    public static partial class QueryResultExtensions
+    public static partial class QueryResultAsyncExtensions
     {
         /// <summary>
         /// placeholder
@@ -40,15 +41,15 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
 
-            return new Select2<TValueSource, TError, TValueResult>(source, selector);
+            return new SelectQueryResultAsync<TValueSource, TError, TValueResult>(source, selector);
         }
 
-        private sealed class Select2<TValueSource, TError, TValueResult> : IQueryResultAsync<TValueResult, TError>
+        private sealed class SelectQueryResultAsync<TValueSource, TError, TValueResult> : IQueryResultAsync<TValueResult, TError>
         {
             private readonly IQueryResultAsync<TValueSource, TError> source;
             private readonly Func<TValueSource, TValueResult> selector;
 
-            public Select2(IQueryResultAsync<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
+            public SelectQueryResultAsync(IQueryResultAsync<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
             {
                 this.source = source;
                 this.selector = selector;
@@ -56,48 +57,51 @@ namespace Fx.QueryContext
 
             public async ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
             {
-                var nodes = await this.source.GetNodes().ConfigureAwait(false);
-
-                return await nodes.Select(this.selector).ConfigureAwait(false);
+                return
+                    await
+                        this
+                            .source
+                            .GetNodes()
+                            .Select(this.selector)
+                    .ConfigureAwait(false);
             }
         }
 
-        public static async Task<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
-            this IQueryResultNodeAsync<TValueSource, TError> source,
+        public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
+            this ITask<IQueryResultNodeAsync<TValueSource, TError>> source,
             Func<TValueSource, TValueResult> selector)
         {
-            var result = await source
+            return await source
                 .SelectLeft(
-                    async element =>
-                        new SelectElement2<TValueSource, TError, TValueResult>(
+                    element =>
+                        new SelectElementAsync<TValueSource, TError, TValueResult>(
                             selector(element.Value),
-                            await element.Next().ConfigureAwait(false),
+                            element.Next(),
                             selector))
+                .ToQueryResultNodeAsync()
                 .ConfigureAwait(false);
-            return result.ToQueryResultNodeAsync();
         }
 
-        private sealed class SelectElement2<TValueSource, TError, TValueResult> : IElementAsync<TValueResult, TError>
+        private sealed class SelectElementAsync<TValueSource, TError, TValueResult> : IElementAsync<TValueResult, TError>
         {
-            private readonly IQueryResultNodeAsync<TValueSource, TError> next;
+            private readonly ITask<IQueryResultNodeAsync<TValueSource, TError>> next;
             private readonly Func<TValueSource, TValueResult> selector;
 
-            public SelectElement2(
+            public SelectElementAsync(
                 TValueResult value,
-                IQueryResultNodeAsync<TValueSource, TError> next,
+                ITask<IQueryResultNodeAsync<TValueSource, TError>> next,
                 Func<TValueSource, TValueResult> selector)
             {
-                Value = value;
+                this.Value = value;
                 this.next = next;
                 this.selector = selector;
             }
 
             public TValueResult Value { get; }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
+            public async ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
-                //// TODO task
-                return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.next.Select(this.selector));
+                return await this.next.Select(this.selector).ConfigureAwait(false);
             }
         }
 
