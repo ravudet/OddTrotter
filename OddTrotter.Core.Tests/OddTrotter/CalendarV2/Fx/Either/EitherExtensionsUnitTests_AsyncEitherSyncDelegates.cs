@@ -516,5 +516,111 @@ namespace Fx.Either
                         throw invalidOperationException))
                 .ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task SelectManyLeftFutureEitherNoSelectorsNullEither()
+        {
+            ITask<Either<Either<string, Exception>, Exception>> either =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+#pragma warning disable CS8604 // Possible null reference argument.
+                        either
+#pragma warning restore CS8604 // Possible null reference argument.
+                            .SelectManyLeft()
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectManyLeftFutureEitherNoSelectors()
+        {
+            var either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left(Either.Left("asdf").Right<Exception>()).Right<Exception>()));
+
+            IEither<string, Exception> result = await either.SelectManyLeft().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetLeft(out var leftValue));
+            Assert.AreEqual("asdf", leftValue);
+
+            var invalidOperationException = new InvalidOperationException();
+            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left(Either.Left<string>().Right((Exception)invalidOperationException)).Right<Exception>()));
+
+            result = await either.SelectManyLeft().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetRight(out var rightValue));
+            Assert.AreEqual(invalidOperationException, rightValue);
+
+            var invalidCastException = new InvalidCastException();
+            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left<Either<string, Exception>>().Right((Exception)invalidCastException)));
+
+            result = await either.SelectManyLeft().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetRight(out rightValue));
+            Assert.AreEqual(invalidCastException, rightValue);
+        }
+
+        [TestMethod]
+        public async Task SelectManyRightFutureEitherNoSelectorsNullEither()
+        {
+            ITask<Either<Exception, Either<Exception, string>>> either =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await 
+#pragma warning disable CS8604 // Possible null reference argument.
+                        either
+#pragma warning restore CS8604 // Possible null reference argument.
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectManyRightFutureEitherNoSelectors()
+        {
+            var either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"))));
+
+            IEither<Exception, string> result = await either.SelectManyRight().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetRight(out var rightValue));
+            Assert.AreEqual("asdf", rightValue);
+
+            var invalidOperationException = new InvalidOperationException();
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>())));
+
+            result = await either.SelectManyRight().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetLeft(out var leftValue));
+            Assert.AreEqual(invalidOperationException, leftValue);
+
+            var invalidCastException = new InvalidCastException();
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>()));
+
+            result = await either.SelectManyRight().ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetLeft(out leftValue));
+            Assert.AreEqual(invalidCastException, leftValue);
+        }
     }
 }
