@@ -540,7 +540,9 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectManyLeftFutureEitherNoSelectors()
         {
-            var either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(Task.FromResult(Either.Left(Either.Left("asdf").Right<Exception>()).Right<Exception>()));
+            var either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left(Either.Left("asdf").Right<Exception>()).Right<Exception>()));
 
             IEither<string, Exception> result = await either.SelectManyLeft().ConfigureAwait(false);
 
@@ -548,7 +550,9 @@ namespace Fx.Either
             Assert.AreEqual("asdf", leftValue);
 
             var invalidOperationException = new InvalidOperationException();
-            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(Task.FromResult(Either.Left(Either.Left<string>().Right((Exception)invalidOperationException)).Right<Exception>()));
+            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left(Either.Left<string>().Right((Exception)invalidOperationException)).Right<Exception>()));
 
             result = await either.SelectManyLeft().ConfigureAwait(false);
 
@@ -556,7 +560,9 @@ namespace Fx.Either
             Assert.AreEqual(invalidOperationException, rightValue);
 
             var invalidCastException = new InvalidCastException();
-            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(Task.FromResult(Either.Left<Either<string, Exception>>().Right((Exception)invalidCastException)));
+            either = new TaskWrapper<Either<Either<string, Exception>, Exception>>(
+                Task.FromResult(
+                    Either.Left<Either<string, Exception>>().Right((Exception)invalidCastException)));
 
             result = await either.SelectManyLeft().ConfigureAwait(false);
 
@@ -587,7 +593,9 @@ namespace Fx.Either
         [TestMethod]
         public async Task SelectManyRightFutureEitherNoSelectors()
         {
-            var either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"))));
+            var either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left<Exception>().Right(Either.Left<Exception>().Right("asdf"))));
 
             IEither<Exception, string> result = await either.SelectManyRight().ConfigureAwait(false);
 
@@ -595,7 +603,9 @@ namespace Fx.Either
             Assert.AreEqual("asdf", rightValue);
 
             var invalidOperationException = new InvalidOperationException();
-            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>())));
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left<Exception>().Right(Either.Left((Exception)invalidOperationException).Right<string>())));
 
             result = await either.SelectManyRight().ConfigureAwait(false);
 
@@ -603,7 +613,9 @@ namespace Fx.Either
             Assert.AreEqual(invalidOperationException, leftValue);
 
             var invalidCastException = new InvalidCastException();
-            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(Task.FromResult(Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>()));
+            either = new TaskWrapper<Either<Exception, Either<Exception, string>>>(
+                Task.FromResult(
+                    Either.Left((Exception)invalidCastException).Right<Either<Exception, string>>()));
 
             result = await either.SelectManyRight().ConfigureAwait(false);
 
