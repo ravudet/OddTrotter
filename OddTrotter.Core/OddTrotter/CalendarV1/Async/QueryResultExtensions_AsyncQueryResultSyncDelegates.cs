@@ -3,12 +3,14 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Diagnostics;
+    using System.Net.Security;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using Fx.Either;
     using Fx.Try;
     using Stash.Monad;
     using static System.Runtime.InteropServices.JavaScript.JSType;
+    using static Fx.Either.Either<TLeft, TRight>;
 
     public static partial class QueryResultAsyncExtensions
     {
@@ -294,7 +296,15 @@ namespace Fx.QueryContext
             }
         }
 
-        public static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            IEither<TLeft, TRight> either,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+        {
+            return await either.Apply((left, nothing) => leftMap(left), (right, nothing) => rightMap(right), new Nothing()).ConfigureAwait(false);
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
@@ -307,23 +317,23 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(secondErrorSelector);
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
-            return first
+            return await first
                 .Apply(
-                    element =>
-                        Task.FromResult(
-                        Either
-                            .Left(
-                                new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-                                    element.Value,
-                                    element.Next(),
-                                    second,
-                                    firstErrorSelector,
-                                    secondErrorSelector,
-                                    errorAggregator))
-                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
-                            .ToQueryResultNodeAsync())
-                        .ToTaskWrapper(),
-                    terminal =>
+                    async element => await Task
+                        .FromResult(
+                            Either
+                                .Left(
+                                    new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+                                        element.Value,
+                                        element.Next(),
+                                        second,
+                                        firstErrorSelector,
+                                        secondErrorSelector,
+                                        errorAggregator))
+                                .Right<IEither<IError<TErrorResult>, IEmpty>>()
+                                .ToQueryResultNodeAsync())
+                        .ConfigureAwait(false),
+                    async terminal => await 
                         terminal
                             .Apply(
                                 error =>
@@ -339,7 +349,8 @@ namespace Fx.QueryContext
                                         second,
                                         firstErrorSelector,
                                         secondErrorSelector,
-                                        errorAggregator)));
+                                        errorAggregator))
+                            .ConfigureAwait(false));
         }
 
         private sealed class ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> : IElementAsync<TValue, TErrorResult>
