@@ -288,12 +288,7 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodes()
-            {
-                return GetNodesImpl().ToTaskWrapper();
-            }
-
-            private async Task<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodesImpl()
+            public async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodes()
             {
                 return await this.first.Nodes.Concat(await second.GetNodes().ConfigureAwait(false), this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator).ConfigureAwait(false);
             }
@@ -400,7 +395,7 @@ namespace Fx.QueryContext
             }
         }
 
-        private static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
+        private static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,
                 TErrorFirst,
@@ -418,7 +413,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(secondErrorSelector);
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
-            return second
+            return await second
                 .Apply(
                     async element =>
                         Either
@@ -466,7 +461,7 @@ namespace Fx.QueryContext
                                                     .Left<IError<TErrorResult>>()
                                                     .Right(empty))
                                             .ToQueryResultNodeAsync())))
-                .ToTaskWrapper();
+                .ConfigureAwait(false);
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
@@ -565,12 +560,7 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
-            {
-                return GetNodesImpl().ToTaskWrapper();
-            }
-
-            private async Task<IQueryResultNodeAsync<TValue, TError>> GetNodesImpl()
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
             {
                 return await (await this.source.GetNodes().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
             }
