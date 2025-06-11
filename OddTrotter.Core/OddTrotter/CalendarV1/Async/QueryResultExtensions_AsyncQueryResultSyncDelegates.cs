@@ -71,12 +71,19 @@ namespace Fx.QueryContext
             this ITask<IQueryResultNodeAsync<TValueSource, TError>> source,
             Func<TValueSource, TValueResult> selector)
         {
+            return await (await source.ConfigureAwait(false)).Select(selector).ConfigureAwait(false);
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
+            this IQueryResultNodeAsync<TValueSource, TError> source,
+            Func<TValueSource, TValueResult> selector)
+        {
             return await source
                 .SelectLeft(
-                    element =>
+                    async element =>  
                         new SelectElementAsync<TValueSource, TError, TValueResult>(
                             selector(element.Value),
-                            element.Next(),
+                            await element.Next().ConfigureAwait(false),
                             selector))
                 .ToQueryResultNodeAsync()
                 .ConfigureAwait(false);
@@ -84,12 +91,12 @@ namespace Fx.QueryContext
 
         private sealed class SelectElementAsync<TValueSource, TError, TValueResult> : IElementAsync<TValueResult, TError>
         {
-            private readonly ITask<IQueryResultNodeAsync<TValueSource, TError>> next;
+            private readonly IQueryResultNodeAsync<TValueSource, TError> next;
             private readonly Func<TValueSource, TValueResult> selector;
 
             public SelectElementAsync(
                 TValueResult value,
-                ITask<IQueryResultNodeAsync<TValueSource, TError>> next,
+                IQueryResultNodeAsync<TValueSource, TError> next,
                 Func<TValueSource, TValueResult> selector)
             {
                 this.Value = value;
@@ -131,15 +138,15 @@ namespace Fx.QueryContext
             this IQueryResultAsync<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
-            return new TrySelect2<TValue, TError, TResult>(source, @try);
+            return new TrySelectQueryResultAsync<TValue, TError, TResult>(source, @try);
         }
 
-        private sealed class TrySelect2<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
+        private sealed class TrySelectQueryResultAsync<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
         {
             private readonly IQueryResultAsync<TValue, TError> source;
             private readonly Try<TValue, TResult> @try;
 
-            public TrySelect2(
+            public TrySelectQueryResultAsync(
                 IQueryResultAsync<TValue, TError> source,
                 Try<TValue, TResult> @try)
             {
@@ -147,15 +154,28 @@ namespace Fx.QueryContext
                 this.@try = @try;
             }
 
-            public ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
             {
-                throw new NotImplementedException();
+                return
+                    await
+                        this
+                            .source
+                            .GetNodes()
+                            .TrySelect(this.@try)
+                    .ConfigureAwait(false);
             }
         }
 
         public static ITask<T> ToTaskWrapper<T>(this Task<T> task)
         {
             return new TaskWrapper<T>(task);
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+            Try<TValue, TResult> @try)
+        {
+            return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
 
         public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
@@ -168,7 +188,7 @@ namespace Fx.QueryContext
                         .Value
                         .ToEither(@try)
                         .Select(
-                            async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
+                            async tried => new TrySelectElementAsync<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
                             async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
                         .SelectManyRight()
                         .ConfigureAwait(false))
@@ -177,12 +197,12 @@ namespace Fx.QueryContext
                 .ToQueryResultNodeAsync();
         }
 
-        private sealed class TrySelectElement2<TValue, TError, TResult> : IElementAsync<TResult, TError>
+        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
         {
             private readonly IQueryResultNodeAsync<TValue, TError> next;
             private readonly Try<TValue, TResult> @try;
 
-            public TrySelectElement2(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
+            public TrySelectElementAsync(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
             {
                 Value = value;
                 this.next = next;
