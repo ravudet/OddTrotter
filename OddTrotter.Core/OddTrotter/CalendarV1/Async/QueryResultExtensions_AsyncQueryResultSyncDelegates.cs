@@ -54,13 +54,7 @@ namespace Fx.QueryContext
                 this.selector = selector;
             }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
-            {
-                //// TODO task
-                return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.GetNodesImpl());
-            }
-
-            private async Task<IQueryResultNodeAsync<TValueResult, TError>> GetNodesImpl()
+            public async ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
             {
                 var nodes = await this.source.GetNodes().ConfigureAwait(false);
 
