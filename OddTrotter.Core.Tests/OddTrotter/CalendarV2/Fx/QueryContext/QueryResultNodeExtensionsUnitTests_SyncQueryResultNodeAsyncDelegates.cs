@@ -9,14 +9,26 @@ namespace Fx.QueryContext
 
     public sealed partial class QueryResultNodeExtensionsUnitTests
     {
-        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithElement(string value)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithElement(
+            string value)
         {
             return Either
                 .Left(new MockElementAsync(value))
                 .Right<IEither<IError<Exception>, IEmpty>>();
         }
 
-        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithError(string value)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithError(
+            string value)
         {
             return Either
                     .Left<MockElementAsync>()
@@ -28,6 +40,10 @@ namespace Fx.QueryContext
                             .Right<IEmpty>());
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
         private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithEmpty()
         {
             return Either
@@ -35,7 +51,32 @@ namespace Fx.QueryContext
                 .Right(Either.Left<MockError>().Right(MockEmpty.Instance));
         }
 
-        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithElementAsync(string value)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static async 
+            ITask
+                <
+                    IEither
+                        <
+                            IElementAsync
+                                <
+                                    string, 
+                                    Exception
+                                >, 
+                            IEither
+                                <
+                                    IError
+                                        <
+                                            Exception
+                                        >, 
+                                    IEmpty
+                                >
+                        >
+                > 
+            CreateAsyncNodeWithElementAsync(string value)
         {
             return await Task
                 .FromResult(
@@ -43,7 +84,32 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithErrorAsync(string value)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static async 
+            ITask
+                <
+                    IEither
+                        <
+                            IElementAsync
+                                <
+                                    string,
+                                    Exception
+                                >,
+                            IEither
+                                <
+                                    IError
+                                        <
+                                            Exception
+                                        >,
+                                    IEmpty
+                                >
+                        >
+                >
+            CreateAsyncNodeWithErrorAsync(string value)
         {
             return await Task
                 .FromResult(
@@ -51,7 +117,31 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithEmptyAsync()
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
+        private static async 
+            ITask
+                <
+                    IEither
+                        <
+                            IElementAsync
+                                <
+                                    string,
+                                    Exception
+                                >,
+                            IEither
+                                <
+                                    IError
+                                        <
+                                            Exception
+                                        >, 
+                                    IEmpty
+                                >
+                        >
+                > 
+            CreateAsyncNodeWithEmptyAsync()
         {
             return await Task
                 .FromResult(
