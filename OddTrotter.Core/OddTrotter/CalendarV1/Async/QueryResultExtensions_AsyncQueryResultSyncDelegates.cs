@@ -10,7 +10,6 @@ namespace Fx.QueryContext
     using Fx.Try;
     using Stash.Monad;
     using static System.Runtime.InteropServices.JavaScript.JSType;
-    using static Fx.Either.Either<TLeft, TRight>;
 
     public static partial class QueryResultAsyncExtensions
     {
@@ -168,11 +167,6 @@ namespace Fx.QueryContext
             }
         }
 
-        public static ITask<T> ToTaskWrapper<T>(this Task<T> task)
-        {
-            return new TaskWrapper<T>(task);
-        }
-
         public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
             this ITask<IQueryResultNodeAsync<TValue, TError>> source,
             Try<TValue, TResult> @try)
@@ -296,10 +290,10 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
-            IEither<TLeft, TRight> either,
-            Func<TLeft, Task<TResult>> leftMap,
-            Func<TRight, Task<TResult>> rightMap)
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, ITask<TResult>> leftMap,
+            Func<TRight, ITask<TResult>> rightMap)
         {
             return await either.Apply((left, nothing) => leftMap(left), (right, nothing) => rightMap(right), new Nothing()).ConfigureAwait(false);
         }
