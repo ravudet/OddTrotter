@@ -281,7 +281,7 @@ namespace Fx.Either
                 catch (Exception exception)
                 {
                     throw new LeftMapException(
-                        $"An error occurred while process the left value of an {nameof(Either<TLeft, TRight>)}.",
+                        $"An error occurred while processing the left value of an {nameof(Either<TLeft, TRight>)}.",
                         exception);
                 }
             }
@@ -298,7 +298,7 @@ namespace Fx.Either
                 catch (Exception exception)
                 {
                     throw new RightMapException(
-                        $"An error occurred while process the right value of an {nameof(Either<TLeft, TRight>)}.",
+                        $"An error occurred while processing the right value of an {nameof(Either<TLeft, TRight>)}.",
                         exception);
                 }
             }
@@ -354,7 +354,7 @@ namespace Fx.Either
                 catch (Exception exception)
                 {
                     throw new LeftMapException(
-                        $"An error occurred while process the left value of an {nameof(Either<TLeft, TRight>)}.",
+                        $"An error occurred while processing the left value of an {nameof(Either<TLeft, TRight>)}.",
                         exception);
                 }
             }
@@ -371,7 +371,7 @@ namespace Fx.Either
                 catch (Exception exception)
                 {
                     throw new RightMapException(
-                        $"An error occurred while process the right value of an {nameof(Either<TLeft, TRight>)}.",
+                        $"An error occurred while processing the right value of an {nameof(Either<TLeft, TRight>)}.",
                         exception);
                 }
             }

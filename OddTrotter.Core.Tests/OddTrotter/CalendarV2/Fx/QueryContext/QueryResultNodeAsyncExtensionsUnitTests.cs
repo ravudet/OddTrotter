@@ -4,6 +4,7 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.Try;
@@ -12,36 +13,45 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed partial class QueryResultNodeAsyncExtensionsUnitTests
     {
-        
         [TestMethod]
-        public void SelectNullSource()
+        public async Task SelectNullSource()
         {
-            IQueryResultNode<string, Exception> node =
+            IQueryResultNodeAsync<string, Exception> node =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
                 ;
 
-            Assert.ThrowsException<ArgumentNullException>(() =>
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
 #pragma warning disable CS8604 // Possible null reference argument.
-                node
+                    node
 #pragma warning restore CS8604 // Possible null reference argument.
-                .Select(val => val.Length));
+                        .Select(val => val.Length)
+                        .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public void SelectNullSelector()
+        public async Task SelectNullSelector()
         {
             var value = "asdf";
-            var node = Either.Left(new MockElement(value)).Right<IEither<IError<Exception>, IEmpty>>().ToQueryResultNode();
+            var node = Either.Left(new MockElementAsync(value)).Right<IEither<IError<Exception>, IEmpty>>().ToQueryResultNodeAsync();
 
-            Assert.ThrowsException<ArgumentNullException>(() => node.Select(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+                        node
+                            .Select(
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                (Func<string, int>)null
+                                (Func<string, int>)null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-                ));
+                                )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
