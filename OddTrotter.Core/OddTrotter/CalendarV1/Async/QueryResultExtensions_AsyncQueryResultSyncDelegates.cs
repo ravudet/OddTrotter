@@ -133,7 +133,7 @@ namespace Fx.QueryContext
             this IQueryResultNodeAsync<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
-            return (await source
+            return await source
                 .SelectLeft(
                     async element => await element
                         .Value
@@ -144,7 +144,6 @@ namespace Fx.QueryContext
                         .SelectManyRight()
                         .ConfigureAwait(false))
                 .SelectManyLeft()
-                .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
         }
 
