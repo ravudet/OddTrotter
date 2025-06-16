@@ -3,13 +3,15 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Diagnostics;
+    using System.Net.Security;
+    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using Fx.Either;
     using Fx.Try;
     using Stash.Monad;
     using static System.Runtime.InteropServices.JavaScript.JSType;
 
-    public static partial class QueryResultExtensions
+    public static partial class QueryResultAsyncExtensions
     {
         /// <summary>
         /// placeholder
@@ -40,70 +42,29 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
 
-            return new Select2<TValueSource, TError, TValueResult>(source, selector);
+            return new SelectQueryResultAsync<TValueSource, TError, TValueResult>(source, selector);
         }
 
-        private sealed class Select2<TValueSource, TError, TValueResult> : IQueryResultAsync<TValueResult, TError>
+        private sealed class SelectQueryResultAsync<TValueSource, TError, TValueResult> : IQueryResultAsync<TValueResult, TError>
         {
             private readonly IQueryResultAsync<TValueSource, TError> source;
             private readonly Func<TValueSource, TValueResult> selector;
 
-            public Select2(IQueryResultAsync<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
+            public SelectQueryResultAsync(IQueryResultAsync<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
             {
                 this.source = source;
                 this.selector = selector;
             }
 
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
+            public async ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
             {
-                //// TODO task
-                return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.GetNodesImpl());
-            }
-
-            private async Task<IQueryResultNodeAsync<TValueResult, TError>> GetNodesImpl()
-            {
-                var nodes = await this.source.GetNodes().ConfigureAwait(false);
-
-                return await nodes.Select(this.selector).ConfigureAwait(false);
-            }
-        }
-
-        public static async Task<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
-            this IQueryResultNodeAsync<TValueSource, TError> source,
-            Func<TValueSource, TValueResult> selector)
-        {
-            var result = await source
-                .SelectLeft(
-                    async element =>
-                        new SelectElement2<TValueSource, TError, TValueResult>(
-                            selector(element.Value),
-                            await element.Next().ConfigureAwait(false),
-                            selector))
-                .ConfigureAwait(false);
-            return result.ToQueryResultNodeAsync();
-        }
-
-        private sealed class SelectElement2<TValueSource, TError, TValueResult> : IElementAsync<TValueResult, TError>
-        {
-            private readonly IQueryResultNodeAsync<TValueSource, TError> next;
-            private readonly Func<TValueSource, TValueResult> selector;
-
-            public SelectElement2(
-                TValueResult value,
-                IQueryResultNodeAsync<TValueSource, TError> next,
-                Func<TValueSource, TValueResult> selector)
-            {
-                Value = value;
-                this.next = next;
-                this.selector = selector;
-            }
-
-            public TValueResult Value { get; }
-
-            public ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
-            {
-                //// TODO task
-                return new TaskWrapper<IQueryResultNodeAsync<TValueResult, TError>>(this.next.Select(this.selector));
+                return
+                    await
+                        this
+                            .source
+                            .GetNodes()
+                            .Select(this.selector)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -133,15 +94,15 @@ namespace Fx.QueryContext
             this IQueryResultAsync<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
-            return new TrySelect2<TValue, TError, TResult>(source, @try);
+            return new TrySelectQueryResultAsync<TValue, TError, TResult>(source, @try);
         }
 
-        private sealed class TrySelect2<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
+        private sealed class TrySelectQueryResultAsync<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
         {
             private readonly IQueryResultAsync<TValue, TError> source;
             private readonly Try<TValue, TResult> @try;
 
-            public TrySelect2(
+            public TrySelectQueryResultAsync(
                 IQueryResultAsync<TValue, TError> source,
                 Try<TValue, TResult> @try)
             {
@@ -149,42 +110,49 @@ namespace Fx.QueryContext
                 this.@try = @try;
             }
 
-            public ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
             {
-                throw new NotImplementedException();
+                return
+                    await
+                        this
+                            .source
+                            .GetNodes()
+                            .TrySelect(this.@try)
+                    .ConfigureAwait(false);
             }
         }
 
-        public static ITask<T> ToTaskWrapper<T>(this Task<T> task)
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+            Try<TValue, TResult> @try)
         {
-            return new TaskWrapper<T>(task);
+            return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
 
         public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
-            return (await source
+            return await source
                 .SelectLeft(
                     async element => await element
                         .Value
                         .ToEither(@try)
                         .Select(
-                            async tried => new TrySelectElement2<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
+                            async tried => new TrySelectElementAsync<TValue, TError, TResult>(tried, await element.Next().ConfigureAwait(false), @try),
                             async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
                         .SelectManyRight()
                         .ConfigureAwait(false))
                 .SelectManyLeft()
-                .ConfigureAwait(false))
                 .ToQueryResultNodeAsync();
         }
 
-        private sealed class TrySelectElement2<TValue, TError, TResult> : IElementAsync<TResult, TError>
+        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
         {
             private readonly IQueryResultNodeAsync<TValue, TError> next;
             private readonly Try<TValue, TResult> @try;
 
-            public TrySelectElement2(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
+            public TrySelectElementAsync(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
             {
                 Value = value;
                 this.next = next;
@@ -270,18 +238,21 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodes()
-            {
-                return GetNodesImpl().ToTaskWrapper();
-            }
-
-            private async Task<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodesImpl()
+            public async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodes()
             {
                 return await this.first.Nodes.Concat(await second.GetNodes().ConfigureAwait(false), this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator).ConfigureAwait(false);
             }
         }
 
-        public static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, ITask<TResult>> leftMap,
+            Func<TRight, ITask<TResult>> rightMap)
+        {
+            return await either.Apply((left, nothing) => leftMap(left), (right, nothing) => rightMap(right), new Nothing()).ConfigureAwait(false);
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
@@ -294,23 +265,23 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(secondErrorSelector);
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
-            return first
+            return await first
                 .Apply(
-                    element =>
-                        Task.FromResult(
-                        Either
-                            .Left(
-                                new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-                                    element.Value,
-                                    element.Next(),
-                                    second,
-                                    firstErrorSelector,
-                                    secondErrorSelector,
-                                    errorAggregator))
-                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
-                            .ToQueryResultNodeAsync())
-                        .ToTaskWrapper(),
-                    terminal =>
+                    async element => await Task
+                        .FromResult(
+                            Either
+                                .Left(
+                                    new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+                                        element.Value,
+                                        element.Next(),
+                                        second,
+                                        firstErrorSelector,
+                                        secondErrorSelector,
+                                        errorAggregator))
+                                .Right<IEither<IError<TErrorResult>, IEmpty>>()
+                                .ToQueryResultNodeAsync())
+                        .ConfigureAwait(false),
+                    async terminal => await 
                         terminal
                             .Apply(
                                 error =>
@@ -326,7 +297,8 @@ namespace Fx.QueryContext
                                         second,
                                         firstErrorSelector,
                                         secondErrorSelector,
-                                        errorAggregator)));
+                                        errorAggregator))
+                            .ConfigureAwait(false));
         }
 
         private sealed class ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> : IElementAsync<TValue, TErrorResult>
@@ -382,7 +354,7 @@ namespace Fx.QueryContext
             }
         }
 
-        private static ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
+        private static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,
                 TErrorFirst,
@@ -400,7 +372,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(secondErrorSelector);
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
-            return second
+            return await second
                 .Apply(
                     async element =>
                         Either
@@ -448,7 +420,7 @@ namespace Fx.QueryContext
                                                     .Left<IError<TErrorResult>>()
                                                     .Right(empty))
                                             .ToQueryResultNodeAsync())))
-                .ToTaskWrapper();
+                .ConfigureAwait(false);
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
@@ -547,12 +519,7 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
-            {
-                return GetNodesImpl().ToTaskWrapper();
-            }
-
-            private async Task<IQueryResultNodeAsync<TValue, TError>> GetNodesImpl()
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
             {
                 return await (await this.source.GetNodes().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
             }
