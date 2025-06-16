@@ -24,9 +24,6 @@ namespace Fx.QueryContext
             return new QueryResultNodeAsync<TValue, TError>(source);
         }
 
-
-        //// TODO are these operations all "lifts"? as in, we have `ToQueryResultNodeAsync`, so we should also be able to do it on `itask<input>` and get back an `itask<result>`
-
         /// <summary>
         /// placeholder
         /// </summary>
