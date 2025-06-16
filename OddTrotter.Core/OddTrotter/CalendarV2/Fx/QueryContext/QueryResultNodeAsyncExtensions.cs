@@ -17,7 +17,9 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
+        /// </exception>
         public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
             this IQueryResultNodeAsync<TValueSource, TError> source,
             Func<TValueSource, TValueResult> selector)
@@ -47,7 +49,9 @@ namespace Fx.QueryContext
             /// <param name="value"></param>
             /// <param name="next"></param>
             /// <param name="selector"></param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="next"/> or <paramref name="selector"/> is <see langword="null"/></exception>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="selector"/> is <see langword="null"/>
+            /// </exception>
             public SelectElementAsync(
                 TValueResult value,
                 IQueryResultNodeAsync<TValueSource, TError> next,
@@ -56,13 +60,15 @@ namespace Fx.QueryContext
                 ArgumentNullException.ThrowIfNull(next);
                 ArgumentNullException.ThrowIfNull(selector);
 
-                Value = value;
+                this.Value = value;
                 this.next = next;
                 this.selector = selector;
             }
 
+            /// <inheritdoc/>
             public TValueResult Value { get; }
 
+            /// <inheritdoc/>
             public async ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 return await this.next.Select(this.selector).ConfigureAwait(false);
