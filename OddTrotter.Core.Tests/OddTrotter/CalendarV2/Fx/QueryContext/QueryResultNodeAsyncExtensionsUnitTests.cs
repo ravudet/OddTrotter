@@ -54,6 +54,8 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
+        //// TODO from here donw needs to be implemented for async
+
         [TestMethod]
         public void SelectNoElements()
         {
