@@ -5,15 +5,8 @@
 
     using Fx.Either;
 
-    public static class QueryResultNodeAsyncExtensions
+    public static partial class QueryResultNodeAsyncExtensions
     {
-        public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
-            this ITask<IQueryResultNodeAsync<TValueSource, TError>> source,
-            Func<TValueSource, TValueResult> selector)
-        {
-            return await (await source.ConfigureAwait(false)).Select(selector).ConfigureAwait(false);
-        }
-
         public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
             this IQueryResultNodeAsync<TValueSource, TError> source,
             Func<TValueSource, TValueResult> selector)
