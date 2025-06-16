@@ -9,6 +9,56 @@ namespace Fx.QueryContext
 
     public sealed partial class QueryResultNodeExtensionsUnitTests
     {
+        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithElement(string value)
+        {
+            return Either
+                .Left(new MockElementAsync(value))
+                .Right<IEither<IError<Exception>, IEmpty>>();
+        }
+
+        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithError(string value)
+        {
+            return Either
+                    .Left<MockElementAsync>()
+                    .Right(
+                        Either
+                            .Left(
+                                new MockError(
+                                    new Exception(value)))
+                            .Right<IEmpty>());
+        }
+
+        private static IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>> CreateAsyncNodeWithEmpty()
+        {
+            return Either
+                .Left<MockElementAsync>()
+                .Right(Either.Left<MockError>().Right(MockEmpty.Instance));
+        }
+
+        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithElementAsync(string value)
+        {
+            return await Task
+                .FromResult(
+                    CreateAsyncNodeWithElement(value))
+                .ConfigureAwait(false);
+        }
+
+        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithErrorAsync(string value)
+        {
+            return await Task
+                .FromResult(
+                    CreateAsyncNodeWithError(value))
+                .ConfigureAwait(false);
+        }
+
+        private static async ITask<IEither<IElementAsync<string, Exception>, IEither<IError<Exception>, IEmpty>>> CreateAsyncNodeWithEmptyAsync()
+        {
+            return await Task
+                .FromResult(
+                    CreateAsyncNodeWithEmpty())
+                .ConfigureAwait(false);
+        }
+
         [TestMethod]
         public void ToQueryResultNodeAsyncNullNode()
         {
@@ -29,9 +79,7 @@ namespace Fx.QueryContext
         public void ToQueryResultNodeAsync()
         {
             var value = "asdf";
-            var node = Either
-                .Left(new MockElementAsync(value))
-                .Right<IEither<IError<Exception>, IEmpty>>()
+            var node = CreateAsyncNodeWithElement(value)
                 .ToQueryResultNodeAsync();
 
             var result = node.Apply(
@@ -44,16 +92,8 @@ namespace Fx.QueryContext
 
             Assert.AreEqual(value + value, result);
 
-            node =
-                Either
-                    .Left<MockElementAsync>()
-                    .Right(
-                        Either
-                            .Left(
-                                new MockError(
-                                    new Exception(value)))
-                            .Right<IEmpty>())
-                    .ToQueryResultNodeAsync();
+            node = CreateAsyncNodeWithError(value)
+                .ToQueryResultNodeAsync();
 
             result = node.Apply(
                 (element, context) => string.Concat(element.Value, element.Value),
@@ -65,9 +105,7 @@ namespace Fx.QueryContext
 
             Assert.AreEqual(value, result);
 
-            node = Either
-                .Left<MockElementAsync>()
-                .Right(Either.Left<MockError>().Right(MockEmpty.Instance))
+            node = CreateAsyncNodeWithEmpty()
                 .ToQueryResultNodeAsync();
 
             result = node.Apply(
@@ -101,13 +139,12 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void ToQueryResultNodeAsyncFutureNode()
+        public async Task ToQueryResultNodeAsyncFutureNode()
         {
             var value = "asdf";
-            var node = Either
-                .Left(new MockElementAsync(value))
-                .Right<IEither<IError<Exception>, IEmpty>>()
-                .ToQueryResultNodeAsync();
+            var node = await CreateAsyncNodeWithElementAsync(value)
+                .ToQueryResultNodeAsync()
+                .ConfigureAwait(false);
 
             var result = node.Apply(
                 (element, context) => string.Concat(element.Value, element.Value),
@@ -119,16 +156,8 @@ namespace Fx.QueryContext
 
             Assert.AreEqual(value + value, result);
 
-            node =
-                Either
-                    .Left<MockElementAsync>()
-                    .Right(
-                        Either
-                            .Left(
-                                new MockError(
-                                    new Exception(value)))
-                            .Right<IEmpty>())
-                    .ToQueryResultNodeAsync();
+            node = await CreateAsyncNodeWithErrorAsync(value)
+                .ToQueryResultNodeAsync();
 
             result = node.Apply(
                 (element, context) => string.Concat(element.Value, element.Value),
@@ -140,9 +169,7 @@ namespace Fx.QueryContext
 
             Assert.AreEqual(value, result);
 
-            node = Either
-                .Left<MockElementAsync>()
-                .Right(Either.Left<MockError>().Right(MockEmpty.Instance))
+            node = await CreateAsyncNodeWithEmptyAsync()
                 .ToQueryResultNodeAsync();
 
             result = node.Apply(
