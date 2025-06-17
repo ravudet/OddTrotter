@@ -5,6 +5,7 @@ namespace Fx.QueryContext
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Try;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
@@ -72,6 +73,50 @@ namespace Fx.QueryContext
             public async ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 return await this.next.Select(this.selector).ConfigureAwait(false);
+            }
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this IQueryResultNodeAsync<TValue, TError> source,
+            Try<TValue, TResult> @try)
+        {
+            return await source
+                .SelectLeft(
+                    async element => await element
+                        .Value
+                        .ToEither(@try)
+                        .Select(
+                            async tried => 
+                                new TrySelectElementAsync<TValue, TError, TResult>(
+                                    tried, 
+                                    await element
+                                        .Next().
+                                        ConfigureAwait(false), 
+                                    @try),
+                            async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
+                .SelectManyLeft()
+                .ToQueryResultNodeAsync();
+        }
+
+        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
+        {
+            private readonly IQueryResultNodeAsync<TValue, TError> next;
+            private readonly Try<TValue, TResult> @try;
+
+            public TrySelectElementAsync(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
+            {
+                Value = value;
+                this.next = next;
+                this.@try = @try;
+            }
+
+            public TResult Value { get; }
+
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
+            {
+                return await this.next.TrySelect(this.@try).ConfigureAwait(false);
             }
         }
     }
