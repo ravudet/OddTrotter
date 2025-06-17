@@ -2,12 +2,9 @@
 namespace Fx.QueryContext
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
     using Fx.Either;
-    using Fx.Try;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -55,14 +52,20 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        //// TODO from here donw needs to be implemented for async
-
         [TestMethod]
-        public void SelectNoElements()
+        public async Task SelectNoElements()
         {
-            var node = Either.Left<MockElement>().Right(Either.Left<MockError>().Right(MockEmpty.Instance)).ToQueryResultNode();
+            var node = 
+                Either
+                    .Left<MockElementAsync>()
+                    .Right(
+                        Either
+                            .Left<MockError>()
+                            .Right(
+                                MockEmpty.Instance))
+                    .ToQueryResultNodeAsync();
 
-            var result = node.Select(val => val.Length);
+            var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
             Assert.IsFalse(result.TryGetLeft(out var element));
             Assert.IsTrue(result.TryGetRight(out var terminal));
@@ -71,20 +74,20 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void SelectNoElementsError()
+        public async Task SelectNoElementsError()
         {
             var invalidOperationException = new InvalidOperationException();
             var node =
                 Either
-                    .Left<MockElement>()
+                    .Left<MockElementAsync>()
                     .Right(
                         Either
                             .Left(
                                 new MockError(invalidOperationException))
                             .Right<MockEmpty>())
-                    .ToQueryResultNode();
+                    .ToQueryResultNodeAsync();
 
-            var result = node.Select(val => val.Length);
+            var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
             Assert.IsFalse(result.TryGetLeft(out var element));
             Assert.IsTrue(result.TryGetRight(out var terminal));
@@ -94,16 +97,16 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void SelectNoError()
+        public async Task SelectNoError()
         {
             var value = "asdf";
-            var node = Either.Left(new MockElement(value)).Right<IEither<MockError, MockEmpty>>().ToQueryResultNode();
+            var node = Either.Left(new MockElementAsync(value)).Right<IEither<MockError, MockEmpty>>().ToQueryResultNodeAsync();
 
-            var result = node.Select(val => val.Length);
+            var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
             Assert.IsTrue(result.TryGetLeft(out var element));
             Assert.AreEqual(4, element.Value);
-            var next = element.Next();
+            var next = await element.Next().ConfigureAwait(false);
             Assert.IsFalse(next.TryGetLeft(out var secondElement));
             Assert.IsTrue(next.TryGetRight(out var secondTerminal));
             Assert.IsFalse(secondTerminal.TryGetLeft(out var secondError));
@@ -112,31 +115,31 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public void SelectElementFollowedByError()
+        public async Task SelectElementFollowedByError()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
             var node =
                 Either
                     .Left(
-                        new MockElement(
+                        new MockElementAsync(
                             value,
                             Either
-                                .Left<MockElement>()
+                                .Left<MockElementAsync>()
                                 .Right(
                                     Either
                                         .Left(
                                             new MockError(invalidOperationException))
                                         .Right<MockEmpty>())
-                                .ToQueryResultNode()))
+                                .ToQueryResultNodeAsync()))
                     .Right<IEither<MockError, MockEmpty>>()
-                    .ToQueryResultNode();
+                    .ToQueryResultNodeAsync();
 
-            var result = node.Select(val => val.Length);
+            var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
             Assert.IsTrue(result.TryGetLeft(out var element));
             Assert.AreEqual(4, element.Value);
-            var next = element.Next();
+            var next = await element.Next().ConfigureAwait(false);
             Assert.IsFalse(next.TryGetLeft(out var secondElement));
             Assert.IsTrue(next.TryGetRight(out var secondTerminal));
             Assert.IsTrue(secondTerminal.TryGetLeft(out var secondError));
