@@ -10,6 +10,11 @@ namespace Fx.QueryContext
 
     public sealed partial class QueryResultNodeAsyncExtensionsUnitTests
     {
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithElementAsync(string value)
         {
             return await Task
@@ -22,6 +27,10 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
         private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithNoElementsAsync()
         {
             return await Task
@@ -37,6 +46,11 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
         private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithErrorAsync(Exception exception)
         {
             return await Task
@@ -52,7 +66,15 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithElementThenErrorAsync(string value, Exception exception)
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithElementThenErrorAsync(
+            string value, 
+            Exception exception)
         {
             return await Task
                 .FromResult(
