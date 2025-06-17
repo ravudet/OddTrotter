@@ -3,6 +3,7 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Threading.Tasks;
+
     using Fx.Try;
 
     public static partial class QueryResultNodeAsyncExtensions
@@ -29,10 +30,25 @@ namespace Fx.QueryContext
             return await (await source.ConfigureAwait(false)).Select(selector).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="try"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+        /// </exception>
         public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
             this ITask<IQueryResultNodeAsync<TValue, TError>> source,
             Try<TValue, TResult> @try)
         {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(@try);
+
             return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
     }
