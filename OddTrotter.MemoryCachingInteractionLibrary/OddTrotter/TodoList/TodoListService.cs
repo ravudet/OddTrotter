@@ -15,7 +15,9 @@
 
     using Fx.Either;
     using Fx.QueryContext;
+
     using Microsoft.Extensions.Caching.Memory;
+
     using OddTrotter.AzureBlobClient;
     using OddTrotter.Calendar;
     using OddTrotter.GraphClient;
@@ -423,7 +425,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you are trying to remove the use of `totaskwrapper` in queryresultextensions async+sync, then you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on\
+            //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on\
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)
             //// TODO `ieither.apply` should return `itask`?
             //// TODO move the async stuff to v2 "correctly"
@@ -541,7 +543,7 @@
 
             //// TODO this is actually pretty weird; you did a good job separating when the queries are in-memory vs client-based; but, in this todolistservice you actually want them all to be given to the calendareventscontext so that it can do in-memory filtering to prevent network calls when getting the series events; this further exacerbates the issue around queryresult<either, error> because in these in-memory ones, you really do want the either (and you want the caller to be able to tell us the behavior for both sides of the either) //// TODO is this last part about the either really the case? isn't it *actually* that the calendareventcontext knows that we should always surface errors, and as written we are putting the consistency burden on the todolistservice?
             var todoListEvents2 = calendarEvents
-                .Where(calendarEvent => 
+                .Where(calendarEvent =>
                     calendarEvent.Apply(
                         left => left.Subject.Contains("todo list", StringComparison.OrdinalIgnoreCase),
                         right => true))
@@ -587,7 +589,7 @@
                 .Select(
                     instanceEvent => PossibleError.FromThrowable(
                         instanceEvent,
-                        @event => !string.Equals(@event?.Start?.TimeZone, "utc", StringComparison.OrdinalIgnoreCase) ? throw new InvalidOperationException("the event did not have a known time zone in its start time") :  DateTime.SpecifyKind(DateTime.Parse(
+                        @event => !string.Equals(@event?.Start?.TimeZone, "utc", StringComparison.OrdinalIgnoreCase) ? throw new InvalidOperationException("the event did not have a known time zone in its start time") : DateTime.SpecifyKind(DateTime.Parse(
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                             @event
@@ -598,7 +600,7 @@
                             DateTimeKind.Utc)));
             var todoListEventsAggregatedStartParseFailures = todoListEventsWithPotentiallyParsedStarts
                 .ApplyAggregation(
-                    Enumerable.Empty<(CalendarEvent, Exception)>(), 
+                    Enumerable.Empty<(CalendarEvent, Exception)>(),
                     (failures, tuple) => tuple.Item2.IsError ? failures.Append((tuple.Item1, tuple.Item2.Error)) : failures);
             var todoListEventsTuplesWithParsedStarts = todoListEventsAggregatedStartParseFailures
                 .Where(tuple => !tuple.Item2.IsError)
@@ -624,7 +626,7 @@
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             var todoListEventsAggregatedBodyParseFailures = todoListEventsWithPotentiallyParsedBodies
                 .ApplyAggregation(
-                    Enumerable.Empty<(CalendarEvent, Exception)>(), 
+                    Enumerable.Empty<(CalendarEvent, Exception)>(),
                     (failures, tuple) => tuple.Item2.IsError ? failures.Append((tuple.Item1, tuple.Item2.Error)) : failures);
             var todoListEventsTuplesWithParsedBodies = todoListEventsAggregatedBodyParseFailures
                 .Where(tuple => !tuple.Item2.IsError)
@@ -733,7 +735,7 @@
             var seriesEvents = GetSeriesEvents(graphClient, startTime, endTime, pageSize);
             //// TODO merge the sorted sequences instead of concat
             return new ODataCollection<CalendarEvent>(
-                instanceEvents.Elements.Concat(seriesEvents.Elements), 
+                instanceEvents.Elements.Concat(seriesEvents.Elements),
                 instanceEvents.LastRequestedPageUrl ?? seriesEvents.LastRequestedPageUrl);
         }
 
@@ -809,9 +811,9 @@
             // first parameter; in this case, we have enumerated the elements because accessing seriesInstanceEventsWithFailures.Aggregation will enumerate enough events to
             // perform the aggregation; in a previous iteration of this method, the elements were enumerated with a .ToList() call
             return new ODataCollection<CalendarEvent>(
-                seriesInstanceEventsWithoutFailures, 
-                seriesInstanceEventsWithFailures.Aggregation == null ? 
-                    seriesEventMasters.LastRequestedPageUrl : 
+                seriesInstanceEventsWithoutFailures,
+                seriesInstanceEventsWithFailures.Aggregation == null ?
+                    seriesEventMasters.LastRequestedPageUrl :
                     $"/me/calendar/events/{seriesInstanceEventsWithFailures.Aggregation}");
         }
 
@@ -827,8 +829,8 @@
         private static ODataCollection<CalendarEvent> GetSeriesEventMasters(IGraphClient graphClient, int pageSize)
         {
             //// TODO make the calendar that's used configurable?
-            var url = $"/me/calendar/events?" + 
-                $"$select=body,start,subject&" + 
+            var url = $"/me/calendar/events?" +
+                $"$select=body,start,subject&" +
                 $"$top={pageSize}&" +
                 $"$orderBy=start/dateTime&" +
                 "$filter=type eq 'seriesMaster' and isCancelled eq false";
