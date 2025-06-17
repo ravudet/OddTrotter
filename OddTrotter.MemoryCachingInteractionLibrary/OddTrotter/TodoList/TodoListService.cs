@@ -425,6 +425,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO you just finish reviewing tryselect, now do unit tests
             //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on\
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)
             //// TODO `ieither.apply` should return `itask`?
