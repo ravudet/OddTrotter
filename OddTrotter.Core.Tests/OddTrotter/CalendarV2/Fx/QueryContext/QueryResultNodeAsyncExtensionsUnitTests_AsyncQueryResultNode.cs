@@ -8,13 +8,97 @@ namespace Fx.QueryContext
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestClass]
     public sealed partial class QueryResultNodeAsyncExtensionsUnitTests
     {
-        [TestMethod]
-        public async Task SelectNullSource()
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithElementAsync(string value)
         {
-            IQueryResultNodeAsync<string, Exception> node =
+            return await Task
+                .FromResult(
+                    Either
+                        .Left(
+                            new MockElementAsync(value))
+                        .Right<IEither<MockError, MockEmpty>>()
+                        .ToQueryResultNodeAsync())
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <returns></returns>
+        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithNoElementsAsync()
+        {
+            return await Task
+                .FromResult(
+                    Either
+                        .Left<MockElementAsync>()
+                        .Right(
+                            Either
+                                .Left<MockError>()
+                                .Right(
+                                    MockEmpty.Instance))
+                        .ToQueryResultNodeAsync())
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithErrorAsync(Exception exception)
+        {
+            return await Task
+                .FromResult(
+                    Either
+                        .Left<MockElementAsync>()
+                        .Right(
+                            Either
+                                .Left(
+                                    new MockError(exception))
+                                .Right<MockEmpty>())
+                        .ToQueryResultNodeAsync())
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private static async ITask<IQueryResultNodeAsync<string, Exception>> CreateNodeWithElementThenErrorAsync(
+            string value, 
+            Exception exception)
+        {
+            return await Task
+                .FromResult(
+                    Either
+                        .Left(
+                            new MockElementAsync(
+                                value,
+                                Either
+                                    .Left<MockElementAsync>()
+                                    .Right(
+                                        Either
+                                            .Left(
+                                                new MockError(exception))
+                                            .Right<MockEmpty>())
+                                    .ToQueryResultNodeAsync()))
+                        .Right<IEither<MockError, MockEmpty>>()
+                        .ToQueryResultNodeAsync())
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SelectFutureNodeNullSource()
+        {
+            ITask<IQueryResultNodeAsync<string, Exception>> node =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 null
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -32,15 +116,10 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectNullSelector()
+        public async Task SelectFutureNodeNullSelector()
         {
             var value = "asdf";
-            var node = 
-                Either
-                    .Left(
-                        new MockElementAsync(value))
-                    .Right<IEither<IError<Exception>, IEmpty>>()
-                    .ToQueryResultNodeAsync();
+            var node = CreateNodeWithElementAsync(value);
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -58,17 +137,9 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectNoElements()
+        public async Task SelectFutureNodeNoElements()
         {
-            var node = 
-                Either
-                    .Left<MockElementAsync>()
-                    .Right(
-                        Either
-                            .Left<MockError>()
-                            .Right(
-                                MockEmpty.Instance))
-                    .ToQueryResultNodeAsync();
+            var node = CreateNodeWithNoElementsAsync();
 
             var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
@@ -79,18 +150,10 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectNoElementsError()
+        public async Task SelectFutureNodeNoElementsError()
         {
             var invalidOperationException = new InvalidOperationException();
-            var node =
-                Either
-                    .Left<MockElementAsync>()
-                    .Right(
-                        Either
-                            .Left(
-                                new MockError(invalidOperationException))
-                            .Right<MockEmpty>())
-                    .ToQueryResultNodeAsync();
+            var node = CreateNodeWithErrorAsync(invalidOperationException);
 
             var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
@@ -102,10 +165,10 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectNoError()
+        public async Task SelectFutureNodeNoError()
         {
             var value = "asdf";
-            var node = Either.Left(new MockElementAsync(value)).Right<IEither<MockError, MockEmpty>>().ToQueryResultNodeAsync();
+            var node = CreateNodeWithElementAsync(value);
 
             var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
@@ -120,25 +183,11 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task SelectElementFollowedByError()
+        public async Task SelectFutureNodeElementFollowedByError()
         {
             var value = "asdf";
             var invalidOperationException = new InvalidOperationException();
-            var node =
-                Either
-                    .Left(
-                        new MockElementAsync(
-                            value,
-                            Either
-                                .Left<MockElementAsync>()
-                                .Right(
-                                    Either
-                                        .Left(
-                                            new MockError(invalidOperationException))
-                                        .Right<MockEmpty>())
-                                .ToQueryResultNodeAsync()))
-                    .Right<IEither<MockError, MockEmpty>>()
-                    .ToQueryResultNodeAsync();
+            var node = CreateNodeWithElementThenErrorAsync(value, invalidOperationException);
 
             var result = await node.Select(val => val.Length).ConfigureAwait(false);
 
