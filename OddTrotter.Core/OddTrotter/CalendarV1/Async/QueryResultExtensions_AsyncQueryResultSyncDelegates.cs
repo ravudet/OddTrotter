@@ -6,9 +6,12 @@ namespace Fx.QueryContext
     using System.Net.Security;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
+
     using Fx.Either;
     using Fx.Try;
+
     using Stash.Monad;
+
     using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public static partial class QueryResultAsyncExtensions
@@ -281,7 +284,7 @@ namespace Fx.QueryContext
                                 .Right<IEither<IError<TErrorResult>, IEmpty>>()
                                 .ToQueryResultNodeAsync())
                         .ConfigureAwait(false),
-                    async terminal => await 
+                    async terminal => await
                         terminal
                             .Apply(
                                 error =>
