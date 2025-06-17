@@ -15,12 +15,9 @@ namespace Fx.QueryContext
             return await Task
                 .FromResult(
                     Either
-                        .Left<MockElementAsync>()
-                        .Right(
-                            Either
-                                .Left<MockError>()
-                                .Right(
-                                    MockEmpty.Instance))
+                        .Left(
+                            new MockElementAsync(value))
+                        .Right<IEither<MockError, MockEmpty>>()
                         .ToQueryResultNodeAsync())
                 .ConfigureAwait(false);
         }
