@@ -3,6 +3,7 @@ namespace Fx.QueryContext
 {
     using System;
     using System.Threading.Tasks;
+    using Fx.Try;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
@@ -26,6 +27,13 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(selector);
 
             return await (await source.ConfigureAwait(false)).Select(selector).ConfigureAwait(false);
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+            Try<TValue, TResult> @try)
+        {
+            return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
     }
 }

@@ -125,12 +125,7 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
-            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
-            Try<TValue, TResult> @try)
-        {
-            return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
-        }
+        
 
         
 

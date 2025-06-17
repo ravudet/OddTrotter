@@ -89,11 +89,9 @@ namespace Fx.QueryContext
                             async tried => 
                                 new TrySelectElementAsync<TValue, TError, TResult>(
                                     tried, 
-                                    await element
-                                        .Next().
-                                        ConfigureAwait(false), 
+                                    await element.Next().ConfigureAwait(false), 
                                     @try),
-                            async nothing => await (await element.Next().ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false))
+                            async nothing => await element.Next().TrySelect(@try).ConfigureAwait(false))
                         .SelectManyRight()
                         .ConfigureAwait(false))
                 .SelectManyLeft()
