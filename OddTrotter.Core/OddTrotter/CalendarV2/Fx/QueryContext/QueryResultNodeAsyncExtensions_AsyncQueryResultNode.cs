@@ -52,10 +52,22 @@ namespace Fx.QueryContext
             return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/></exception>
         public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
             this ITask<IQueryResultNodeAsync<TValue, TError>> source,
             Func<TValue, bool> predicate)
         {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(predicate);
+
             return await (await source.ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
         }
     }
