@@ -5,6 +5,7 @@ namespace Fx.QueryContext
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Try;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
@@ -72,6 +73,77 @@ namespace Fx.QueryContext
             public async ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
             {
                 return await this.next.Select(this.selector).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="try"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
+        /// </exception>
+        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this IQueryResultNodeAsync<TValue, TError> source,
+            Try<TValue, TResult> @try)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(@try);
+
+            return await source
+                .SelectLeft(
+                    async element => await element
+                        .Value
+                        .ToEither(@try)
+                        .Select(
+                            async tried =>
+                                new TrySelectElementAsync<TValue, TError, TResult>(
+                                    tried,
+                                    await element.Next().ConfigureAwait(false),
+                                    @try),
+                            async nothing => await element.Next().TrySelect(@try).ConfigureAwait(false))
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
+                .SelectManyLeft()
+                .ToQueryResultNodeAsync();
+        }
+
+        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
+        {
+            private readonly IQueryResultNodeAsync<TValue, TError> next;
+            private readonly Try<TValue, TResult> @try;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="try"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="try"/> is <see langword="null"/>
+            /// </exception>
+            public TrySelectElementAsync(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(@try);
+
+                this.Value = value;
+                this.next = next;
+                this.@try = @try;
+            }
+
+            /// <inheritdoc/>
+            public TResult Value { get; }
+
+            /// <inheritdoc/>
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
+            {
+                return await this.next.TrySelect(this.@try).ConfigureAwait(false);
             }
         }
     }

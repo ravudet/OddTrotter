@@ -440,6 +440,7 @@
             //// TODO you have written a "task method builder" for `itask`; it's in stash
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
+            //// TODO update all queryresult and queryresultnode tests to use `toqueryresult`.`with{out}error` extensions
             //// TODO all of the either, queryresultnode, queryresult, and querycontext variants that use tasks should be generated code from the sync source + sync delegates code
             //// TODO type names should *start* with "async" and method names (if a distinction between sync and async needs to be made) should *end* in "async"; the method names part is because it's an established convention; the type names part is because there's an established convention to end a type name with its "parent type" (sort of), for example, you have things like `concurrentdictionary`; `asyncconcurrentdictionary` makes more sense to not conflict with established conventions than `concurrentdictionaryasync`
             //// TODO put "factory" extensions in a static class with the same name as the thing being created (for example, the `toeither` should go in the `either` class, and `ToQueryResultNode` should go in a static class called `queryresultnode`); document the use of this pattern
@@ -495,7 +496,7 @@
             //// TODO go through stash namespace and see what you want to pull out (maybe to another repo and/or as branches with future work items)
             //// TODO write tests for todolistservice that confirm the URLs
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
-            //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
+            //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves; you also need to do this for toqueryresultasync
             //// TODO do you like the names of your generic type parameters? are they all in the correct and consistent order?
 
             //// TODO FUTURE    You considered making either extensions use deferred execution. You chose not to do so for 3 reasons:

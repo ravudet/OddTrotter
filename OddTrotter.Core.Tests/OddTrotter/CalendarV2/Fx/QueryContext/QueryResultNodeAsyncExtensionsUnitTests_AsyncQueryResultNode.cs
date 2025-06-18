@@ -2,9 +2,11 @@
 namespace Fx.QueryContext
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Try;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -200,6 +202,99 @@ namespace Fx.QueryContext
             Assert.AreEqual(invalidOperationException, secondError.Value);
             Assert.IsFalse(secondTerminal.TryGetRight(out var secondEmpty));
             Assert.IsFalse(result.TryGetRight(out var terminal));
+        }
+
+        [TestMethod]
+        public async Task TrySelectFutureNodeNullSource()
+        {
+            ITask<IQueryResultNodeAsync<string, Exception>> source =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+#pragma warning disable CS8604 // Possible null reference argument.
+                        source
+#pragma warning restore CS8604 // Possible null reference argument.
+                            .TrySelect(IntTryParse)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task TrySelectFutureNodeNullTry()
+        {
+            var source = 
+                new[] { "asdf", "42", "67", "qwer" }
+                    .ToQueryResultAsync()
+                    .WithoutError<Exception>()
+                    .GetNodes();
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+                        source
+                            .TrySelect(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                                (Try<string, int>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+
+
+        [TestMethod]
+        public async Task TrySelectFutureNodeWithoutError()
+        {
+            var source = 
+                new[] { "asdf", "42", "67", "qwer" }
+                    .ToQueryResultAsync()
+                    .WithoutError<Exception>()
+                    .GetNodes();
+
+            var selected = await source.TrySelect(IntTryParse).ConfigureAwait(false);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            var next = await element.Next().ConfigureAwait(false);
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            var nextNext = await nextElement.Next().ConfigureAwait(false);
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var terminal));
+            Assert.IsFalse(terminal.TryGetLeft(out var error));
+            Assert.IsTrue(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public async Task TrySelectFutureNodeWithError()
+        {
+            var invalidOperationException = new InvalidOperationException();
+            var source = 
+                new[] { "asdf", "42", "67", "qwer" }
+                    .ToQueryResultAsync()
+                    .WithError(invalidOperationException)
+                    .GetNodes();
+
+            var selected = await source.TrySelect(IntTryParse).ConfigureAwait(false);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            var next = await element.Next().ConfigureAwait(false);
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            var nextNext = await nextElement.Next().ConfigureAwait(false);
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var terminal));
+            Assert.IsTrue(terminal.TryGetLeft(out var error));
+            Assert.AreEqual(invalidOperationException, error.Value);
         }
     }
 }
