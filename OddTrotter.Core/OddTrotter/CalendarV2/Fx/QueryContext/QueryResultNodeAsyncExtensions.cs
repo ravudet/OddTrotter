@@ -137,8 +137,10 @@ namespace Fx.QueryContext
                 this.@try = @try;
             }
 
+            /// <inheritdoc/>
             public TResult Value { get; }
 
+            /// <inheritdoc/>
             public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
             {
                 return await this.next.TrySelect(this.@try).ConfigureAwait(false);
