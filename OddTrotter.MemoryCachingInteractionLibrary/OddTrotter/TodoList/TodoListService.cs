@@ -497,7 +497,7 @@
             //// TODO go through stash namespace and see what you want to pull out (maybe to another repo and/or as branches with future work items)
             //// TODO write tests for todolistservice that confirm the URLs
             //// TODO is anything using the implicit conversions in either? if nothing is using them at this point, you should just remove them
-            //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves
+            //// TODO write tests for the toqueryresult extension on ireadonlylist; then, update all tests to use this extension rather than building the queryresults themselves; you also need to do this for toqueryresultasync
             //// TODO do you like the names of your generic type parameters? are they all in the correct and consistent order?
 
             //// TODO FUTURE    You considered making either extensions use deferred execution. You chose not to do so for 3 reasons:
