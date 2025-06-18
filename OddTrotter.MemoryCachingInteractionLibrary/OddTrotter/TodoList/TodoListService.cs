@@ -410,6 +410,7 @@
             // exception documentation (temporarily, at least put the word "placeholder" in the xmldoc summary)
             // is there any use of `<` in your XML doc? it will break intellisense if there is
             // todos
+            // every `await` should have a `configureawait(false)`
             // anything that isn't nailed down 100% should be `internal`
             // `this.`
             // give caught exceptions meaningful variable names

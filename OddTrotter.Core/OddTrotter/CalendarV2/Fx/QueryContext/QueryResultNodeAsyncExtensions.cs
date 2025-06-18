@@ -110,7 +110,8 @@ namespace Fx.QueryContext
                         .SelectManyRight()
                         .ConfigureAwait(false))
                 .SelectManyLeft()
-                .ToQueryResultNodeAsync();
+                .ToQueryResultNodeAsync()
+                .ConfigureAwait(false);
         }
 
         private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
@@ -144,6 +145,62 @@ namespace Fx.QueryContext
             public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
             {
                 return await this.next.TrySelect(this.@try).ConfigureAwait(false);
+            }
+        }
+
+        public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
+            this IQueryResultNodeAsync<TValue, TError> source,
+            Func<TValue, bool> predicate)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(predicate);
+
+            return await source
+                .SelectLeft(
+                    async element => await element
+                        .Value
+                        .ToEither(predicate)
+                        .Select(
+                            async value => new WhereElementAsync<TValue, TError>(value, await element.Next().ConfigureAwait(false), predicate),
+                            async nothing => await element.Next().Where(predicate).ConfigureAwait(false))
+                        .SelectManyRight()
+                        .ConfigureAwait(false))
+                .SelectManyLeft()
+                .ToQueryResultNodeAsync()
+                .ConfigureAwait(false);
+        }
+
+        private sealed class WhereElementAsync<TValue, TError> : IElementAsync<TValue, TError>
+        {
+            private readonly IQueryResultNodeAsync<TValue, TError> next;
+            private readonly Func<TValue, bool> predicate;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="predicate"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="predicate"/> is <see langword="null"/>
+            /// </exception>
+            public WhereElementAsync(TValue value, IQueryResultNodeAsync<TValue, TError> next, Func<TValue, bool> predicate)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(predicate);
+
+                this.Value = value;
+                this.next = next;
+                this.predicate = predicate;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> Next()
+            {
+                return await this.next.Where(predicate).ConfigureAwait(false);
             }
         }
     }

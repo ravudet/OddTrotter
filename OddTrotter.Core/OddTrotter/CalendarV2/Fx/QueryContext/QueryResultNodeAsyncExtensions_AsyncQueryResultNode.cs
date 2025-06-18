@@ -51,5 +51,12 @@ namespace Fx.QueryContext
 
             return await (await source.ConfigureAwait(false)).TrySelect(@try).ConfigureAwait(false);
         }
+
+        public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
+            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+            Func<TValue, bool> predicate)
+        {
+            return await (await source.ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
+        }
     }
 }
