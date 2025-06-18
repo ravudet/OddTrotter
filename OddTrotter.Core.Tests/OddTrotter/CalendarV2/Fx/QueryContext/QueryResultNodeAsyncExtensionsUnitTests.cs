@@ -2,9 +2,11 @@
 namespace Fx.QueryContext
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Try;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -152,5 +154,80 @@ namespace Fx.QueryContext
             Assert.IsFalse(secondTerminal.TryGetRight(out var secondEmpty));
             Assert.IsFalse(result.TryGetRight(out var terminal));
         }
+
+        [TestMethod]
+        public void TrySelectNullSource()
+        {
+            IQueryResultNode<string, Exception> source =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+#pragma warning disable CS8604 // Possible null reference argument.
+                source
+#pragma warning restore CS8604 // Possible null reference argument.
+                .TrySelect(IntTryParse));
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        private static Try<string, int> IntTryParse { get; } = int.TryParse;
+
+        [TestMethod]
+        public void TrySelectNullTry()
+        {
+            var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>().Nodes;
+
+            Assert.ThrowsException<ArgumentNullException>(() => source.TrySelect(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                (Try<string, int>)null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                ));
+        }
+
+        [TestMethod]
+        public void TrySelectWithoutError()
+        {
+            var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithoutError<Exception>().Nodes;
+
+            var selected = source.TrySelect(IntTryParse);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            var nextNext = nextElement.Next();
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var terminal));
+            Assert.IsFalse(terminal.TryGetLeft(out var error));
+            Assert.IsTrue(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public void TrySelectWithError()
+        {
+            var invalidOperationException = new InvalidOperationException();
+            var source = new[] { "asdf", "42", "67", "qwer" }.ToQueryResult().WithError(invalidOperationException).Nodes;
+
+            var selected = source.TrySelect(IntTryParse);
+
+            Assert.IsTrue(selected.TryGetLeft(out var element));
+            Assert.AreEqual(42, element.Value);
+            var next = element.Next();
+            Assert.IsTrue(next.TryGetLeft(out var nextElement));
+            Assert.AreEqual(67, nextElement.Value);
+            var nextNext = nextElement.Next();
+            Assert.IsFalse(nextNext.TryGetLeft(out var nextNextElement));
+            Assert.IsTrue(nextNext.TryGetRight(out var terminal));
+            Assert.IsTrue(terminal.TryGetLeft(out var error));
+            Assert.AreEqual(invalidOperationException, error.Value);
+        }
+
     }
 }
