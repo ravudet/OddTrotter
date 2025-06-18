@@ -426,7 +426,8 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on\
+            //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
+            //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)
             //// TODO `ieither.apply` should return `itask`?
             //// TODO move the async stuff to v2 "correctly"
