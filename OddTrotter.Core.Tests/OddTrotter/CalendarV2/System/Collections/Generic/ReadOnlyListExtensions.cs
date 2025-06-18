@@ -9,8 +9,17 @@ namespace System.Collections.Generic
 
     internal static class ReadOnlyListExtensions
     {
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="list"/> is <see langword="null"/></exception>
         public static ToQueryResultAsyncBuilder<TValue> ToQueryResultAsync<TValue>(this IReadOnlyList<TValue> list)
         {
+            ArgumentNullException.ThrowIfNull(list);
+
             return new ToQueryResultAsyncBuilder<TValue>(list);
         }
 
