@@ -156,7 +156,9 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
+        /// </exception>
         public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
             this IQueryResultNodeAsync<TValue, TError> source,
             Func<TValue, bool> predicate)
@@ -170,7 +172,11 @@ namespace Fx.QueryContext
                         .Value
                         .ToEither(predicate)
                         .Select(
-                            async value => new WhereElementAsync<TValue, TError>(value, await element.Next().ConfigureAwait(false), predicate),
+                            async value => 
+                                new WhereElementAsync<TValue, TError>(
+                                    value, 
+                                    await element.Next().ConfigureAwait(false), 
+                                    predicate),
                             async nothing => await element.Next().Where(predicate).ConfigureAwait(false))
                         .SelectManyRight()
                         .ConfigureAwait(false))

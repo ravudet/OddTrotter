@@ -60,7 +60,9 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
+        /// </exception>
         public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
             this ITask<IQueryResultNodeAsync<TValue, TError>> source,
             Func<TValue, bool> predicate)
