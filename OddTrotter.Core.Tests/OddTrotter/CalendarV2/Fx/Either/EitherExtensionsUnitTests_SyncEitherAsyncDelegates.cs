@@ -97,38 +97,65 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void ApplyAsyncNoContextNullRightMap()
+        public async Task ApplyAsyncNoContextNullRightMap()
         {
             var either = Either.Left("saf").Right<int>();
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply(left => left,
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await 
+                        either
+                            .Apply(
+                                async left => await IdentityAsync(left).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                ));
+                                )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             either = Either.Left<string>().Right(42);
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply(left => left,
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await 
+                        either
+                            .Apply(
+                                async left => await IdentityAsync(left).ConfigureAwait(false),
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                ));
+                                )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
-        public void ApplyAsyncNoContextLeftMapException()
+        public async Task ApplyAsyncNoContextLeftMapException()
         {
             var exception = new InvalidOperationException();
             var either = Either.Left("asdF").Right<int>();
 
-            var leftMapException = Assert.ThrowsException<LeftMapException>(
-                () => either.Apply(left => throw exception, right => right));
+            var leftMapException = await Assert
+                .ThrowsExceptionAsync<LeftMapException>(
+                    async () => await 
+                        either
+                            .Apply(
+                                left => throw exception, 
+                                async right => await IdentityAsync(right).ConfigureAwait(false))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
             Assert.AreEqual(exception, leftMapException.InnerException);
 
             either = Either.Left<string>().Right(42);
 
-            either.Apply(left => throw exception, right => right);
+            await either
+                .Apply(
+                    left => throw exception, 
+                    async right => await 
+                        IdentityAsync(right)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
