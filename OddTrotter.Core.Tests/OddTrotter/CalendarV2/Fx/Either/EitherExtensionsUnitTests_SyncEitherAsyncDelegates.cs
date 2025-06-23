@@ -63,23 +63,37 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void ApplyAsyncNoContextNullLeftMap()
+        public async Task ApplyAsyncNoContextNullLeftMap()
         {
             var either = Either.Left("sadf").Right<int>();
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+                        either
+                            .Apply(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , right => right));
+                                ,
+                                async right => await IdentityAsync(right).ConfigureAwait(false))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             either = Either.Left<string>().Right(42);
 
-            Assert.ThrowsException<ArgumentNullException>(() => either.Apply(
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+                        either
+                            .Apply(
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                null
+                                null
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                , right => right));
+                                , 
+                                async right => await IdentityAsync(right).ConfigureAwait(false))
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
