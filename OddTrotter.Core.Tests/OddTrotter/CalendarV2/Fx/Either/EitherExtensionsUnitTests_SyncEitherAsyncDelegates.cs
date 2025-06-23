@@ -159,17 +159,19 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void ApplyAsyncNoContextRightMapException()
+        public async Task ApplyAsyncNoContextRightMapException()
         {
             var exception = new InvalidOperationException();
             var either = Either.Left("asdf").Right<int>();
 
-            either.Apply(left => left, right => throw exception);
+            await either.Apply(async left => await IdentityAsync(left).ConfigureAwait(false), right => throw exception)
+                .ConfigureAwait(false);
 
             either = Either.Left<string>().Right(42);
 
-            var rightMapException = Assert.ThrowsException<RightMapException>(
-                () => either.Apply(left => left, right => throw exception));
+            var rightMapException = await Assert
+                .ThrowsExceptionAsync<RightMapException>(
+                    async () => await either.Apply(async left => await IdentityAsync(left).ConfigureAwait(false), right => throw exception).ConfigureAwait(false)).ConfigureAwait(false);
             Assert.AreEqual(exception, rightMapException.InnerException);
         }
 
