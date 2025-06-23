@@ -37,8 +37,8 @@ namespace Fx.Either
             return await 
                 either
                     .Apply(
-                        (left, nothing) => leftMap(left), 
-                        (right, nothing) => rightMap(right), 
+                        async (left, nothing) => await leftMap(left).ConfigureAwait(false), 
+                        async (right, nothing) => await rightMap(right).ConfigureAwait(false), 
                         new Nothing())
                     .ConfigureAwait(false);
         }
