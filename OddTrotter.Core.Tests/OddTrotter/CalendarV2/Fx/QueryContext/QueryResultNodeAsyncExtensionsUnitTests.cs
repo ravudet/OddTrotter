@@ -395,6 +395,5 @@ namespace Fx.QueryContext
             Assert.AreEqual(invalidOperationException, error.Value);
             Assert.IsFalse(terminal2.TryGetRight(out var empty));
         }
-
     }
 }
