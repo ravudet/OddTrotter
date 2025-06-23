@@ -176,15 +176,16 @@ namespace Fx.Either
         }
 
         [TestMethod]
-        public void ApplyAsyncNoContext()
+        public async Task ApplyAsyncNoContext()
         {
             var either = Either.Left("sadf").Right<int>();
 
-            Assert.AreEqual(4, either.Apply(left => left.Count(), right => right));
+            Assert.AreEqual(4, await either.Apply(async left => await CountAsync(left).ConfigureAwait(false), async right => await IdentityAsync(right).ConfigureAwait(false)).ConfigureAwait(false));
 
             either = Either.Left<string>().Right(42);
 
-            Assert.AreEqual(42, either.Apply(left => left.Count(), right => right));
+            Assert.AreEqual(42, await either.Apply(async left => await CountAsync(left).ConfigureAwait(false), async right => await IdentityAsync(right).ConfigureAwait(false))
+                .ConfigureAwait(false));
         }
 
 
