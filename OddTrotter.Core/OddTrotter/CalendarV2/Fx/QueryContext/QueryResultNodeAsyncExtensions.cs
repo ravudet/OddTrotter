@@ -218,5 +218,234 @@ namespace Fx.QueryContext
                 return await this.next.Where(predicate).ConfigureAwait(false);
             }
         }
+
+        public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResultNode<TValue, TErrorFirst> first,
+            IQueryResultNodeAsync<TValue, TErrorSecond> second,
+            Func<TErrorFirst, TErrorResult> firstErrorSelector,
+            Func<TErrorSecond, TErrorResult> secondErrorSelector,
+            Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+        {
+            ArgumentNullException.ThrowIfNull(first);
+            ArgumentNullException.ThrowIfNull(second);
+            ArgumentNullException.ThrowIfNull(firstErrorSelector);
+            ArgumentNullException.ThrowIfNull(secondErrorSelector);
+            ArgumentNullException.ThrowIfNull(errorAggregator);
+
+            return await first
+                .Apply(
+                    async element => await Task
+                        .FromResult(
+                            Either
+                                .Left(
+                                    new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+                                        element.Value,
+                                        element.Next(),
+                                        second,
+                                        firstErrorSelector,
+                                        secondErrorSelector,
+                                        errorAggregator))
+                                .Right<IEither<IError<TErrorResult>, IEmpty>>()
+                                .ToQueryResultNodeAsync())
+                        .ConfigureAwait(false),
+                    async terminal => await
+                        terminal
+                            .Apply(
+                                error =>
+                                    ConcatTraverseSecond(
+                                        new Optional<TErrorFirst>(error.Value),
+                                        second,
+                                        firstErrorSelector,
+                                        secondErrorSelector,
+                                        errorAggregator),
+                                empty =>
+                                    ConcatTraverseSecond(
+                                        default,
+                                        second,
+                                        firstErrorSelector,
+                                        secondErrorSelector,
+                                        errorAggregator))
+                            .ConfigureAwait(false));
+        }
+
+        private sealed class ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> : IElementAsync<TValue, TErrorResult>
+        {
+            private readonly IQueryResultNode<TValue, TErrorFirst> next;
+            private readonly IQueryResultNodeAsync<TValue, TErrorSecond> second;
+            private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+            private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+            private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="second"></param>
+            /// <param name="firstErrorSelector"></param>
+            /// <param name="secondErrorSelector"></param>
+            /// <param name="errorAggregator"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="second"/> or <paramref name="firstErrorSelector"/> or
+            /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
+            /// </exception>
+            public ConcatFirstElementAsync(
+                TValue value,
+                IQueryResultNode<TValue, TErrorFirst> next,
+                IQueryResultNodeAsync<TValue, TErrorSecond> second,
+                Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(second);
+                ArgumentNullException.ThrowIfNull(firstErrorSelector);
+                ArgumentNullException.ThrowIfNull(secondErrorSelector);
+                ArgumentNullException.ThrowIfNull(errorAggregator);
+
+                this.Value = value;
+                this.next = next;
+                this.second = second;
+                this.firstErrorSelector = firstErrorSelector;
+                this.secondErrorSelector = secondErrorSelector;
+                this.errorAggregator = errorAggregator;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
+            {
+                return this.next.Concat(this.second, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
+            }
+        }
+
+        private static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
+            <
+                TValue,
+                TErrorFirst,
+                TErrorSecond,
+                TErrorResult
+            >(
+                Optional<TErrorFirst> error,
+                IQueryResultNodeAsync<TValue, TErrorSecond> second,
+                Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+        {
+            ArgumentNullException.ThrowIfNull(second);
+            ArgumentNullException.ThrowIfNull(firstErrorSelector);
+            ArgumentNullException.ThrowIfNull(secondErrorSelector);
+            ArgumentNullException.ThrowIfNull(errorAggregator);
+
+            return await second
+                .Apply(
+                    async element =>
+                        Either
+                            .Left(
+                                new ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+                                    error,
+                                    element.Value,
+                                    await element.Next().ConfigureAwait(false),
+                                    firstErrorSelector,
+                                    secondErrorSelector,
+                                    errorAggregator))
+                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
+                            .ToQueryResultNodeAsync(),
+                    terminal =>
+                        Task.FromResult(
+                        terminal
+                            .Apply(
+                                secondError =>
+                                    Either
+                                        .Left<IElementAsync<TValue, TErrorResult>>()
+                                        .Right(
+                                            Either
+                                                .Left(
+                                                    new Error<TErrorResult>(
+                                                        error.TryGetValue(out var firstError)
+                                                            ? errorAggregator(firstError, secondError.Value)
+                                                            : secondErrorSelector(secondError.Value)))
+                                                .Right<IEmpty>())
+                                        .ToQueryResultNodeAsync(),
+                                empty =>
+                                    error.TryGetValue(out var firstError)
+                                        ? Either
+                                            .Left<IElementAsync<TValue, TErrorResult>>()
+                                            .Right(
+                                                Either
+                                                    .Left(
+                                                        new Error<TErrorResult>(
+                                                            firstErrorSelector(firstError)))
+                                                    .Right<IEmpty>())
+                                            .ToQueryResultNodeAsync()
+                                        : Either
+                                            .Left<IElementAsync<TValue, TErrorResult>>()
+                                            .Right(
+                                                Either
+                                                    .Left<IError<TErrorResult>>()
+                                                    .Right(empty))
+                                            .ToQueryResultNodeAsync())))
+                .ConfigureAwait(false);
+        }
+
+        private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
+            IElementAsync<TValue, TErrorResult>
+        {
+            private readonly Optional<TErrorFirst> error;
+            private readonly IQueryResultNodeAsync<TValue, TErrorSecond> next;
+            private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+            private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+            private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="error"></param>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="firstErrorSelector"></param>
+            /// <param name="secondErrorSelector"></param>
+            /// <param name="errorAggregator"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="firstErrorSelector"/> or
+            /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
+            /// </exception>
+            public ConcatSecondErrorElementAsync(
+                Optional<TErrorFirst> error,
+                TValue value,
+                IQueryResultNodeAsync<TValue, TErrorSecond> next,
+                Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+            {
+                ArgumentNullException.ThrowIfNull(next);
+                ArgumentNullException.ThrowIfNull(firstErrorSelector);
+                ArgumentNullException.ThrowIfNull(secondErrorSelector);
+                ArgumentNullException.ThrowIfNull(errorAggregator);
+
+                this.error = error;
+                this.Value = value;
+                this.next = next;
+                this.firstErrorSelector = firstErrorSelector;
+                this.secondErrorSelector = secondErrorSelector;
+                this.errorAggregator = errorAggregator;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
+            {
+                return ConcatTraverseSecond(
+                    this.error,
+                    this.next,
+                    this.firstErrorSelector,
+                    this.secondErrorSelector,
+                    this.errorAggregator);
+            }
+        }
     }
 }
