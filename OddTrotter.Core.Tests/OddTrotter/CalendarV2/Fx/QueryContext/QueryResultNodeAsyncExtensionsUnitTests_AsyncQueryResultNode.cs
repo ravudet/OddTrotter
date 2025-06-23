@@ -296,5 +296,125 @@ namespace Fx.QueryContext
             Assert.IsTrue(terminal.TryGetLeft(out var error));
             Assert.AreEqual(invalidOperationException, error.Value);
         }
+
+        [TestMethod]
+        public async Task WhereFutureNodeNullSource()
+        {
+            ITask<IQueryResultNodeAsync<string, Exception>> node =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+#pragma warning disable CS8604 // Possible null reference argument.
+                        node
+#pragma warning restore CS8604 // Possible null reference argument.
+                            .Where(val => val.Length % 2 == 0)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task WhereFutureNodeNullPredicate()
+        {
+            var value = "asdf";
+            var node = CreateNodeWithElementAsync(value);
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(
+                    async () => await
+                        node
+                            .Where(
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                                null
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                            )
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task WhereFutureNodeNoElements()
+        {
+            var node = CreateNodeWithNoElementsAsync();
+
+            var result = await node.Where(_ => true).ConfigureAwait(false);
+
+            Assert.IsFalse(result.TryGetLeft(out var element));
+            Assert.IsTrue(result.TryGetRight(out var terminal));
+            Assert.IsFalse(terminal.TryGetLeft(out var error));
+            Assert.IsTrue(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public async Task WhereFutureNodeNoElementsError()
+        {
+            var invalidOperationException = new InvalidOperationException();
+            var node = CreateNodeWithErrorAsync(invalidOperationException);
+
+            var result = await node.Where(_ => true).ConfigureAwait(false);
+
+            Assert.IsFalse(result.TryGetLeft(out var element));
+            Assert.IsTrue(result.TryGetRight(out var terminal));
+            Assert.IsTrue(terminal.TryGetLeft(out var error));
+            Assert.AreEqual(invalidOperationException, error.Value);
+            Assert.IsFalse(terminal.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public async Task WhereFutureNodeNoError()
+        {
+            var value = "asdf";
+            var node = CreateNodeWithElementAsync(value);
+
+            var result = await node.Where(_ => true).ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetLeft(out var element));
+            Assert.AreEqual(value, element.Value);
+            var next = await element.Next().ConfigureAwait(false);
+            Assert.IsFalse(next.TryGetLeft(out var secondElement));
+            Assert.IsTrue(next.TryGetRight(out var secondTerminal));
+            Assert.IsFalse(secondTerminal.TryGetLeft(out var secondError));
+            Assert.IsTrue(secondTerminal.TryGetRight(out var secondEmpty));
+            Assert.IsFalse(result.TryGetRight(out var terminal));
+
+            result = await node.Where(_ => false).ConfigureAwait(false);
+
+            Assert.IsFalse(result.TryGetLeft(out element));
+            Assert.IsTrue(result.TryGetRight(out var terminal2));
+            Assert.IsFalse(terminal2.TryGetLeft(out var error));
+            Assert.IsTrue(terminal2.TryGetRight(out var empty));
+        }
+
+        [TestMethod]
+        public async Task WhereFutureNodeElementFollowedByError()
+        {
+            var value = "asdf";
+            var invalidOperationException = new InvalidOperationException();
+            var node = CreateNodeWithElementThenErrorAsync(value, invalidOperationException);
+
+            var result = await node.Where(_ => true).ConfigureAwait(false);
+
+            Assert.IsTrue(result.TryGetLeft(out var element));
+            Assert.AreEqual(value, element.Value);
+            var next = await element.Next().ConfigureAwait(false);
+            Assert.IsFalse(next.TryGetLeft(out var secondElement));
+            Assert.IsTrue(next.TryGetRight(out var secondTerminal));
+            Assert.IsTrue(secondTerminal.TryGetLeft(out var secondError));
+            Assert.AreEqual(invalidOperationException, secondError.Value);
+            Assert.IsFalse(secondTerminal.TryGetRight(out var secondEmpty));
+            Assert.IsFalse(result.TryGetRight(out var terminal));
+
+            result = await node.Where(_ => false).ConfigureAwait(false);
+
+            Assert.IsFalse(result.TryGetLeft(out element));
+            Assert.IsTrue(result.TryGetRight(out var terminal2));
+            Assert.IsTrue(terminal2.TryGetLeft(out var error));
+            Assert.AreEqual(invalidOperationException, error.Value);
+            Assert.IsFalse(terminal2.TryGetRight(out var empty));
+        }
     }
 }

@@ -410,6 +410,7 @@
             // exception documentation (temporarily, at least put the word "placeholder" in the xmldoc summary)
             // is there any use of `<` in your XML doc? it will break intellisense if there is
             // todos
+            // every `await` should have a `configureawait(false)`
             // anything that isn't nailed down 100% should be `internal`
             // `this.`
             // give caught exceptions meaningful variable names
@@ -425,15 +426,15 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on\
+            //// TODO you added tests for the where asyncqueryresultnode; you haven't run those tests yet; then you need to write tests for the "future" variant
+            //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
+            //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)
             //// TODO `ieither.apply` should return `itask`?
             //// TODO move the async stuff to v2 "correctly"
             //// TODO don't forget about QueryResultExtensionsUnitTests_AsyncQueryResultSyncDelegates, this is async stuff that needs to be "moved"
             //// TODO i think you want `delegate maybe<output> try<input, output>(input)` where `maybe<output> : either<output, nothing>``; but you don't want to call it `try` because that pattern already exists and people will mostly use `maybe` by calling `trygetleft`; i like "attempt" but that's a noun; find a verb that means the same; and then you can easily adapt a try to an attempt inline if there's maybe.value and maybe.nothing like input => try(input, out var output) ? maybe.value(output) : maybe.nothing<output>(). i'm unclear if the "base" inplementation should be `try` or `attempt`; implement `tryselect` and `attemptselect` and then implement them again where the call each other and whichever has better type inference should be the pattern; you should have a method that converts an `ieither<t, nothing>` into a `maybe<t>`; you should come up with a naming convention for this class of method (where it adapts; `to` methods are for "conversions")
             //// https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
-            //// TODO you have paused selectasync for queryresult Thu May 8 07:41:55
-            //// TODO you are implementing selectasync for queryresult
             //// TODO you are pulling async queryresult extensions out of `iquerycontext` into `v2`
             //// TODO document why you added `applyasync` when `apply` can take async methods; it'd be good if you can write a test; further, you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this
             //// TODO figure out diffing a current file with a previous commit of that file
