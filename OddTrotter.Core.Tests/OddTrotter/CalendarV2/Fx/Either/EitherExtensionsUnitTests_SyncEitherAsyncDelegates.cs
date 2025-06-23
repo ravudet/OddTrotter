@@ -175,14 +175,23 @@ namespace Fx.Either
             var exception = new InvalidOperationException();
             var either = Either.Left("asdf").Right<int>();
 
-            await either.Apply(async left => await IdentityAsync(left).ConfigureAwait(false), right => throw exception)
+            await either
+                .Apply(
+                    async left => await IdentityAsync(left).ConfigureAwait(false), 
+                    right => throw exception)
                 .ConfigureAwait(false);
 
             either = Either.Left<string>().Right(42);
 
             var rightMapException = await Assert
                 .ThrowsExceptionAsync<RightMapException>(
-                    async () => await either.Apply(async left => await IdentityAsync(left).ConfigureAwait(false), right => throw exception).ConfigureAwait(false)).ConfigureAwait(false);
+                    async () => await 
+                        either
+                            .Apply(
+                                async left => await IdentityAsync(left).ConfigureAwait(false), 
+                                right => throw exception)
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
             Assert.AreEqual(exception, rightMapException.InnerException);
         }
 
@@ -191,12 +200,23 @@ namespace Fx.Either
         {
             var either = Either.Left("sadf").Right<int>();
 
-            Assert.AreEqual(4, await either.Apply(async left => await CountAsync(left).ConfigureAwait(false), async right => await IdentityAsync(right).ConfigureAwait(false)).ConfigureAwait(false));
+            Assert.AreEqual(
+                4,
+                await either
+                    .Apply(
+                        async left => await CountAsync(left).ConfigureAwait(false),
+                        async right => await IdentityAsync(right).ConfigureAwait(false))
+                    .ConfigureAwait(false));
 
             either = Either.Left<string>().Right(42);
 
-            Assert.AreEqual(42, await either.Apply(async left => await CountAsync(left).ConfigureAwait(false), async right => await IdentityAsync(right).ConfigureAwait(false))
-                .ConfigureAwait(false));
+            Assert.AreEqual(
+                42, 
+                await either
+                    .Apply(
+                        async left => await CountAsync(left).ConfigureAwait(false), 
+                        async right => await IdentityAsync(right).ConfigureAwait(false))
+                    .ConfigureAwait(false));
         }
 
 
