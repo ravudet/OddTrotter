@@ -298,7 +298,7 @@ namespace Fx.QueryContext
         }
 
         [TestMethod]
-        public async Task WhereFutreNodeNullSource()
+        public async Task WhereFutureNodeNullSource()
         {
             ITask<IQueryResultNodeAsync<string, Exception>> node =
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
