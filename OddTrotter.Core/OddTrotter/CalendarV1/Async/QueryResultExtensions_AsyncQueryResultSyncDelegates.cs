@@ -267,14 +267,6 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
-            this IEither<TLeft, TRight> either,
-            Func<TLeft, ITask<TResult>> leftMap,
-            Func<TRight, ITask<TResult>> rightMap)
-        {
-            return await either.Apply((left, nothing) => leftMap(left), (right, nothing) => rightMap(right), new Nothing()).ConfigureAwait(false);
-        }
-
         public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
