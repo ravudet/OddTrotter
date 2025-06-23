@@ -29,11 +29,23 @@ namespace Fx.Either
             return Either.Left<string>().Right(new[] { 42 });
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private static async ITask<T> IdentityAsync<T>(T value)
         {
             return await Task.FromResult(value).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
         private static async ITask<int> CountAsync<T>(IEnumerable<T> source)
         {
             return await Task.FromResult(source.Count()).ConfigureAwait(false);
