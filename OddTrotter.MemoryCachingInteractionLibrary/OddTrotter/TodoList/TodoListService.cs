@@ -426,6 +426,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO you just copied the concat extensions for queryreusltnode; you were checking to see if you liked the implementation or if there was anything to change; you need to code review it and then add tests and code review the tests
             //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
             //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)

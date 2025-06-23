@@ -265,7 +265,8 @@ namespace Fx.QueryContext
                                         firstErrorSelector,
                                         secondErrorSelector,
                                         errorAggregator))
-                            .ConfigureAwait(false));
+                            .ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         private sealed class ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> : IElementAsync<TValue, TErrorResult>
