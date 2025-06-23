@@ -278,7 +278,12 @@ namespace Fx.QueryContext
         public async Task WhereNullPredicate()
         {
             var value = "asdf";
-            var node = Either.Left(new MockElementAsync(value)).Right<IEither<IError<Exception>, IEmpty>>().ToQueryResultNodeAsync();
+            var node = 
+                Either
+                    .Left(
+                        new MockElementAsync(value))
+                    .Right<IEither<IError<Exception>, IEmpty>>()
+                    .ToQueryResultNodeAsync();
 
             await Assert
                 .ThrowsExceptionAsync<ArgumentNullException>(
@@ -296,7 +301,15 @@ namespace Fx.QueryContext
         [TestMethod]
         public async Task WhereNoElements()
         {
-            var node = Either.Left<MockElementAsync>().Right(Either.Left<MockError>().Right(MockEmpty.Instance)).ToQueryResultNodeAsync();
+            var node = 
+                Either
+                    .Left<MockElementAsync>()
+                    .Right(
+                        Either
+                            .Left<MockError>()
+                            .Right(
+                                MockEmpty.Instance))
+                    .ToQueryResultNodeAsync();
 
             var result = await node.Where(_ => true).ConfigureAwait(false);
 
