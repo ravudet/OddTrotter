@@ -9,6 +9,43 @@ namespace Fx.Either
         /// <summary>
         /// placeholder
         /// </summary>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="either"></param>
+        /// <param name="leftMap"></param>
+        /// <param name="rightMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="either"/> or <paramref name="leftMap"/> or <paramref name="rightMap"/> is <see langword="null"/></exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if <paramref name="leftMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
+        /// whatever exception <paramref name="leftMap"/> threw.
+        /// </exception>
+        /// <exception cref="RightMapException">
+        /// Thrown if <paramref name="rightMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
+        /// whatever exception <paramref name="rightMap"/> threw.
+        /// </exception>
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, ITask<TResult>> leftMap,
+            Func<TRight, ITask<TResult>> rightMap)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await 
+                either
+                    .Apply(
+                        (left, nothing) => leftMap(left), 
+                        (right, nothing) => rightMap(right), 
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
         /// <typeparam name="TLeftValue"></typeparam>
         /// <typeparam name="TRightValue"></typeparam>
         /// <typeparam name="TLeftResult"></typeparam>

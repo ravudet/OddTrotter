@@ -45,13 +45,31 @@ namespace Fx.Either
 
         private sealed class ApplyContext<TLeft, TRight, TResult>
         {
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="leftMap"></param>
+            /// <param name="rightMap"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="leftMap"/> or <paramref name="rightMap"/> is <see langword="null"/>
+            /// </exception>
             public ApplyContext(Func<TLeft, TResult> leftMap, Func<TRight, TResult> rightMap)
             {
+                ArgumentNullException.ThrowIfNull(leftMap);
+                ArgumentNullException.ThrowIfNull(rightMap);
+
                 LeftMap = leftMap;
                 RightMap = rightMap;
             }
 
+            /// <summary>
+            /// placeholder
+            /// </summary>
             public Func<TLeft, TResult> LeftMap { get; }
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
             public Func<TRight, TResult> RightMap { get; }
         }
 
