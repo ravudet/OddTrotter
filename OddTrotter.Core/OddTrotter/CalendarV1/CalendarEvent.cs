@@ -27,6 +27,8 @@ namespace OddTrotter.Calendar
             this.Body = body;
             this.Start = start;
             this.IsCancelled = isCancelled;
+
+            Foo.Bar.DoWork();
         }
 
         public string Id { get; }

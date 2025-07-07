@@ -16,18 +16,7 @@
 #pragma warning disable RS1035 // Specify analyzer banned API enforcement setting
             context.AddSource(
                 "ravudettest",
-"""
-namespace Foo
-{
-    public class Bar
-    {
-        public void DoWork()
-        {
-            System.Console.WriteLine("hello");
-        }
-    }
-}
-"""
+                "namespace Foo\r\n{\r\n    public class Bar\r\n    {\r\n        public static void DoWork()\r\n        {\r\n            System.Console.WriteLine(\"hello\");\r\n        }\r\n    }\r\n}"
                 );
 #pragma warning restore RS1035 // Specify analyzer banned API enforcement setting
         }
