@@ -17,4 +17,10 @@
     </AssemblyAttribute>
   </ItemGroup>
   
+  <ItemGroup>
+    <ProjectReference Include="..\Generator\Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
 </Project>
