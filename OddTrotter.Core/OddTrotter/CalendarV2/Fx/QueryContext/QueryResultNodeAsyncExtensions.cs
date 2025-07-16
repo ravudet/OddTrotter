@@ -6,6 +6,7 @@ namespace Fx.QueryContext
 
     using Fx.Either;
     using Fx.Try;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
@@ -234,38 +235,28 @@ namespace Fx.QueryContext
 
             return await first
                 .Apply(
-                    async element => await Task
-                        .FromResult(
-                            Either
-                                .Left(
-                                    new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-                                        element.Value,
-                                        element.Next(),
-                                        second,
-                                        firstErrorSelector,
-                                        secondErrorSelector,
-                                        errorAggregator))
-                                .Right<IEither<IError<TErrorResult>, IEmpty>>()
-                                .ToQueryResultNodeAsync())
-                        .ConfigureAwait(false),
-                    async terminal => await
-                        terminal
-                            .Apply(
-                                error =>
-                                    ConcatTraverseSecond(
-                                        new Optional<TErrorFirst>(error.Value),
-                                        second,
-                                        firstErrorSelector,
-                                        secondErrorSelector,
-                                        errorAggregator),
-                                empty =>
-                                    ConcatTraverseSecond(
-                                        default,
-                                        second,
-                                        firstErrorSelector,
-                                        secondErrorSelector,
-                                        errorAggregator))
-                            .ConfigureAwait(false))
+                    element => Either
+                        .Left(
+                            new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+                                element.Value,
+                                element.Next(),
+                                second,
+                                firstErrorSelector,
+                                secondErrorSelector,
+                                errorAggregator))
+                        .Right<IEither<IError<TErrorResult>, IEmpty>>()
+                        .ToQueryResultNodeAsync(),
+                    async terminal => await 
+                        ConcatTraverseSecond(
+                            terminal
+                                .Apply(
+                                    error => new Optional<TErrorFirst>(error.Value),
+                                    empty => new Optional<TErrorFirst>()),
+                            second,
+                            firstErrorSelector,
+                            secondErrorSelector,
+                            errorAggregator)
+                        .ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
@@ -355,7 +346,6 @@ namespace Fx.QueryContext
                             .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .ToQueryResultNodeAsync(),
                     terminal =>
-                        Task.FromResult(
                         terminal
                             .Apply(
                                 secondError =>
@@ -387,7 +377,7 @@ namespace Fx.QueryContext
                                                 Either
                                                     .Left<IError<TErrorResult>>()
                                                     .Right(empty))
-                                            .ToQueryResultNodeAsync())))
+                                            .ToQueryResultNodeAsync()))
                 .ConfigureAwait(false);
         }
 

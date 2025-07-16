@@ -43,6 +43,42 @@ namespace Fx.Either
                     .ConfigureAwait(false);
         }
 
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, ITask<TResult>> leftMap,
+            Func<TRight, TResult> rightMap)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await
+                either
+                    .Apply(
+                        async (left, nothing) => await leftMap(left).ConfigureAwait(false),
+                        async (right, nothing) => await Task.FromResult(rightMap(right)).ConfigureAwait(false), //// TODO if you're willing to do task.fromresult then you don't actually need the sync method on the interface
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
+        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, ITask<TResult>> rightMap)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(leftMap);
+            ArgumentNullException.ThrowIfNull(rightMap);
+
+            return await
+                either
+                    .Apply(
+                        async (left, nothing) => await Task.FromResult(leftMap(left)).ConfigureAwait(false), //// TODO if you're willing to do task.fromresult then you don't actually need the sync method on the interface
+                        async (right, nothing) => await rightMap(right).ConfigureAwait(false),
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>
