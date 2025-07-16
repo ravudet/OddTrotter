@@ -346,39 +346,32 @@ namespace Fx.QueryContext
                             .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .ToQueryResultNodeAsync(),
                     terminal =>
-                        terminal
-                            .Apply(
-                                secondError =>
-                                    Either
-                                        .Left<IElementAsync<TValue, TErrorResult>>()
-                                        .Right(
+                        Either
+                            .Left<IElementAsync<TValue, TErrorResult>>()
+                            .Right(
+                                terminal
+                                    .Apply(
+                                        secondError =>
                                             Either
                                                 .Left(
                                                     new Error<TErrorResult>(
                                                         error.TryGetValue(out var firstError)
                                                             ? errorAggregator(firstError, secondError.Value)
                                                             : secondErrorSelector(secondError.Value)))
-                                                .Right<IEmpty>())
-                                        .ToQueryResultNodeAsync(),
-                                empty =>
-                                    error.TryGetValue(out var firstError)
-                                        ? Either
-                                            .Left<IElementAsync<TValue, TErrorResult>>()
-                                            .Right(
-                                                Either
-                                                    .Left(
-                                                        new Error<TErrorResult>(
-                                                            firstErrorSelector(firstError)))
-                                                    .Right<IEmpty>())
-                                            .ToQueryResultNodeAsync()
-                                        : Either
-                                            .Left<IElementAsync<TValue, TErrorResult>>()
-                                            .Right(
-                                                Either
-                                                    .Left<IError<TErrorResult>>()
-                                                    .Right(empty))
-                                            .ToQueryResultNodeAsync()))
-                .ConfigureAwait(false);
+                                                .Right<IEmpty>(),
+                                        empty =>
+                                            error
+                                                .TryGetValue(out var firstError)
+                                                    ? Either
+                                                        .Left(
+                                                            new Error<TErrorResult>(
+                                                                firstErrorSelector(firstError)))
+                                                        .Right<IEmpty>()
+                                                    : Either
+                                                        .Left<Error<TErrorResult>>()
+                                                        .Right(empty)))
+                            .ToQueryResultNodeAsync())
+                .ConfigureAwait(false);a
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
