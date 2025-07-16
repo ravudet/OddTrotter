@@ -371,7 +371,7 @@ namespace Fx.QueryContext
                                                         .Left<Error<TErrorResult>>()
                                                         .Right(empty)))
                             .ToQueryResultNodeAsync())
-                .ConfigureAwait(false);a
+                .ConfigureAwait(false);
         }
 
         private sealed class ConcatSecondErrorElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> :
