@@ -109,6 +109,10 @@ namespace Stash
 
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func) //// TODO you need to be able to take in more than `task` (also `valuetask`, `itask`, `future<tresult`, etc)
             {
+
+                //// TODO you are here
+                //// TODO you are trying to actually implement an either with this new pattern
+                //// TODO you need to be satisfied with all of the todos in here before you can move on
                 return default;
             }
         }
