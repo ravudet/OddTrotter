@@ -94,17 +94,17 @@ namespace Stash
 
         public readonly ref struct MapBuilder<TLeft, TContext, TResult>
         {
-            private readonly Func<TLeft, TContext, TResult> func;
+            private readonly Func<TLeft, TContext, TResult> leftMap;
 
             public MapBuilder(Func<TLeft, TContext, TResult> func)
             {
-                this.func = func;
+                this.leftMap = func;
                 //// TODO handle the default constructor
             }
 
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Right<TRight>(Func<TRight, TContext, TResult> func)
             {
-                return default;
+                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Sync>(this.leftMap, func);
             }
 
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func) //// TODO you need to be able to take in more than `task` (also `valuetask`, `itask`, `future<tresult`, etc)
