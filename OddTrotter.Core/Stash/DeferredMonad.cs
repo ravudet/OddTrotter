@@ -6,6 +6,44 @@ using System.Reflection.Metadata.Ecma335;
 
 namespace Stash
 {
+    public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    {
+        public abstract TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context) where TFuture : Future<TResult>;
+
+        public sealed class Left : Either<TLeft, TRight>
+        {
+            public Left(TLeft value)
+            {
+                Value = value;
+            }
+
+            public TLeft Value { get; }
+
+            public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
+            {
+                return map.Invoke(this.Value, context);
+            }
+        }
+
+        public sealed class Right : Either<TLeft, TRight>
+        {
+            public Right(TRight value)
+            {
+                Value = value;
+            }
+
+            public TRight Value { get; }
+
+            public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
+            {
+                return map.Invoke(this.Value, context);
+            }
+        }
+    }
+
+
+
+
     public interface IEither<TLeft, TRight> //// TODO add covariance
     {
         TFuture Apply<TResult, TContext, TFuture>(
