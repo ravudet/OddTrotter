@@ -91,7 +91,7 @@ namespace Stash
             Func<TRight, TContext, TResult> rightMap,
             TContext context)
         {
-            //// TODO you are here; do the `apply().left(...).right(...).context(...)` variant
+            //// TODO use the `apply().left(...).right(...).context(...)` variant
             var map = Map.Left(leftMap).Right(rightMap);
             return either.Apply(map, context).GetValue();
         }
