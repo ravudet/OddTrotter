@@ -21,6 +21,7 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
+                //// TODO you need to throw leftmapexception, but if this method is actually async, then that won't work correctly
                 return map.Invoke(this.Value, context);
             }
         }
@@ -36,6 +37,7 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
+                //// TODO you need to throw rightmapexception, but if this method is actually async, then that won't work correctly
                 return map.Invoke(this.Value, context);
             }
         }
@@ -78,7 +80,6 @@ namespace Stash
 
 
 
-
     public static class Map //// TODO just have an empty `apply` overload on `ieither` extensions instead i think
     {
         public static MapBuilder<TLeft, TContext, TResult> Left<TLeft, TContext, TResult>(Func<TLeft, TContext, TResult> func)
@@ -93,6 +94,14 @@ namespace Stash
 
         public readonly ref struct MapBuilder<TLeft, TContext, TResult>
         {
+            private readonly Func<TLeft, TContext, TResult> func;
+
+            public MapBuilder(Func<TLeft, TContext, TResult> func)
+            {
+                this.func = func;
+                //// TODO handle the default constructor
+            }
+
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Right<TRight>(Func<TRight, TContext, TResult> func)
             {
                 return default;
@@ -138,6 +147,35 @@ namespace Stash
     public readonly ref struct Map<TLeft, TRight, TResult, TContext, TFuture>
         where TFuture : Future<TResult>
     {
+        private readonly Func<TLeft, TContext, TResult>? syncLeftMap;
+        private readonly Func<TRight, TContext, TResult>? syncRightMap;
+        private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeftMap;
+        private readonly Func<TRight, TContext, Task<TResult>>? asyncRightMap;
+
+        public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
+        {
+            this.syncLeftMap = leftMap;
+            this.syncRightMap = rightMap;
+        }
+
+        public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            this.syncLeftMap = leftMap;
+            this.asyncRightMap = rightMap;
+        }
+
+        public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, TResult> rightMap)
+        {
+            this.asyncLeftMap = leftMap;
+            this.syncRightMap = rightMap;
+        }
+
+        public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            this.asyncLeftMap = leftMap;
+            this.asyncRightMap = rightMap;
+        }
+
         public TFuture Invoke(TLeft left, TContext context)
         {
             return default!;
