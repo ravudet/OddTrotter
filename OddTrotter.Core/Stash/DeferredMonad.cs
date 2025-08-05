@@ -21,7 +21,7 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
-                //// TODO you need to throw leftmapexception, but if this method is actually async, then that won't work correctly
+                map = map.HandleLeftException((left, context, exception) => throw new LeftException(exception));
                 return map.Invoke(this.Value, context);
             }
         }
@@ -37,9 +37,25 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
-                //// TODO you need to throw rightmapexception, but if this method is actually async, then that won't work correctly
+                map = map.HandleRightException((right, context, exception) => throw new RightException(exception));
                 return map.Invoke(this.Value, context);
             }
+        }
+    }
+
+    public sealed class LeftException : Exception
+    {
+        public LeftException(Exception exception)
+            : base(null, exception)
+        {
+        }
+    }
+
+    public sealed class RightException : Exception
+    {
+        public RightException(Exception exception)
+            : base(null, exception)
+        {
         }
     }
 
@@ -180,7 +196,7 @@ namespace Stash
         }
     }
 
-    public readonly ref struct Map<TLeft, TRight, TResult, TContext, TFuture>
+    public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture>
         where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
         private readonly Func<TLeft, TContext, TResult>? syncLeftMap;
@@ -269,9 +285,28 @@ namespace Stash
 
         public TFuture Invoke(TLeft left, TContext context)
         {
+            //// TODO what if left and right are the same type?
+
             if (this.syncLeftMap != null)
             {
-                var sync = Future<TResult>.Create(this.syncLeftMap(left, context));
+                var map = this.syncLeftMap;
+                if (this.leftHandleException != null)
+                {
+                    var self = this;
+                    map = (left, context) =>
+                    {
+                        try
+                        {
+                            return map(left, context);
+                        }
+                        catch (Exception exception)
+                        {
+                            return self.leftHandleException(left, context, exception);
+                        }
+                    };
+                }
+
+                var sync = Future<TResult>.Create(map(left, context));
                 return (sync as TFuture)!; //// TODO can you avoid null forgiveness? //// TODO in all 4 branches
             }
             else if (this.asyncLeftMap != null)
