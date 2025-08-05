@@ -311,6 +311,7 @@ namespace Stash
             }
             else if (this.asyncLeftMap != null)
             {
+                //// TODO handle exceptions
                 var async = Future<TResult>.Create(this.asyncLeftMap(left, context));
                 return (async as TFuture)!;
             }
@@ -324,11 +325,13 @@ namespace Stash
         {
             if (this.syncRightMap != null)
             {
+                //// TODO handle exceptions
                 var sync = Future<TResult>.Create(this.syncRightMap(right, context));
                 return (sync as TFuture)!;
             }
             else if (this.asyncRightMap != null)
             {
+                //// TODO handle exceptions
                 var async = Future<TResult>.Create(this.asyncRightMap(right, context));
                 return (async as TFuture)!;
             }
