@@ -46,7 +46,7 @@ namespace Stash
 
 
 
-    public interface IEither<TLeft, TRight> //// TODO add covariance
+    public interface IEither<TLeft, TRight> //// TODO add covariance //// TODO i think you could use an internal method on a public ifuture interface to accomplish this?
     {
         TFuture Apply<TResult, TContext, TFuture>(
             Map<TLeft, TRight, TResult, TContext, TFuture> map,
@@ -58,6 +58,20 @@ namespace Stash
     {
         private Future()
         {
+        }
+
+        public static TFuture Create<TFuture>(T value) where TFuture : Future<T>
+        {
+            //// TODO assert the right kind of future is used
+            var sync = new Sync();
+            return (sync as TFuture)!;
+        }
+
+        public static TFuture Create<TFuture>(Task<T> value) where TFuture : Future<T>
+        {
+            //// TODO assert the right kind of future is used
+            var async = new Async();
+            return (async as TFuture)!;
         }
 
         public sealed class Sync : Future<T>
@@ -84,7 +98,7 @@ namespace Stash
     {
         public static MapBuilder<TLeft, TContext, TResult> Left<TLeft, TContext, TResult>(Func<TLeft, TContext, TResult> func)
         {
-            return default;
+            return new MapBuilder<TLeft, TContext, TResult>(func);
         }
 
         public static AsyncMapBuilder<TLeft, TContext, TResult> Left<TLeft, TContext, TResult>(Func<TLeft, TContext, Task<TResult>> func)
@@ -113,20 +127,27 @@ namespace Stash
                 //// TODO you are here
                 //// TODO you are trying to actually implement an either with this new pattern
                 //// TODO you need to be satisfied with all of the todos in here before you can move on
-                return default;
+                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
         }
 
         public readonly ref struct AsyncMapBuilder<TLeft, TContext, TResult>
         {
+            private readonly Func<TLeft, TContext, Task<TResult>> leftMap;
+
+            public AsyncMapBuilder(Func<TLeft, TContext, Task<TResult>> func)
+            {
+                this.leftMap = func;
+            }
+
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, TResult> func)
             {
-                return default;
+                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
 
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func)
             {
-                return default;
+                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
         }
 
@@ -149,7 +170,7 @@ namespace Stash
     }
 
     public readonly ref struct Map<TLeft, TRight, TResult, TContext, TFuture>
-        where TFuture : Future<TResult>
+        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
         private readonly Func<TLeft, TContext, TResult>? syncLeftMap;
         private readonly Func<TRight, TContext, TResult>? syncRightMap;
@@ -182,12 +203,34 @@ namespace Stash
 
         public TFuture Invoke(TLeft left, TContext context)
         {
-            return default!;
+            if (this.syncLeftMap != null)
+            {
+                return Future<TResult>.Create<TFuture>(this.syncLeftMap(left, context));
+            }
+            else if (this.asyncLeftMap != null)
+            {
+                return Future<TResult>.Create<TFuture>(this.asyncLeftMap(left, context));
+            }
+            else
+            {
+                throw new Exception("TODO maybe a visitor?");
+            }
         }
 
         public TFuture Invoke(TRight right, TContext context)
         {
-            return default!;
+            if (this.syncRightMap != null)
+            {
+                return Future<TResult>.Create<TFuture>(this.syncRightMap(right, context));
+            }
+            else if (this.asyncRightMap != null)
+            {
+                return Future<TResult>.Create<TFuture>(this.asyncRightMap(right, context));
+            }
+            else
+            {
+                throw new Exception("TODO maybe a visitor?");
+            }
         }
     }
 }
