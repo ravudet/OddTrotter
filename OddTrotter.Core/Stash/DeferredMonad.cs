@@ -62,7 +62,7 @@ namespace Stash
 
         public static Future<T>.Sync Create(T value)
         {
-            return new Sync();
+            return new Sync(value);
         }
 
         public static Future<T>.Async Create(Task<T> value)
@@ -72,17 +72,31 @@ namespace Stash
 
         public sealed class Sync : Future<T>
         {
+            private readonly T value;
+
+            public Sync(T value)
+            {
+                this.value = value;
+            }
+
             public T GetValue()
             {
-                return default!;
+                return this.value;
             }
         }
 
         public sealed class Async : Future<T>
         {
+            private readonly Task<T> value;
+
+            public Async(Task<T> value)
+            {
+                this.value = value;
+            }
+
             public async Task<T> GetValue()
             {
-                return await Task.FromResult(default(T)!).ConfigureAwait(false);
+                return await this.value.ConfigureAwait(false);
             }
         }
     }
