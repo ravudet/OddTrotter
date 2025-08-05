@@ -194,6 +194,16 @@ namespace Stash
             var map = Map.Left(leftMap).Right(rightMap);
             return either.Apply(map, context).GetValue();
         }
+
+        public static async Task<TResult> ApplyAsync<TLeft, TRight, TContext, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap,
+            TContext context)
+        {
+            var map = Map.Left(leftMap).Right(rightMap);
+            return await either.Apply(map, context).GetValue().ConfigureAwait(false)
+        }
     }
 
     public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture>
@@ -271,6 +281,7 @@ namespace Stash
                 handler);
 
 
+            //// TODO could this actually be done at the caller level?
             //// TODO you're really going to have to implement a bunch of stuff that's equivalent to `func` if you want this to work well
             //// TODO this type is actually doing two things: it is abstracting the return type *and* it is being a DU func; maybe have separate types for the two purposes
         }
