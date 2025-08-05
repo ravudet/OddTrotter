@@ -92,6 +92,7 @@ namespace Stash
 
             public Sync(T value)
             {
+                //// TODO i think this should probably take the func instead of the value
                 this.value = value;
             }
 
@@ -107,6 +108,7 @@ namespace Stash
 
             public Async(Task<T> value)
             {
+                //// TODO i think this should probably take the func instead of the task
                 this.value = value;
             }
 
