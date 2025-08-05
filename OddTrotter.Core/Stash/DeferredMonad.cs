@@ -148,6 +148,7 @@ namespace Stash
             public AsyncMapBuilder(Func<TLeft, TContext, Task<TResult>> func)
             {
                 this.leftMap = func;
+                //// TODO handle the default constructor
             }
 
             public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, TResult> func)
@@ -216,7 +217,7 @@ namespace Stash
             if (this.syncLeftMap != null)
             {
                 var sync = Future<TResult>.Create(this.syncLeftMap(left, context));
-                return (sync as TFuture)!; //// TODO can you avoid null forgiveness?
+                return (sync as TFuture)!; //// TODO can you avoid null forgiveness? //// TODO in all 4 branches
             }
             else if (this.asyncLeftMap != null)
             {
