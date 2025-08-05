@@ -67,7 +67,7 @@ namespace Stash
 
         public static Future<T>.Async Create(Task<T> value)
         {
-            return new Async();
+            return new Async(value);
         }
 
         public sealed class Sync : Future<T>
