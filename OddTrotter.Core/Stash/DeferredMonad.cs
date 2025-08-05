@@ -188,6 +188,9 @@ namespace Stash
         private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeftMap;
         private readonly Func<TRight, TContext, Task<TResult>>? asyncRightMap;
 
+        private readonly Func<TLeft, TContext, Exception, TResult>? leftHandleException;
+        private readonly Func<TRight, TContext, Exception, TResult>? rightHandleException;
+
         public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
         {
             this.syncLeftMap = leftMap;
@@ -210,6 +213,58 @@ namespace Stash
         {
             this.asyncLeftMap = leftMap;
             this.asyncRightMap = rightMap;
+        }
+
+        private Map(
+            Func<TLeft, TContext, TResult>? syncLeftMap,
+            Func<TRight, TContext, TResult>? syncRightMap,
+            Func<TLeft, TContext, Task<TResult>>? asyncLeftMap,
+            Func<TRight, TContext, Task<TResult>>? asyncRightMap,
+            Func<TLeft, TContext, Exception, TResult>? leftHandleException)
+        {
+            this.syncLeftMap = syncLeftMap;
+            this.syncRightMap = syncRightMap;
+            this.asyncLeftMap = asyncLeftMap;
+            this.asyncRightMap = asyncRightMap;
+            this.leftHandleException = leftHandleException;
+        }
+
+        private Map(
+            Func<TLeft, TContext, TResult>? syncLeftMap,
+            Func<TRight, TContext, TResult>? syncRightMap,
+            Func<TLeft, TContext, Task<TResult>>? asyncLeftMap,
+            Func<TRight, TContext, Task<TResult>>? asyncRightMap,
+            Func<TRight, TContext, Exception, TResult>? rightHandleException)
+        {
+            this.syncLeftMap = syncLeftMap;
+            this.syncRightMap = syncRightMap;
+            this.asyncLeftMap = asyncLeftMap;
+            this.asyncRightMap = asyncRightMap;
+            this.rightHandleException = rightHandleException;
+        }
+
+        public Map<TLeft, TRight, TResult, TContext, TFuture> HandleLeftException(Func<TLeft, TContext, Exception, TResult> handler)
+        {
+            //// TODO what if htis is called more than once?
+
+            return new Map<TLeft, TRight, TResult, TContext, TFuture>(
+                this.syncLeftMap, 
+                this.syncRightMap, 
+                this.asyncLeftMap,
+                this.asyncRightMap, 
+                handler);
+        }
+
+        public Map<TLeft, TRight, TResult, TContext, TFuture> HandleRightException(Func<TRight, TContext, Exception, TResult> handler)
+        {
+            //// TODO what if htis is called more than once?
+
+            return new Map<TLeft, TRight, TResult, TContext, TFuture>(
+                this.syncLeftMap,
+                this.syncRightMap,
+                this.asyncLeftMap,
+                this.asyncRightMap,
+                handler);
         }
 
         public TFuture Invoke(TLeft left, TContext context)
