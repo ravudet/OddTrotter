@@ -269,6 +269,10 @@ namespace Stash
                 this.asyncLeftMap,
                 this.asyncRightMap, 
                 handler);
+
+
+            //// TODO you're really going to have to implement a bunch of stuff that's equivalent to `func` if you want this to work well
+            //// TODO this type is actually doing two things: it is abstracting the return type *and* it is being a DU func; maybe have separate types for the two purposes
         }
 
         public Map<TLeft, TRight, TResult, TContext, TFuture> HandleRightException(Func<TRight, TContext, Exception, TResult> handler)
