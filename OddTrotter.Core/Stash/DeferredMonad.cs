@@ -60,18 +60,14 @@ namespace Stash
         {
         }
 
-        public static TFuture Create<TFuture>(T value) where TFuture : Future<T>
+        public static Future<T>.Sync Create(T value)
         {
-            //// TODO assert the right kind of future is used
-            var sync = new Sync();
-            return (sync as TFuture)!;
+            return new Sync();
         }
 
-        public static TFuture Create<TFuture>(Task<T> value) where TFuture : Future<T>
+        public static Future<T>.Async Create(Task<T> value)
         {
-            //// TODO assert the right kind of future is used
-            var async = new Async();
-            return (async as TFuture)!;
+            return new Async();
         }
 
         public sealed class Sync : Future<T>
@@ -205,11 +201,13 @@ namespace Stash
         {
             if (this.syncLeftMap != null)
             {
-                return Future<TResult>.Create<TFuture>(this.syncLeftMap(left, context));
+                var sync = Future<TResult>.Create(this.syncLeftMap(left, context));
+                return (sync as TFuture)!; //// TODO can you avoid null forgiveness?
             }
             else if (this.asyncLeftMap != null)
             {
-                return Future<TResult>.Create<TFuture>(this.asyncLeftMap(left, context));
+                var async = Future<TResult>.Create(this.asyncLeftMap(left, context));
+                return (async as TFuture)!;
             }
             else
             {
@@ -221,11 +219,13 @@ namespace Stash
         {
             if (this.syncRightMap != null)
             {
-                return Future<TResult>.Create<TFuture>(this.syncRightMap(right, context));
+                var sync = Future<TResult>.Create(this.syncRightMap(right, context));
+                return (sync as TFuture)!;
             }
             else if (this.asyncRightMap != null)
             {
-                return Future<TResult>.Create<TFuture>(this.asyncRightMap(right, context));
+                var async = Future<TResult>.Create(this.asyncRightMap(right, context));
+                return (async as TFuture)!;
             }
             else
             {
