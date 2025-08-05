@@ -99,7 +99,7 @@ namespace Stash
 
         public static AsyncMapBuilder<TLeft, TContext, TResult> Left<TLeft, TContext, TResult>(Func<TLeft, TContext, Task<TResult>> func)
         {
-            return default;
+            return new AsyncMapBuilder<TLeft, TContext, TResult>(func);
         }
 
         public readonly ref struct MapBuilder<TLeft, TContext, TResult>
