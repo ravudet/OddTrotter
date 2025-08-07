@@ -225,7 +225,6 @@ namespace Stash
         }
 
 
-        //// TODO implement a select that takes  single `map` aprameter instead of two `func` parameters
         //// TODO implement the existing select on top of that
         //// TODO implement the async variants of the existing select
     }
@@ -355,7 +354,7 @@ namespace Stash
 
             //// TODO could this actually be done at the caller level?
             //// TODO you're really going to have to implement a bunch of stuff that's equivalent to `func` if you want this to work well
-            //// TODO this type is actually doing two things: it is abstracting the return type *and* it is being a DU func; maybe have separate types for the two purposes
+            //// TODO this type is actually doing two things: it is abstracting the return type *and* it is being a DU func; maybe have separate types for the two purposes //// TODO i think having the single function map above will also let you have implicit conversions so that you don't have to do so much with map builders (maybe?)
         }
 
         public Map<TLeft, TRight, TResult, TContext, TFuture> HandleRightException(Func<TRight, TContext, Exception, TResult> handler)
