@@ -3,6 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Net.Http;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 
 namespace Stash
 {
@@ -209,12 +210,64 @@ namespace Stash
 
 
 
+        public static IEither<TLeftFuture, TRightFuture> Select<TLeftSource, TRightSource, TLeftResult, TRightResult, TLeftFuture, TRightFuture>(
+            this IEither<TLeftSource, TRightSource> either,
+            Map<TLeftSource, object, TLeftResult, TLeftFuture> leftMap,
+            Map<TRightSource, object, TRightResult, TRightFuture> rightMap)
+            where TLeftFuture : Future<TLeftResult>
+            where TRightFuture : Future<TRightResult>
+        {
+            var map = new Map<TLeftSource, TRightSource, IEither<TLeftFuture, TRightFuture>, object, Future<IEither<TLeftFuture, TRightFuture>>.Sync>( //// TODO you are having the result be a sync future of an either; but maybe the return type of this method should actually be a future itself? //// TODO i'm not really sure; i think that creating this maps should probably be sync because this isnt' really part of the operation that the caller is requesting, these are just transformations; and it would also mean that assertions are sync as well
+                new Map<TLeftSource, object, IEither<TLeftFuture, TRightFuture>, Future<IEither<TLeftFuture, TRightFuture>>.Sync>((left, nothing) => new Either<TLeftFuture, TRightFuture>.Left(leftMap.Invoke(left, nothing))),
+                new Map<TRightSource, object, IEither<TLeftFuture, TRightFuture>, Future<IEither<TLeftFuture, TRightFuture>>.Sync>((right, nothing) => new Either<TLeftFuture, TRightFuture>.Right(rightMap.Invoke(right, nothing))));
+
+            return either.Apply(map, new object()).GetValue();
+        }
+
+
         //// TODO implement a select that takes  single `map` aprameter instead of two `func` parameters
         //// TODO implement the existing select on top of that
         //// TODO implement the async variants of the existing select
     }
 
-    public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture>
+    public readonly struct Map<TSource, TContext, TResult, TFuture> //// TODO can you make this a ref struct?
+        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
+    {
+        private readonly Func<TSource, TContext, TResult>? sync;
+        private readonly Func<TSource, TContext, Task<TResult>>? async;
+
+        public Map(Func<TSource, TContext, TResult> func)
+        {
+            this.sync = func;
+        }
+
+        public Map(Func<TSource, TContext, Task<TResult>> func)
+        {
+            this.async = func;
+        }
+
+        public TFuture Invoke(TSource source, TContext context)
+        {
+            if (this.sync != null)
+            {
+                var result = this.sync(source, context);
+                var future = Future<TResult>.Create(result);
+                return (future as TFuture)!; //// TODo get rid of null forgiveness
+            }
+            else if (this.async != null)
+            {
+                var result = this.async(source, context);
+                var future = Future<TResult>.Create(result);
+                return (future as TFuture)!; //// TODo get rid of null forgiveness
+            }
+            else
+            {
+                throw new Exception("TODO visitor maybe?");
+            }
+        }
+    }
+
+    public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
         where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
         private readonly Func<TLeft, TContext, TResult>? syncLeftMap;
@@ -224,9 +277,20 @@ namespace Stash
 
         private readonly Func<TLeft, TContext, Exception, TResult>? leftHandleException;
         private readonly Func<TRight, TContext, Exception, TResult>? rightHandleException;
+        private readonly Map<TLeft, TContext, TResult, TFuture>? leftMap;
+        private readonly Map<TRight, TContext, TResult, TFuture>? rightMap;
+
+        public Map(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
+        {
+            this.leftMap = leftMap;
+            this.rightMap = rightMap;
+        }
 
         public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
         {
+            this.leftMap = new Map<TLeft, TContext, TResult, TFuture>(leftMap);
+            this.rightMap = new Map<TRight, TContext, TResult, TFuture>(rightMap);
+            //// TODO remove the below two lines and update the other constructors to delegate to the other map type as well
             this.syncLeftMap = leftMap;
             this.syncRightMap = rightMap;
         }
