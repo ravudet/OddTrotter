@@ -204,8 +204,14 @@ namespace Stash
             TContext context)
         {
             var map = Map.Left(leftMap).Right(rightMap);
-            return await either.Apply(map, context).GetValue().ConfigureAwait(false)
+            return await either.Apply(map, context).GetValue().ConfigureAwait(false);
         }
+
+
+
+        //// TODO implement a select that takes  single `map` aprameter instead of two `func` parameters
+        //// TODO implement the existing select on top of that
+        //// TODO implement the async variants of the existing select
     }
 
     public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture>
