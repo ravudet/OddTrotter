@@ -254,14 +254,14 @@ namespace Stash
         {
             if (this.sync != null)
             {
-                var result = this.sync(source, context);
-                var future = Future<TResult>.Create(result);
+                var self = this;
+                var future = Future.Create(() => self.sync(source, context));
                 return (future as TFuture)!; //// TODo get rid of null forgiveness
             }
             else if (this.async != null)
             {
-                var result = this.async(source, context);
-                var future = Future<TResult>.Create(result);
+                var self = this;
+                var future = Future.Create(async () => await self.async(source, context).ConfigureAwait(false));
                 return (future as TFuture)!; //// TODo get rid of null forgiveness
             }
             else
