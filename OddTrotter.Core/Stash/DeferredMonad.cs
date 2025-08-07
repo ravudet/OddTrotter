@@ -71,6 +71,10 @@ namespace Stash
             where TFuture : Future<TResult>;
     }
 
+
+
+    //// TODO `\|=` is listed as an operator here: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/operator-overloading#overloadable-operators i think it's a bug and supposed to be `|=`
+
     public abstract class Future<T>
     {
         private Future()
