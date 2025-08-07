@@ -75,51 +75,52 @@ namespace Stash
 
     //// TODO `\|=` is listed as an operator here: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/operator-overloading#overloadable-operators i think it's a bug and supposed to be `|=`
 
+    public static class Future
+    {
+        public static Future<T>.Sync Create<T>(Func<T> promise)
+        {
+            return new Future<T>.Sync(promise);
+        }
+
+        public static Future<T>.Async Create<T>(Func<Task<T>> promise)
+        {
+            return new Future<T>.Async(promise);
+        }
+    }
+
     public abstract class Future<T>
     {
         private Future()
         {
         }
 
-        public static Future<T>.Sync Create(T value)
-        {
-            return new Sync(value);
-        }
-
-        public static Future<T>.Async Create(Task<T> value)
-        {
-            return new Async(value);
-        }
-
         public sealed class Sync : Future<T>
         {
-            private readonly T value;
+            private readonly Func<T> promise;
 
-            public Sync(T value)
+            public Sync(Func<T> promise)
             {
-                //// TODO i think this should probably take the func instead of the value
-                this.value = value;
+                this.promise = promise;
             }
 
             public T GetValue()
             {
-                return this.value;
+                return this.promise();
             }
         }
 
         public sealed class Async : Future<T>
         {
-            private readonly Task<T> value;
+            private readonly Func<Task<T>> promise;
 
-            public Async(Task<T> value)
+            public Async(Func<Task<T>> promise)
             {
-                //// TODO i think this should probably take the func instead of the task
-                this.value = value;
+                this.promise = promise;
             }
 
             public async Task<T> GetValue()
             {
-                return await this.value.ConfigureAwait(false);
+                return await this.promise().ConfigureAwait(false);
             }
         }
     }
