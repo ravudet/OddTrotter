@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System;
+using System.ComponentModel.Design;
 
 namespace Stash
 {
@@ -60,18 +61,41 @@ namespace Stash
         }
     }
 
+    public static class Map
+    {
+        public static Map<TSource, TContext, TResult, Future<TResult>.Sync> Create<TSource, TContext, TResult>(Func<TSource, TContext, TResult> func)
+        {
+            return Map<TSource, TContext, TResult, Future<TResult>.Sync>.Create(func);
+        }
+
+        public static Map<TSource, TContext, TResult, Future<TResult>.Async> Create<TSource, TContext, TResult>(Func<TSource, TContext, Task<TResult>> func)
+        {
+            return Map<TSource, TContext, TResult, Future<TResult>.Async>.Create(func);
+        }
+    }
+
     public readonly struct Map<TSource, TContext, TResult, TFuture> //// TODO can you make this a ref struct?
-        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
+        where TFuture : Future<TResult>
     {
         private readonly Func<TSource, TContext, TResult>? sync;
         private readonly Func<TSource, TContext, Task<TResult>>? async;
 
-        public Map(Func<TSource, TContext, TResult> func)
+        internal static Map<TSource, TContext, TResult, Future<TResult>.Sync> Create(Func<TSource, TContext, TResult> func)
+        {
+            return new Map<TSource, TContext, TResult, Future<TResult>.Sync>(func);
+        }
+
+        private Map(Func<TSource, TContext, TResult> func)
         {
             this.sync = func;
         }
 
-        public Map(Func<TSource, TContext, Task<TResult>> func)
+        internal static Map<TSource, TContext, TResult, Future<TResult>.Async> Create(Func<TSource, TContext, Task<TResult>> func)
+        {
+            return new Map<TSource, TContext, TResult, Future<TResult>.Async>(func);
+        }
+
+        private Map(Func<TSource, TContext, Task<TResult>> func)
         {
             this.async = func;
         }
@@ -204,7 +228,7 @@ namespace Stash
 
 
 
-    public static class Map //// TODO just have an empty `apply` overload on `ieither` extensions instead i think
+    public static class EitherMap //// TODO just have an empty `apply` overload on `ieither` extensions instead i think
     {
         public static MapBuilder<TLeft, TContext, TResult> Left<TLeft, TContext, TResult>(Func<TLeft, TContext, TResult> func)
         {
@@ -273,7 +297,7 @@ namespace Stash
             TContext context)
         {
             //// TODO use the `apply().left(...).right(...).context(...)` variant
-            var map = Map.Left(leftMap).Right(rightMap);
+            var map = EitherMap.Left(leftMap).Right(rightMap);
             return either.Apply(map, context).GetValue();
         }
 
@@ -283,7 +307,7 @@ namespace Stash
             Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context)
         {
-            var map = Map.Left(leftMap).Right(rightMap);
+            var map = EitherMap.Left(leftMap).Right(rightMap);
             return await either.Apply(map, context).GetValue().ConfigureAwait(false);
         }
 
