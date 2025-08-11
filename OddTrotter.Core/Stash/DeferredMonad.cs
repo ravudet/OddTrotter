@@ -98,6 +98,7 @@ namespace Stash
 
         public Map<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler)
         {
+            //// TODO how do you compose maps?
             if (this.sync != null)
             {
                 var self = this;
