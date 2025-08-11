@@ -6,7 +6,7 @@ namespace Stash
 {
     public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
-        public abstract TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context) where TFuture : Future<TResult>;
+        public abstract TFuture Apply<TResult, TContext, TFuture>(EitherMap<TLeft, TRight, TResult, TContext, TFuture> map, TContext context) where TFuture : Future<TResult>;
 
         public sealed class Left : Either<TLeft, TRight>
         {
@@ -17,7 +17,7 @@ namespace Stash
 
             public TLeft Value { get; }
 
-            public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
+            public override TFuture Apply<TResult, TContext, TFuture>(EitherMap<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
                 return map
                     .LeftMap
@@ -35,7 +35,7 @@ namespace Stash
 
             public TRight Value { get; }
 
-            public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
+            public override TFuture Apply<TResult, TContext, TFuture>(EitherMap<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
                 return map
                     .RightMap
@@ -166,7 +166,7 @@ namespace Stash
     public interface IEither<TLeft, TRight> //// TODO add covariance //// TODO i think you could use an internal method on a public ifuture interface to accomplish this?
     {
         TFuture Apply<TResult, TContext, TFuture>(
-            Map<TLeft, TRight, TResult, TContext, TFuture> map,
+            EitherMap<TLeft, TRight, TResult, TContext, TFuture> map,
             TContext context)
             where TFuture : Future<TResult>;
     }
@@ -250,16 +250,16 @@ namespace Stash
                 //// TODO handle the default constructor
             }
 
-            public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Right<TRight>(Func<TRight, TContext, TResult> func)
+            public EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Right<TRight>(Func<TRight, TContext, TResult> func)
             {
-                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Sync>(this.leftMap, func);
+                return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync>(this.leftMap, func);
             }
 
-            public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func) //// TODO you need to be able to take in more than `task` (also `valuetask`, `itask`, `future<tresult`, etc)
+            public EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func) //// TODO you need to be able to take in more than `task` (also `valuetask`, `itask`, `future<tresult`, etc)
             {
                 //// TODO you are trying to actually implement an either with this new pattern
                 //// TODO you need to be satisfied with all of the todos in here before you can move on
-                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
+                return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
         }
 
@@ -273,14 +273,14 @@ namespace Stash
                 //// TODO handle the default constructor
             }
 
-            public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, TResult> func)
+            public EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, TResult> func)
             {
-                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
+                return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
 
-            public Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func)
+            public EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Right<TRight>(Func<TRight, TContext, Task<TResult>> func)
             {
-                return new Map<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
+                return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(this.leftMap, func);
             }
         }
 
@@ -321,8 +321,8 @@ namespace Stash
             where TRightFuture : Future<TRightResult>
         {
             var map = new Map<TLeftSource, TRightSource, IEither<TLeftFuture, TRightFuture>, object, Future<IEither<TLeftFuture, TRightFuture>>.Sync>( //// TODO you are having the result be a sync future of an either; but maybe the return type of this method should actually be a future itself? //// TODO i'm not really sure; i think that creating this maps should probably be sync because this isnt' really part of the operation that the caller is requesting, these are just transformations; and it would also mean that assertions are sync as well
-                new Map<TLeftSource, object, IEither<TLeftFuture, TRightFuture>, Future<IEither<TLeftFuture, TRightFuture>>.Sync>((left, nothing) => new Either<TLeftFuture, TRightFuture>.Left(leftMap.Invoke(left, nothing))),
-                new Map<TRightSource, object, IEither<TLeftFuture, TRightFuture>, Future<IEither<TLeftFuture, TRightFuture>>.Sync>((right, nothing) => new Either<TLeftFuture, TRightFuture>.Right(rightMap.Invoke(right, nothing))));
+                Map.Create((left, nothing) => new Either<TLeftFuture, TRightFuture>.Left(leftMap.Invoke(left, nothing))),
+                Map.Create((right, nothing) => new Either<TLeftFuture, TRightFuture>.Right(rightMap.Invoke(right, nothing))));
 
             return either.Apply(map, new object()).GetValue();
         }
@@ -332,31 +332,60 @@ namespace Stash
         //// TODO implement the async variants of the existing select
     }
 
-    public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
+    public readonly struct EitherMap<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
         where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
-        public Map(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
+        public EitherMap(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
         {
             this.LeftMap = leftMap;
             this.RightMap = rightMap;
         }
 
-        public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
+        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Create(
+            Func<TLeft, TContext, TResult> leftMap, 
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync>(leftMap, rightMap);
+        }
+
+        private EitherMap(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
+            : this(Map.Create(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+        {
+            //// TODO you are here and you've just had the realization that the `func` variation of `map`, while it might be useful to standalone for some other use case, is not useful for eithers
+        }
+
+        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, TResult> leftMap, 
+            Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
+        }
+
+        private EitherMap(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
             : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
         }
 
-        public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
+        }
+
+        private EitherMap(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, TResult> rightMap)
             : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
         }
 
-        public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, TResult> rightMap)
-            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, Task<TResult>> leftMap, 
+            Func<TRight, TContext, Task<TResult>> rightMap)
         {
+            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
         }
 
-        public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+        private EitherMap(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
             : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
         }
