@@ -311,13 +311,10 @@ namespace Stash
     public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
         where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
-        private readonly Map<TLeft, TContext, TResult, TFuture> leftMap;
-        private readonly Map<TRight, TContext, TResult, TFuture> rightMap;
-
         public Map(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
         {
-            this.leftMap = leftMap;
-            this.rightMap = rightMap;
+            this.LeftMap = leftMap;
+            this.RightMap = rightMap;
         }
 
         public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
@@ -340,99 +337,8 @@ namespace Stash
         {
         }
 
-        public Map<TLeft, TContext, TResult, TFuture> LeftMap => leftMap;
+        public Map<TLeft, TContext, TResult, TFuture> LeftMap { get; }
 
-        public Map<TRight, TContext, TResult, TFuture> RightMap => rightMap;
-
-        public Map<TLeft, TRight, TResult, TContext, TFuture> HandleLeftException(Func<TLeft, TContext, Exception, TResult> handler)
-        {
-            //// TODO what if htis is called more than once?
-
-            return new Map<TLeft, TRight, TResult, TContext, TFuture>(
-                this.syncLeftMap, 
-                this.syncRightMap, 
-                this.asyncLeftMap,
-                this.asyncRightMap, 
-                handler);
-
-
-            //// TODO could this actually be done at the caller level?
-            //// TODO you're really going to have to implement a bunch of stuff that's equivalent to `func` if you want this to work well
-            //// TODO this type is actually doing two things: it is abstracting the return type *and* it is being a DU func; maybe have separate types for the two purposes //// TODO i think having the single function map above will also let you have implicit conversions so that you don't have to do so much with map builders (maybe?)
-        }
-
-        public Map<TLeft, TRight, TResult, TContext, TFuture> HandleRightException(Func<TRight, TContext, Exception, TResult> handler)
-        {
-            //// TODO what if htis is called more than once?
-
-            return new Map<TLeft, TRight, TResult, TContext, TFuture>(
-                this.syncLeftMap,
-                this.syncRightMap,
-                this.asyncLeftMap,
-                this.asyncRightMap,
-                handler);
-        }
-
-        public TFuture Invoke(TLeft left, TContext context)
-        {
-            //// TODO what if left and right are the same type?
-
-            return this.LeftMap.Invoke(left, context);
-
-            if (this.LeftMap != null)
-            {
-                var map = this.LeftMap;
-                if (this.leftHandleException != null)
-                {
-                    var self = this;
-                    map = (left, context) =>
-                    {
-                        try
-                        {
-                            return map(left, context);
-                        }
-                        catch (Exception exception)
-                        {
-                            return self.leftHandleException(left, context, exception);
-                        }
-                    };
-                }
-
-                var sync = Future.Create<TResult>(map);
-                return (sync as TFuture)!; //// TODO can you avoid null forgiveness? //// TODO in all 4 branches
-            }
-            else if (this.asyncLeftMap != null)
-            {
-                //// TODO handle exceptions
-                var async = Future<TResult>.Create(this.asyncLeftMap(left, context));
-                return (async as TFuture)!;
-            }
-            else
-            {
-                throw new Exception("TODO maybe a visitor?");
-            }
-        }
-
-        public TFuture Invoke(TRight right, TContext context)
-        {
-            return this.RightMap.Invoke(right, context);
-
-            if (this.syncRightMap != null)
-            {
-                //// TODO handle exceptions
-                var sync = Future<TResult>.Create(this.syncRightMap(right, context));
-                return (sync as TFuture)!;
-            }
-            else if (this.asyncRightMap != null)
-            {
-                //// TODO handle exceptions
-                var async = Future<TResult>.Create(this.asyncRightMap(right, context));
-                return (async as TFuture)!;
-            }
-            else
-            {
-                throw new Exception("TODO maybe a visitor?");
-            }
-        }
+        public Map<TRight, TContext, TResult, TFuture> RightMap { get; }
     }
 }
