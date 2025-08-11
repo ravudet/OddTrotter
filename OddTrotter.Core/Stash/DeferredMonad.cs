@@ -161,43 +161,6 @@ namespace Stash
         {
             return new Future<T>.Async(promise);
         }
-
-        public static TFuture HandleException<T, TFuture>(this TFuture future, Func<Exception, T> handler)
-            where TFuture : Future<T>
-        {
-            if (future is Future<T>.Sync sync)
-            {
-                return (Future.Create(() =>
-                {
-                    try
-                    {
-                        return sync.GetValue();
-                    }
-                    catch (Exception exception)
-                    {
-                        return handler(exception);
-                    }
-                }) as TFuture)!;
-            }
-            else if (future is Future<T>.Async async)
-            {
-                return (Future.Create(async () =>
-                {
-                    try
-                    {
-                        return await async.GetValue().ConfigureAwait(false);
-                    }
-                    catch (Exception exception)
-                    {
-                        return handler(exception);
-                    }
-                }) as TFuture)!;
-            }
-            else
-            {
-                throw new Exception("TODO use visitor");
-            }
-        }
     }
 
     public abstract class Future<T>
