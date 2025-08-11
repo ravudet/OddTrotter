@@ -82,7 +82,7 @@ namespace Stash
             {
                 var self = this;
                 var future = Future.Create(() => self.sync(source, context));
-                return (future as TFuture)!; //// TODo get rid of null forgiveness
+                return (future as TFuture)!; //// TODo get rid of null forgiveness //// TODO make a note for yourself if you can't get rid of the null forgiveness that this type is the only type that should require it in that case
             }
             else if (this.async != null)
             {
