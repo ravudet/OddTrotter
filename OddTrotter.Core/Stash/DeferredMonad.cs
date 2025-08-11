@@ -1,9 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System;
-using System.Runtime.CompilerServices;
-using System.Net.Http;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices;
 
 namespace Stash
 {
@@ -22,8 +18,10 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
-                map = map.HandleLeftException((left, context, exception) => throw new LeftException(exception));
-                return map.Invoke(this.Value, context);
+                return map
+                    .LeftMap
+                    .HandleException(exception => throw new LeftException(exception))
+                    .Invoke(this.Value, context);
             }
         }
 
@@ -38,8 +36,10 @@ namespace Stash
 
             public override TFuture Apply<TResult, TContext, TFuture>(Map<TLeft, TRight, TResult, TContext, TFuture> map, TContext context)
             {
-                map = map.HandleRightException((right, context, exception) => throw new RightException(exception));
-                return map.Invoke(this.Value, context);
+                return map
+                    .RightMap
+                    .HandleException(exception => throw new LeftException(exception))
+                    .Invoke(this.Value, context);
             }
         }
     }
@@ -57,6 +57,81 @@ namespace Stash
         public RightException(Exception exception)
             : base(null, exception)
         {
+        }
+    }
+
+    public readonly struct Map<TSource, TContext, TResult, TFuture> //// TODO can you make this a ref struct?
+        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
+    {
+        private readonly Func<TSource, TContext, TResult>? sync;
+        private readonly Func<TSource, TContext, Task<TResult>>? async;
+
+        public Map(Func<TSource, TContext, TResult> func)
+        {
+            this.sync = func;
+        }
+
+        public Map(Func<TSource, TContext, Task<TResult>> func)
+        {
+            this.async = func;
+        }
+
+        public TFuture Invoke(TSource source, TContext context)
+        {
+            if (this.sync != null)
+            {
+                var self = this;
+                var future = Future.Create(() => self.sync(source, context));
+                return (future as TFuture)!; //// TODo get rid of null forgiveness
+            }
+            else if (this.async != null)
+            {
+                var self = this;
+                var future = Future.Create(async () => await self.async(source, context).ConfigureAwait(false));
+                return (future as TFuture)!; //// TODo get rid of null forgiveness
+            }
+            else
+            {
+                throw new Exception("TODO visitor maybe?");
+            }
+        }
+
+        public Map<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler)
+        {
+            if (this.sync != null)
+            {
+                var self = this;
+                return new Map<TSource, TContext, TResult, TFuture>((source, context) =>
+                {
+                    try
+                    {
+                        return self.sync(source, context);
+                    }
+                    catch (Exception exception)
+                    {
+                        return handler(exception);
+                    }
+                });
+            }
+            else if (this.async != null)
+            {
+                var self = this;
+                return new Map<TSource, TContext, TResult, TFuture>(async (source, context) =>
+                {
+                    try
+                    {
+                        return await self.async(source, context).ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        return handler(exception);
+                    }
+                });
+            }
+            else
+            {
+                throw new Exception("TODO use visitor?");
+            }
         }
     }
 
@@ -85,6 +160,43 @@ namespace Stash
         public static Future<T>.Async Create<T>(Func<Task<T>> promise)
         {
             return new Future<T>.Async(promise);
+        }
+
+        public static TFuture HandleException<T, TFuture>(this TFuture future, Func<Exception, T> handler)
+            where TFuture : Future<T>
+        {
+            if (future is Future<T>.Sync sync)
+            {
+                return (Future.Create(() =>
+                {
+                    try
+                    {
+                        return sync.GetValue();
+                    }
+                    catch (Exception exception)
+                    {
+                        return handler(exception);
+                    }
+                }) as TFuture)!;
+            }
+            else if (future is Future<T>.Async async)
+            {
+                return (Future.Create(async () =>
+                {
+                    try
+                    {
+                        return await async.GetValue().ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        return handler(exception);
+                    }
+                }) as TFuture)!;
+            }
+            else
+            {
+                throw new Exception("TODO use visitor");
+            }
         }
     }
 
@@ -234,55 +346,11 @@ namespace Stash
         //// TODO implement the async variants of the existing select
     }
 
-    public readonly struct Map<TSource, TContext, TResult, TFuture> //// TODO can you make this a ref struct?
-        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
-    {
-        private readonly Func<TSource, TContext, TResult>? sync;
-        private readonly Func<TSource, TContext, Task<TResult>>? async;
-
-        public Map(Func<TSource, TContext, TResult> func)
-        {
-            this.sync = func;
-        }
-
-        public Map(Func<TSource, TContext, Task<TResult>> func)
-        {
-            this.async = func;
-        }
-
-        public TFuture Invoke(TSource source, TContext context)
-        {
-            if (this.sync != null)
-            {
-                var self = this;
-                var future = Future.Create(() => self.sync(source, context));
-                return (future as TFuture)!; //// TODo get rid of null forgiveness
-            }
-            else if (this.async != null)
-            {
-                var self = this;
-                var future = Future.Create(async () => await self.async(source, context).ConfigureAwait(false));
-                return (future as TFuture)!; //// TODo get rid of null forgiveness
-            }
-            else
-            {
-                throw new Exception("TODO visitor maybe?");
-            }
-        }
-    }
-
     public readonly struct Map<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
         where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
     {
-        private readonly Func<TLeft, TContext, TResult>? syncLeftMap;
-        private readonly Func<TRight, TContext, TResult>? syncRightMap;
-        private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeftMap;
-        private readonly Func<TRight, TContext, Task<TResult>>? asyncRightMap;
-
-        private readonly Func<TLeft, TContext, Exception, TResult>? leftHandleException;
-        private readonly Func<TRight, TContext, Exception, TResult>? rightHandleException;
-        private readonly Map<TLeft, TContext, TResult, TFuture>? leftMap;
-        private readonly Map<TRight, TContext, TResult, TFuture>? rightMap;
+        private readonly Map<TLeft, TContext, TResult, TFuture> leftMap;
+        private readonly Map<TRight, TContext, TResult, TFuture> rightMap;
 
         public Map(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
         {
@@ -291,59 +359,28 @@ namespace Stash
         }
 
         public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
+            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
-            this.leftMap = new Map<TLeft, TContext, TResult, TFuture>(leftMap);
-            this.rightMap = new Map<TRight, TContext, TResult, TFuture>(rightMap);
-            //// TODO remove the below two lines and update the other constructors to delegate to the other map type as well
-            this.syncLeftMap = leftMap;
-            this.syncRightMap = rightMap;
         }
 
         public Map(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
-            this.syncLeftMap = leftMap;
-            this.asyncRightMap = rightMap;
         }
 
         public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, TResult> rightMap)
+            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
-            this.asyncLeftMap = leftMap;
-            this.syncRightMap = rightMap;
         }
 
         public Map(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
+            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
         {
-            this.asyncLeftMap = leftMap;
-            this.asyncRightMap = rightMap;
         }
 
-        private Map(
-            Func<TLeft, TContext, TResult>? syncLeftMap,
-            Func<TRight, TContext, TResult>? syncRightMap,
-            Func<TLeft, TContext, Task<TResult>>? asyncLeftMap,
-            Func<TRight, TContext, Task<TResult>>? asyncRightMap,
-            Func<TLeft, TContext, Exception, TResult>? leftHandleException)
-        {
-            this.syncLeftMap = syncLeftMap;
-            this.syncRightMap = syncRightMap;
-            this.asyncLeftMap = asyncLeftMap;
-            this.asyncRightMap = asyncRightMap;
-            this.leftHandleException = leftHandleException;
-        }
+        public Map<TLeft, TContext, TResult, TFuture> LeftMap => leftMap;
 
-        private Map(
-            Func<TLeft, TContext, TResult>? syncLeftMap,
-            Func<TRight, TContext, TResult>? syncRightMap,
-            Func<TLeft, TContext, Task<TResult>>? asyncLeftMap,
-            Func<TRight, TContext, Task<TResult>>? asyncRightMap,
-            Func<TRight, TContext, Exception, TResult>? rightHandleException)
-        {
-            this.syncLeftMap = syncLeftMap;
-            this.syncRightMap = syncRightMap;
-            this.asyncLeftMap = asyncLeftMap;
-            this.asyncRightMap = asyncRightMap;
-            this.rightHandleException = rightHandleException;
-        }
+        public Map<TRight, TContext, TResult, TFuture> RightMap => rightMap;
 
         public Map<TLeft, TRight, TResult, TContext, TFuture> HandleLeftException(Func<TLeft, TContext, Exception, TResult> handler)
         {
@@ -378,9 +415,11 @@ namespace Stash
         {
             //// TODO what if left and right are the same type?
 
-            if (this.syncLeftMap != null)
+            return this.LeftMap.Invoke(left, context);
+
+            if (this.LeftMap != null)
             {
-                var map = this.syncLeftMap;
+                var map = this.LeftMap;
                 if (this.leftHandleException != null)
                 {
                     var self = this;
@@ -397,7 +436,7 @@ namespace Stash
                     };
                 }
 
-                var sync = Future<TResult>.Create(map(left, context));
+                var sync = Future.Create<TResult>(map);
                 return (sync as TFuture)!; //// TODO can you avoid null forgiveness? //// TODO in all 4 branches
             }
             else if (this.asyncLeftMap != null)
@@ -414,6 +453,8 @@ namespace Stash
 
         public TFuture Invoke(TRight right, TContext context)
         {
+            return this.RightMap.Invoke(right, context);
+
             if (this.syncRightMap != null)
             {
                 //// TODO handle exceptions
