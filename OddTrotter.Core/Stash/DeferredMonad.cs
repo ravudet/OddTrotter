@@ -4,6 +4,82 @@ using System.ComponentModel.Design;
 
 namespace Stash
 {
+
+
+    public sealed class EitherMap2<TLeft, TRight, TContext, TResult, TFuture>
+         where TFuture : Future<TResult>
+    {
+        private readonly Func<TLeft, TContext, TResult>? syncLeft;
+        private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeft;
+        private readonly Func<TRight, TContext, TResult>? syncRight;
+        private readonly Func<TRight, TContext, Task<TRight>>? asyncRight;
+
+        public TFuture Invoke(TLeft left, TContext context)
+        {
+        }
+
+        public TFuture Invoke(TRight right, TContext context)
+        {
+        }
+    }
+
+
+    public static class Future
+    {
+        public static Future<T>.Sync Create<T>(Func<T> promise)
+        {
+            return new Future<T>.Sync(promise);
+        }
+
+        public static Future<T>.Async Create<T>(Func<Task<T>> promise)
+        {
+            return new Future<T>.Async(promise);
+        }
+    }
+
+    public abstract class Future<T>
+    {
+        private Future()
+        {
+        }
+
+        public sealed class Sync : Future<T>
+        {
+            private readonly Func<T> promise;
+
+            public Sync(Func<T> promise)
+            {
+                this.promise = promise;
+            }
+
+            public T GetValue()
+            {
+                return this.promise();
+            }
+        }
+
+        public sealed class Async : Future<T>
+        {
+            private readonly Func<Task<T>> promise;
+
+            public Async(Func<Task<T>> promise)
+            {
+                this.promise = promise;
+            }
+
+            public async Task<T> GetValue()
+            {
+                return await this.promise().ConfigureAwait(false);
+            }
+        }
+    }
+
+
+
+
+
+
+
     public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
         public abstract TFuture Apply<TResult, TContext, TFuture>(EitherMap<TLeft, TRight, TResult, TContext, TFuture> map, TContext context) where TFuture : Future<TResult>;
@@ -176,55 +252,7 @@ namespace Stash
 
     //// TODO `\|=` is listed as an operator here: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/operator-overloading#overloadable-operators i think it's a bug and supposed to be `|=`
 
-    public static class Future
-    {
-        public static Future<T>.Sync Create<T>(Func<T> promise)
-        {
-            return new Future<T>.Sync(promise);
-        }
-
-        public static Future<T>.Async Create<T>(Func<Task<T>> promise)
-        {
-            return new Future<T>.Async(promise);
-        }
-    }
-
-    public abstract class Future<T>
-    {
-        private Future()
-        {
-        }
-
-        public sealed class Sync : Future<T>
-        {
-            private readonly Func<T> promise;
-
-            public Sync(Func<T> promise)
-            {
-                this.promise = promise;
-            }
-
-            public T GetValue()
-            {
-                return this.promise();
-            }
-        }
-
-        public sealed class Async : Future<T>
-        {
-            private readonly Func<Task<T>> promise;
-
-            public Async(Func<Task<T>> promise)
-            {
-                this.promise = promise;
-            }
-
-            public async Task<T> GetValue()
-            {
-                return await this.promise().ConfigureAwait(false);
-            }
-        }
-    }
+    
 
 
 
@@ -367,6 +395,11 @@ namespace Stash
         public IMap<TLeft, TContext, TResult, Future<TResult>> LeftMap { get; }
 
         public IMap<TRight, TContext, TResult, Future<TResult>> RightMap { get; }
+
+        public TFuture Invoke(TLeft source, TContext context);
+        {
+            
+        }
     }
 
 
