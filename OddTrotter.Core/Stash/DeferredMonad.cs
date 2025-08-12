@@ -43,7 +43,10 @@ namespace Stash
                 this.leftMap = leftMap;
             }
 
-
+            public Applier<TLeft, TRight, TContext, TResult, Future<TResult>.Sync> RightMap(Func<TRight, TContext, TResult> rightMap)
+            {
+                return new Applier<TLeft, TRight, TContext, TResult, Future<TResult>.Sync>(this.either, EitherMap2.Create(this.leftMap, rightMap));
+            }
         }
 
         public readonly ref struct AsyncLeftBuilder<TLeft, TRight, TContext, TResult>
@@ -56,15 +59,18 @@ namespace Stash
         public readonly ref struct Applier<TLeft, TRight, TContext, TResult, TFuture>
             where TFuture : Future<TResult>
         {
+            private readonly IEither2<TLeft, TRight> either;
             private readonly EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map;
 
-            public Applier(EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map)
+            public Applier(IEither2<TLeft, TRight> either, EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map)
             {
+                this.either = either;
                 this.map = map;
             }
 
             public TFuture Evaluate(TContext context)
             {
+                return either.Apply(this.map, context);
             }
         }
     }
