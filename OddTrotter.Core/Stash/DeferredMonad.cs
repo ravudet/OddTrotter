@@ -1,9 +1,125 @@
 ﻿using System.Threading.Tasks;
 using System;
-using System.ComponentModel.Design;
 
 namespace Stash
 {
+
+    public static class Either2Extensions
+    {
+        public static MapBuilder<TLeft, TRight> Apply<TLeft, TRight>(
+            this IEither2<TLeft, TRight> either)
+        {
+            return new MapBuilder<TLeft, TRight>(either);
+        }
+
+        public readonly ref struct MapBuilder<TLeft, TRight>
+        {
+            private readonly IEither2<TLeft, TRight> either;
+
+            public MapBuilder(IEither2<TLeft, TRight> either)
+            {
+                this.either = either;
+            }
+
+            public SyncLeftBuilder<TLeft, TRight, TContext, TResult> LeftMap<TContext, TResult>(Func<TLeft, TContext, TResult> leftMap)
+            {
+                return new SyncLeftBuilder<TLeft, TRight, TContext, TResult>(this.either, leftMap);
+            }
+
+            public AsyncLeftBuilder<TLeft, TRight, TContext, TResult> LeftMap<TContext, TResult>(Func<TLeft, TContext, Task<TResult>> leftMap)
+            {
+                return new AsyncLeftBuilder<TLeft, TRight, TContext, TResult>(this.either, leftMap);
+            }
+        }
+
+        public readonly ref struct SyncLeftBuilder<TLeft, TRight, TContext, TResult>
+        {
+            private readonly IEither2<TLeft, TRight> either;
+            private readonly Func<TLeft, TContext, TResult> leftMap;
+
+            public SyncLeftBuilder(IEither2<TLeft, TRight> either, Func<TLeft, TContext, TResult> leftMap)
+            {
+                this.either = either;
+                this.leftMap = leftMap;
+            }
+
+
+        }
+
+        public readonly ref struct AsyncLeftBuilder<TLeft, TRight, TContext, TResult>
+        {
+            public AsyncLeftBuilder(IEither2<TLeft, TRight> either, Func<TLeft, TContext, Task<TResult>> leftMap)
+            {
+            }
+        }
+
+        public readonly ref struct Applier<TLeft, TRight, TContext, TResult, TFuture>
+            where TFuture : Future<TResult>
+        {
+            private readonly EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map;
+
+            public Applier(EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map)
+            {
+                this.map = map;
+            }
+
+            public TFuture Evaluate(TContext context)
+            {
+            }
+        }
+    }
+
+
+    public interface IEither2<TLeft, TRight> //// TODO covariance
+    {
+        TFuture Apply<TContext, TResult, TFuture>(
+            EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map,
+            TContext context)
+            where TFuture : Future<TResult>;
+    }
+
+    public abstract class Either2<TLeft, TRight> : IEither2<TLeft, TRight>
+    {
+        private Either2()
+        {
+        }
+
+        public abstract TFuture Apply<TContext, TResult, TFuture>(EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map, TContext context) where TFuture : Future<TResult>;
+
+        public sealed class Left : Either2<TLeft, TRight>
+        {
+            public Left(TLeft value)
+            {
+                Value = value;
+            }
+
+            public TLeft Value { get; }
+
+            public override TFuture Apply<TContext, TResult, TFuture>(EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map, TContext context)
+            {
+                //// TODO handle exception
+                return map.LeftMap(this.Value, context);
+            }
+        }
+
+        public sealed class Right : Either2<TLeft, TRight>
+        {
+            public Right(TRight value)
+            {
+                Value = value;
+            }
+
+            public TRight Value { get; }
+
+            public override TFuture Apply<TContext, TResult, TFuture>(EitherMap2<TLeft, TRight, TContext, TResult, TFuture> map, TContext context)
+            {
+                //// TODo handle exception
+                return map.RightMap(this.Value, context);
+            }
+        }
+    }
+
+
 
 
     public static class EitherMap2
@@ -177,6 +293,37 @@ namespace Stash
             }
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
