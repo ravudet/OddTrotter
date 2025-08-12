@@ -14,6 +14,27 @@ namespace Stash
         {
             return EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync>.Create(leftMap, rightMap);
         }
+
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create<TLeft, TRight, TContext, TResult>(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            return EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>.Create(leftMap, rightMap);
+        }
+
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create<TLeft, TRight, TContext, TResult>(
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            return EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>.Create(leftMap, rightMap);
+        }
+
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create<TLeft, TRight, TContext, TResult>(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            return EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>.Create(leftMap, rightMap);
+        }
     }
 
     public sealed class EitherMap2<TLeft, TRight, TContext, TResult, TFuture>
