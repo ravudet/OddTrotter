@@ -6,16 +6,45 @@ namespace Stash
 {
 
 
+    public static class EitherMap2
+    {
+        public static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync> Create<TLeft, TRight, TContext, TResult>(
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            return EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync>.Create(leftMap, rightMap);
+        }
+    }
+
     public sealed class EitherMap2<TLeft, TRight, TContext, TResult, TFuture>
          where TFuture : Future<TResult>
     {
+        private readonly Func<TLeft, TContext, TFuture> leftMap;
+        private readonly Func<TRight, TContext, TFuture> rightMap;
+
         private readonly Func<TLeft, TContext, TResult>? syncLeft;
         private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeft;
         private readonly Func<TRight, TContext, TResult>? syncRight;
         private readonly Func<TRight, TContext, Task<TRight>>? asyncRight;
 
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync> Create(
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            var left = (TLeft left, TContext context) => Future.Create(() => leftMap(left, context));
+            var right = (TRight right, TContext context) => Future.Create(() => rightMap(right, context));
+            return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync>(left, right);
+        }
+
+        private EitherMap2(Func<TLeft, TContext, TFuture> leftMap, Func<TRight, TContext, TFuture> rightMap)
+        {
+            this.leftMap = leftMap;
+            this.rightMap = rightMap;
+        }
+
         public TFuture Invoke(TLeft left, TContext context)
         {
+            return this.leftMap(left, context);
         }
 
         public TFuture Invoke(TRight right, TContext context)
