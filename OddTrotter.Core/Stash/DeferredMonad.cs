@@ -333,7 +333,7 @@ namespace Stash
         //// TODO implement the async variants of the existing select
     }
 
-    public readonly struct EitherMap<TLeft, TRight, TResult, TContext, TLeftFuture, TRightFuture, TFuture> //// TODO cna you make this a ref struct?
+    public readonly struct EitherMap<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
         where TFuture : Future<TResult>//// TODO you need to make sure that this is the correct derived type based on the fields
     {
 
