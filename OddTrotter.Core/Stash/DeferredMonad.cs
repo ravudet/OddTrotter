@@ -36,6 +36,33 @@ namespace Stash
             return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync>(left, right);
         }
 
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, TResult> rightMap)
+        {
+            var left = (TLeft left, TContext context) => Future.Create(async () => await leftMap(left, context).ConfigureAwait(false));
+            var right = (TRight right, TContext context) => Future.Create(async () => await Task.FromResult(rightMap(right, context)).ConfigureAwait(false));
+            return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>(left, right);
+        }
+
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            var left = (TLeft left, TContext context) => Future.Create(async () => await Task.FromResult(leftMap(left, context)).ConfigureAwait(false));
+            var right = (TRight right, TContext context) => Future.Create(async () => await rightMap(right, context).ConfigureAwait(false));
+            return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>(left, right);
+        }
+
+        internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async> Create(
+            Func<TLeft, TContext, Task<TResult>> leftMap,
+            Func<TRight, TContext, Task<TResult>> rightMap)
+        {
+            var left = (TLeft left, TContext context) => Future.Create(async () => await leftMap(left, context).ConfigureAwait(false));
+            var right = (TRight right, TContext context) => Future.Create(async () => await rightMap(right, context).ConfigureAwait(false));
+            return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>(left, right);
+        }
+
         private EitherMap2(Func<TLeft, TContext, TFuture> leftMap, Func<TRight, TContext, TFuture> rightMap)
         {
             this.leftMap = leftMap;
@@ -49,6 +76,7 @@ namespace Stash
 
         public TFuture Invoke(TRight right, TContext context)
         {
+            return this.rightMap(right, context);
         }
     }
 
