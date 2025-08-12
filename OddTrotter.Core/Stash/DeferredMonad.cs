@@ -35,6 +35,47 @@ namespace Stash
         {
             return new Future<T>.Async(promise);
         }
+
+        public static TFutureResult Adapt<TResult, TFutureSource, TFutureResult>(this TFutureSource source)
+            where TFutureSource : Future<TResult>
+            where TFutureResult : Future<TResult>
+        {
+            if (source is Future<TResult>.Sync sync)
+            {
+                if (typeof(TFutureResult) == typeof(Future<TResult>.Sync))
+                {
+                    return (sync as TFutureResult)!;
+                }
+                else if (typeof(TFutureResult) == typeof(Future<TResult>.Async))
+                {
+                    var asyncResult = Future.Create(async () => await Task.FromResult(sync.GetValue()).ConfigureAwait(false));
+                    return (asyncResult as TFutureResult)!;
+                }
+                else
+                {
+                    throw new Exception("tODO");
+                }
+            }
+            else if (source is Future<TResult>.Async async)
+            {
+                if (typeof(TFutureResult) == typeof(Future<TResult>.Sync))
+                {
+                    throw new Exception("TODO can't convert from async to sync");
+                }
+                else if (typeof(TFutureResult) == typeof(Future<TResult>.Async))
+                {
+                    return (async as TFutureResult)!;
+                }
+                else
+                {
+                    throw new Exception("tODO");
+                }
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
+        }
     }
 
     public abstract class Future<T>
@@ -52,6 +93,8 @@ namespace Stash
                 this.promise = promise;
             }
 
+            public override bool IsAsync => false;
+
             public T GetValue()
             {
                 return this.promise();
@@ -66,6 +109,8 @@ namespace Stash
             {
                 this.promise = promise;
             }
+
+            public override bool IsAsync => true;
 
             public async Task<T> GetValue()
             {
