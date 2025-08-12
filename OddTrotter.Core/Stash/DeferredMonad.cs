@@ -75,6 +75,7 @@ namespace Stash
     }
 
     public readonly struct Map<TSource, TContext, TResult, TFuture> //// TODO can you make this a ref struct?
+        : IMap<TSource, TContext, TResult, TFuture>
         where TFuture : Future<TResult>
     {
         private readonly Func<TSource, TContext, TResult>? sync;
@@ -120,7 +121,7 @@ namespace Stash
             }
         }
 
-        public Map<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler)
+        public IMap<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler)
         {
             //// TODO how do you compose maps?
             if (this.sync != null)
@@ -332,66 +333,49 @@ namespace Stash
         //// TODO implement the async variants of the existing select
     }
 
-    public readonly struct EitherMap<TLeft, TRight, TResult, TContext, TFuture> //// TODO cna you make this a ref struct?
-        where TFuture : Future<TResult> //// TODO you need to make sure that this is the correct derived type based on the fields
+    public readonly struct EitherMap<TLeft, TRight, TResult, TContext, TLeftFuture, TRightFuture, TFuture> //// TODO cna you make this a ref struct?
+        where TFuture : Future<TResult>//// TODO you need to make sure that this is the correct derived type based on the fields
     {
-        public EitherMap(Map<TLeft, TContext, TResult, TFuture> leftMap, Map<TRight, TContext, TResult, TFuture> rightMap)
+
+        public EitherMap(IMap<TLeft, TContext, TResult, Future<TResult>> leftMap, IMap<TRight, TContext, TResult, Future<TResult>> rightMap)
         {
             this.LeftMap = leftMap;
             this.RightMap = rightMap;
         }
 
-        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync> Create(
-            Func<TLeft, TContext, TResult> leftMap, 
-            Func<TRight, TContext, TResult> rightMap)
-        {
-            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Sync>(leftMap, rightMap);
-        }
-
         private EitherMap(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, TResult> rightMap)
-            : this(Map.Create(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+            : this(Map.Create(leftMap), Map.Create(rightMap))
         {
             //// TODO you are here and you've just had the realization that the `func` variation of `map`, while it might be useful to standalone for some other use case, is not useful for eithers
         }
 
-        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
-            Func<TLeft, TContext, TResult> leftMap, 
-            Func<TRight, TContext, Task<TResult>> rightMap)
-        {
-            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
-        }
-
         private EitherMap(Func<TLeft, TContext, TResult> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
-            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+            : this(Map.Create(leftMap), Map.Create(rightMap))
         {
-        }
-
-        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
-            Func<TLeft, TContext, Task<TResult>> leftMap,
-            Func<TRight, TContext, TResult> rightMap)
-        {
-            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
         }
 
         private EitherMap(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, TResult> rightMap)
-            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+            : this(Map.Create(leftMap), Map.Create(rightMap))
         {
-        }
-
-        public static EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async> Create(
-            Func<TLeft, TContext, Task<TResult>> leftMap, 
-            Func<TRight, TContext, Task<TResult>> rightMap)
-        {
-            return new EitherMap<TLeft, TRight, TResult, TContext, Future<TResult>.Async>(leftMap, rightMap);
         }
 
         private EitherMap(Func<TLeft, TContext, Task<TResult>> leftMap, Func<TRight, TContext, Task<TResult>> rightMap)
-            : this(new Map<TLeft, TContext, TResult, TFuture>(leftMap), new Map<TRight, TContext, TResult, TFuture>(rightMap))
+            : this(Map.Create(leftMap), Map.Create(rightMap))
         {
         }
 
-        public Map<TLeft, TContext, TResult, TFuture> LeftMap { get; }
+        public IMap<TLeft, TContext, TResult, Future<TResult>> LeftMap { get; }
 
-        public Map<TRight, TContext, TResult, TFuture> RightMap { get; }
+        public IMap<TRight, TContext, TResult, Future<TResult>> RightMap { get; }
+    }
+
+
+
+    public interface IMap<TSource, TContext, TResult, out TFuture>
+        where TFuture : Future<TResult>
+    {
+        TFuture Invoke(TSource source, TContext context);
+
+        IMap<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler);
     }
 }
