@@ -93,8 +93,6 @@ namespace Stash
                 this.promise = promise;
             }
 
-            public override bool IsAsync => false;
-
             public T GetValue()
             {
                 return this.promise();
@@ -109,8 +107,6 @@ namespace Stash
             {
                 this.promise = promise;
             }
-
-            public override bool IsAsync => true;
 
             public async Task<T> GetValue()
             {
