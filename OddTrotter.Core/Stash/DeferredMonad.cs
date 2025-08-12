@@ -19,14 +19,6 @@ namespace Stash
     public sealed class EitherMap2<TLeft, TRight, TContext, TResult, TFuture>
          where TFuture : Future<TResult>
     {
-        private readonly Func<TLeft, TContext, TFuture> leftMap;
-        private readonly Func<TRight, TContext, TFuture> rightMap;
-
-        private readonly Func<TLeft, TContext, TResult>? syncLeft;
-        private readonly Func<TLeft, TContext, Task<TResult>>? asyncLeft;
-        private readonly Func<TRight, TContext, TResult>? syncRight;
-        private readonly Func<TRight, TContext, Task<TRight>>? asyncRight;
-
         internal static EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Sync> Create(
             Func<TLeft, TContext, TResult> leftMap,
             Func<TRight, TContext, TResult> rightMap)
@@ -65,19 +57,12 @@ namespace Stash
 
         private EitherMap2(Func<TLeft, TContext, TFuture> leftMap, Func<TRight, TContext, TFuture> rightMap)
         {
-            this.leftMap = leftMap;
-            this.rightMap = rightMap;
+            this.LeftMap = leftMap;
+            this.RightMap = rightMap;
         }
 
-        public TFuture Invoke(TLeft left, TContext context)
-        {
-            return this.leftMap(left, context);
-        }
-
-        public TFuture Invoke(TRight right, TContext context)
-        {
-            return this.rightMap(right, context);
-        }
+        public Func<TLeft, TContext, TFuture> LeftMap { get; }
+        public Func<TRight, TContext, TFuture> RightMap { get; }
     }
 
 
