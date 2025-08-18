@@ -9,6 +9,16 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultNodeAsyncExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="queryResultNode"></param>
+        /// <param name="elementMap"></param>
+        /// <param name="terminalMap"></param>
+        /// <returns></returns>
         public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> queryResultNode,
             Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
