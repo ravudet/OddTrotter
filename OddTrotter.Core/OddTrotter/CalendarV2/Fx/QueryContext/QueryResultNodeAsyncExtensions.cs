@@ -235,7 +235,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
             return await first
-                .Apply2(
+                .Apply(
                     element => Either
                         .Left(
                             new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
@@ -333,7 +333,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
             return await second
-                .Apply2(
+                .Apply(
                     async element =>
                         Either
                             .Left(
@@ -433,7 +433,7 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<TResult> Apply2<TValue, TError, TResult>(
+        public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNode<TValue, TError> queryResultNode,
             Func<IElement<TValue, TError>, TResult> elementMap,
             Func<IEither<IError<TError>, IEmpty>, ITask<TResult>> terminalMap)
@@ -451,7 +451,7 @@ namespace Fx.QueryContext
                     .ConfigureAwait(false);
         }
 
-        public static async ITask<TResult> Apply2<TValue, TError, TResult>(
+        public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> queryResultNode,
             Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
             Func<IEither<IError<TError>, IEmpty>, TResult> terminalMap)
