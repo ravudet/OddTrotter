@@ -122,6 +122,13 @@ namespace Stash
                 //// TODo handle exception
                 return map.RightMap(this.Value, context);
             }
+
+            public TFuture Apply2<TContext, TResult, TFuture>(Func<TRight, TContext, TFuture> map, TContext context)
+                where TFuture : IFuture<TResult, TFuture>
+            {
+                //// TODo handle exception
+                return map(this.Value, context).HandleException(exception => throw new RightException(exception));
+            }
         }
     }
 
@@ -261,6 +268,11 @@ namespace Stash
                 throw new Exception("tODO");
             }
         }
+    }
+
+    public interface IFuture<T, TFuture> where TFuture : IFuture<T, TFuture>
+    {
+        TFuture HandleException(Func<Exception, T> sync);
     }
 
     public abstract class Future<T>
