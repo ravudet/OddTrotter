@@ -10,7 +10,7 @@ namespace Fx.QueryContext
     public static partial class QueryResultNodeAsyncExtensions
     {
         /// <summary>
-        /// 
+        /// placeholder
         /// </summary>
         /// <typeparam name="TValue"></typeparam>
         /// <typeparam name="TError"></typeparam>
@@ -19,6 +19,7 @@ namespace Fx.QueryContext
         /// <param name="elementMap"></param>
         /// <param name="terminalMap"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is <see langword="null"/></exception>
         public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> queryResultNode,
             Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
@@ -247,6 +248,20 @@ namespace Fx.QueryContext
             }
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TErrorFirst"></typeparam>
+        /// <typeparam name="TErrorSecond"></typeparam>
+        /// <typeparam name="TErrorResult"></typeparam>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <param name="firstErrorSelector"></param>
+        /// <param name="secondErrorSelector"></param>
+        /// <param name="errorAggregator"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="first"/> or <paramref name="second"/> or <paramref name="firstErrorSelector"/> or <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/></exception>
         public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultNode<TValue, TErrorFirst> first,
             IQueryResultNodeAsync<TValue, TErrorSecond> second,
@@ -340,6 +355,20 @@ namespace Fx.QueryContext
             }
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TErrorFirst"></typeparam>
+        /// <typeparam name="TErrorSecond"></typeparam>
+        /// <typeparam name="TErrorResult"></typeparam>
+        /// <param name="error"></param>
+        /// <param name="second"></param>
+        /// <param name="firstErrorSelector"></param>
+        /// <param name="secondErrorSelector"></param>
+        /// <param name="errorAggregator"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="second"/> or <paramref name="firstErrorSelector"/> or <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/></exception>
         private static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,

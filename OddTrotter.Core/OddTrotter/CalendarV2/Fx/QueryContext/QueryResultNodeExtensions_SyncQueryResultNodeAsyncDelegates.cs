@@ -40,6 +40,25 @@ namespace Fx.QueryContext
             return new QueryResultNodeAsync<TValue, TError>(await source.ConfigureAwait(false));
         }
 
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TError"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="queryResultNode"></param>
+        /// <param name="elementMap"></param>
+        /// <param name="terminalMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is <see langword="null"/></exception>
+        /// <exception cref="LeftMapException">
+        /// Thrown if <paramref name="elementMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
+        /// to whatever exception <paramref name="elementMap"/> threw.
+        /// </exception>
+        /// <exception cref="RightMapException">
+        /// Thrown if <paramref name="terminalMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
+        /// to whatever exception <paramref name="terminalMap"/> threw.
+        /// </exception>
         public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNode<TValue, TError> queryResultNode,
             Func<IElement<TValue, TError>, TResult> elementMap,
