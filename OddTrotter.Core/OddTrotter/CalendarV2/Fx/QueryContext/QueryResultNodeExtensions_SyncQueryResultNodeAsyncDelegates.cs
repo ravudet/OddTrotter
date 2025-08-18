@@ -39,5 +39,24 @@ namespace Fx.QueryContext
 
             return new QueryResultNodeAsync<TValue, TError>(await source.ConfigureAwait(false));
         }
+
+        public static async ITask<TResult> Apply<TValue, TError, TResult>(
+            this IQueryResultNode<TValue, TError> queryResultNode,
+            Func<IElement<TValue, TError>, TResult> elementMap,
+            Func<IEither<IError<TError>, IEmpty>, ITask<TResult>> terminalMap)
+        {
+            ArgumentNullException.ThrowIfNull(queryResultNode);
+            ArgumentNullException.ThrowIfNull(elementMap);
+            ArgumentNullException.ThrowIfNull(terminalMap);
+
+            return await
+                queryResultNode
+                    .Apply(
+                        async (element, nothing) => await Task.FromResult(elementMap(element)).ConfigureAwait(false),
+                        async (terminal, nothing) => await terminalMap(terminal).ConfigureAwait(false),
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
     }
 }
