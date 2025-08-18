@@ -7,6 +7,7 @@ namespace Fx.QueryContext
     using Fx.Either;
     using Fx.Try;
     using static System.Runtime.InteropServices.JavaScript.JSType;
+    using static OddTrotter.Calendar.OdataCollectionResponse;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
@@ -234,7 +235,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
             return await first
-                .Apply(
+                .Apply2(
                     element => Either
                         .Left(
                             new ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
@@ -332,7 +333,7 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(errorAggregator);
 
             return await second
-                .Apply(
+                .Apply2(
                     async element =>
                         Either
                             .Left(
@@ -430,6 +431,42 @@ namespace Fx.QueryContext
                     this.secondErrorSelector,
                     this.errorAggregator);
             }
+        }
+
+        public static async ITask<TResult> Apply2<TValue, TError, TResult>(
+            this IQueryResultNode<TValue, TError> queryResultNode,
+            Func<IElement<TValue, TError>, TResult> elementMap,
+            Func<IEither<IError<TError>, IEmpty>, ITask<TResult>> terminalMap)
+        {
+            ArgumentNullException.ThrowIfNull(queryResultNode);
+            ArgumentNullException.ThrowIfNull(elementMap);
+            ArgumentNullException.ThrowIfNull(terminalMap);
+
+            return await
+                queryResultNode
+                    .Apply(
+                        async (element, nothing) => await Task.FromResult(elementMap(element)).ConfigureAwait(false),
+                        async (terminal, nothing) => await terminalMap(terminal).ConfigureAwait(false),
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
+        public static async ITask<TResult> Apply2<TValue, TError, TResult>(
+            this IQueryResultNodeAsync<TValue, TError> queryResultNode,
+            Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
+            Func<IEither<IError<TError>, IEmpty>, TResult> terminalMap)
+        {
+            ArgumentNullException.ThrowIfNull(queryResultNode);
+            ArgumentNullException.ThrowIfNull(elementMap);
+            ArgumentNullException.ThrowIfNull(terminalMap);
+
+            return await
+                queryResultNode
+                    .Apply(
+                        async (element, nothing) => await elementMap(element).ConfigureAwait(false),
+                        async (terminal, nothing) => await Task.FromResult(terminalMap(terminal)).ConfigureAwait(false),
+                        new Nothing())
+                    .ConfigureAwait(false);
         }
     }
 }

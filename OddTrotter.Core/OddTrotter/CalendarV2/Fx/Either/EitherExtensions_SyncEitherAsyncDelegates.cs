@@ -43,7 +43,7 @@ namespace Fx.Either
                     .ConfigureAwait(false);
         }
 
-        public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
+        /*public static async ITask<TResult> Apply<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
             Func<TLeft, ITask<TResult>> leftMap,
             Func<TRight, TResult> rightMap)
@@ -77,7 +77,7 @@ namespace Fx.Either
                         async (right, nothing) => await rightMap(right).ConfigureAwait(false),
                         new Nothing())
                     .ConfigureAwait(false);
-        }
+        }*/
 
         /// <summary>
         /// placeholder
