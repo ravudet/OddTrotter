@@ -6,8 +6,6 @@ namespace Fx.QueryContext
 
     using Fx.Either;
     using Fx.Try;
-    using static System.Runtime.InteropServices.JavaScript.JSType;
-    using static OddTrotter.Calendar.OdataCollectionResponse;
 
     public static partial class QueryResultNodeAsyncExtensions
     {
