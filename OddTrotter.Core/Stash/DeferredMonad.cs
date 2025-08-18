@@ -176,7 +176,7 @@ namespace Stash
             Func<TRight, TContext, TResult> rightMap)
         {
             var left = (TLeft left, TContext context) => Future.Create(async () => await leftMap(left, context).ConfigureAwait(false));
-            var right = (TRight right, TContext context) => Future.Create(async () => await Task.FromResult(rightMap(right, context)).ConfigureAwait(false));
+            var right = (TRight right, TContext context) => Future.Create(async () => await Task.FromResult(rightMap(right, context)).ConfigureAwait(false)); //// TODO we are making this decision for the caller (how they want to handle the sync map when the other is async)
             return new EitherMap2<TLeft, TRight, TContext, TResult, Future<TResult>.Async>(left, right);
         }
 
@@ -275,6 +275,7 @@ namespace Stash
 
             public Sync(Func<T> promise)
             {
+                //// TODO someone could still instantiate a `sync` with `func<task<T>>`; i'm not clear if this is a problem though
                 this.promise = promise;
             }
 
