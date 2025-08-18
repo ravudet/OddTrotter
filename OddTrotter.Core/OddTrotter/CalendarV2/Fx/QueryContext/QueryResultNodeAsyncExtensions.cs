@@ -11,6 +11,24 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultNodeAsyncExtensions
     {
+        public static async ITask<TResult> Apply<TValue, TError, TResult>(
+            this IQueryResultNodeAsync<TValue, TError> queryResultNode,
+            Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
+            Func<IEither<IError<TError>, IEmpty>, TResult> terminalMap)
+        {
+            ArgumentNullException.ThrowIfNull(queryResultNode);
+            ArgumentNullException.ThrowIfNull(elementMap);
+            ArgumentNullException.ThrowIfNull(terminalMap);
+
+            return await
+                queryResultNode
+                    .Apply(
+                        async (element, nothing) => await elementMap(element).ConfigureAwait(false),
+                        async (terminal, nothing) => await Task.FromResult(terminalMap(terminal)).ConfigureAwait(false),
+                        new Nothing())
+                    .ConfigureAwait(false);
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>
@@ -431,24 +449,6 @@ namespace Fx.QueryContext
                     this.secondErrorSelector,
                     this.errorAggregator);
             }
-        }
-
-        public static async ITask<TResult> Apply<TValue, TError, TResult>(
-            this IQueryResultNodeAsync<TValue, TError> queryResultNode,
-            Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
-            Func<IEither<IError<TError>, IEmpty>, TResult> terminalMap)
-        {
-            ArgumentNullException.ThrowIfNull(queryResultNode);
-            ArgumentNullException.ThrowIfNull(elementMap);
-            ArgumentNullException.ThrowIfNull(terminalMap);
-
-            return await
-                queryResultNode
-                    .Apply(
-                        async (element, nothing) => await elementMap(element).ConfigureAwait(false),
-                        async (terminal, nothing) => await Task.FromResult(terminalMap(terminal)).ConfigureAwait(false),
-                        new Nothing())
-                    .ConfigureAwait(false);
         }
     }
 }
