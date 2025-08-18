@@ -127,7 +127,7 @@ namespace Stash
                 where TFuture : IFuture<TResult, TFuture>
             {
                 //// TODo handle exception
-                return map(this.Value, context).HandleException(exception => throw new RightException(exception));
+                return map(this.Value, context).HandleException(exception => throw new Exception(string.Empty, exception));
             }
         }
     }
@@ -350,7 +350,7 @@ namespace Stash
 
 
 
-    public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    /*public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
         public abstract TFuture Apply<TResult, TContext, TFuture>(EitherMap<TLeft, TRight, TResult, TContext, TFuture> map, TContext context) where TFuture : Future<TResult>;
 
@@ -680,5 +680,5 @@ namespace Stash
         TFuture Invoke(TSource source, TContext context);
 
         IMap<TSource, TContext, TResult, TFuture> HandleException(Func<Exception, TResult> handler);
-    }
+    }*/
 }
