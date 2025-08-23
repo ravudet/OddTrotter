@@ -381,13 +381,10 @@
 
             var originalLastRecordedEventTimeStamp = oddTrotterTodoList.LastRecordedEventTimeStamp;
 
-            //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense?
-            //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern; you got rid of `trycreate`, maybe call `tryselect` `selectwhere`
+            //// TODO TOPIC i'm calling it `queryresult.selecterror` to follow the `either` naming of `select`, `selectleft`, and `selectright`; does this make sense? yes, it does
+            //// TODO TOPIC does the name `either.trycreate` and `enumerable.tryselect` make sense? they aren't actually the "try" pattern; ANSWER: you got rid of `trycreate`, maybe call `tryselect` `selectwhere`
+            //// 
             //// TODO TOPIC should querycontext.evaluate throw if the first request produces an error?
-            ////
-            //// TODO TOPIC queryresult.selectasync doesn't need to be `async` and return `task`; did you get the names wrong for `either`?
-            //// TODO TOPIC you would have liked to call `ieither.applyasync` `ieither.apply` because the current `ieither.apply` can receive `async` maps. you didn't name it this way, though, because have tests that throw for both left and right that no longer compile when you do this; you cann alleviate those tests by using a `Throw<T>` type with a `Throw<T> Throw<T>(this Exception exception)` extension, but it's unclear if that's really the best way to approach it
-            //// TODO TOPIC the above 2 are kind of part of a whole category of "how to name all 4 variants"
 
             // TODO write up code quality list and create blog posts (use substack for this?)
             // code quality:
