@@ -73,7 +73,6 @@
         }
     }
 
-
     /*public static class Playground
     {
         public delegate TResult RefFunc<in T1, T2, out TResult>(T1 t1, ref T2 t2);
