@@ -59,7 +59,7 @@ namespace Fx.QueryContext
         /// Thrown if <paramref name="terminalMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="terminalMap"/> threw.
         /// </exception>
-        public static async ITask<TResult> Apply<TValue, TError, TResult>(
+        internal static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNode<TValue, TError> queryResultNode,
             Func<IElement<TValue, TError>, TResult> elementMap,
             Func<IEither<IError<TError>, IEmpty>, ITask<TResult>> terminalMap)
