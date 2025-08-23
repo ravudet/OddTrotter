@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.Tests.Inter
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.V2", "OddTrotter.Core.V2\OddTrotter.Core.V2.csproj", "{AAA9F854-CC18-4E5D-B124-B006EF748738}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.V2.Tests", "OddTrotter.Core.V2.Tests\OddTrotter.Core.V2.Tests.csproj", "{16E6DE71-B88D-4B4A-8687-7A11518C2320}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{AAA9F854-CC18-4E5D-B124-B006EF748738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAA9F854-CC18-4E5D-B124-B006EF748738}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAA9F854-CC18-4E5D-B124-B006EF748738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16E6DE71-B88D-4B4A-8687-7A11518C2320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16E6DE71-B88D-4B4A-8687-7A11518C2320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16E6DE71-B88D-4B4A-8687-7A11518C2320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16E6DE71-B88D-4B4A-8687-7A11518C2320}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
