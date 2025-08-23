@@ -50,7 +50,10 @@ namespace Fx.QueryContext
         /// <param name="elementMap"></param>
         /// <param name="terminalMap"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is
+        /// <see langword="null"/>
+        /// </exception>
         /// <exception cref="LeftMapException">
         /// Thrown if <paramref name="elementMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set
         /// to whatever exception <paramref name="elementMap"/> threw.

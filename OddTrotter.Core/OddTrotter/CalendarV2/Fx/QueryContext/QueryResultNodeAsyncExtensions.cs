@@ -19,7 +19,10 @@ namespace Fx.QueryContext
         /// <param name="elementMap"></param>
         /// <param name="terminalMap"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is
+        /// <see langword="null"/>
+        /// </exception>
         internal static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> queryResultNode,
             Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
@@ -261,13 +264,22 @@ namespace Fx.QueryContext
         /// <param name="secondErrorSelector"></param>
         /// <param name="errorAggregator"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="first"/> or <paramref name="second"/> or <paramref name="firstErrorSelector"/> or <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/></exception>
-        public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-            this IQueryResultNode<TValue, TErrorFirst> first,
-            IQueryResultNodeAsync<TValue, TErrorSecond> second,
-            Func<TErrorFirst, TErrorResult> firstErrorSelector,
-            Func<TErrorSecond, TErrorResult> secondErrorSelector,
-            Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="first"/> or <paramref name="second"/> or <paramref name="firstErrorSelector"/> or
+        /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
+        /// </exception>
+        public static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Concat
+            <
+                TValue, 
+                TErrorFirst, 
+                TErrorSecond, 
+                TErrorResult
+            >(
+                this IQueryResultNode<TValue, TErrorFirst> first,
+                IQueryResultNodeAsync<TValue, TErrorSecond> second,
+                Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
         {
             ArgumentNullException.ThrowIfNull(first);
             ArgumentNullException.ThrowIfNull(second);
@@ -302,7 +314,14 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private sealed class ConcatFirstElementAsync<TValue, TErrorFirst, TErrorSecond, TErrorResult> : IElementAsync<TValue, TErrorResult>
+        private sealed class ConcatFirstElementAsync
+            <
+                TValue, 
+                TErrorFirst,
+                TErrorSecond, 
+                TErrorResult
+            > 
+            : IElementAsync<TValue, TErrorResult>
         {
             private readonly IQueryResultNode<TValue, TErrorFirst> next;
             private readonly IQueryResultNodeAsync<TValue, TErrorSecond> second;
@@ -368,7 +387,10 @@ namespace Fx.QueryContext
         /// <param name="secondErrorSelector"></param>
         /// <param name="errorAggregator"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="second"/> or <paramref name="firstErrorSelector"/> or <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="second"/> or <paramref name="firstErrorSelector"/> or <paramref name="secondErrorSelector"/>
+        /// or <paramref name="errorAggregator"/> is <see langword="null"/>
+        /// </exception>
         private static async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> ConcatTraverseSecond
             <
                 TValue,
