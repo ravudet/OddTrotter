@@ -426,7 +426,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO ieither needs to have a single apply that takes both async, extensions should provide all combinations of sync + async, and there should be mixins that allow the implementer of ieither to overload the default `task.fromresult` behavior
+            //// TODO ieither needs to have a single apply that takes both async, extensions should provide all combinations of sync + async, and there should be mixins that allow the implementer of ieither to overload the default `task.fromresult` behavior; also, do the code generation
 
             //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
             //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
