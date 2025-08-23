@@ -120,4 +120,18 @@ namespace Fx.Either
             Func<TRight, TContext, Task<TResult>> rightMap,
             TContext context);
     }
+
+    public static class Playground
+    {
+        public delegate TResult RefFunc<in T1, T2, out TResult>(T1 t1, ref T2);
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefFunc<TLeft, TContext, Task<TResult>> leftMap,
+            RefFunc<TRight, TContext, Task<TResult>> rightMap,
+            ref TContext context)
+        {
+            either.Apply()
+        }
+    }
 }
