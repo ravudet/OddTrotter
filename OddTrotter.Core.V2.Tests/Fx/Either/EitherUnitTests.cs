@@ -16,7 +16,7 @@
             {
                 PlaceHolder = "asdf",
             };
-            var result = new Either<string, Exception>("asdf").Apply(AdaptString, AdaptException, ref context);
+            ////var result = new Either<string, Exception>("asdf").Apply(AdaptString, AdaptException, ref context);
         }
 
         public struct Context
@@ -51,7 +51,7 @@
             this.right = right;
         }
 
-        public TResult Apply<TResult, TContext>(System.Func<TLeft, TContext, TResult> leftMap, System.Func<TRight, TContext, TResult> rightMap, TContext context)
+        public unsafe TResult Apply<TResult, TContext>(System.Func<TLeft, TContext, TResult> leftMap, System.Func<TRight, TContext, TResult> rightMap, TContext context)
         {
             if (left != null)
             {
@@ -74,7 +74,7 @@
     }
 
 
-    public static class Playground
+    /*public static class Playground
     {
         public delegate TResult RefFunc<in T1, T2, out TResult>(T1 t1, ref T2 t2);
 
@@ -117,5 +117,5 @@
                 }
             }
         }
-    }
+    }*/
 }
