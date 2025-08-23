@@ -426,6 +426,11 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
+            //// TODO you are working on itask; add the tests
+            //// TODO ieither should use itask for everything; document that this is for implicit type conversions (and provide examples)
+            //// TODO ieither needs to have a single apply that takes both async, extensions should provide all combinations of sync + async, and there should be mixins that allow the implementer of ieither to overload the default `task.fromresult` behavior; also, do the code generation
+            //// TODO from here, go back to working on ravudet/generalizedcalendarevents/concat
+
             //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
             //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
             //// TODO i think i'm preferring one file per operation (so, `queryresultnodeasyncextensions_select`, and then have all of the select variants in there)
