@@ -13,6 +13,32 @@ namespace Fx.QueryContext
     [TestClass]
     public sealed partial class QueryResultNodeAsyncExtensionsUnitTests
     {
+        private static Task<int> Length(string value)
+        {
+            return Task.FromResult(value.Length);
+        }
+
+        [TestMethod]
+        public async Task Apply()
+        {
+            IQueryResultNodeAsync<string, Exception> node =
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                null
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                ;
+
+            await Assert
+                .ThrowsExceptionAsync<ArgumentNullException>(async () => await
+#pragma warning disable CS8604 // Possible null reference argument.
+                node
+#pragma warning restore CS8604 // Possible null reference argument.
+                    .Apply(
+                        async element => await Length(element.Value).ConfigureAwait(false),
+                        error => 0)
+                    .ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
         [TestMethod]
         public async Task SelectNullSource()
         {

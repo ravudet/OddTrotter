@@ -23,7 +23,7 @@ namespace Fx.QueryContext
         /// Thrown if <paramref name="queryResultNode"/> or <paramref name="elementMap"/> or <paramref name="terminalMap"/> is
         /// <see langword="null"/>
         /// </exception>
-        internal static async ITask<TResult> Apply<TValue, TError, TResult>(
+        public static async ITask<TResult> Apply<TValue, TError, TResult>(
             this IQueryResultNodeAsync<TValue, TError> queryResultNode,
             Func<IElementAsync<TValue, TError>, ITask<TResult>> elementMap,
             Func<IEither<IError<TError>, IEmpty>, TResult> terminalMap)

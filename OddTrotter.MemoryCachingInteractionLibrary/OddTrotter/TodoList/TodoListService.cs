@@ -426,7 +426,7 @@
             //// TODO https://github.com/dotnet/roslyn/blob/main/docs/features/task-types.md
             //// TODO https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types
 
-            //// TODO you just finished exception documentation
+            //// TODO you just started writing unit tests
             //// TODO you just copied the concat extensions for queryreusltnode; you need to code review it and then add tests and code review the tests
             //// TODO you need to move the node extensions to v2, unit test them, move the result extensions to v2, unit test them, and move on
             //// TODO regarding the next TODO, you need to just start looking into the templating mechanism you want to use and get it over with
@@ -443,6 +443,7 @@
             //// TODO do a pass cleaning up the existing code using the code quality above and either addressing todos or marking them TODO FUTURE and TODO TOPIC
 
             //// TODO rename `itask` to `iawaitable`?
+            //// TODO i'm not 100% sure that the `apply` extensions on `iqueryresultnode` are good ideas (the ones that take 1 async map and another sync map)
             //// TODO update all queryresult and queryresultnode tests to use `toqueryresult`.`with{out}error` extensions
             //// TODO all of the either, queryresultnode, queryresult, and querycontext variants that use tasks should be generated code from the sync source + sync delegates code; you have a rough start on general code generation that's not really working in `ravudet/generalizedcalendarevents/sourcegenerator`
             //// TODO type names should *start* with "async" and method names (if a distinction between sync and async needs to be made) should *end* in "async"; the method names part is because it's an established convention; the type names part is because there's an established convention to end a type name with its "parent type" (sort of), for example, you have things like `concurrentdictionary`; `asyncconcurrentdictionary` makes more sense to not conflict with established conventions than `concurrentdictionaryasync`
