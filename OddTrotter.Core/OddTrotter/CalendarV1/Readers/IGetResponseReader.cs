@@ -38,14 +38,68 @@
     public interface IGetResponseBodyAfterOdataContextToken
     {
         TResult Apply<TResult>(
-            Func<IControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,
+            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextToken>, TResult> propertyReader,
+            //// TODO you are here
+            //// TODO add the other readers here
             Func<System.Nothing, TResult> terminal);
     }
 
-    public interface IControlInformationReader<out TNextReader>
+    public interface IRootControlInformationReader<out TNextReader> : IReader<IRootControlInformationToken<TNextReader>>
     {
     }
+
+    public interface IRootControlInformationToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<IRootNextLinkReader<TNextReader>, TResult> nextLinkReader,
+            Func<IRootUnknownControlInformationReader<TNextReader>, TResult> unknownControlInformationReader);
+    }
+
+    public interface IRootNextLinkReader<out TNextReader> : IReader<TNextReader, NextLink>
+    {
+    }
+
+    public sealed class NextLink
+    {
+        private NextLink()
+        {
+        }
+    }
+
+    public interface IRootUnknownControlInformationReader<out TNextReader>
+    {
+    }
+
+
+
+    public interface IRootAnnotationReader<out TNextReader>
+    {
+    }
+
+
+
+    public interface IPropertyControlInformationReader<out TNextReader>
+    {
+    }
+
+    public interface IPropertyAnnotationReader<out TNextReader>
+    {
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public interface IPropertyReader<out TNextReader>
     {
