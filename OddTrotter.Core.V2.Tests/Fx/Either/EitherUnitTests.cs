@@ -1,6 +1,7 @@
 ﻿namespace Fx.Either
 {
     using System;
+    using System.Reflection.Metadata.Ecma335;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -28,14 +29,14 @@
             result = new Either<string, Exception>("1234").ApplyIn(AdaptString3, AdaptException3, in context);
         }
 
-        /*public async Task DoWork2()
+        public async Task DoWork2()
         {
-            var context = new Context2()
+            var context = new Context()
             {
                 PlaceHolder = "asdf",
             };
             var result = await new Either<string, Exception>("1234").Apply(AdaptString4, AdaptException4, context).ConfigureAwait(false);
-        }*/
+        }
 
         public ref struct Context2
         {
@@ -59,16 +60,121 @@
             return 1;
         }
 
-        public static async ITask<int> AdaptString4(string value, Context context)
+        public static async ITask<Context2> AdaptString4(string value, Context context)
         {
-            //// TODO this should be able to return itask<context2> if you implement a refstructtask that implements itask
-
             context.PlaceHolder = "qwer";
-            return await Task.FromResult(1).ConfigureAwait(false);
+            return await new RefStructTask<Context2>(() => new Context2()).ConfigureAwait(false);
         }
 
-        public readonly ref struct RefStructTask
+        public sealed class RefStructTask<T> : ITask<T> where T : allows ref struct
         {
+            private readonly Func<T> factory;
+
+            public RefStructTask(Func<T> factory)
+            {
+                this.factory = factory;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.factory, continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly Func<T> factory;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(Func<T> factory, bool continueOnCapturedContext)
+                {
+                    this.factory = factory;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public ITaskAwaiter<T> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.factory, this.continueOnCapturedContext);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<T>
+                {
+                    private readonly Func<T> factory;
+
+                    private System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public TaskAwaiter(Func<T> factory, bool continueOnCaptureContext)
+                    {
+                        this.factory = factory;
+
+                        this.taskAwaiter = Task.CompletedTask.ConfigureAwait(continueOnCaptureContext).GetAwaiter();
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return true;
+                        }
+                    }
+
+                    public T GetResult()
+                    {
+                        return this.factory();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiter(this.factory);
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly Func<T> factory;
+
+                private System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(Func<T> factory)
+                {
+                    this.factory = factory;
+
+                    this.taskAwaiter = Task.CompletedTask.GetAwaiter();
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return true;
+                    }
+                }
+
+                public T GetResult()
+                {
+                    return this.factory();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
         }
 
         public static int AdaptString(string value, ref Context context)
@@ -87,9 +193,9 @@
             return 2;
         }
 
-        public static async ITask<int> AdaptException4(Exception value, Context context)
+        public static async ITask<Context2> AdaptException4(Exception value, Context context)
         {
-            return await Task.FromResult(2).ConfigureAwait(false);
+            return await new RefStructTask<Context2>(() => new Context2()).ConfigureAwait(false);
         }
 
         public static int AdaptException(Exception value, ref Context context)
