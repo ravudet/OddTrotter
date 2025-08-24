@@ -67,7 +67,9 @@
             return await Task.FromResult(1).ConfigureAwait(false);
         }
 
-
+        public readonly ref struct RefStructTask
+        {
+        }
 
         public static int AdaptString(string value, ref Context context)
         {
