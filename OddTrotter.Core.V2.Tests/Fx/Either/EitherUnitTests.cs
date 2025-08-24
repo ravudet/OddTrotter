@@ -28,6 +28,20 @@
             result = new Either<string, Exception>("1234").ApplyIn(AdaptString3, AdaptException3, in context);
         }
 
+        /*public async Task DoWork2()
+        {
+            var context = new Context2()
+            {
+                PlaceHolder = "asdf",
+            };
+            var result = await new Either<string, Exception>("1234").Apply(AdaptString4, AdaptException4, context).ConfigureAwait(false);
+        }*/
+
+        public ref struct Context2
+        {
+            public string PlaceHolder { get; set; }
+        }
+
         public struct Context
         {
             public string PlaceHolder { get; set; }
@@ -45,6 +59,16 @@
             return 1;
         }
 
+        public static async ITask<int> AdaptString4(string value, Context context)
+        {
+            //// TODO this should be able to return itask<context2> if you implement a refstructtask that implements itask
+
+            context.PlaceHolder = "qwer";
+            return await Task.FromResult(1).ConfigureAwait(false);
+        }
+
+
+
         public static int AdaptString(string value, ref Context context)
         {
             context.PlaceHolder = "qwer";
@@ -59,6 +83,11 @@
         public static int AdaptException3(Exception value, in Context context)
         {
             return 2;
+        }
+
+        public static async ITask<int> AdaptException4(Exception value, Context context)
+        {
+            return await Task.FromResult(2).ConfigureAwait(false);
         }
 
         public static int AdaptException(Exception value, ref Context context)
@@ -98,7 +127,7 @@
             }
         }
 
-        public Task<TResult> Apply<TResult, TContext>(System.Func<TLeft, TContext, Task<TResult>> leftMap, System.Func<TRight, TContext, Task<TResult>> rightMap, TContext context)
+        public ITask<TResult> Apply<TResult, TContext>(System.Func<TLeft, TContext, ITask<TResult>> leftMap, System.Func<TRight, TContext, ITask<TResult>> rightMap, TContext context) where TResult : allows ref struct where TContext : allows ref struct
         {
             throw new System.NotImplementedException();
         }
