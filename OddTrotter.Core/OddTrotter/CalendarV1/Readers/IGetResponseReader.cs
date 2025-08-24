@@ -27,7 +27,7 @@
             Func<ICustomHeaderReader<IGetResponseHeadersReader>, TResult> customHeaderReader);
     }
 
-    public interface IGetResponseBodyReader : IReader<IOdataContextReader<IGetResponseBodyAfterOdataContextReader>>
+    public interface IGetResponseBodyReader : IReader<IOdataContextReader<IGetResponseBodyAfterOdataContextReader>> //// TODO document where in the standard this is
     {
     }
 
@@ -67,7 +67,7 @@
         }
     }
 
-    public interface IRootUnknownControlInformationReader<out TNextReader>
+    public interface IRootUnknownControlInformationReader<out TNextReader> //// TODO document where in the standard this is
     {
     }
 
