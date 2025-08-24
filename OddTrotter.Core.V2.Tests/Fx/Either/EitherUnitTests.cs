@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static Fx.Either.Playground;
 
     [TestClass]
     public class Tests
@@ -16,7 +17,15 @@
             {
                 PlaceHolder = "asdf",
             };
-            ////var result = new Either<string, Exception>("asdf").Apply(AdaptString, AdaptException, ref context);
+            var result = new Either<string, Exception>("1234").ApplyRef(AdaptString, AdaptException, ref context);
+
+            context.PlaceHolder = "zxcv";
+            result = new Either<string, Exception>("1234").ApplyRef2(AdaptString2, AdaptException2, context);
+
+            result = new Either<string, Exception>("1234").ApplyRef3(AdaptString2, AdaptException2, ref context);
+
+
+            result = new Either<string, Exception>("1234").ApplyIn(AdaptString3, AdaptException3, in context);
         }
 
         public struct Context
@@ -24,10 +33,32 @@
             public string PlaceHolder { get; set; }
         }
 
+        public static int AdaptString2(string value, Context context)
+        {
+            context.PlaceHolder = "qwer";
+            return 1;
+        }
+
+        public static int AdaptString3(string value, in Context context)
+        {
+            ////context.PlaceHolder = "qwer";
+            return 1;
+        }
+
         public static int AdaptString(string value, ref Context context)
         {
             context.PlaceHolder = "qwer";
             return 1;
+        }
+
+        public static int AdaptException2(Exception value, Context context)
+        {
+            return 2;
+        }
+
+        public static int AdaptException3(Exception value, in Context context)
+        {
+            return 2;
         }
 
         public static int AdaptException(Exception value, ref Context context)
@@ -71,50 +102,100 @@
         {
             throw new System.NotImplementedException();
         }
-    }
 
-    /*public static class Playground
-    {
-        public delegate TResult RefFunc<in T1, T2, out TResult>(T1 t1, ref T2 t2);
-
-        public static unsafe TResult Apply<TLeft, TRight, TResult, TContext>(
-            this IEither<TLeft, TRight> either,
+        public TResult ApplyRef<TResult, TContext>(
             RefFunc<TLeft, TContext, TResult> leftMap,
             RefFunc<TRight, TContext, TResult> rightMap,
             ref TContext context)
         {
-            var wrapper = new Wrapper<TContext>(ref context);
-            wrapper.Context = default!;
-            return either.Apply(
-                (left, context) => leftMap(left, ref Unsafe.AsRef<TContext>(context.Context)),
-                (right, context) => rightMap(right, ref Unsafe.AsRef<TContext>(context.Context)),
-                wrapper);
+            if (left != null)
+            {
+                return leftMap(left, ref context);
+            }
+            else if (right != null)
+            {
+                return rightMap(right, ref context);
+            }
+            else
+            {
+                throw new System.Exception("TODO");
+            }
+        }
+    }
+
+    public static class Playground
+    {
+        public static unsafe TResult ApplyRef2<TLeft, TRight, TResult, TContext>(
+            this Either<TLeft, TRight> either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            TContext context)
+        {
+            return either.ApplyRef(
+                (TLeft left, ref TContext context) => leftMap(left, context),
+                (TRight right, ref TContext context) => rightMap(right, context),
+                ref context);
         }
 
-        private unsafe struct Wrapper<TContext>
+        public static unsafe TResult ApplyRef3<TLeft, TRight, TResult, TContext>(
+            this Either<TLeft, TRight> either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+        {
+            return either.ApplyRef(
+                (TLeft left, ref TContext context) => leftMap(left, context),
+                (TRight right, ref TContext context) => rightMap(right, context),
+                ref context);
+        }
+
+
+        public delegate TResult RefFunc<in T1, T2, out TResult>(T1 t1, ref T2 t2);
+
+        public delegate TResult InFunc<in T1, T2, out TResult>(T1 t1, in T2 t2);
+
+
+
+        public static TResult ApplyIn<TLeft, TRight, TResult, TContext>(
+            this Either<TLeft, TRight> either,
+            InFunc<TLeft, TContext, TResult> leftMap,
+            InFunc<TRight, TContext, TResult> rightMap,
+            in TContext context)
+        {
+            var wrapper = new Wrapper<TContext>(in context);
+            return either.ApplyRef(
+                (TLeft left, ref Wrapper<TContext> context) => leftMap(left, context.Context),
+                (TRight right, ref Wrapper<TContext> context) => rightMap(right, context.Context),
+                ref wrapper);
+        }
+
+        private unsafe readonly struct Wrapper<TContext>
         {
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            private TContext* context;
+            private readonly TContext* context;
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 
-            public Wrapper(ref TContext context)
+            public Wrapper(in TContext context)
             {
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                this.context = (TContext*)Unsafe.AsPointer(ref context);
+                fixed (TContext* pointer = &context)
+                {
+                    this.context = pointer;
+                }
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                ////this.context = (TContext*)Unsafe.AsPointer(ref context);
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
             }
 
-            public unsafe ref TContext Context
+            public ref TContext Context
             {
                 get
                 {
-                    return ref Unsafe.AsRef(this.context);
-                }
-                set
-                {
-                    this.context = (TContext*)Unsafe.AsPointer(ref value);
+                    return ref Unsafe.AsRef<TContext>(this.context);
                 }
             }
         }
-    }*/
+    }
 }
