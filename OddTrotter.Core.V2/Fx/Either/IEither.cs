@@ -247,6 +247,19 @@ namespace Fx.Either
         }
     }
 
+    //// left vs right
+    //// async vs sync
+    //// ref context vs in context vs normal context
+    ////
+    //// leftfuture     leftparam   rightfuture     rightparam
+    //// async          ref         async           ref
+    //// TODO you are here building this truth table
+    ////
+    //// demonstrate ref struct result
+    //// demonstrate ref struct context
+    //// demonstrate unsafe
+
+
     public static class Playground
     {
         public static void DoWork()
@@ -296,13 +309,6 @@ namespace Fx.Either
         }
     }
 
-    //// left vs right
-    //// sync vs async
-    //// ref context vs in context vs normal context
-    ////
-    //// demonstrate ref struct result
-    //// demonstrate ref struct context
-    //// demonstrate unsafe
 
 
     //// TODO FUTURE there are the other `apply` variants as used by the visitor pattern in the concrete implementation:
