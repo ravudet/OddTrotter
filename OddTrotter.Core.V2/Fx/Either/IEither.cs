@@ -296,7 +296,13 @@ namespace Fx.Either
         }
     }
 
-
+    //// left vs right
+    //// sync vs async
+    //// ref context vs in context vs normal context
+    ////
+    //// demonstrate ref struct result
+    //// demonstrate ref struct context
+    //// demonstrate unsafe
 
 
     //// TODO FUTURE there are the other `apply` variants as used by the visitor pattern in the concrete implementation:
