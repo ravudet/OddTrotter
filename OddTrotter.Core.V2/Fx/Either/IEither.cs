@@ -2,23 +2,12 @@
 namespace Fx.Either
 {
     using System;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     public interface IEither<out TLeft, out TRight>
     {
-        //// TODO FUTURE there are the other `apply` variants as used by the visitor pattern in the concrete implementation:
-        //// async
-        //// unsafe
-        //// result allows ref struct
-        //// context allows ref struct
-        //// context by reference
-        //// there are likely others
-        ////
-        //// are these mixins? are they standalone types? what is the best way to handle this? is there a kernel? for example,
-        //// most of the others appear that they can be built on top of an async unsafe implementation that allows ref structs
-        //// and takes the context by reference; would mixins then let you do everything else?
-
-
         /// <summary>
         /// placeholder
         /// </summary>
@@ -78,7 +67,7 @@ namespace Fx.Either
         /// be thrown in those cases.
         /// 2. There are use-cases where it is very useful for <paramref name="leftMap"/> or <paramref name="rightMap"/> to throw
         /// (consider the <see cref="Fx.Either.EitherExtensions.ThrowRight"/> method), so narrowing the scope of this method to
-        /// only maps that don't throw does not match the intended function.
+        /// only maps that don't throw does not match the intended purpose.
         /// 3. The caller of <see cref="Apply"/> is not necessarily the author of the functions provided for the maps. As a
         /// result, they will not know which exceptions they need to catch unless they restrict their own callers to only provide
         /// functions that conform to a certain contract. This option was *also* considered for <see cref="Apply"/>, though it
@@ -90,36 +79,234 @@ namespace Fx.Either
         /// <see cref="IEither{TLeft, TRight}"/> will need to do, but having just the implementers of the interface do it, 
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
-        TResult Apply<TResult, TContext>(
-            Func<TLeft, TContext, TResult> leftMap, 
-            Func<TRight, TContext, TResult> rightMap,
-            TContext context);
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="leftMap"></param>
-        /// <param name="rightMap"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="leftMap"/> or <paramref name="rightMap"/> is <see langword="null"/>
-        /// </exception>
-        /// <exception cref="LeftMapException">
-        /// Thrown if <paramref name="leftMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
-        /// whatever exception <paramref name="leftMap"/> threw.
-        /// </exception>
-        /// <exception cref="RightMapException">
-        /// Thrown if <paramref name="rightMap"/> throws an exception. The <see cref="Exception.InnerException"/> will be set to
-        /// whatever exception <paramref name="rightMap"/> threw.
-        /// </exception>
         ITask<TResult> Apply<TResult, TContext>(
-            Func<TLeft, TContext, ITask<TResult>> leftMap,
-            Func<TRight, TContext, ITask<TResult>> rightMap,
-            TContext context)
+            Map1<TLeft, TContext, TResult> leftMap,
+            Map1<TRight, TContext, TResult> rightMap,
+            ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
     }
+
+    public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    {
+        private readonly TLeft? left;
+        private readonly TRight? right;
+
+        private Either(TLeft left)
+        {
+            this.left = left;
+        }
+
+        private Either(TRight right)
+        {
+            this.right = right;
+        }
+
+        public static Either<TLeft, TRight> Left(TLeft value)
+        {
+            return new Either<TLeft, TRight>(value);
+        }
+
+        public static Either<TLeft, TRight> Right(TRight value)
+        {
+            return new Either<TLeft, TRight>(value);
+        }
+
+        public ITask<TResult> Apply<TResult, TContext>(Map1<TLeft, TContext, TResult> leftMap, Map1<TRight, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (this.left != null)
+            {
+                return new CustomTask<TResult>(leftMap(this.left, ref context), true);
+            }
+            else if (this.right != null)
+            {
+                return new CustomTask<TResult>(rightMap(this.right, ref context), true);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        private sealed class CustomTask<T> : ITask<T> where T : allows ref struct
+        {
+            private readonly ITask<T> task;
+            private readonly bool isLeft;
+
+            public CustomTask(ITask<T> task, bool isLeft)
+            {
+                this.task = task;
+                this.isLeft = isLeft;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiter(this.task.GetAwaiter(), this.isLeft);
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly ITaskAwaiter<T> taskAwaiter;
+                private readonly bool isLeft;
+
+                public TaskAwaiter(ITaskAwaiter<T> taskAwaiter, bool isLeft)
+                {
+                    this.taskAwaiter = taskAwaiter;
+                    this.isLeft = isLeft;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.taskAwaiter.IsCompleted;
+                    }
+                }
+
+                public T GetResult()
+                {
+                    try
+                    {
+                        return this.taskAwaiter.GetResult();
+                    }
+                    catch (Exception exception)
+                    {
+                        if (this.isLeft)
+                        {
+                            throw new LeftMapException(exception);
+                        }
+                        else
+                        {
+                            throw new RightMapException(exception);
+                        }
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+    }
+
+    public sealed class LeftMapException : Exception
+    {
+        public LeftMapException(Exception exception)
+        {
+        }
+    }
+
+    public sealed class RightMapException : Exception
+    {
+        public RightMapException(Exception exception)
+        {
+        }
+    }
+
+    public delegate ITask<TResult> Map1<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+        where TContext : allows ref struct 
+        where TResult : allows ref struct;
+
+    public delegate TResult Map2<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public static class EitherExtensions
+    {
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map2<TLeft, TContext, TResult> leftMap,
+            Map2<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+        {
+            return either
+                .Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        private static Map1<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map2<TValue, TContext, TResult> map)
+        {
+            return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
+        }
+    }
+
+    public static class Playground
+    {
+        public static void DoWork()
+        {
+        }
+
+        public struct Context
+        {
+            public Context(List<string> strings)
+            {
+                Strings = strings;
+            }
+
+            public List<string> Strings { get; } = new List<string>();
+        }
+
+        public static ITask<int> DataManipulation(string value, ref Context context)
+        {
+            //// TODO the issue here is that the context is updated before the caller awaits the future
+            context.Strings.Add(value);
+            return DataManipulation(value);
+        }
+
+        private static async ITask<int> DataManipulation(string value)
+        {
+            return await Task.FromResult(value.Length).ConfigureAwait(false);
+        }
+
+        public static ITask<int> DataManipulation2(string value, ref Context context)
+        {
+            //// TODO flesh this out
+            return new CustomTask();
+        }
+
+        private sealed class CustomTask : ITask<int>
+        {
+            public IConfiguredAwaitable<int> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<int> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+
+
+
+
+    //// TODO FUTURE there are the other `apply` variants as used by the visitor pattern in the concrete implementation:
+    //// async
+    //// unsafe
+    //// result allows ref struct
+    //// context allows ref struct
+    //// context by reference
+    //// there are likely others
+    ////
+    //// are these mixins? are they standalone types? what is the best way to handle this? is there a kernel? for example,
+    //// most of the others appear that they can be built on top of an async unsafe implementation that allows ref structs
+    //// and takes the context by reference; would mixins then let you do everything else?
 }
