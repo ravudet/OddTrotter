@@ -853,8 +853,124 @@ namespace Fx.Either
     public static partial class EitherExtensions
     {
         private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult: allows ref struct
         {
             return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
+        }
+
+        private sealed class FromResult<T> : ITask<T> where T : allows ref struct
+        {
+            private readonly Func<T> promise;
+
+            public FromResult(Func<T> promise)
+            {
+                this.promise = promise;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly Func<T> promise;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(Func<T> promise, bool continueOnCapturedContext)
+                {
+                    this.promise = promise;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public ITaskAwaiter<T> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.promise, Task.CompletedTask.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use `completedtask` here?
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<T>
+                {
+                    private readonly Func<T> promise;
+                    private readonly System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    {
+                        this.promise = promise;
+                        this.taskAwaiter = taskAwaiter;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return true;
+                        }
+                    }
+
+                    public T GetResult()
+                    {
+                        return this.promise();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiter(this.promise, Task.CompletedTask.GetAwaiter()); //// TODO is it ok to use `completedtask` here?
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly Func<T> promise;
+
+                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+                {
+                    this.promise = promise;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return true;
+                    }
+                }
+
+                public T GetResult()
+                {
+                    return this.promise();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
         }
     }
 
