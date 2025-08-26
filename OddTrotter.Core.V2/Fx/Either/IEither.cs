@@ -872,6 +872,8 @@ namespace Fx.Either
             {
                 this.promise = promise;
                 this.context = context;
+
+                //// TODO you are here; how to get `this.context` as a field without breaking the ref struct (because it's inside a heap type)
             }
 
             public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
