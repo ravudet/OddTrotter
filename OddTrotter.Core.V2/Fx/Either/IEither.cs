@@ -80,8 +80,8 @@ namespace Fx.Either
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
         ITask<TResult> Apply<TResult, TContext>(
-            Map1<TLeft, TContext, TResult> leftMap,
-            Map1<TRight, TContext, TResult> rightMap,
+            AsyncRefMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
@@ -112,7 +112,7 @@ namespace Fx.Either
             return new Either<TLeft, TRight>(value);
         }
 
-        public ITask<TResult> Apply<TResult, TContext>(Map1<TLeft, TContext, TResult> leftMap, Map1<TRight, TContext, TResult> rightMap, ref TContext context)
+        public ITask<TResult> Apply<TResult, TContext>(AsyncRefMap<TLeft, TContext, TResult> leftMap, AsyncRefMap<TRight, TContext, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
@@ -216,11 +216,27 @@ namespace Fx.Either
         }
     }
 
-    public delegate ITask<TResult> Map1<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+    public delegate ITask<TResult> AsyncRefMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
         where TContext : allows ref struct 
         where TResult : allows ref struct;
 
-    public delegate TResult Map2<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+    public delegate TResult RefMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public delegate ITask<TResult> AsyncInMap<in TValue, TContext, out TResult>(TValue value, in TContext context)
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public delegate TResult InMap<in TValue, TContext, out TResult>(TValue value, in TContext context)
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public delegate ITask<TResult> AsyncMap<in TValue, in TContext, out TResult>(TValue value, TContext context)
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public delegate TResult Map<in TValue, in TContext, out TResult>(TValue value, TContext context)
         where TContext : allows ref struct
         where TResult : allows ref struct;
 
@@ -228,8 +244,8 @@ namespace Fx.Either
     {
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
-            Map2<TLeft, TContext, TResult> leftMap,
-            Map2<TRight, TContext, TResult> rightMap,
+            RefMap<TLeft, TContext, TResult> leftMap,
+            RefMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
         {
             return either
@@ -241,7 +257,7 @@ namespace Fx.Either
                 .GetResult();
         }
 
-        private static Map1<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map2<TValue, TContext, TResult> map)
+        private static AsyncRefMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefMap<TValue, TContext, TResult> map)
         {
             return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
         }
@@ -253,7 +269,41 @@ namespace Fx.Either
     ////
     //// leftfuture     leftparam   rightfuture     rightparam
     //// async          ref         async           ref
-    //// TODO you are here building this truth table
+    //// async          ref         async           in
+    //// async          ref         async           none
+    //// async          ref         sync            ref
+    //// async          ref         sync            in
+    //// async          ref         sync            none
+    //// async          in          async           ref
+    //// async          in          async           in
+    //// async          in          async           none
+    //// async          in          sync            ref
+    //// async          in          sync            in
+    //// async          in          sync            none
+    //// async          none        async           ref
+    //// async          none        async           in
+    //// async          none        async           none
+    //// async          none        sync            ref
+    //// async          none        sync            in
+    //// async          none        sync            none
+    //// sync           ref         async           ref
+    //// sync           ref         async           in
+    //// sync           ref         async           none
+    //// sync           ref         sync            ref
+    //// sync           ref         sync            in
+    //// sync           ref         sync            none
+    //// sync           in          async           ref
+    //// sync           in          async           in
+    //// sync           in          async           none
+    //// sync           in          sync            ref
+    //// sync           in          sync            in
+    //// sync           in          sync            none
+    //// sync           none        async           ref
+    //// sync           none        async           in
+    //// sync           none        async           none
+    //// sync           none        sync            ref
+    //// sync           none        sync            in
+    //// sync           none        sync            none
     ////
     //// demonstrate ref struct result
     //// demonstrate ref struct context
