@@ -216,7 +216,7 @@ namespace Fx.Either
         }
     }
 
-    public static class EitherExtensions
+    public static partial class EitherExtensions
     {
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
@@ -847,14 +847,17 @@ namespace Fx.Either
         {
         }
 
-        //// TODO add generic type constraints
-        //// TODO implement each method
+        //// TODO implement each method        
+    }
 
+    public static partial class EitherExtensions
+    {
         private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
         {
             return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
         }
     }
+
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
         where TContext : allows ref struct
