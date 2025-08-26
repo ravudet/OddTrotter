@@ -856,45 +856,51 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult: allows ref struct
         {
-            return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
+            return (TValue value, ref TContext context) => new FromResult<TResult, TContext>((ref TContext context) => map(value, ref context), ref context);
         }
 
-        private sealed class FromResult<T> : ITask<T> where T : allows ref struct
-        {
-            private readonly Func<T> promise;
+        private delegate TResult RefFunc<T1, TResult>(ref T1 t1) where T1 : allows ref struct where TResult : allows ref struct;
 
-            public FromResult(Func<T> promise)
+        private sealed class FromResult<TResult, TContext> : ITask<TResult> 
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            private readonly RefFunc<TContext, TResult> promise;
+            private readonly TContext context;
+
+            public FromResult(RefFunc<TContext, TResult> promise, ref TContext context)
             {
                 this.promise = promise;
+                this.context = context;
             }
 
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
             {
-                throw new NotImplementedException();
+                return new ConfiguredAwaitable(this.promise, continueOnCapturedContext);
             }
 
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
             {
-                private readonly Func<T> promise;
+                private readonly Func<TResult> promise;
                 private readonly bool continueOnCapturedContext;
 
-                public ConfiguredAwaitable(Func<T> promise, bool continueOnCapturedContext)
+                public ConfiguredAwaitable(Func<TResult> promise, bool continueOnCapturedContext)
                 {
                     this.promise = promise;
                     this.continueOnCapturedContext = continueOnCapturedContext;
                 }
 
-                public ITaskAwaiter<T> GetAwaiter()
+                public ITaskAwaiter<TResult> GetAwaiter()
                 {
                     return new TaskAwaiter(this.promise, Task.CompletedTask.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use `completedtask` here?
                 }
 
-                private sealed class TaskAwaiter : ITaskAwaiter<T>
+                private sealed class TaskAwaiter : ITaskAwaiter<TResult>
                 {
-                    private readonly Func<T> promise;
+                    private readonly Func<TResult> promise;
                     private readonly System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
 
-                    public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    public TaskAwaiter(Func<TResult> promise, System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
                     {
                         this.promise = promise;
                         this.taskAwaiter = taskAwaiter;
@@ -908,7 +914,7 @@ namespace Fx.Either
                         }
                     }
 
-                    public T GetResult()
+                    public TResult GetResult()
                     {
                         return this.promise();
                     }
@@ -925,18 +931,18 @@ namespace Fx.Either
                 }
             }
 
-            public ITaskAwaiter<T> GetAwaiter()
+            public ITaskAwaiter<TResult> GetAwaiter()
             {
                 return new TaskAwaiter(this.promise, Task.CompletedTask.GetAwaiter()); //// TODO is it ok to use `completedtask` here?
             }
 
-            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            private sealed class TaskAwaiter : ITaskAwaiter<TResult>
             {
-                private readonly Func<T> promise;
+                private readonly Func<TResult> promise;
 
                 private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
 
-                public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+                public TaskAwaiter(Func<TResult> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
                 {
                     this.promise = promise;
                     this.taskAwaiter = taskAwaiter;
@@ -950,7 +956,7 @@ namespace Fx.Either
                     }
                 }
 
-                public T GetResult()
+                public TResult GetResult()
                 {
                     return this.promise();
                 }
