@@ -216,8 +216,648 @@ namespace Fx.Either
         }
     }
 
+    public static class EitherExtensions
+    {
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TRight> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either
+                .Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncInContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            InContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TLeft, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TRight> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            ContextualizedMap<TLeft, TContext, TResult> leftMap,
+            Map<TRight, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap)
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            Map<TRight, TResult> rightMap)
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            InContextualizedMap<TRight, TContext, TResult> rightMap,
+            in TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap)
+            where TResult : allows ref struct
+        {
+        }
+
+        public static TResult Apply<TLeft, TRight, TResult>( //// TODO is this a fold?
+            this IEither<TLeft, TRight> either,
+            Map<TLeft, TResult> leftMap,
+            Map<TRight, TResult> rightMap)
+            where TResult : allows ref struct
+        {
+        }
+
+        //// TODO add generic type constraints
+        //// TODO implement each method
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
+        {
+            return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
+        }
+    }
+
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
-        where TContext : allows ref struct 
+        where TContext : allows ref struct
         where TResult : allows ref struct;
 
     public delegate TResult RefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -247,30 +887,6 @@ namespace Fx.Either
         where TResult : allows ref struct;
 
 
-    public static class EitherExtensions
-    {
-        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>()
-
-        public static TResult Apply<TLeft, TRight, TResult, TContext>(
-            this IEither<TLeft, TRight> either,
-            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            RefContextualizedMap<TRight, TContext, TResult> rightMap,
-            ref TContext context)
-        {
-            return either
-                .Apply(
-                    Convert(leftMap),
-                    Convert(rightMap),
-                    ref context)
-                .GetAwaiter()
-                .GetResult();
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
-        {
-            return (TValue value, ref TContext context) => new TaskWrapper<TResult>(Task.FromResult(map(value, ref context)));
-        }
-    }
 
     //// left vs right
     //// async vs sync
