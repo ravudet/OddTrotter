@@ -451,7 +451,7 @@ namespace Fx.Either
         {
             return either.Apply(
                 Convert(leftMap),
-                Convert(rightMap),
+                rightMap,
                 ref context);
         }
 
@@ -461,7 +461,6 @@ namespace Fx.Either
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -477,10 +476,11 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
                 Convert(leftMap),
                 Convert(rightMap),
-                ref context);
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1108,6 +1108,7 @@ namespace Fx.Either
         //// TODO implement each method
         //// TODO go through the `apply2`s
         //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
+        //// TODO other TODOs
     }
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -1142,6 +1143,34 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+        private static AsyncRefContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            //// TODO you are here
+            //// TODO i think you will end up fine if you implement several converters that take the original delegate type instead of trying to have a single-purpose converter from `AsyncRefContextualizedMap`
+            return (TValue value, ref ContextWrapper<TContext> context) => map(value, ref context.Context);
+        }
+
+        private readonly ref struct ContextWrapper<TContext> where TContext : allows ref struct
+        {
+            private readonly TContext context;
+
+            public ContextWrapper(in TContext context)
+            {
+                //// TODO this makes a copy; is that ok?
+                this.context = context;
+            }
+
+            public TContext Context
+            {
+                get
+                {
+                    return this.context;
+                }
+            }
+        }
+
         private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map<TValue, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
