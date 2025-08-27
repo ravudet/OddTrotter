@@ -310,7 +310,7 @@ namespace Fx.Either
         {
             return either.Apply(
                 leftMap,
-                Convert(rightMap),
+                Convert<TRight, TContext, TResult>(rightMap),
                 ref context);
         }
 
@@ -324,7 +324,7 @@ namespace Fx.Either
         {
             return either.Apply(
                 leftMap,
-                Convert(rightMap),
+                Convert<TRight, TContext, TResult>(rightMap),
                 ref context);
         }
 
@@ -334,11 +334,10 @@ namespace Fx.Either
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
-                Convert(rightMap),
+                rightMap,
                 ref context);
         }
 
@@ -348,7 +347,6 @@ namespace Fx.Either
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
