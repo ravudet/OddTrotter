@@ -79,9 +79,9 @@ namespace Fx.Either
         /// <see cref="IEither{TLeft, TRight}"/> will need to do, but having just the implementers of the interface do it, 
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
-        ITask<TResult> Apply<TResult, TContext>(
-            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+        TResult Apply<TResult, TContext>(
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
@@ -112,10 +112,43 @@ namespace Fx.Either
             return new Either<TLeft, TRight>(value);
         }
 
+        public TResult Apply<TResult, TContext>(RefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (this.left != null)
+            {
+                try
+                {
+                    return leftMap(this.left, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new LeftMapException(exception);
+                }
+            }
+            else if (this.right != null)
+            {
+                try
+                {
+                    return rightMap(this.right, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(exception);
+                }
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         public ITask<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
+            //// TODO this needs to be a mixin implementation now
             if (this.left != null)
             {
                 return new CustomTask<TResult>(leftMap(this.left, ref context), true);
@@ -852,6 +885,13 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
         private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult: allows ref struct
