@@ -253,7 +253,6 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 leftMap,
@@ -281,11 +280,23 @@ namespace Fx.Either
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 leftMap,
                 Convert(rightMap),
+                ref context);
+        }
+
+        public static ITask<TResult> Apply2<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            ContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TResult : allows ref struct
+        {
+            return either.Apply(
+                leftMap,
+                Convert2(rightMap),
                 ref context);
         }
 
@@ -1094,6 +1105,7 @@ namespace Fx.Either
         }
 
         //// TODO implement each method
+        //// TODO go through the `apply2`s
         //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
     }
 
