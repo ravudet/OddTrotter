@@ -360,7 +360,6 @@ namespace Fx.Either
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
