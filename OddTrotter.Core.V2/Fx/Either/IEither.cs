@@ -5,6 +5,8 @@ namespace Fx.Either
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+    using System.Transactions;
+    using static Fx.Either.Playground;
 
     public interface IEither<out TLeft, out TRight>
     {
@@ -79,9 +81,9 @@ namespace Fx.Either
         /// <see cref="IEither{TLeft, TRight}"/> will need to do, but having just the implementers of the interface do it, 
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
-        TResult Apply<TResult, TContext>(
-            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+        ITask<TResult> Apply<TResult, TContext>(
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
@@ -112,43 +114,10 @@ namespace Fx.Either
             return new Either<TLeft, TRight>(value);
         }
 
-        public TResult Apply<TResult, TContext>(RefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-        {
-            if (this.left != null)
-            {
-                try
-                {
-                    return leftMap(this.left, ref context);
-                }
-                catch (Exception exception)
-                {
-                    throw new LeftMapException(exception);
-                }
-            }
-            else if (this.right != null)
-            {
-                try
-                {
-                    return rightMap(this.right, ref context);
-                }
-                catch (Exception exception)
-                {
-                    throw new RightMapException(exception);
-                }
-            }
-            else
-            {
-                throw new Exception("TODO visitor");
-            }
-        }
-
         public ITask<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            //// TODO this needs to be a mixin implementation now
             if (this.left != null)
             {
                 return new CustomTask<TResult>(leftMap(this.left, ref context), true);
@@ -254,11 +223,14 @@ namespace Fx.Either
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            RefContextualizedMap<TRight, TContext, TRight> rightMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -269,6 +241,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -279,6 +255,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -289,6 +269,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -299,6 +283,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -309,6 +297,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -319,6 +311,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                leftMap,
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -329,9 +325,13 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
-        public static TResult Apply<TLeft, TRight, TResult, TContext>(
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             RefContextualizedMap<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
@@ -339,13 +339,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
-            return either
-                .Apply(
-                    Convert(leftMap),
-                    Convert(rightMap),
-                    ref context)
-                .GetAwaiter()
-                .GetResult();
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -356,6 +353,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -366,6 +367,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -376,6 +381,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -386,6 +395,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -396,6 +409,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -406,6 +423,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -416,6 +437,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -426,6 +451,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -436,6 +465,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -446,6 +479,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -456,6 +493,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -466,6 +507,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -476,6 +521,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -486,6 +535,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -496,6 +549,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -506,6 +563,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -516,6 +577,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -526,6 +591,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -536,6 +605,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -546,6 +619,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -556,6 +633,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -566,6 +647,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -576,6 +661,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -586,6 +675,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -596,6 +689,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -606,6 +703,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -616,6 +717,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -626,6 +731,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -636,6 +745,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -646,6 +759,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -656,6 +773,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -666,6 +787,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -676,6 +801,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -686,6 +815,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -696,6 +829,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -706,6 +843,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -716,6 +857,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -726,6 +871,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -736,6 +885,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -746,6 +899,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -756,6 +913,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -766,6 +927,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -776,6 +941,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -786,6 +955,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult>(
@@ -794,6 +967,10 @@ namespace Fx.Either
             AsyncMap<TRight, TResult> rightMap)
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult>(
@@ -802,6 +979,10 @@ namespace Fx.Either
             Map<TRight, TResult> rightMap)
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -812,6 +993,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -822,6 +1007,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -832,6 +1021,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -842,6 +1035,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -852,6 +1049,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -862,6 +1063,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult>(
@@ -870,6 +1075,10 @@ namespace Fx.Either
             AsyncMap<TRight, TResult> rightMap)
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
         public static TResult Apply<TLeft, TRight, TResult>( //// TODO is this a fold?
@@ -878,150 +1087,15 @@ namespace Fx.Either
             Map<TRight, TResult> rightMap)
             where TResult : allows ref struct
         {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
         }
 
-        //// TODO implement each method        
+        //// TODO implement each method
+        //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
     }
-
-    public static partial class EitherExtensions
-    {
-        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult: allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult<TResult, TContext>((ref TContext context) => map(value, ref context), ref context);
-        }
-
-        private delegate TResult RefFunc<T1, TResult>(ref T1 t1) where T1 : allows ref struct where TResult : allows ref struct;
-
-        private sealed class FromResult<TResult, TContext> : ITask<TResult> 
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-        {
-            private readonly RefFunc<TContext, TResult> promise;
-            private readonly TContext context;
-
-            public FromResult(RefFunc<TContext, TResult> promise, ref TContext context)
-            {
-                this.promise = promise;
-                this.context = context;
-
-                //// TODO you are here; how to get `this.context` as a field without breaking the ref struct (because it's inside a heap type)
-            }
-
-            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitable(this.promise, continueOnCapturedContext);
-            }
-
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
-            {
-                private readonly Func<TResult> promise;
-                private readonly bool continueOnCapturedContext;
-
-                public ConfiguredAwaitable(Func<TResult> promise, bool continueOnCapturedContext)
-                {
-                    this.promise = promise;
-                    this.continueOnCapturedContext = continueOnCapturedContext;
-                }
-
-                public ITaskAwaiter<TResult> GetAwaiter()
-                {
-                    return new TaskAwaiter(this.promise, Task.CompletedTask.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use `completedtask` here?
-                }
-
-                private sealed class TaskAwaiter : ITaskAwaiter<TResult>
-                {
-                    private readonly Func<TResult> promise;
-                    private readonly System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                    public TaskAwaiter(Func<TResult> promise, System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                    {
-                        this.promise = promise;
-                        this.taskAwaiter = taskAwaiter;
-                    }
-
-                    public bool IsCompleted
-                    {
-                        get
-                        {
-                            return true;
-                        }
-                    }
-
-                    public TResult GetResult()
-                    {
-                        return this.promise();
-                    }
-
-                    public void OnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.OnCompleted(continuation);
-                    }
-
-                    public void UnsafeOnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.UnsafeOnCompleted(continuation);
-                    }
-                }
-            }
-
-            public ITaskAwaiter<TResult> GetAwaiter()
-            {
-                return new TaskAwaiter(this.promise, Task.CompletedTask.GetAwaiter()); //// TODO is it ok to use `completedtask` here?
-            }
-
-            private sealed class TaskAwaiter : ITaskAwaiter<TResult>
-            {
-                private readonly Func<TResult> promise;
-
-                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
-
-                public TaskAwaiter(Func<TResult> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
-                {
-                    this.promise = promise;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public bool IsCompleted
-                {
-                    get
-                    {
-                        return true;
-                    }
-                }
-
-                public TResult GetResult()
-                {
-                    return this.promise();
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-        }
-    }
-
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
         where TContext : allows ref struct
@@ -1053,6 +1127,361 @@ namespace Fx.Either
     public delegate TResult Map<in TValue, out TResult>(TValue value)
         where TResult : allows ref struct;
 
+    public static partial class EitherExtensions
+    {
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map<TValue, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new FromResult3<TResult>(() => map(value));
+        }
+
+        private sealed class FromResult3<T> : ITask<T> where T : allows ref struct
+        {
+            private readonly Func<T> promise;
+
+            public FromResult3(Func<T> promise)
+            {
+                this.promise = promise;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(
+                    this.promise,
+                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly Func<T> promise;
+                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                public ConfiguredAwaitable(Func<T> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                {
+                    this.promise = promise;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public ITaskAwaiter<T> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.promise, this.taskAwaiter);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<T>
+                {
+                    private readonly Func<T> promise;
+                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public TaskAwaiter(Func<T> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    {
+                        this.promise = promise;
+                        this.taskAwaiter = taskAwaiter;
+                    }
+
+                    public bool IsCompleted { get; } = true;
+
+                    public T GetResult()
+                    {
+                        return this.promise();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiter(this.promise, Task.CompletedTask.GetAwaiter());
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly Func<T> promise;
+                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+                {
+                    this.promise = promise;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted { get; } = true;
+
+                public T GetResult()
+                {
+                    return this.promise();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncMap<TValue, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value);
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, context));
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert2<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new FromResult2<TContext, TResult>(context, _ => map(value, _));
+        }
+
+        private sealed class FromResult2<TContext, TResult> : ITask<TResult> where TResult : allows ref struct
+        {
+            private readonly TContext context;
+            private readonly Func<TContext, TResult> promise;
+
+            public FromResult2(TContext context, Func<TContext, TResult> promise)
+            {
+                this.context = context;
+                this.promise = promise;
+            }
+
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.context, this.promise, Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is using the complete task awaiter ok? you may need to use the "same" "instance", so you might actually need to have the `taskawaiter` take in the `configuredawaitable` and reference the field
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
+            {
+                private readonly TContext context;
+                private readonly Func<TContext, TResult> promise;
+                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                public ConfiguredAwaitable(TContext context, Func<TContext, TResult> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                {
+                    this.context = context;
+                    this.promise = promise;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public ITaskAwaiter<TResult> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.context, this.promise, this.taskAwaiter);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<TResult>
+                {
+                    private readonly TContext context;
+                    private readonly Func<TContext, TResult> promise;
+                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public TaskAwaiter(TContext context, Func<TContext, TResult> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    {
+                        this.context = context;
+                        this.promise = promise;
+                        this.taskAwaiter = taskAwaiter;
+                    }
+
+                    public bool IsCompleted { get; } = true;
+
+                    public TResult GetResult()
+                    {
+                        return this.promise(this.context);
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public ITaskAwaiter<TResult> GetAwaiter()
+            {
+                return new TaskAwaiter(this.context, this.promise, Task.CompletedTask.GetAwaiter()); //// TODO is using the complete task awaiter ok?
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<TResult>
+            {
+                private readonly TContext context;
+                private readonly Func<TContext, TResult> promise;
+                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(TContext context, Func<TContext, TResult> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+                {
+                    this.context = context;
+                    this.promise = promise;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted { get; } = true;
+
+                public TResult GetResult()
+                {
+                    return this.promise(this.context);
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, context);
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(InContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, in context));
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, in context);
+        }
+
+        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, ref context));
+        }
+
+        private sealed class FromResult<T> : ITask<T> //// TODO make this public?
+        {
+            private readonly T value;
+
+            public FromResult(T value)
+            {
+                this.value = value;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(
+                    this.value,
+                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly T value;
+                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                public ConfiguredAwaitable(T value, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                {
+                    this.value = value;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public ITaskAwaiter<T> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.value, this.taskAwaiter);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<T>
+                {
+                    private readonly T value;
+                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public TaskAwaiter(T value, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    {
+                        this.value = value;
+                        this.taskAwaiter = taskAwaiter;
+                    }
+
+                    public bool IsCompleted { get; } = true;
+
+                    public T GetResult()
+                    {
+                        return this.value;
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                return new TaskAwaiter(this.value, Task.CompletedTask.GetAwaiter());
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly T value;
+                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(T value, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+                {
+                    this.value = value;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted { get; } = true;
+
+                public T GetResult()
+                {
+                    return this.value;
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+    }
+
+
+    
+    //// TODO overloads that take in itask<ieither>
 
 
     //// left vs right
