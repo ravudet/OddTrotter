@@ -476,10 +476,12 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            AsyncInContextualizedMap<TLeft, ContextWrapper<TContext>, TResult> newLeftMap = (TLeft value, in ContextWrapper<TContext> context) => leftMap(value, context.Context);
+
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
+                (TLeft value, ref ContextWrapper<TContext> context) => leftMap(value, context.Context),
+                (TRight value, ref ContextWrapper<TContext> context) => rightMap(value, context.Context),
                 ref contextWrapper);
         }
 
@@ -1158,7 +1160,7 @@ namespace Fx.Either
 
             public ContextWrapper(in TContext context)
             {
-                //// TODO this makes a copy; is that ok?
+                //// TODO this makes a copy; is that ok? //// TODO based on your `either` implementation, you *should* be able to get away with `TContext*` for the field, but you need to check this, and you also need to make the decision about other implementers of `ieither`
                 this.context = context;
             }
 
