@@ -518,12 +518,12 @@ namespace Fx.Either
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+                Convert(Wrap(leftMap)),
+                Convert(Wrap(Adapt(rightMap))),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1144,6 +1144,13 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+        private static InContextualizedMap<TValue, TContext, TResult> Adapt<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, in TContext context) => map(value, context);
+        }
+
         private static AsyncInContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
