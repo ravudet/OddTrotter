@@ -534,10 +534,11 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+                Convert(Wrap(leftMap)),
+                Wrap(Convert<TRight, TContext, TResult>(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -548,10 +549,11 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+                Convert(Wrap(leftMap)),
+                Wrap(Convert<TRight, TContext, TResult>(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -562,6 +564,7 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
                 Convert(leftMap),
                 Convert(rightMap),
@@ -1144,6 +1147,13 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+        private static AsyncRefContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref ContextWrapper<TContext> context) => map(value, ref context.Context);
+        }
+
         private static InContextualizedMap<TValue, TContext, TResult> Adapt<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
