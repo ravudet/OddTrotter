@@ -42,11 +42,8 @@
     public interface IGetResponseBodyAfterOdataContextToken
     {
         TResult Apply<TResult>(
-            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,
+            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootControlInformationReader,
             Func<IRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootAnnotationReader,
-            Func<IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyControlInformationReader, ///// TODO you are here
-            //// TODO acutally, have ipropertyreader go to ipropertynamereader which has a propertyname and propertynametoken, which is either control information, annotation, or property value
-            Func<IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
             Func<System.Nothing, TResult> terminal);
     }
@@ -66,17 +63,176 @@
 
 
 
-
-
-    public interface IPropertyControlInformationReader<out TNextReader>
+    public interface IPropertyReader<out TNextReader> : IReader<IPropertyNameReader<TNextReader>>
     {
     }
 
-    public interface IPropertyAnnotationReader<out TNextReader>
+    public interface IPropertyNameReader<out TNextReader> : IReader<IPropertyNameToken<TNextReader>, PropertyName>
     {
     }
 
-    public interface IPropertyReader<out TNextReader>
+    public sealed class PropertyName
+    {
+        private PropertyName()
+        {
+        }
+    }
+
+    public interface IPropertyNameToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<IPropertyControlInformationReader<TNextReader>, TResult> propertyControlInformationReader,
+            Func<IPropertyAnnotationReader<TNextReader>, TResult> propertyAnnotationReader,
+            Func<IPropertyValueReader<TNextReader>, TResult> propertyValueReader);
+    }
+
+    public interface IPropertyControlInformationReader<out TNextReader> : IReader<IPropertyControlInformationToken<TNextReader>>
+    {
+    }
+
+    public interface IPropertyControlInformationToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<IPropertyAssociationLinkReader<TNextReader>, TResult> propertyAssociationLinkReader,
+            Func<IPropertyNavigationLinkReader<TNextReader>, TResult> propertyNavigationLinkReader,
+            Func<IPropertyUnknownControlInformationReader<TNextReader>, TResult> propertyUnknownControlInformationReader);
+    }
+
+
+    public interface IPropertyAssociationLinkReader<out TNextReader> : IReader<TNextReader, AssociationLink>
+    {
+    }
+
+    public sealed class AssociationLink
+    {
+        private AssociationLink()
+        {
+        }
+    }
+
+    public interface IPropertyNavigationLinkReader<out TNextReader> : IReader<TNextReader, NavigationLink>
+    {
+    }
+
+    public sealed class NavigationLink
+    {
+        private NavigationLink()
+        {
+        }
+    }
+
+    public interface IPropertyUnknownControlInformationReader<out TNextReader> : IReader<IPropertyUnknownControlInformationNameReader<TNextReader>>
+    {
+        // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformation):
+        // > Receivers that encounter unknown annotations in any namespace or unknown control information MUST NOT stop processing and MUST NOT signal an error.
+        //
+        // we need to be able to handle things that look like control information, but are unknown to us at the time of implementation
+    }
+
+    public interface IPropertyUnknownControlInformationNameReader<out TNextReader> : IReader<IPropertyUnknownControlInformationValueReader<TNextReader>, ControlInformationName>
+    {
+    }
+
+    public interface IPropertyUnknownControlInformationValueReader<out TNextReader> : IReader<TNextReader, ControlInformationValue>
+    {
+    }
+
+    public interface IPropertyAnnotationReader<out TNextReader> : IReader<IPropertyAnnotationNameReader<TNextReader>>
+    {
+    }
+
+    public interface IPropertyAnnotationNameReader<out TNextReader> : IReader<IPropertyAnnotationValueReader<TNextReader>, AnnotationName>
+    {
+    }
+
+    public interface IPropertyAnnotationValueReader<out TNextReader> : IReader<TNextReader, AnnotationValue>
+    {
+    }
+
+    public interface IPropertyValueReader<out TNextReader> : IReader<IPropertyNameToken<TNextReader>>
+    {
+    }
+
+    public interface IPropertyValueToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<INullValueReader<TNextReader>, TResult> nullValueReader,
+            Func<IPrimitiveValueReader<TNextReader>, TResult> primitiveValueReader,
+            Func<IStringValueReader<TNextReader>, TResult> stringValueReader,
+            Func<IObjectValueReader<TNextReader>, TResult> objectValueReader,
+            Func<ICollectionValueReader<TNextReader>, TResult> collectionValueReader);
+
+        //// TODO should there be a "datetimevaluereader" or something? basically, odata overloads strings sometimes, what are all of the times it does that?
+    }
+
+    public interface INullValueReader<out TNextReader> : IReader<TNextReader>
+    {
+    }
+
+    public interface IPrimitiveValueReader<out TNextReader> : IReader<IPrimitiveValueToken<TNextReader>>
+    {
+        
+    }
+
+    public interface IPrimitiveValueToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<IIntValueReader<TNextReader>, TResult> intValueReader,
+            Func<IBoolValueReader<TNextReader>, TResult> boolValueReader);
+    }
+
+    public interface IIntValueReader<out TNextReader> : IReader<TNextReader, IntValue>
+    {
+    }
+
+    public sealed class IntValue
+    {
+        private IntValue()
+        {
+        }
+    }
+
+    public interface IBoolValueReader<out TNextReader> : IReader<TNextReader, BoolValue>
+    {
+    }
+
+    public sealed class BoolValue
+    {
+        private BoolValue()
+        {
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public interface IStringValueReader<out TNextReader>
+    {
+    }
+
+    public interface IObjectValueReader<out TNextReader>
+    {
+    }
+
+    public interface ICollectionValueReader<out TNextReader>
     {
     }
 }
