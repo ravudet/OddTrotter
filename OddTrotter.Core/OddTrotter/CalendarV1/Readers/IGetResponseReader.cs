@@ -1,7 +1,6 @@
 ﻿namespace OddTrotter.CalendarV1.Readers
 {
     using System;
-    using System.IO;
 
     public interface IGetResponseReader : IReader<IGetResponseHeadersReader>
     {
