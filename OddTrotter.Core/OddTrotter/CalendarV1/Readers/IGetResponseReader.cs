@@ -203,34 +203,43 @@
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public interface IStringValueReader<out TNextReader>
+    public interface IStringValueReader<out TNextReader> : IReader<TNextReader, StringValue>
     {
+    }
+
+    public sealed class StringValue
+    {
+        private StringValue()
+        {
+        }
     }
 
     public interface IObjectValueReader<out TNextReader>
     {
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public interface ICollectionValueReader<out TNextReader>
     {
