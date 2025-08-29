@@ -50,34 +50,31 @@
             Func<System.Nothing, TResult> terminal);
     }
 
-    public interface IRootControlInformationReader<out TNextReader> : IReader<IRootControlInformationToken<TNextReader>>
+    public interface IRootAnnotationReader<out TNextReader> : IReader<IRootAnnotationNameReader<TNextReader>>
     {
     }
 
-    public interface IRootControlInformationToken<out TNextReader>
-    {
-        TResult Apply<TResult>(
-            Func<IRootNextLinkReader<TNextReader>, TResult> nextLinkReader,
-            Func<IRootUnknownControlInformationReader<TNextReader>, TResult> unknownControlInformationReader);
-    }
-
-    public interface IRootNextLinkReader<out TNextReader> : IReader<TNextReader, NextLink>
+    public interface IRootAnnotationNameReader<out TNextReader> : IReader<IRootAnnotationValueReader<TNextReader>, AnnotationName>
     {
     }
 
-    public sealed class NextLink
+    public sealed class AnnotationName
     {
-        private NextLink()
+        private AnnotationName()
         {
         }
     }
 
-    public interface IRootUnknownControlInformationReader<out TNextReader>
+    public interface IRootAnnotationValueReader<out TNextReader>
     {
-        // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformation):
-        // > Receivers that encounter unknown annotations in any namespace or unknown control information MUST NOT stop processing and MUST NOT signal an error.
-        //
-        // we need to be able to handle things that look like control information, but are unknown to us at the time of implementation
+    }
+
+    public sealed class AnnotationValue
+    {
+        private AnnotationValue()
+        {
+            //// TODO this might be a DU between strings and each of the different primitives; see if you can find the answer in the standard //// TODO actually, it seems to be *any* JSON token, including an object
+        }
     }
 
 
@@ -89,9 +86,11 @@
 
 
 
-    public interface IRootAnnotationReader<out TNextReader>
-    {
-    }
+
+
+
+
+
 
     public interface IPropertyControlInformationReader<out TNextReader>
     {
