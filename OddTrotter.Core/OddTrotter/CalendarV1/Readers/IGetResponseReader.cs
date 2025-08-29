@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.CalendarV1.Readers
 {
     using System;
+    using System.ComponentModel.Design;
 
     public interface IGetResponseReader : IReader<IGetResponseHeadersReader>
     {
@@ -42,8 +43,8 @@
     public interface IGetResponseBodyAfterOdataContextToken
     {
         TResult Apply<TResult>(
-            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootControlInformationReader,
-            Func<IRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootAnnotationReader,
+            Func<IRequestRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootControlInformationReader,
+            Func<IRequestRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
             Func<System.Nothing, TResult> terminal);
     }
@@ -214,9 +215,33 @@
         }
     }
 
-    public interface IObjectValueReader<out TNextReader>
+    public interface IObjectValueReader<out TNextReader> : IReader<IObjectValueToken<TNextReader>>
     {
     }
+
+    public interface IObjectValueToken<out TNextReader>
+    {
+        //// TODO you are here
+        //// TODO rename the "requestroot*" readers to "responseroot*"
+        //// TODO define each of the different possible tokens in an object root; you copied the below from the response root DU; you are looking to see if odata.context is special cased for JSON objects that aren't the root of the response
+        TResult Apply<TResult>(
+            Func<IRequestRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootControlInformationReader,
+            Func<IRequestRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootAnnotationReader,
+            Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
+            Func<System.Nothing, TResult> terminal);
+    }
+
+   
+
+
+
+
+
+
+
+
+
+    public interface 
 
 
 

@@ -1,10 +1,10 @@
 ﻿namespace OddTrotter.CalendarV1.Readers
 {
-    public interface IRootAnnotationReader<out TNextReader> : IReader<IRootAnnotationNameReader<TNextReader>>
+    public interface IRequestRootAnnotationReader<out TNextReader> : IReader<IRequestRootAnnotationNameReader<TNextReader>>
     {
     }
 
-    public interface IRootAnnotationNameReader<out TNextReader> : IReader<IRootAnnotationValueReader<TNextReader>, AnnotationName>
+    public interface IRequestRootAnnotationNameReader<out TNextReader> : IReader<IRequestRootAnnotationValueReader<TNextReader>, AnnotationName>
     {
     }
 
@@ -15,7 +15,7 @@
         }
     }
 
-    public interface IRootAnnotationValueReader<out TNextReader> : IReader<TNextReader, AnnotationValue>
+    public interface IRequestRootAnnotationValueReader<out TNextReader> : IReader<TNextReader, AnnotationValue>
     {
     }
 
