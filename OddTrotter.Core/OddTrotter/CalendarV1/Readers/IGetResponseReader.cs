@@ -72,7 +72,7 @@
         }
     }
 
-    public interface IRootUnknownControlInformationReader<out TNextReader> //// TODO document where in the standard this is
+    public interface IRootUnknownControlInformationReader<out TNextReader>
     {
         // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformation):
         // > Receivers that encounter unknown annotations in any namespace or unknown control information MUST NOT stop processing and MUST NOT signal an error.
