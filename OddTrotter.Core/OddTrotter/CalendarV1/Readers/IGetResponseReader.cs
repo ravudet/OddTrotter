@@ -29,7 +29,7 @@
 
     public interface IGetResponseBodyReader : IReader<IOdataContextReader<IGetResponseBodyAfterOdataContextReader>>
     {
-        // according to [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformationcontextodatacontex):
+        // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformationcontextodatacontex):
         // > The context control information is not returned if metadata=none is requested. Otherwise it MUST be the first property of any JSON response.
         // 
         // the odata.context is the first control information, if present
@@ -74,6 +74,10 @@
 
     public interface IRootUnknownControlInformationReader<out TNextReader> //// TODO document where in the standard this is
     {
+        // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformation):
+        // > Receivers that encounter unknown annotations in any namespace or unknown control information MUST NOT stop processing and MUST NOT signal an error.
+        //
+        // we need to be able to handle things that look like control information, but are unknown to us at the time of implementation
     }
 
 
