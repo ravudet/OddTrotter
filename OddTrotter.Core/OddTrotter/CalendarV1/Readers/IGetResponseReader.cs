@@ -43,7 +43,7 @@
     public interface IGetResponseBodyAfterOdataContextToken
     {
         TResult Apply<TResult>(
-            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,,
+            Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,
             Func<IRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootAnnotationReader,
             Func<IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyControlInformationReader,
             Func<IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyAnnotationReader,
