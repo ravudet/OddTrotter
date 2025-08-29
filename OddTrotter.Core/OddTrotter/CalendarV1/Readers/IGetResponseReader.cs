@@ -44,34 +44,33 @@
         TResult Apply<TResult>(
             Func<IRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> controlInformationReader,
             Func<IRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> rootAnnotationReader,
-            Func<IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyControlInformationReader,
+            Func<IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyControlInformationReader, ///// TODO you are here
+            //// TODO acutally, have ipropertyreader go to ipropertynamereader which has a propertyname and propertynametoken, which is either control information, annotation, or property value
             Func<IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
             Func<System.Nothing, TResult> terminal);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public interface IPropertyControlInformationReader<out TNextReader>
     {
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public interface IPropertyAnnotationReader<out TNextReader>
     {
