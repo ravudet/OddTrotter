@@ -476,12 +476,10 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
-            AsyncInContextualizedMap<TLeft, ContextWrapper<TContext>, TResult> newLeftMap = (TLeft value, in ContextWrapper<TContext> context) => leftMap(value, context.Context);
-
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                (TLeft value, ref ContextWrapper<TContext> context) => leftMap(value, context.Context),
-                (TRight value, ref ContextWrapper<TContext> context) => rightMap(value, context.Context),
+                Convert(Wrap(leftMap)),
+                Convert(Wrap(rightMap)),
                 ref contextWrapper);
         }
 
@@ -491,12 +489,12 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+                Convert(Wrap(leftMap)),
+                Convert(Wrap(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -507,10 +505,11 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+                Convert(Wrap(leftMap)),
+                Convert(Wrap(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1145,33 +1144,72 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
-        private static AsyncRefContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+        private static AsyncInContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
-            //// TODO you are here
-            //// TODO i think you will end up fine if you implement several converters that take the original delegate type instead of trying to have a single-purpose converter from `AsyncRefContextualizedMap`
-            return (TValue value, ref ContextWrapper<TContext> context) => map(value, ref context.Context);
+            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
         }
 
-        private readonly ref struct ContextWrapper<TContext> where TContext : allows ref struct
+        private static InContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(InContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
         {
-            private readonly TContext context;
+            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
+        }
+
+        private static AsyncInContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
+        }
+
+        private readonly unsafe ref struct ContextWrapper<TContext> where TContext : allows ref struct
+        {
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            private readonly TContext* context;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 
             public ContextWrapper(in TContext context)
             {
-                //// TODO this makes a copy; is that ok? //// TODO based on your `either` implementation, you *should* be able to get away with `TContext*` for the field, but you need to check this, and you also need to make the decision about other implementers of `ieither`
-                this.context = context;
+                //// TODO is this actually safe? it appears to be based on your current `either` implemntation, but you need to test it; also, you need to decide if you're ok exposing this to other `ieither` implementations
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                this.context = (TContext*)Unsafe.AsPointer(in context);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
             }
 
-            public TContext Context
+            public ref TContext Context
             {
                 get
                 {
-                    return this.context;
+                    return ref System.Runtime.CompilerServices.Unsafe.AsRef<TContext>(this.context);
                 }
             }
         }
+
+        private static class Unsafe
+        {
+            public static unsafe void* AsPointer<T>(in T value) where T : allows ref struct
+            {
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                fixed (void* pointer = &value)
+                {
+                    return pointer;
+                }
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            }
+        }
+
+        /*private readonly ref struct ContextWrapper<TContext> where TContext : allows ref struct
+        {
+            public ContextWrapper(in TContext context)
+            {
+                this.Context = context;
+            }
+
+            public TContext Context { get; }
+        }*/
 
         private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map<TValue, TResult> map)
             where TContext : allows ref struct
