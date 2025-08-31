@@ -1,5 +1,5 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace Fx.Either
+namespace Fx.Either2
 {
     using System;
     using System.Collections.Generic;
@@ -82,8 +82,8 @@ namespace Fx.Either
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
         ITask<TResult> Apply<TResult, TContext>(
-            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            RefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
@@ -223,9 +223,24 @@ namespace Fx.Either
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Apply(
+                Convert(leftMap),
+                Convert(rightMap),
+                ref context);
+        }
+
+        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 leftMap,
@@ -253,6 +268,7 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 leftMap,
@@ -280,6 +296,7 @@ namespace Fx.Either
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 leftMap,
@@ -292,6 +309,7 @@ namespace Fx.Either
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
+            where TContext : allows ref struct
             where TResult : allows ref struct
         {
             return either.Apply(
@@ -334,6 +352,7 @@ namespace Fx.Either
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -347,6 +366,7 @@ namespace Fx.Either
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -360,6 +380,7 @@ namespace Fx.Either
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -373,6 +394,7 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             //// TODO format this correctly
             return either
@@ -391,6 +413,7 @@ namespace Fx.Either
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -404,6 +427,7 @@ namespace Fx.Either
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either
                 .Apply(
@@ -421,6 +445,7 @@ namespace Fx.Either
             AsyncMap<TRight, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -434,6 +459,7 @@ namespace Fx.Either
             Map<TRight, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -461,6 +487,7 @@ namespace Fx.Either
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert(leftMap),
@@ -489,6 +516,7 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -518,6 +546,7 @@ namespace Fx.Either
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -562,6 +591,7 @@ namespace Fx.Either
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -576,6 +606,7 @@ namespace Fx.Either
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -593,6 +624,7 @@ namespace Fx.Either
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -607,6 +639,7 @@ namespace Fx.Either
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -1150,12 +1183,10 @@ namespace Fx.Either
                 .GetAwaiter()
                 .GetResult();
         }
-
-        //// TODo what happens if you the kernel `apply` is sync instead of async? //// TODO you are here in the other file
-        //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
-        //// TODO go through the `apply2`s
-        //// TODO other TODOs
     }
+
+    //// TODO update all of the extensions to have both generic type constraints
+    //// TODO implement the extensions
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
         where TContext : allows ref struct
@@ -1189,434 +1220,9 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
-        private static AsyncRefContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
+        public static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
         {
-            return (TValue value, ref ContextWrapper<TContext> context) => map(value, ref context.Context);
-        }
-
-        private static InContextualizedMap<TValue, TContext, TResult> Adapt<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, in TContext context) => map(value, context);
-        }
-
-        private static AsyncInContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
-        }
-
-        private static InContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(InContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
-        }
-
-        private static AsyncInContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, in ContextWrapper<TContext> context) => map(value, context.Context);
-        }
-
-        private readonly unsafe ref struct ContextWrapper<TContext> where TContext : allows ref struct
-        {
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            private readonly TContext* context;
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-
-            public ContextWrapper(in TContext context)
-            {
-                //// TODO is this actually safe? it appears to be based on your current `either` implemntation, but you need to test it; also, you need to decide if you're ok exposing this to other `ieither` implementations
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                this.context = (TContext*)Unsafe.AsPointer(in context);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            }
-
-            public ref TContext Context
-            {
-                get
-                {
-                    return ref System.Runtime.CompilerServices.Unsafe.AsRef<TContext>(this.context);
-                }
-            }
-        }
-
-        private static class Unsafe
-        {
-            public static unsafe void* AsPointer<T>(in T value) where T : allows ref struct
-            {
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                fixed (void* pointer = &value)
-                {
-                    return pointer;
-                }
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            }
-        }
-
-        /*private readonly ref struct ContextWrapper<TContext> where TContext : allows ref struct
-        {
-            public ContextWrapper(in TContext context)
-            {
-                this.Context = context;
-            }
-
-            public TContext Context { get; }
-        }*/
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(Map<TValue, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult3<TResult>(() => map(value));
-        }
-
-        private sealed class FromResult3<T> : ITask<T> where T : allows ref struct
-        {
-            private readonly Func<T> promise;
-
-            public FromResult3(Func<T> promise)
-            {
-                this.promise = promise;
-            }
-
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitable(
-                    this.promise,
-                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
-            }
-
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
-            {
-                private readonly Func<T> promise;
-                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                public ConfiguredAwaitable(Func<T> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                {
-                    this.promise = promise;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public ITaskAwaiter<T> GetAwaiter()
-                {
-                    return new TaskAwaiter(this.promise, this.taskAwaiter);
-                }
-
-                private sealed class TaskAwaiter : ITaskAwaiter<T>
-                {
-                    private readonly Func<T> promise;
-                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                    public TaskAwaiter(Func<T> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                    {
-                        this.promise = promise;
-                        this.taskAwaiter = taskAwaiter;
-                    }
-
-                    public bool IsCompleted { get; } = true;
-
-                    public T GetResult()
-                    {
-                        return this.promise();
-                    }
-
-                    public void OnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.OnCompleted(continuation);
-                    }
-
-                    public void UnsafeOnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.UnsafeOnCompleted(continuation);
-                    }
-                }
-            }
-
-            public ITaskAwaiter<T> GetAwaiter()
-            {
-                return new TaskAwaiter(this.promise, Task.CompletedTask.GetAwaiter());
-            }
-
-            private sealed class TaskAwaiter : ITaskAwaiter<T>
-            {
-                private readonly Func<T> promise;
-                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
-
-                public TaskAwaiter(Func<T> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
-                {
-                    this.promise = promise;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public bool IsCompleted { get; } = true;
-
-                public T GetResult()
-                {
-                    return this.promise();
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncMap<TValue, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => map(value);
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, context));
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert2<TValue, TContext, TResult>(ContextualizedMap<TValue, TContext, TResult> map)
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult2<TContext, TResult>(context, _ => map(value, _));
-        }
-
-        private sealed class FromResult2<TContext, TResult> : ITask<TResult> where TResult : allows ref struct
-        {
-            private readonly TContext context;
-            private readonly Func<TContext, TResult> promise;
-
-            public FromResult2(TContext context, Func<TContext, TResult> promise)
-            {
-                this.context = context;
-                this.promise = promise;
-            }
-
-            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitable(this.context, this.promise, Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is using the complete task awaiter ok? you may need to use the "same" "instance", so you might actually need to have the `taskawaiter` take in the `configuredawaitable` and reference the field
-            }
-
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
-            {
-                private readonly TContext context;
-                private readonly Func<TContext, TResult> promise;
-                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                public ConfiguredAwaitable(TContext context, Func<TContext, TResult> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                {
-                    this.context = context;
-                    this.promise = promise;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public ITaskAwaiter<TResult> GetAwaiter()
-                {
-                    return new TaskAwaiter(this.context, this.promise, this.taskAwaiter);
-                }
-
-                private sealed class TaskAwaiter : ITaskAwaiter<TResult>
-                {
-                    private readonly TContext context;
-                    private readonly Func<TContext, TResult> promise;
-                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                    public TaskAwaiter(TContext context, Func<TContext, TResult> promise, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                    {
-                        this.context = context;
-                        this.promise = promise;
-                        this.taskAwaiter = taskAwaiter;
-                    }
-
-                    public bool IsCompleted { get; } = true;
-
-                    public TResult GetResult()
-                    {
-                        return this.promise(this.context);
-                    }
-
-                    public void OnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.OnCompleted(continuation);
-                    }
-
-                    public void UnsafeOnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.UnsafeOnCompleted(continuation);
-                    }
-                }
-            }
-
-            public ITaskAwaiter<TResult> GetAwaiter()
-            {
-                return new TaskAwaiter(this.context, this.promise, Task.CompletedTask.GetAwaiter()); //// TODO is using the complete task awaiter ok?
-            }
-
-            private sealed class TaskAwaiter : ITaskAwaiter<TResult>
-            {
-                private readonly TContext context;
-                private readonly Func<TContext, TResult> promise;
-                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
-
-                public TaskAwaiter(TContext context, Func<TContext, TResult> promise, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
-                {
-                    this.context = context;
-                    this.promise = promise;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public bool IsCompleted { get; } = true;
-
-                public TResult GetResult()
-                {
-                    return this.promise(this.context);
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => map(value, context);
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(InContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, in context));
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => map(value, in context);
-        }
-
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-        {
-            return (TValue value, ref TContext context) => new FromResult<TResult>(map(value, ref context));
-        }
-
-        private sealed class FromResult<T> : ITask<T> //// TODO make this public?
-        {
-            private readonly T value;
-
-            public FromResult(T value)
-            {
-                this.value = value;
-            }
-
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitable(
-                    this.value,
-                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
-            }
-
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
-            {
-                private readonly T value;
-                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                public ConfiguredAwaitable(T value, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                {
-                    this.value = value;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public ITaskAwaiter<T> GetAwaiter()
-                {
-                    return new TaskAwaiter(this.value, this.taskAwaiter);
-                }
-
-                private sealed class TaskAwaiter : ITaskAwaiter<T>
-                {
-                    private readonly T value;
-                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
-
-                    public TaskAwaiter(T value, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
-                    {
-                        this.value = value;
-                        this.taskAwaiter = taskAwaiter;
-                    }
-
-                    public bool IsCompleted { get; } = true;
-
-                    public T GetResult()
-                    {
-                        return this.value;
-                    }
-
-                    public void OnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.OnCompleted(continuation);
-                    }
-
-                    public void UnsafeOnCompleted(Action continuation)
-                    {
-                        this.taskAwaiter.UnsafeOnCompleted(continuation);
-                    }
-                }
-            }
-
-            public ITaskAwaiter<T> GetAwaiter()
-            {
-                return new TaskAwaiter(this.value, Task.CompletedTask.GetAwaiter());
-            }
-
-            private sealed class TaskAwaiter : ITaskAwaiter<T>
-            {
-                private readonly T value;
-                private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
-
-                public TaskAwaiter(T value, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
-                {
-                    this.value = value;
-                    this.taskAwaiter = taskAwaiter;
-                }
-
-                public bool IsCompleted { get; } = true;
-
-                public T GetResult()
-                {
-                    return this.value;
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
+            return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 
