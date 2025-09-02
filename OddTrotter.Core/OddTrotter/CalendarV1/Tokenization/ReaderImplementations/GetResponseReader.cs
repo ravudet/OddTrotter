@@ -315,7 +315,7 @@
                         public CustomHeaderFieldName TryGetValue(out bool moved)
                         {
                             //// TODO you are here
-                            //// TODO but you should really do the disposable thing before continuing to implement  
+                            //// TODO but you should really do the disposable thing before continuing to implement
                             throw new NotImplementedException();
                         }
 
