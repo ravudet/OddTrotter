@@ -1152,6 +1152,12 @@ namespace Fx.Either
                 .GetResult();
         }
 
+        //// there are 39 overloads that can't have `tresult : allows ref struct`
+        //// 
+        //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
+        ////    you tried doing this, but the problem is that a `ref struct` can't have `await` called on it, so regardless of anything else, that is a blocker
+        ////
+        //// TODO you are here in the other file
         //// TODO what happens if you the kernel `apply` is sync instead of async?
         ////    you tried doing this, but you were stymied with the first extension:
         ////    public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1169,8 +1175,6 @@ namespace Fx.Either
         ////            ref context);
         ////    }
         ////
-        //// TODO you are here in the other file
-        //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
         //// TODO go through the `apply2`s
         //// TODO other TODOs
     }
