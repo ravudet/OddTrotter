@@ -207,7 +207,7 @@
     public interface IStringValueReader<out TNextReader> : IReader<TNextReader, StringValue>
     {
     }
-
+    `
     public sealed class StringValue
     {
         private StringValue()
@@ -215,8 +215,21 @@
         }
     }
 
-    //// TODO you are here
-    public interface ICollectionValueReader<out TNextReader>
+    public interface ICollectionValueReader<out TNextReader> : IReader<ICollectionValueToken<TNextReader>>
     {
+    }
+
+    public interface ICollectionValueToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            // it's really weird to have a collection that might be heterogenous such that it has objects, strings, and primitives, but i think it's technically legal for something like `Collection(Edm.Untyped)`, so we need to support it and the caller will have to check the validity against the EDM model
+            Func<INullValueReader<ICollectionValueReader<TNextReader>>, TResult> nullValueReader,
+            Func<IPrimitiveValueReader<ICollectionValueReader<TNextReader>>, TResult> primitiveValueReader,
+            Func<IStringValueReader<ICollectionValueReader<TNextReader>>, TResult> stringValueReader,
+            Func<IObjectValueReader<ICollectionValueReader<TNextReader>>, TResult> objectValueReader,
+            //// TODO nested collections?
+            Func<TNextReader, TResult> nextReader);
+
+        //// TODO should there be a "datetimevaluereader" or something? basically, odata overloads strings sometimes, what are all of the times it does that?
     }
 }
