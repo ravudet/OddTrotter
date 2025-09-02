@@ -17,4 +17,9 @@
     </AssemblyAttribute>
   </ItemGroup>
   
+  <ItemGroup>
+    <Folder Include="OddTrotter\CalendarV1\Deserializers\" />
+    <Folder Include="OddTrotter\CalendarV1\Parsers\" />
+  </ItemGroup>
+  
 </Project>

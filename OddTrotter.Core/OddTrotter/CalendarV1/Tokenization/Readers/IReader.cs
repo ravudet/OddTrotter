@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.CalendarV1.Readers
+﻿namespace OddTrotter.CalendarV1.Tokenization.Readers
 {
     using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.CalendarV1.Readers
+﻿namespace OddTrotter.CalendarV1.Tokenization.Readers
 {
     using System;
     using System.ComponentModel.Design;
@@ -46,7 +46,7 @@
             Func<IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootControlInformationReader,
             Func<IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
-            Func<System.Nothing, TResult> terminal);
+            Func<Nothing, TResult> terminal);
     }
 
 
@@ -172,7 +172,7 @@
 
     public interface IPrimitiveValueReader<out TNextReader> : IReader<IPrimitiveValueToken<TNextReader>>
     {
-        
+
     }
 
     public interface IPrimitiveValueToken<out TNextReader>
