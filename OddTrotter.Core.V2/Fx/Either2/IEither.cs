@@ -1317,7 +1317,7 @@ namespace Fx.Either2
                     this.configuredTaskAwaitable.GetAwaiter());
             }
 
-            public ref struct TaskAwaiter : ITaskAwaiter<T>
+            public ref struct TaskAwaiter : ITaskAwaiter<T>, INotifyCompletion
             {
                 private readonly RefNullable<T> result;
                 private readonly ITaskAwaiter<T>? future;
@@ -1490,6 +1490,16 @@ namespace Fx.Either2
 
     public static partial class EitherExtensions
     {
+        public static TaskUnion<string> SomeUnion()
+        {
+            return new TaskUnion<string>("Asdf");
+        }
+
+        public static async Task DoWork()
+        {
+            var value = await SomeUnion().ConfigureAwait(false);
+
+        }
     }
 
 
