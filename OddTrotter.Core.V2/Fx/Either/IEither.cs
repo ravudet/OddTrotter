@@ -1308,7 +1308,7 @@ namespace Fx.Either
             {
                 return new ConfiguredAwaitable(
                     this.promise,
-                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
+                    Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable? //// TODO i still don't know if it's ok, but i think you need to not call `getawaiter` yet
             }
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>

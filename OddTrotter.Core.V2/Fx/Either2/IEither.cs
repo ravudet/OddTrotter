@@ -3,6 +3,7 @@ namespace Fx.Either2
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Transactions;
@@ -1210,6 +1211,8 @@ namespace Fx.Either2
         }
     }
 
+    //// TODO create the ref struct for the task
+    //// TODO update the method signatures to use the ref struct
     //// TODO implement the extensions
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -1242,27 +1245,251 @@ namespace Fx.Either2
     public delegate TResult Map<in TValue, out TResult>(TValue value)
         where TResult : allows ref struct;
 
+    public readonly ref struct RefNullable<T> where T : allows ref struct
+    {
+        private readonly bool hasValue;
+        private readonly T value;
+
+        public RefNullable(T value)
+        {
+            this.value = value;
+
+            this.hasValue = true;
+        }
+
+        public bool TryGetValue([MaybeNullWhen(false)] out T value)
+        {
+            if (this.hasValue)
+            {
+                value = this.value;
+                return true;
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
+        }
+    }
+
+    public ref struct TaskUnion<T> where T : allows ref struct
+    {
+        private readonly RefNullable<T> result;
+        private readonly ITask<T>? future;
+
+        public TaskUnion(T result)
+        {
+            this.result = new RefNullable<T>(result);
+        }
+
+        public TaskUnion(ITask<T> future)
+        {
+            this.result = new RefNullable<T>();
+            this.future = future;
+        }
+
+        public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+        {
+            return new ConfiguredAwaitable(
+                this.result,
+                this.future?.ConfigureAwait(continueOnCapturedContext),
+                Task.CompletedTask.ConfigureAwait(continueOnCapturedContext));
+        }
+
+        public ref struct ConfiguredAwaitable
+        {
+            private readonly RefNullable<T> result;
+            private readonly IConfiguredAwaitable<T>? future;
+            private ConfiguredTaskAwaitable configuredTaskAwaitable;
+
+            public ConfiguredAwaitable(RefNullable<T> result, IConfiguredAwaitable<T>? future, ConfiguredTaskAwaitable configuredTaskAwaitable)
+            {
+                this.result = result;
+                this.future = future;
+                this.configuredTaskAwaitable = configuredTaskAwaitable;
+            }
+
+            public TaskAwaiter GetAwaiter()
+            {
+                return new TaskAwaiter(
+                    this.result,
+                    this.future?.GetAwaiter(),
+                    this.configuredTaskAwaitable.GetAwaiter());
+            }
+
+            public ref struct TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly RefNullable<T> result;
+                private readonly ITaskAwaiter<T>? future;
+                private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                public TaskAwaiter(RefNullable<T> result, ITaskAwaiter<T>? future, ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                {
+                    this.result = result;
+                    this.future = future;
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        if (this.result.TryGetValue(out var value))
+                        {
+                            return true;
+                        }
+                        else if (this.future != null)
+                        {
+                            return this.future.IsCompleted;
+                        }
+                        else
+                        {
+                            throw new Exception("TODO bug");
+                        }
+                    }
+                }
+
+                public T GetResult()
+                {
+                    if (this.result.TryGetValue(out var value))
+                    {
+                        return value;
+                    }
+                    else if (this.future != null)
+                    {
+                        return this.future.GetResult();
+                    }
+                    else
+                    {
+                        throw new Exception("TODO bug");
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    if (this.result.TryGetValue(out var value))
+                    {
+                        this.taskAwaiter.OnCompleted(continuation);
+                    }
+                    else if (this.future != null)
+                    {
+                        this.future.OnCompleted(continuation);
+                    }
+                    else
+                    {
+                        throw new Exception("TODO bug");
+                    }
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    if (this.result.TryGetValue(out var value))
+                    {
+                        this.taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                    else if (this.future != null)
+                    {
+                        this.future.UnsafeOnCompleted(continuation);
+                    }
+                    else
+                    {
+                        throw new Exception("TODO bug");
+                    }
+                }
+            }
+        }
+
+        public TaskAwaiter GetAwaiter()
+        {
+            return new TaskAwaiter(
+                this.result,
+                this.future?.GetAwaiter(),
+                Task.CompletedTask.GetAwaiter());
+        }
+
+        public ref struct TaskAwaiter : ITaskAwaiter<T>
+        {
+            private readonly RefNullable<T> result;
+            private readonly ITaskAwaiter<T>? future;
+            private readonly System.Runtime.CompilerServices.TaskAwaiter taskAwaiter;
+
+            public TaskAwaiter(RefNullable<T> result, ITaskAwaiter<T>? future, System.Runtime.CompilerServices.TaskAwaiter taskAwaiter)
+            {
+                this.result = result;
+                this.future = future;
+                this.taskAwaiter = taskAwaiter;
+            }
+            public bool IsCompleted
+            {
+                get
+                {
+                    if (this.result.TryGetValue(out var value))
+                    {
+                        return true;
+                    }
+                    else if (this.future != null)
+                    {
+                        return this.future.IsCompleted;
+                    }
+                    else
+                    {
+                        throw new Exception("TODO bug");
+                    }
+                }
+            }
+
+            public T GetResult()
+            {
+                if (this.result.TryGetValue(out var value))
+                {
+                    return value;
+                }
+                else if (this.future != null)
+                {
+                    return this.future.GetResult();
+                }
+                else
+                {
+                    throw new Exception("TODO bug");
+                }
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                if (this.result.TryGetValue(out var value))
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+                else if (this.future != null)
+                {
+                    this.future.OnCompleted(continuation);
+                }
+                else
+                {
+                    throw new Exception("TODO bug");
+                }
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                if (this.result.TryGetValue(out var value))
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+                else if (this.future != null)
+                {
+                    this.future.UnsafeOnCompleted(continuation);
+                }
+                else
+                {
+                    throw new Exception("TODO bug");
+                }
+            }
+        }
+    }
+
     public static partial class EitherExtensions
     {
-        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        private sealed class FromResult<TResult> : ITask<TResult> where TResult : allows ref struct
-        {
-            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITaskAwaiter<TResult> GetAwaiter()
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 
 
