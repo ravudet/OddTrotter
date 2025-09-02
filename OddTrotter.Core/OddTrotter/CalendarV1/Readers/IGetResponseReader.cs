@@ -224,24 +224,23 @@
         //// TODO you are here
         //// TODO define each of the different possible tokens in an object root; you copied the below from the response root DU; you are looking to see if odata.context is special cased for JSON objects that aren't the root of the response
         TResult Apply<TResult>(
-            Func<IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootControlInformationReader,
-            Func<IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootAnnotationReader,
+            Func<IObjectRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> objectRootControlInformationReader,
+            Func<IObjectRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> objectRootAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
-            Func<System.Nothing, TResult> terminal);
+            Func<TNextReader, TResult> nextReader);
     }
 
-   
 
 
 
 
+    public interface IObjectRootControlInformationReader<out TNextReader>
+    {
+    }
 
-
-
-
-
-    public interface 
-
+    public interface IObjectRootAnnotationReader<out TNextReader>
+    {
+    }
 
 
 
