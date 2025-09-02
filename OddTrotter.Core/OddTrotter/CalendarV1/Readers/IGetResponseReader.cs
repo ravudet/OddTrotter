@@ -43,8 +43,8 @@
     public interface IGetResponseBodyAfterOdataContextToken
     {
         TResult Apply<TResult>(
-            Func<IRequestRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootControlInformationReader,
-            Func<IRequestRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootAnnotationReader,
+            Func<IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootControlInformationReader,
+            Func<IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
             Func<System.Nothing, TResult> terminal);
     }
@@ -222,11 +222,10 @@
     public interface IObjectValueToken<out TNextReader>
     {
         //// TODO you are here
-        //// TODO rename the "requestroot*" readers to "responseroot*"
         //// TODO define each of the different possible tokens in an object root; you copied the below from the response root DU; you are looking to see if odata.context is special cased for JSON objects that aren't the root of the response
         TResult Apply<TResult>(
-            Func<IRequestRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootControlInformationReader,
-            Func<IRequestRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> requestRootAnnotationReader,
+            Func<IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootControlInformationReader,
+            Func<IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootAnnotationReader,
             Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader,
             Func<System.Nothing, TResult> terminal);
     }

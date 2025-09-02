@@ -2,18 +2,18 @@
 {
     using System;
 
-    public interface IRequestRootControlInformationReader<out TNextReader> : IReader<IRequestRootControlInformationToken<TNextReader>>
+    public interface IResponseRootControlInformationReader<out TNextReader> : IReader<IResponseRootControlInformationToken<TNextReader>>
     {
     }
 
-    public interface IRequestRootControlInformationToken<out TNextReader>
+    public interface IResponseRootControlInformationToken<out TNextReader>
     {
         TResult Apply<TResult>(
-            Func<IRequestRootNextLinkReader<TNextReader>, TResult> nextLinkReader,
-            Func<IRequestRootUnknownControlInformationReader<TNextReader>, TResult> unknownControlInformationReader);
+            Func<IResponseRootNextLinkReader<TNextReader>, TResult> nextLinkReader,
+            Func<IResponseRootUnknownControlInformationReader<TNextReader>, TResult> unknownControlInformationReader);
     }
 
-    public interface IRequestRootNextLinkReader<out TNextReader> : IReader<TNextReader, NextLink>
+    public interface IResponseRootNextLinkReader<out TNextReader> : IReader<TNextReader, NextLink>
     {
     }
 
@@ -24,7 +24,7 @@
         }
     }
 
-    public interface IRequestRootUnknownControlInformationReader<out TNextReader> : IReader<IRequestRootUnknownControlInformationNameReader<TNextReader>>
+    public interface IResponseRootUnknownControlInformationReader<out TNextReader> : IReader<IResponseRootUnknownControlInformationNameReader<TNextReader>>
     {
         // from [the standard](https://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_ControlInformation):
         // > Receivers that encounter unknown annotations in any namespace or unknown control information MUST NOT stop processing and MUST NOT signal an error.
@@ -32,7 +32,7 @@
         // we need to be able to handle things that look like control information, but are unknown to us at the time of implementation
     }
 
-    public interface IRequestRootUnknownControlInformationNameReader<out TNextReader> : IReader<IRequestRootUnknownControlInformationValueReader<TNextReader>, ControlInformationName>
+    public interface IResponseRootUnknownControlInformationNameReader<out TNextReader> : IReader<IResponseRootUnknownControlInformationValueReader<TNextReader>, ControlInformationName>
     {
     }
 
@@ -43,7 +43,7 @@
         }
     }
 
-    public interface IRequestRootUnknownControlInformationValueReader<out TNextReader> : IReader<TNextReader, ControlInformationValue>
+    public interface IResponseRootUnknownControlInformationValueReader<out TNextReader> : IReader<TNextReader, ControlInformationValue>
     {
     }
 
