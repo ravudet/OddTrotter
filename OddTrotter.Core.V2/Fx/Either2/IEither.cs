@@ -248,32 +248,18 @@ namespace Fx.Either2
                     ref context));
         }
 
-        public static ITask<TResult> Apply2<TLeft, TRight, TResult, TContext>(
-            this IEither<TLeft, TRight> either,
-            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
-            ContextualizedMap<TRight, TContext, TResult> rightMap,
-            ref TContext context)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
-        {
-            return either.Apply(
-                leftMap,
-                Convert2(rightMap),
-                ref context);
-        }
-
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
             AsyncMap<TRight, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                leftMap,
-                Convert<TRight, TContext, TResult>(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    Convert<TRight, TContext, TResult>(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1220,6 +1206,13 @@ namespace Fx.Either2
             where TResult : allows ref struct
         {
             return (TValue value, ref TContext context) => map(value, context);
+        }
+
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncMap<TValue, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         private static ResultTask<T> FromResult<T>(T value)
