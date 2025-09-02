@@ -227,12 +227,12 @@ namespace Fx.Either2
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            Func<TResult> foo = () => either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -241,12 +241,12 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                leftMap,
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    rightMap,
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1211,8 +1211,6 @@ namespace Fx.Either2
         }
     }
 
-    //// TODO create the ref struct for the task
-    //// TODO update the method signatures to use the ref struct
     //// TODO implement the extensions
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -1247,7 +1245,12 @@ namespace Fx.Either2
 
     public static partial class EitherExtensions
     {
-        private static AsyncRefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
 
         private static ResultTask<T> FromResult<T>(T value)
         {
