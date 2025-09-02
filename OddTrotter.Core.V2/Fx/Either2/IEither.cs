@@ -81,7 +81,7 @@ namespace Fx.Either2
         /// <see cref="IEither{TLeft, TRight}"/> will need to do, but having just the implementers of the interface do it, 
         /// instead of every caller, is less error-prone and reduces the barrier to entry.
         /// </remarks>
-        ITask<TResult> Apply<TResult, TContext>(
+        TResult Apply<TResult, TContext>(
             RefContextualizedMap<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
@@ -228,7 +228,7 @@ namespace Fx.Either2
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
-            return either.Apply(
+            Func<TResult> foo = () => either.Apply(
                 Convert(leftMap),
                 Convert(rightMap),
                 ref context);
@@ -1210,7 +1210,6 @@ namespace Fx.Either2
         }
     }
 
-    //// TODO update all of the extensions to have both generic type constraints
     //// TODO implement the extensions
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -1245,9 +1244,24 @@ namespace Fx.Either2
 
     public static partial class EitherExtensions
     {
-        public static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private sealed class FromResult<TResult> : ITask<TResult> where TResult : allows ref struct
+        {
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<TResult> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
