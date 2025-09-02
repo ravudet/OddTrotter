@@ -212,12 +212,12 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                leftMap,
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -226,12 +226,12 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                leftMap,
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1195,6 +1195,20 @@ namespace Fx.Either2
             return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, context).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(InContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, context);
+        }
+
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
