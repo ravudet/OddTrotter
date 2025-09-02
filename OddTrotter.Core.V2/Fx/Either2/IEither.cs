@@ -115,92 +115,35 @@ namespace Fx.Either2
             return new Either<TLeft, TRight>(value);
         }
 
-        public ITask<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
+        public TResult Apply<TResult, TContext>(RefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
             if (this.left != null)
             {
-                return new CustomTask<TResult>(leftMap(this.left, ref context), true);
+                try
+                {
+                    return leftMap(this.left, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new LeftMapException(exception);
+                }
             }
             else if (this.right != null)
             {
-                return new CustomTask<TResult>(rightMap(this.right, ref context), true);
+                try
+                {
+                    return rightMap(this.right, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(exception);
+                }
             }
             else
             {
                 throw new Exception("TODO visitor");
-            }
-        }
-
-        private sealed class CustomTask<T> : ITask<T> where T : allows ref struct
-        {
-            private readonly ITask<T> task;
-            private readonly bool isLeft;
-
-            public CustomTask(ITask<T> task, bool isLeft)
-            {
-                this.task = task;
-                this.isLeft = isLeft;
-            }
-
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITaskAwaiter<T> GetAwaiter()
-            {
-                return new TaskAwaiter(this.task.GetAwaiter(), this.isLeft);
-            }
-
-            private sealed class TaskAwaiter : ITaskAwaiter<T>
-            {
-                private readonly ITaskAwaiter<T> taskAwaiter;
-                private readonly bool isLeft;
-
-                public TaskAwaiter(ITaskAwaiter<T> taskAwaiter, bool isLeft)
-                {
-                    this.taskAwaiter = taskAwaiter;
-                    this.isLeft = isLeft;
-                }
-
-                public bool IsCompleted
-                {
-                    get
-                    {
-                        return this.taskAwaiter.IsCompleted;
-                    }
-                }
-
-                public T GetResult()
-                {
-                    try
-                    {
-                        return this.taskAwaiter.GetResult();
-                    }
-                    catch (Exception exception)
-                    {
-                        if (this.isLeft)
-                        {
-                            throw new LeftMapException(exception);
-                        }
-                        else
-                        {
-                            throw new RightMapException(exception);
-                        }
-                    }
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
             }
         }
     }
@@ -255,12 +198,12 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                leftMap,
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert(leftMap),
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1250,6 +1193,12 @@ namespace Fx.Either2
             where TResult : allows ref struct
         {
             return (TValue value, ref TContext context) => map(value, ref context).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncInContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => map(value, context).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         private static ResultTask<T> FromResult<T>(T value)

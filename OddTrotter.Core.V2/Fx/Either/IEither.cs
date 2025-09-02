@@ -125,7 +125,7 @@ namespace Fx.Either
             }
             else if (this.right != null)
             {
-                return new CustomTask<TResult>(rightMap(this.right, ref context), true);
+                return new CustomTask<TResult>(rightMap(this.right, ref context), false);
             }
             else
             {
