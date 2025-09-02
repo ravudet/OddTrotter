@@ -657,6 +657,7 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -671,6 +672,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -688,6 +690,7 @@ namespace Fx.Either2
             AsyncMap<TRight, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -702,6 +705,7 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -734,6 +738,7 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -763,6 +768,7 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -792,6 +798,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -836,6 +843,7 @@ namespace Fx.Either2
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -850,6 +858,7 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -867,6 +876,7 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -881,6 +891,7 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -898,6 +909,7 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -912,6 +924,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -929,6 +942,7 @@ namespace Fx.Either2
             AsyncMap<TRight, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -943,6 +957,7 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -974,6 +989,7 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert<TLeft, TContext, TResult>(leftMap),
@@ -1002,6 +1018,7 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -1030,6 +1047,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert<TLeft, TContext, TResult>(leftMap),
@@ -1041,6 +1059,7 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             AsyncMap<TLeft, TResult> leftMap,
             AsyncMap<TRight, TResult> rightMap)
+            where TContext : allows ref struct
             where TResult : allows ref struct
         {
             var context = true; //// TODO use `nothing` instead
@@ -1054,6 +1073,7 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             AsyncMap<TLeft, TResult> leftMap,
             Map<TRight, TResult> rightMap)
+            where TContext : allows ref struct
             where TResult : allows ref struct
         {
             var context = true;
@@ -1083,6 +1103,7 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert<TLeft, TContext, TResult>(leftMap),
@@ -1114,6 +1135,7 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -1145,6 +1167,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return either.Apply(
                 Convert<TLeft, TContext, TResult>(leftMap),
@@ -1159,6 +1182,7 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             Map<TLeft, TResult> leftMap,
             AsyncMap<TRight, TResult> rightMap)
+            where TContext : allows ref struct
             where TResult : allows ref struct
         {
             var context = true; //// TODO use nothing instead
@@ -1172,6 +1196,7 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             Map<TLeft, TResult> leftMap,
             Map<TRight, TResult> rightMap)
+            where TContext : allows ref struct
             where TResult : allows ref struct
         {
             var context = true;
