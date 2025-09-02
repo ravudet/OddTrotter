@@ -215,55 +215,7 @@
         }
     }
 
-    public interface IObjectValueReader<out TNextReader> : IReader<IObjectValueToken<TNextReader>>
-    {
-    }
-
-    public interface IObjectValueToken<out TNextReader>
-    {
-        //// TODO you are here
-        //// TODO define each of the different possible tokens in an object root; you copied the below from the response root DU; you are looking to see if odata.context is special cased for JSON objects that aren't the root of the response
-        TResult Apply<TResult>(
-            Func<IObjectRootControlInformationReader<IObjectValueReader<TNextReader>>, TResult> objectRootControlInformationReader,
-            Func<IObjectRootAnnotationReader<IObjectValueReader<TNextReader>>, TResult> objectRootAnnotationReader,
-            Func<IPropertyReader<IObjectValueReader<TNextReader>>, TResult> propertyReader,
-            Func<TNextReader, TResult> nextReader);
-    }
-
-
-
-
-
-    public interface IObjectRootControlInformationReader<out TNextReader>
-    {
-    }
-
-    public interface IObjectRootAnnotationReader<out TNextReader>
-    {
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    //// TODO you are here
     public interface ICollectionValueReader<out TNextReader>
     {
     }
