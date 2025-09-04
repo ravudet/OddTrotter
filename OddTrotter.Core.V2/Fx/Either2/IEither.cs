@@ -527,7 +527,6 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -1167,26 +1166,21 @@ namespace Fx.Either2
             };
         }
 
-        private unsafe ref struct ContextWrapper<T> where T : allows ref struct
+        private readonly unsafe ref struct ContextWrapper<T> where T : allows ref struct
         {
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            private readonly T* pointer;
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            private readonly T pointer;
 
             public ContextWrapper(in T value)
             {
-                //// TODO is it safe for this to be a pointer?
-
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                this.pointer = (T*)Unsafe.AsPointer(in value);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                //// TODO make this a pointer?
+                this.pointer = value;
             }
 
             public ref T Value
             {
                 get
                 {
-                    return ref System.Runtime.CompilerServices.Unsafe.AsRef<T>(this.pointer);
+                    return ref System.Runtime.CompilerServices.Unsafe.AsRef(in this.pointer);
                 }
             }
         }
