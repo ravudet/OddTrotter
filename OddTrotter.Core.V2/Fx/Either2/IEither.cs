@@ -8,6 +8,7 @@ namespace Fx.Either2
     using System.Threading.Tasks;
     using System.Transactions;
     using static Fx.Either.Playground;
+    using static Fx.Either2.Playground;
 
     public interface IEither<out TLeft, out TRight>
     {
@@ -556,7 +557,6 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
@@ -586,16 +586,12 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(Wrap(leftMap)),
+                Wrap(Convert(leftMap)),
                 Wrap(Convert(rightMap)),
-                ref contextWrapper)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -619,16 +615,12 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert(Wrap(leftMap)),
+                Wrap(Convert(leftMap)),
                 Wrap(Convert<TRight, TContext, TResult>(rightMap)),
-                ref contextWrapper)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -772,14 +764,12 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
-            return FromResult(
-                either.Apply(
-                    Wrap(Convert(leftMap)),
-                    Wrap(rightMap),
-                    ref contextWrapper));
+            return either.Apply(
+                Wrap(Convert(leftMap)),
+                Wrap(rightMap),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -803,16 +793,12 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
                 Wrap(Convert(leftMap)),
                 Wrap(Convert(rightMap)),
-                ref contextWrapper)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -836,14 +822,12 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
-            return FromResult(
-                either.Apply(
-                    Wrap(Convert(leftMap)),
-                    Wrap(Convert(rightMap)),
-                    ref contextWrapper));
+            return either.Apply(
+                Wrap(Convert(leftMap)),
+                Wrap(Convert(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -867,16 +851,12 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
                 Wrap(Convert(leftMap)),
                 Wrap(Convert<TRight, TContext, TResult>(rightMap)),
-                ref contextWrapper)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1015,15 +995,12 @@ namespace Fx.Either2
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert<TLeft, TContext, TResult>(leftMap),
-                Convert(rightMap),
-                ref context)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
+                Wrap(rightMap),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1080,15 +1057,12 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
-                Convert<TLeft, TContext, TResult>(leftMap),
-                Convert(rightMap),
-                ref context)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
+                Wrap(Convert(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult>(
@@ -1108,17 +1082,12 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             Map<TLeft, TResult> leftMap,
             Map<TRight, TResult> rightMap)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            var context = true;
+            var context = true; //// TODO use nothing instead
             return either.Apply(
                 Convert<TLeft, bool, TResult>(leftMap),
                 Convert<TRight, bool, TResult>(rightMap),
-                ref context)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                ref context);
         }
     }
 
@@ -1166,7 +1135,7 @@ namespace Fx.Either2
             };
         }
 
-        private readonly unsafe ref struct ContextWrapper<T> where T : allows ref struct
+        private unsafe ref struct ContextWrapper<T> where T : allows ref struct
         {
             private readonly T pointer;
 
