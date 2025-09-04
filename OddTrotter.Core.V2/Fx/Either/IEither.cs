@@ -1157,23 +1157,13 @@ namespace Fx.Either
         //// TODO can you have a have the return type be a ref struct implementation of itask that is a union on an itask or a fromresult(ref struct)? you would lose covariance of tresult, how does that impact things downstream like chaining stuff together? you can test this by implementing a select and then chaining them together; does an implicit converter from the ref struct itask to itask help?
         ////    you tried doing this, but the problem is that a `ref struct` can't have `await` called on it, so regardless of anything else, that is a blocker
         ////
-        //// TODO you are here in the other file
         //// TODO what happens if you the kernel `apply` is sync instead of async?
-        ////    you tried doing this, but you were stymied with the first extension:
-        ////    public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
-        ////        this IEither<TLeft, TRight> either, 
-        ////        AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, 
-        ////        AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap, 
-        ////        ref TContext context)
-        ////        where TContext : allows ref struct
-        ////        where TResult : allows ref struct
-        ////    {
-        ////        //// TODO here, you have the result, but you need to return `itask`; you could have a "result" implementation of `itask`, but because `tresult` might be a ref struct, you need to either: 1. pass the result to the constructor or 2. pass a delegate that returns the result to the constructor; you can't do 1 because your implementation must not be a ref struct (because the return type is an interface), and you can't do 2 because `context` is passed by `ref`
-        ////        return either.Apply(
-        ////            Convert(leftMap),
-        ////            Convert(rightMap),
-        ////            ref context);
-        ////    }
+        ////    you tried this, and the result was that `tresult` can't be a ref struct *ever* (this is a bit of an exaggeration, but it's pretty close to true)
+        ////
+        //// TODO you are here
+        //// TODO this file wins out i think over the other file, assuming that the functionality is correct for this file, so start testing the functionality
+        //// TODO then implement the monad scaffolding
+        //// TODO then implement the mixins for this design
         ////
         //// TODO go through the `apply2`s
         //// TODO other TODOs
