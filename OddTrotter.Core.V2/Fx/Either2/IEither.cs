@@ -310,12 +310,12 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert(leftMap),
+            return FromResult(
+                either.Apply(
+                leftMap,
                 Convert(rightMap),
-                ref context);
+                ref context));
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -327,7 +327,7 @@ namespace Fx.Either2
             where TResult : allows ref struct
         {
             return either.Apply(
-                Convert(leftMap),
+                leftMap,
                 Convert(rightMap),
                 ref context);
         }
@@ -338,12 +338,12 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    leftMap,
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -355,7 +355,7 @@ namespace Fx.Either2
             where TResult : allows ref struct
         {
             return either.Apply(
-                Convert(leftMap),
+                leftMap,
                 Convert(rightMap),
                 ref context);
         }
@@ -366,12 +366,12 @@ namespace Fx.Either2
             AsyncMap<TRight, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    leftMap,
+                    Convert<TRight, TContext, TResult>(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -380,12 +380,12 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    leftMap,
+                    Convert<TRight, TContext, TResult>(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
