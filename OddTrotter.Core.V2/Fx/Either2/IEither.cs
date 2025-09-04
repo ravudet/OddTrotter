@@ -974,27 +974,26 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             AsyncMap<TLeft, TResult> leftMap,
             AsyncMap<TRight, TResult> rightMap)
-            where TResult : allows ref struct
         {
             var context = true; //// TODO use `nothing` instead
-            return either.Apply(
-                Convert<TLeft, bool, TResult>(leftMap),
-                Convert<TRight, bool, TResult>(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert<TLeft, bool, TResult>(leftMap),
+                    Convert<TRight, bool, TResult>(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
             AsyncMap<TLeft, TResult> leftMap,
             Map<TRight, TResult> rightMap)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            var context = true;
-            return either.Apply(
-                Convert<TLeft, bool, TResult>(leftMap),
-                Convert<TRight, bool, TResult>(rightMap),
-                ref context);
+            var context = true; //// TODO use `nothing` instead
+            return FromResult(
+                either.Apply(
+                    Convert<TLeft, bool, TResult>(leftMap),
+                    Convert<TRight, bool, TResult>(rightMap),
+                    ref context));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1003,12 +1002,12 @@ namespace Fx.Either2
             AsyncRefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert<TLeft, TContext, TResult>(leftMap),
-                rightMap,
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert<TLeft, TContext, TResult>(leftMap),
+                    Convert(rightMap),
+                    ref context));
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -1034,13 +1033,13 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
-            return either.Apply(
-                Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
-                Convert(Wrap(rightMap)),
-                ref contextWrapper);
+            return FromResult(
+                either.Apply(
+                    Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -1067,12 +1066,13 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert<TLeft, TContext, TResult>(leftMap),
-                Convert(rightMap),
-                ref context);
+            var contextWrapper = new ContextWrapper<TContext>(context);
+            return FromResult(
+                either.Apply(
+                    Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static TResult Apply<TLeft, TRight, TResult, TContext>(
@@ -1096,14 +1096,13 @@ namespace Fx.Either2
             this IEither<TLeft, TRight> either,
             Map<TLeft, TResult> leftMap,
             AsyncMap<TRight, TResult> rightMap)
-            where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var context = true; //// TODO use nothing instead
-            return either.Apply(
-                Convert<TLeft, bool, TResult>(leftMap),
-                Convert<TRight, bool, TResult>(rightMap),
-                ref context);
+            return FromResult(
+                either.Apply(
+                    Convert<TLeft, bool, TResult>(leftMap),
+                    Convert<TRight, bool, TResult>(rightMap),
+                    ref context));
         }
 
         public static TResult Apply<TLeft, TRight, TResult>( //// TODO is this a fold?
