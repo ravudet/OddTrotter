@@ -422,7 +422,6 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return FromResult(
@@ -438,13 +437,13 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return FromResult(
                 either.Apply(
-                    Convert(leftMap),
-                    rightMap,
-                    ref context));
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -453,13 +452,13 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return FromResult(
                 either.Apply(
-                    Convert(leftMap),
-                    rightMap,
-                    ref context));
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -468,13 +467,13 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return FromResult(
                 either.Apply(
-                    Convert(leftMap),
-                    rightMap,
-                    ref context));
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -483,13 +482,13 @@ namespace Fx.Either2
             AsyncMap<TRight, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
-            return either.Apply(
-                Convert(Wrap(leftMap)),
-                Wrap(Convert<TRight, TContext, TResult>(rightMap)),
-                ref contextWrapper);
+            return FromResult(
+                either.Apply(
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert<TRight, TContext, TResult>(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -498,13 +497,13 @@ namespace Fx.Either2
             Map<TRight, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
-            return either.Apply(
-                Convert(Wrap(leftMap)),
-                Wrap(Convert<TRight, TContext, TResult>(rightMap)),
-                ref contextWrapper);
+            return FromResult(
+                either.Apply(
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert<TRight, TContext, TResult>(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
