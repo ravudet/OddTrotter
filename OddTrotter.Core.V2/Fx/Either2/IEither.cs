@@ -422,12 +422,14 @@ namespace Fx.Either2
             AsyncInContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
+            var contextWrapper = new ContextWrapper<TContext>(context);
             return FromResult(
                 either.Apply(
-                    Convert(leftMap),
-                    rightMap,
-                    ref context));
+                    Wrap(Convert(leftMap)),
+                    Wrap(Convert(rightMap)),
+                    ref contextWrapper));
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -436,6 +438,7 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return FromResult(
                 either.Apply(
@@ -450,6 +453,7 @@ namespace Fx.Either2
             AsyncContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return FromResult(
                 either.Apply(
@@ -464,6 +468,7 @@ namespace Fx.Either2
             ContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
+            where TResult : allows ref struct
         {
             return FromResult(
                 either.Apply(
@@ -1161,6 +1166,54 @@ namespace Fx.Either2
 
     public static partial class EitherExtensions
     {
+        private static RefContextualizedMap<TValue, ContextWrapper<TContext>, TResult> Wrap<TValue, TContext, TResult>(RefContextualizedMap<TValue, TContext, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref ContextWrapper<TContext> contextWrapper) =>
+            {
+                return map(value, ref contextWrapper.Value);
+            };
+        }
+
+        private unsafe ref struct ContextWrapper<T> where T : allows ref struct
+        {
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            private readonly T* pointer;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+
+            public ContextWrapper(in T value)
+            {
+                //// TODO is it safe for this to be a pointer?
+
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                this.pointer = (T*)Unsafe.AsPointer(in value);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            }
+
+            public ref T Value
+            {
+                get
+                {
+                    return ref System.Runtime.CompilerServices.Unsafe.AsRef<T>(this.pointer);
+                }
+            }
+        }
+
+        private static class Unsafe
+        {
+            public static unsafe void* AsPointer<T>(in T value) where T : allows ref struct
+            {
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                fixed (void* pointer = &value)
+                {
+                    return pointer;
+                }
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            }
+        }
+
+
         private static RefContextualizedMap<TValue, TContext, TResult> Convert<TValue, TContext, TResult>(AsyncRefContextualizedMap<TValue, TContext, TResult> map)
             where TContext : allows ref struct
             where TResult : allows ref struct
