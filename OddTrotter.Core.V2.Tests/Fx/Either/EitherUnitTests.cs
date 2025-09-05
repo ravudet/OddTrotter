@@ -131,7 +131,33 @@
 
             public ITaskAwaiter<T> GetAwaiter()
             {
-                throw new NotImplementedException();
+                return new TaskAwaiter(this.promise);
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<T>
+            {
+                private readonly Func<T> promise;
+
+                public TaskAwaiter(Func<T> promise)
+                {
+                    this.promise = promise;
+                    //// TODO rewrite this from stratch, you copied it from somewhere
+                }
+
+                public bool IsCompleted { get; } = true;
+
+                public T GetResult()
+                {
+                    return this.promise();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                }
             }
         }
 
@@ -148,7 +174,9 @@
 
             var assertMutated = this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultAssertMutated(ref context);
 
-            ResultRefStruct result = await either.Apply(leftMap, rightMap, ref context).ConfigureAwait(false);
+            //// TODO you are here
+            //// TODO document the "locks"
+            ResultRefStruct result = await either.Apply(leftMap, rightMap, ref context); //// TODO .ConfigureAwait(false);
 
             ///// TODO assert result
 
@@ -168,9 +196,9 @@
 
                 var context = Unsafe.AsRef<ContextRefStruct>(this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultPointer);
 
-                Assert.AreNotEqual(ContextRefStruct.CreateInitial().Mutable, context.Mutable);
-
                 this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState = 3;
+
+                Assert.AreNotEqual(ContextRefStruct.CreateInitial().Mutable, context.Mutable);
             });
         }
 
