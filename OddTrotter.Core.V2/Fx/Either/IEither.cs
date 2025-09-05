@@ -1162,11 +1162,14 @@ namespace Fx.Either
         ////
         //// TODO you are here
         //// TODO this file wins out i think over the other file, assuming that the functionality is correct for this file, so start testing the functionality
+        //// TODO your testing also needs to make sure that the exceptions are thrown correctly
         //// TODO then implement the monad scaffolding
         //// TODO then implement the mixins for this design
         ////
         //// TODO go through the `apply2`s
         //// TODO other TODOs
+        //// TODO should `ieither` allow ref structs even though it can't really be implemented? this is like ienumerable doing it;
+        //// TODO regardless of the `ieither` interface, should the map definitions have `tvalue : allows ref struct` even though it doesn't actually add any value currently? (if you do this, you should also apply it to as many extensions as possible)
     }
 
     public delegate ITask<TResult> AsyncRefContextualizedMap<in TValue, TContext, out TResult>(TValue value, ref TContext context)
@@ -1679,8 +1682,8 @@ namespace Fx.Either
     //// sync           none        sync            in
     //// sync           none        sync            none
     ////
-    //// demonstrate ref struct result
-    //// demonstrate ref struct context
+    //// demonstrate ref struct result being added to a list
+    //// demonstrate ref struct context being added to a list
     //// demonstrate unsafe
 
 
@@ -1746,4 +1749,6 @@ namespace Fx.Either
     //// are these mixins? are they standalone types? what is the best way to handle this? is there a kernel? for example,
     //// most of the others appear that they can be built on top of an async unsafe implementation that allows ref structs
     //// and takes the context by reference; would mixins then let you do everything else?
+    ////
+    //// TODO document the use of itask for the kernel
 }

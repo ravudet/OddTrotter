@@ -1,17 +1,184 @@
 ﻿namespace Fx.Either
 {
     using System;
-    using System.Reflection.Metadata.Ecma335;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using static Fx.Either.Playground;
 
     [TestClass]
     public class Tests
     {
+        public class LeftContainer
+        {
+            public static LeftContainer Create()
+            {
+                return new LeftContainer("left", 3);
+            }
+
+            private LeftContainer(string first, int second)
+            {
+                First = first;
+                Second = second;
+            }
+
+            public string First { get; }
+            public int Second { get; }
+        }
+
+        public class RightContainer
+        {
+            public RightContainer(IEnumerable<Exception> exceptions)
+            {
+                Exceptions = exceptions;
+            }
+
+            public IEnumerable<Exception> Exceptions { get; }
+        }
+
+        public ref struct ContextRefStruct
+        {
+            public ContextRefStruct(int mutable, int immutable)
+            {
+                Mutable = mutable;
+                Immutable = immutable;
+            }
+
+            public int Mutable { get; private set; }
+            public int Immutable { get; }
+
+            public void Mutate()
+            {
+                this.Mutable = -5;
+            }
+
+            public static ContextRefStruct CreateInitial()
+            {
+                return new ContextRefStruct();
+            }
+
+            public static ContextRefStruct CreateSubsequent()
+            {
+                return new ContextRefStruct();
+            }
+        }
+
+        public class ContextClass
+        {
+            public ContextClass(int mutable, int immutable)
+            {
+                Mutable = mutable;
+                Immutable = immutable;
+            }
+
+            public int Mutable { get; set; }
+            public int Immutable { get; }
+        }
+
+        public ref struct ResultRefStruct
+        {
+            public ResultRefStruct(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
+        public class ResultClass
+        {
+            public ResultClass(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
+        public ITask<ResultRefStruct> LeftAsyncRefContextualizedMapRefStructContextRefStructResult(LeftContainer value, ref ContextRefStruct context)
+        {
+            context.Mutate();
+            this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState = 2;
+            while (this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState != 3)
+            {
+            }
+
+            context = ContextRefStruct.CreateSubsequent();
+
+            return new FromResult<ResultRefStruct>(() => new ResultRefStruct(string.Join(string.Empty, Enumerable.Repeat(value.First, value.Second))));
+        }
+
+        public ITask<ResultRefStruct> RightAsyncRefContextualizedMapRefStructContextRefStructResult(RightContainer value, ref ContextRefStruct context)
+        {
+            return null!;
+        }
+
+        private sealed class FromResult<T> : ITask<T> where T : allows ref struct
+        {
+            private readonly Func<T> promise;
+
+            public FromResult(Func<T> promise)
+            {
+                this.promise = promise;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<T> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         [TestMethod]
+        public async Task ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResult()
+        {
+            //// TODO you are explicitly writing the types so that can ensure you are calling the correct overload
+            IEither<LeftContainer, RightContainer> either = Either<LeftContainer, RightContainer>.Left(LeftContainer.Create());
+
+            AsyncRefContextualizedMap<LeftContainer, ContextRefStruct, ResultRefStruct> leftMap = this.LeftAsyncRefContextualizedMapRefStructContextRefStructResult;
+            AsyncRefContextualizedMap<RightContainer, ContextRefStruct, ResultRefStruct> rightMap = this.RightAsyncRefContextualizedMapRefStructContextRefStructResult;
+
+            ContextRefStruct context = ContextRefStruct.CreateInitial();
+
+            var assertMutated = this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultAssertMutated(ref context);
+
+            ResultRefStruct result = await either.Apply(leftMap, rightMap, ref context).ConfigureAwait(false);
+
+            ///// TODO assert result
+
+            await assertMutated.ConfigureAwait(false);
+        }
+
+        private unsafe Task ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultAssertMutated(ref ContextRefStruct context) //// TODO you'd prefer this to be `in`, but that seems to require a newer version of the framework
+        {
+            this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultPointer = (ContextRefStruct*)Unsafe.AsPointer(ref context);
+            this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState = 1;
+
+            return Task.Factory.StartNew(() =>
+            {
+                while (this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState != 2)
+                {
+                }
+
+                var context = Unsafe.AsRef<ContextRefStruct>(this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultPointer);
+
+                Assert.AreNotEqual(ContextRefStruct.CreateInitial().Mutable, context.Mutable);
+
+                this.ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState = 3;
+            });
+        }
+
+        private unsafe ContextRefStruct* ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultPointer;
+
+        private int ApplyLeftEitherAsyncRefContextualizedMapAsyncRefContextualizedMapRefStructContextRefStructResultState = 0;
+
+        /*[TestMethod]
         public void DoWork()
         {
             var context = new Context()
@@ -333,6 +500,6 @@
                     return ref Unsafe.AsRef<TContext>(this.context);
                 }
             }
-        }
+        }*/
     }
 }

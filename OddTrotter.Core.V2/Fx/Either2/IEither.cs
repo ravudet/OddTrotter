@@ -1024,16 +1024,12 @@ namespace Fx.Either2
             InContextualizedMap<TRight, TContext, TResult> rightMap,
             in TContext context)
             where TContext : allows ref struct
-            where TResult : allows ref struct
         {
             var contextWrapper = new ContextWrapper<TContext>(context);
             return either.Apply(
                 Wrap(Convert<TLeft, TContext, TResult>(leftMap)),
-                Convert(Wrap(rightMap)),
-                ref contextWrapper)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                Wrap(Convert(rightMap)),
+                ref contextWrapper);
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
