@@ -90,7 +90,10 @@ namespace Fx.Either
             where TContext : allows ref struct;
     }
 
-    public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    public sealed class Either<TLeft, TRight> : 
+        IEither<TLeft, TRight>,
+        IApply1<TLeft, TRight>,
+        IApply2<TLeft, TRight>
     {
         private readonly TLeft? left;
         private readonly TRight? right;
@@ -126,6 +129,40 @@ namespace Fx.Either
             else if (this.right != null)
             {
                 return new CustomTask<TResult>(rightMap(this.right, ref context), false);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        public ITask<TResult> ApplyImpl1<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (this.left != null)
+            {
+                return new CustomTask<TResult>(leftMap(this.left, ref context), true);
+            }
+            else if (this.right != null)
+            {
+                //// TODO can you compute the result, then use a "memory" and have a task that transforms the memory back into the result?
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        public TResult ApplyImpl2<TResult>(Map<TLeft, TResult> leftMap, Map<TRight, TResult> rightMap) where TResult : allows ref struct
+        {
+            if (this.left != null)
+            {
+                return leftMap(this.left);
+            }
+            else if (this.right != null)
+            {
+                return rightMap(this.right);
             }
             else
             {
@@ -219,6 +256,24 @@ namespace Fx.Either
         }
     }
 
+    public interface IApply1<out TLeft, out TRight>
+    {
+        ITask<TResult> ApplyImpl1<TResult, TContext>(
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+            where TResult : allows ref struct;
+    }
+
+    public interface IApply2<out TLeft, out TRight>
+    {
+        TResult ApplyImpl2<TResult>(
+            Map<TLeft, TResult> leftMap,
+            Map<TRight, TResult> rightMap)
+            where TResult : allows ref struct;
+    }
+
     public static partial class EitherExtensions
     {
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -228,6 +283,11 @@ namespace Fx.Either
             ref TContext context)
             where TContext : allows ref struct
         {
+            if (either is IApply1<TLeft, TRight> apply)
+            {
+                return apply.ApplyImpl1(leftMap, rightMap, ref context);
+            }
+
             return either.Apply(
                 leftMap,
                 Convert(rightMap),
@@ -1142,6 +1202,11 @@ namespace Fx.Either
             Map<TRight, TResult> rightMap)
             where TResult : allows ref struct
         {
+            if (either is IApply2<TLeft, TRight> apply)
+            {
+                return apply.ApplyImpl2(leftMap, rightMap);
+            }
+
             var context = true;
             return either.Apply(
                 Convert<TLeft, bool, TResult>(leftMap),
@@ -1165,6 +1230,7 @@ namespace Fx.Either
         //// TODO your testing also needs to make sure that the exceptions are thrown correctly
         //// TODO then implement the monad scaffolding
         //// TODO then implement the mixins for this design
+        //// TODO do any of the apply overloads create closures that can be removed by leveraging the context parameter?
         ////
         //// TODO go through the `apply2`s
         //// TODO other TODOs
