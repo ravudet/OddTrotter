@@ -161,7 +161,9 @@ namespace Fx.Either
                         //// first of all, this *may* result in an inability to have covariance or casting in certain cases, though i haven't investigated that thoroughly
                         //// second of all, being a ref struct means that it cannot be `await`ed; this is because the state machine that the compiler generates for an `await` statement *may* box the "task-like type" in cases where the result hasn't already been computed; now, *we* know that when the result is a fully materialized ref struct, no boxing would actually occur, but the *compiler* doesn't know that, so it would generate the state machine
                             //// *but* the `await` statement is really a "convenience"; it would be *annoying* to have to write code to check which type of future is being returned and get the appropriate value or whatever, but it's "doable"; what is *not* doable is passing this value around; with the compiler's help, we are able to have a future but treat it as the resulting type, so if we have two `task<string>`, we can `await` both and then call `string.equals(first, second)`, despite the fact that calling `string.equals` actually is deferred until the values from `task` have become available; if we only had `future<string>` available and no way to `await`, then we would need a `string.equals(future<string>, future<string>)` overload that itself would return a `future<bool>`; basically, we now have a *usability* issue, because our callers would not be able to leverage any existing frameworks that don't already know about our `future<t>`
-                            //// TODO YOU ARE HERE ACTUALLY FOR REAL, NOT THE OTHER PLACES can *we* do that work by having methods that compose futures with each other and functions?
+                            //// a "functional" approach to this would be to create our own infrastructure that allows composing futures and functions and such; but, this doesn't really work for 2 reasons
+                                //// first, because everything now is deferred, //// TODO you are here it's not always deferred
+                                //// second, we need to implement an analogous infrastructure method for each c# language construct, for example `if`; but because we are *not* actually functional, this means that we would need to pass context through each infrastructure method //// TODO why is this a deal-breaker? you *currently* can't pass ref structs through an `await`, for example; you'd just need to `if` overloads, one that keeps the context, and one that doesn't (you probably would just always have the one that keeps the context, but whatever)
                 }
                 catch (Exception exception)
                 {
@@ -258,6 +260,113 @@ namespace Fx.Either
                 {
                     this.taskAwaiter.UnsafeOnCompleted(continuation);
                 }
+            }
+        }
+    }
+
+    public static class RefFutureExtensions
+    {
+        public static RefFuture<TResult> Compose<TFirst, TSecond, TResult>(RefFuture<TFirst> first, RefFuture<TSecond> second, Func<TFirst, TSecond, TResult> func)
+            where TFirst : allows ref struct
+            where TSecond : allows ref struct
+            where TResult : allows ref struct
+        {
+            if (first.task == null && second.task == null)
+            {
+                return new RefFuture<TResult>(func(first.value, second.value));
+            }
+            else if (first.task != null && second.task != null)
+            {
+                var firstTask = first.task;
+                var secondTask = second.task;
+                new Task<ITask<TResult>>(async () => func(await firstTask, await secondTask));
+            }
+        }
+
+        public static void Foo()
+        {
+            var first = new RefFuture<string>();
+            var second = new RefFuture<string>();
+            var areEqual = Compose(first, second, string.Equals);
+            if (areEqual)
+            {
+            }
+        }
+    }
+
+    public readonly ref struct RefFuture<T> where T : allows ref struct
+    {
+        //// TODO use correct nullables for both of these
+        public readonly ITask<T>? task;
+        public readonly T value;
+        public readonly Task<Task<T>>? nestedTask; //// TODO there's definitely a better type for this field
+
+        public RefFuture(ITask<T> task)
+        {
+            this.task = task;
+            this.value = default!;
+        }
+
+        public RefFuture(T value)
+        {
+            this.value = value;
+        }
+
+        public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public readonly ref struct ConfiguredAwaitable
+        {
+            public TaskAwaiter GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+
+            public readonly ref struct TaskAwaiter : ITaskAwaiter<T>
+            {
+                public bool IsCompleted => throw new NotImplementedException();
+
+                public T GetResult()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        public TaskAwaiter GetAwaiter()
+        {
+            throw new NotImplementedException();
+        }
+
+        public readonly ref struct TaskAwaiter : ITaskAwaiter<T>
+        {
+            public bool IsCompleted => throw new NotImplementedException();
+
+            public T GetResult()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                throw new NotImplementedException();
             }
         }
     }
