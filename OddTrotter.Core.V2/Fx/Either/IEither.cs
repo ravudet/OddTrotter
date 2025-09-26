@@ -569,6 +569,63 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+        public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftSelector,
+            Func<TRightSource, TRightResult> rightSelector)
+        {
+            var context = new SelectContext<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+                leftSelector,
+                rightSelector);
+            return either.Apply(
+                (TLeftSource left, in SelectContext<TLeftSource, TRightSource, TLeftResult, TRightResult> context) => Either<TLeftResult, TRightResult>.Left(context.LeftSelector(left)),
+                (TRightSource right, in SelectContext<TLeftSource, TRightSource, TLeftResult, TRightResult> context) => Either<TLeftResult, TRightResult>.Right(context.RightSelector(right)),
+                in context);
+        }
+
+        private readonly ref struct SelectContext<TLeftSource, TRightSource, TLeftResult, TRightResult>
+        {
+            public SelectContext(
+                Func<TLeftSource, TLeftResult> leftSelector,
+                Func<TRightSource, TRightResult> rightSelector)
+            {
+                LeftSelector = leftSelector;
+                RightSelector = rightSelector;
+            }
+
+            public Func<TLeftSource, TLeftResult> LeftSelector { get; }
+            public Func<TRightSource, TRightResult> RightSelector { get; }
+        }
+
+        public static async ITask<IEither<TLeftResult, TRightResult>> SelectAsync<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+        {
+            var context = new SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+                leftSelector,
+                rightSelector);
+            return await either.Apply(
+                async (TLeftSource left, SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult> context) => Either<TLeftResult, TRightResult>.Left(await context.LeftSelector(left)),
+                async (TRightSource right, SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult> context) => Either<TLeftResult, TRightResult>.Right(await context.RightSelector(right)),
+                in context)
+                .ConfigureAwait(false);
+        }
+
+        private readonly ref struct SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult>
+        {
+            public SelectAsyncContext(
+                Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+                Func<TRightSource, ITask<TRightResult>> rightSelector)
+            {
+                LeftSelector = leftSelector;
+                RightSelector = rightSelector;
+            }
+
+            public Func<TLeftSource, ITask<TLeftResult>> LeftSelector { get; }
+            public Func<TRightSource, ITask<TRightResult>> RightSelector { get; }
+        }
+
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
