@@ -3,13 +3,14 @@ namespace Fx.Either
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Transactions;
     using static Fx.Either.Playground;
     using static Fx.Either2.Playground;
 
-    public interface IEither<out TLeft, out TRight>
+    public interface IEither<out TLeft, out TRight> //// TODO these generics can allow ref struct without the concrete implementation allowing ref struct or the extension methods allowing ref struct
     {
         /// <summary>
         /// placeholder
@@ -266,23 +267,6 @@ namespace Fx.Either
 
     public static class RefFutureExtensions
     {
-        public static RefFuture<TResult> Compose<TFirst, TSecond, TResult>(RefFuture<TFirst> first, RefFuture<TSecond> second, Func<TFirst, TSecond, TResult> func)
-            where TFirst : allows ref struct
-            where TSecond : allows ref struct
-            where TResult : allows ref struct
-        {
-            if (first.task == null && second.task == null)
-            {
-                return new RefFuture<TResult>(func(first.value, second.value));
-            }
-            else if (first.task != null && second.task != null)
-            {
-                var firstTask = first.task;
-                var secondTask = second.task;
-                new Task<ITask<TResult>>(async () => func(await firstTask, await secondTask));
-            }
-        }
-
         public static void Foo()
         {
             var first = new RefFuture<string>();
@@ -292,6 +276,81 @@ namespace Fx.Either
             {
             }
         }
+
+        public static ComposedRefFuture<TFirst, TSecond, TResult> Compose<TFirstFuture, TFirst, TSecondFuture, TSecond, TResult>(
+            TFirstFuture first, TSecondFuture second, Func<TFirst, TSecond, TResult> func)
+            where TFirstFuture : IRefFuture<TFirst>, allows ref struct
+            where TFirst : allows ref struct
+            where TSecondFuture : IRefFuture<TSecond>, allows ref struct
+            where TSecond : allows ref struct
+            where TResult : allows ref struct
+        {
+
+        }
+    }
+
+    public readonly ref struct ComposedRefFuture<TFirst, TSecond, TResult>
+        where TFirst: allows ref struct
+        where TSecond : allows ref struct
+        where TResult : allows ref struct
+    {
+        private readonly TFirst firstValue;
+        private readonly ITask<TSecond>? secondTask;
+
+        private readonly TSecond secondValue;
+        private readonly ITask<TFirst>? firstTask;
+
+        public ComposedRefFuture(TFirst firstValue, TSecond secondValue)
+        {
+            this.firstValue = firstValue;
+            this.secondValue = secondValue;
+        }
+
+        public ComposedRefFuture(TFirst firstValue, ITask<TSecond> secondTask)
+        {
+            this.firstValue = firstValue;
+            this.secondTask = secondTask;
+
+            this.secondValue = default!;
+        }
+
+        public ComposedRefFuture(TSecond secondValue, ITask<TFirst> firstTask)
+        {
+            this.secondValue = secondValue;
+            this.firstTask = firstTask;
+
+            this.firstValue = default!;
+        }
+
+        public ComposedRefFuture(ITask<TFirst> firstTask, ITask<TSecond> secondTask)
+        {
+            this.firstTask = firstTask;
+            this.secondTask = secondTask;
+
+            this.firstValue = default!;
+            this.secondValue = default!;
+        }
+
+        public bool Try([MaybeNullWhen(false)] out TResult value, [MaybeNullWhen(true)][NotNullWhen(false)] out ITaskAwaiter<TResult> taskAwaiter)
+        {
+            if (this.task == null)
+            {
+                value = this.value;
+                taskAwaiter = null;
+                return true;
+            }
+            else
+            {
+                value = default;
+                taskAwaiter = this.task.GetAwaiter();
+                return false;
+            }
+        }
+    }
+
+    public interface IRefFuture<T> where T : allows ref struct
+    {
+        bool Try([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)][NotNullWhen(false)] out ITaskAwaiter<T> taskAwaiter)
     }
 
     public readonly ref struct RefFuture<T> where T : allows ref struct
@@ -309,6 +368,22 @@ namespace Fx.Either
         public RefFuture(T value)
         {
             this.value = value;
+        }
+
+        public bool Try([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)] [NotNullWhen(false)] out ITask<T> task)
+        {
+            if (this.task == null)
+            {
+                value = this.value;
+                task = null;
+                return true;
+            }
+            else
+            {
+                value = default;
+                task = this.task;
+                return false;
+            }
         }
 
         public RefFuture<TResult> Compose<TSecond, TResult>(RefFuture<TSecond> future, Func<T, TSecond, TResult> func)
