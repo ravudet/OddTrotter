@@ -287,7 +287,7 @@ namespace Fx.Either
         {
             var first = new RefFuture<string>();
             var second = new RefFuture<string>();
-            var areEqual = Compose(first, second, string.Equals);
+            var areEqual = first.Compose(second, string.Equals);
             if (areEqual)
             {
             }
@@ -296,10 +296,10 @@ namespace Fx.Either
 
     public readonly ref struct RefFuture<T> where T : allows ref struct
     {
-        //// TODO use correct nullables for both of these
-        public readonly ITask<T>? task;
-        public readonly T value;
-        public readonly Task<Task<T>>? nestedTask; //// TODO there's definitely a better type for this field
+        //// TODO use correct nullables for all of these
+        private readonly ITask<T>? task;
+        private readonly T value;
+        private readonly Task<Task<T>>? nestedTask; //// TODO there's definitely a better type for this field
 
         public RefFuture(ITask<T> task)
         {
@@ -310,6 +310,96 @@ namespace Fx.Either
         public RefFuture(T value)
         {
             this.value = value;
+        }
+
+        public RefFuture<TResult> Compose<TSecond, TResult>(RefFuture<TSecond> future, Func<T, TSecond, TResult> func)
+            where TSecond : allows ref struct
+            where TResult : allows ref struct
+        {
+            if (this.task == null && future.task == null)
+            {
+                return new RefFuture<TResult>(func(this.value, future.value));
+            }
+            else if (this.task != null && future.task == null)
+            {
+            }
+            else if (this.task == null && future.task != null)
+            {
+            }
+            else if (this.task != null && future.task != null)
+            {
+                return new RefFuture<TResult>(new Nested<T, TSecond, TResult>(this.task, future.task, func));
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
+        }
+
+        private sealed class Nested<TFirst, TSecond, TResult> : ITask<TResult>
+            where TFirst : allows ref struct
+            where TSecond : allows ref struct
+            where TResult : allows ref struct
+        {
+            private readonly ITask<TFirst> first;
+            private readonly ITask<TSecond> second;
+            private readonly Func<TFirst, TSecond, TResult> func;
+
+            public Nested(ITask<TFirst> first, ITask<TSecond> second, Func<TFirst, TSecond, TResult> func)
+            {
+                this.first = first;
+                this.second = second;
+                this.func = func;
+            }
+
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<TResult> GetAwaiter()
+            {
+                return new TaskAwaiter(this.first.GetAwaiter(), this.second.GetAwaiter(), this.func);
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<TResult>
+            {
+                private readonly ITaskAwaiter<TFirst> first;
+                private readonly ITaskAwaiter<TSecond> second;
+                private readonly Func<TFirst, TSecond, TResult> func;
+
+                public TaskAwaiter(ITaskAwaiter<TFirst> first, ITaskAwaiter<TSecond> second, Func<TFirst, TSecond, TResult> func)
+                {
+                    this.first = first;
+                    this.second = second;
+                    this.func = func;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.first.IsCompleted && this.second.IsCompleted;
+                    }
+                }
+
+                public TResult GetResult()
+                {
+                    return this.func(this.first.GetResult(), this.second.GetResult());
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    //// TODO is this the best way to delegate this call?
+                    this.first.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    //// TODO is this the best way to delegate this call?
+                    this.first.UnsafeOnCompleted(continuation);
+                }
+            }
         }
 
         public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
