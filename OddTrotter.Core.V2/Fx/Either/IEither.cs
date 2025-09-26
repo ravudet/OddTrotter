@@ -299,7 +299,6 @@ namespace Fx.Either
         //// TODO use correct nullables for all of these
         private readonly ITask<T>? task;
         private readonly T value;
-        private readonly Task<Task<T>>? nestedTask; //// TODO there's definitely a better type for this field
 
         public RefFuture(ITask<T> task)
         {
