@@ -30,5 +30,91 @@ namespace System.Threading.Tasks
         {
             return new ConfiguredAwaitableWrapper<T>(this.task.ConfigureAwait(continueOnCapturedContext));
         }
+
+		public ITask<TResult> ContinueWith<TResult>(Func<ITask<T>,TResult> continuationFunction)
+			where TResult : allows ref struct
+		{
+			//// TODO this could be an extension method
+			return new ContinueWithTask<T, TResult>(this, continuationFunction);
+		}
     }
+	
+	public sealed class ContinueWithTask<TSource, TResult> : ITask<TResult> where TSource : allows ref struct where TResult : allows ref struct
+	{
+		private readonly ITask<TSource> source;
+		private readonly Func<ITask<TSource>, TResult> continuationFunction;
+		
+		public ContinueWithTask(ITask<TSource> source, Func<ITask<TSource>, TResult> continuationFunction)
+		{
+			this.source = source;
+			this.continuationFunction = continuationFunction;
+		}
+
+		/// <inheritdoc/>
+		public ITaskAwaiter<TResult> GetAwaiter()
+		{
+			return new ContinueWithTaskAwaiter(this.source, this.source.GetAwaiter(), this.continuationFunction);
+		}
+		
+		private sealed class ContinueWithTaskAwaiter : ITaskAwaiter<TResult>
+		{
+			private readonly ITask<TSource> source;
+			private readonly ITaskAwaiter<TSource> taskAwaiter;
+			private readonly Func<ITask<TSource>, TResult> continuationFunction;
+
+			/// <summary>
+			/// placeholder
+			/// </summary>
+			/// <param name="taskAwaiter"></param>
+			public ContinueWithTaskAwaiter(ITask<TSource> source, ITaskAwaiter<TSource> taskAwaiter, Func<ITask<TSource>, TResult> continuationFunction)
+			{
+				this.source = source;
+				this.taskAwaiter = taskAwaiter;
+				this.continuationFunction = continuationFunction;
+			}
+
+			/// <inheritdoc/>
+			public bool IsCompleted
+			{
+				get
+				{
+					return this.taskAwaiter.IsCompleted;
+				}
+			}
+
+			/// <inheritdoc/>
+			public TResult GetResult()
+			{
+				return this.continuationFunction(this.source);
+			}
+
+			/// <inheritdoc/>
+			public void OnCompleted(Action continuation)
+			{
+				ArgumentNullException.ThrowIfNull(continuation);
+
+				this.taskAwaiter.OnCompleted(continuation);
+			}
+
+			/// <inheritdoc/>
+			public void UnsafeOnCompleted(Action continuation)
+			{
+				ArgumentNullException.ThrowIfNull(continuation);
+
+				this.taskAwaiter.UnsafeOnCompleted(continuation);
+			}
+		}
+
+		/// <inheritdoc/>
+		public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+		{
+			throw new Exception("TODO");
+		}
+
+		public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<TResult>,TResult2> continuationFunction)
+			where TResult2 : allows ref struct
+		{
+			return new ContinueWithTask<TResult, TResult2>(this, continuationFunction);
+		}
+	}
 }

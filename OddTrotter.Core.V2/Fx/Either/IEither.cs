@@ -153,6 +153,7 @@ namespace Fx.Either
                 try
                 {
                     var result = rightMap(this.right, ref context);
+					throw new Exception("TODO");
                     //// TODO here's the thing; this just can't work; you need to remove the `tresult` generic type constraint
                     //// to start with, `tresult` can be a ref struct; but it's returned from the resulting `itask`, which necessarily is boxable (and ref structs aren't); this means that whatever is returned can't actually directly reference the result; that type will have to generate the result when it's asked for, and to do that it will need a delegate that generates the result, or it will need to know the exact memory values of the thing being returned
                         //// if we go the route of a delegate, the delegate necessarily leverages a `tcontext` which is by reference and also possibly a ref struct; because of the use of `context`, we will need a closure somehow, either directly, or by the `itask` implementation; either way, though, because we want `context` by reference, we will need a field in the closure and that field needs to be a pointer; but there's the case where our caller initializes `context` and passes it to us, and then returns the resulting `itask` to their caller; in this situation, the `itask` contains a closure around a pointer to `context`, and when our caller returns, that pointer points to a stack frame that has already been popped
@@ -213,6 +214,12 @@ namespace Fx.Either
             {
                 return new TaskAwaiter(this.task.GetAwaiter(), this.isLeft);
             }
+			
+			public ITask<TResult> ContinueWith<TResult>(Func<ITask<T>, TResult> continuationFunction)
+				where TResult : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
 
             private sealed class TaskAwaiter : ITaskAwaiter<T>
             {
@@ -272,7 +279,7 @@ namespace Fx.Either
             var first = new RefFuture<string>();
             var second = new RefFuture<string>();
             var areEqual = first.Compose(second, string.Equals);
-            if (areEqual)
+            ////if (areEqual)
             {
             }
         }
@@ -285,7 +292,7 @@ namespace Fx.Either
             where TSecond : allows ref struct
             where TResult : allows ref struct
         {
-
+			throw new Exception("TODO");
         }
     }
 
@@ -333,7 +340,7 @@ namespace Fx.Either
 
         public bool Try([MaybeNullWhen(false)] out TResult value, [MaybeNullWhen(true)][NotNullWhen(false)] out ITaskAwaiter<TResult> taskAwaiter)
         {
-            if (this.task == null)
+            /*if (this.task == null)
             {
                 value = this.value;
                 taskAwaiter = null;
@@ -344,13 +351,14 @@ namespace Fx.Either
                 value = default;
                 taskAwaiter = this.task.GetAwaiter();
                 return false;
-            }
+            }*/
+			throw new Exception("TODO");
         }
     }
 
     public interface IRefFuture<T> where T : allows ref struct
     {
-        bool Try([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)][NotNullWhen(false)] out ITaskAwaiter<T> taskAwaiter)
+        bool Try([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)][NotNullWhen(false)] out ITaskAwaiter<T> taskAwaiter);
     }
 
     public readonly ref struct RefFuture<T> where T : allows ref struct
@@ -396,9 +404,11 @@ namespace Fx.Either
             }
             else if (this.task != null && future.task == null)
             {
+				throw new Exception("TODO");
             }
             else if (this.task == null && future.task != null)
             {
+				throw new Exception("TODO");
             }
             else if (this.task != null && future.task != null)
             {
@@ -435,6 +445,13 @@ namespace Fx.Either
             {
                 return new TaskAwaiter(this.first.GetAwaiter(), this.second.GetAwaiter(), this.func);
             }
+			
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<TResult>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
+
 
             private sealed class TaskAwaiter : ITaskAwaiter<TResult>
             {
@@ -597,7 +614,7 @@ namespace Fx.Either
             public Func<TRightSource, TRightResult> RightSelector { get; }
         }
 
-        public static async ITask<IEither<TLeftResult, TRightResult>> SelectAsync<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        /*public static async ITask<IEither<TLeftResult, TRightResult>> SelectAsync<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, ITask<TLeftResult>> leftSelector,
             Func<TRightSource, ITask<TRightResult>> rightSelector)
@@ -610,7 +627,7 @@ namespace Fx.Either
                 async (TRightSource right, SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult> context) => Either<TLeftResult, TRightResult>.Right(await context.RightSelector(right)),
                 in context)
                 .ConfigureAwait(false);
-        }
+        }*/
 
         private readonly ref struct SelectAsyncContext<TLeftSource, TRightSource, TLeftResult, TRightResult>
         {
@@ -638,11 +655,64 @@ namespace Fx.Either
                 return apply.ApplyImpl1(leftMap, rightMap, ref context);
             }
 
-            return either.Apply(
-                leftMap,
-                Convert(rightMap),
-                ref context);
+			if (either.Decompose(out var left, out var right))
+			{
+				var resultFuture = leftMap(left, ref context);
+				return resultFuture.ContinueWith(
+					future =>
+					{
+						try
+						{
+							return future.GetAwaiter().GetResult();
+						}
+						catch (Exception exception)
+						{
+							throw new LeftMapException(exception);
+						}
+					});
+			}
+			else
+			{
+				var result = rightMap(right, ref context);
+				return new FromResult<TResult>(result);
+				/*return resultFuture.ContinueWith(
+					future =>
+					{
+						try
+						{
+							return future.GetAwaiter().GetResult();
+						}
+						catch (Exception exception)
+						{
+							throw new RightMapException(exception);
+						}
+					});*/
+			}
         }
+		
+		//// TODO there's a "proper" name for this, I think
+		private static bool Decompose<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+		{
+			var tempLeft = default(TLeft);
+			var tempRight = default(TRight);
+			var result = either
+				.Apply(
+					(value, nothing) =>
+					{
+						tempLeft = value;
+						return true;
+					},
+					(value, nothing) =>
+					{
+						tempRight = value;
+						return false;
+					},
+					true);
+				
+			left = tempLeft;
+			right = tempRight;
+			return result;
+		}
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
@@ -752,17 +822,36 @@ namespace Fx.Either
                 ref context);
         }
 
-        public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
+        public static TResult Apply<TLeft, TRight, TResult, TContext>(
             this IEither<TLeft, TRight> either,
             RefContextualizedMap<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TContext : allows ref struct
+			where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert(leftMap),
-                Convert(rightMap),
-                ref context);
+			if (either.Decompose(out var left, out var right))
+			{
+				try
+				{
+					return leftMap(left, ref context);
+				}
+				catch (Exception exception)
+				{
+					throw new LeftMapException(exception);
+				}
+			}
+			else
+			{
+				try
+				{
+					return rightMap(right, ref context);
+				}
+				catch (Exception exception)
+				{
+					throw new RightMapException(exception);
+				}
+			}
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
@@ -1723,6 +1812,14 @@ namespace Fx.Either
                     this.promise,
                     Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable? //// TODO i still don't know if it's ok, but i think you need to not call `getawaiter` yet
             }
+			
+			
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<T>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
+
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
             {
@@ -1839,6 +1936,12 @@ namespace Fx.Either
             {
                 return new ConfiguredAwaitable(this.context, this.promise, Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is using the complete task awaiter ok? you may need to use the "same" "instance", so you might actually need to have the `taskawaiter` take in the `configuredawaitable` and reference the field
             }
+
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<TResult>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
             {
@@ -1968,6 +2071,12 @@ namespace Fx.Either
                     this.value,
                     Task.CompletedTask.ConfigureAwait(continueOnCapturedContext).GetAwaiter()); //// TODO is it ok to use this awaitable?
             }
+
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<T>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
             {
@@ -2149,6 +2258,13 @@ namespace Fx.Either
             {
                 throw new NotImplementedException();
             }
+			
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<int>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
+
         }
     }
 

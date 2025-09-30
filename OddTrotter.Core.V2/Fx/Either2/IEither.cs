@@ -1223,6 +1223,12 @@ namespace Fx.Either2
             {
             }
 
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<T>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
+
             public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
             {
                 throw new NotImplementedException();
@@ -1324,6 +1330,12 @@ namespace Fx.Either2
 
         private sealed class CustomTask : ITask<int>
         {
+			public ITask<TResult2> ContinueWith<TResult2>(Func<ITask<int>, TResult2> continuationFunction)
+				where TResult2 : allows ref struct
+			{
+				throw new Exception("TODO");
+			}
+
             public IConfiguredAwaitable<int> ConfigureAwait(bool continueOnCapturedContext)
             {
                 throw new NotImplementedException();

@@ -11,5 +11,8 @@ namespace System.Threading.Tasks
 
         /// <inheritdoc cref="Task{TResult}.ConfigureAwait(bool)"/>
         IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext);
+		
+		ITask<TResult> ContinueWith<TResult>(Func<ITask<T>,TResult> continuationFunction) //// TODO this should take in like a "futureValue" or something that has the exception, canceled, value DU
+			where TResult : allows ref struct;
     }
 }
