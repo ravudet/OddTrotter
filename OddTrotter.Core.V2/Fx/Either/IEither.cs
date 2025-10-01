@@ -583,6 +583,79 @@ namespace Fx.Either
             Map<TRight, TResult> rightMap)
             where TResult : allows ref struct;
     }
+	
+	public readonly ref struct Foo
+	{
+	}
+
+	public static class NewThing
+	{
+		public static async Task<string> Attempt()
+		{
+			var foo = new Foo();
+			var value = await foo;
+			return value.ToString();
+		}
+		
+		public static ITaskAwaiter<int> GetAwaiter(this Foo foo)
+		{
+			throw new Exception("TODO");
+		}
+		
+		public static Realizable<T> Attempt2<T>()
+			where T : allows ref struct
+		{
+			return new Realizable<T>(default(T)!);
+		}
+		
+		public static async Task Attempt3()
+		{
+			await Attempt2<int>();
+		}
+	}
+
+	public readonly ref struct Realizable<T> where T : allows ref struct
+	{
+		//// TODO invent a nullable for this
+		private readonly T value;
+		
+		private readonly ITask<T>? future;
+		
+		public Realizable(T value)
+		{
+			this.value = value;
+			
+			this.future = null;
+		}
+		
+		public Realizable(ITask<T> future)
+		{
+			this.future = future;
+			
+			this.value = default!;
+		}
+		
+		public bool TryRealize([MaybeNullWhen(false)] out T realized, [MaybeNullWhen(true)] out ITask<T> future)
+		{
+			realized = this.value;
+			future = this.future;
+			
+			return this.future != null;
+		}
+	}
+	
+	public static class RealizableExtensions
+	{
+		public static ITaskAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
+		{
+			if (realizable.TryRealize(out var realized, out var future))
+			{
+				future = new TaskWrapper<T>(Task.FromResult(realized));
+			}
+			
+			return future.GetAwaiter();
+		}
+	}
 
     public static partial class EitherExtensions
     {
@@ -641,6 +714,56 @@ namespace Fx.Either
 
             public Func<TLeftSource, ITask<TLeftResult>> LeftSelector { get; }
             public Func<TRightSource, ITask<TRightResult>> RightSelector { get; }
+        }
+		
+		public static Realizable<TResult> Apply2<TLeft, TRight, TResult, TContext>(
+            this IEither<TLeft, TRight> either,
+            AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TContext : allows ref struct
+			where TResult : allows ref struct
+        {
+            if (either is IApply1<TLeft, TRight> apply)
+            {
+                return new Realizable<TResult>(
+					apply.ApplyImpl1(leftMap, rightMap, ref context));
+            }
+
+			if (either.Decompose(out var left, out var right))
+			{
+				var resultFuture = leftMap(left, ref context);
+				return new Realizable<TResult>(
+					resultFuture.ContinueWith(
+						future =>
+						{
+							try
+							{
+								return future.GetAwaiter().GetResult();
+							}
+							catch (Exception exception)
+							{
+								throw new LeftMapException(exception);
+							}
+						}));
+			}
+			else
+			{
+				var result = rightMap(right, ref context);
+				return new Realizable<TResult>(result);
+				/*return resultFuture.ContinueWith(
+					future =>
+					{
+						try
+						{
+							return future.GetAwaiter().GetResult();
+						}
+						catch (Exception exception)
+						{
+							throw new RightMapException(exception);
+						}
+					});*/
+			}
         }
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
