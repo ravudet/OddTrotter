@@ -612,6 +612,20 @@ namespace Fx.Either
 		{
 			await Attempt2<int>();
 		}
+		
+		public static async Task<IEither<int, string>> Attempt4(IEither<string, Exception> either)
+		{
+			return await either
+				.Select2(
+					left => new TaskWrapper<int>(Task.FromResult(left.Length)),
+					right => new TaskWrapper<Exception>(Task.FromResult(right)))
+				.Select3(
+					left => new TaskWrapper<int>(Task.FromResult(left * 2)),
+					right => new TaskWrapper<string>(Task.FromResult(right.ToString())))
+				.Select3(
+					left => new TaskWrapper<int>(Task.FromResult(left % 3)),
+					right => new TaskWrapper<string>(Task.FromResult(right.Substring(0, 5))));
+		}
 	}
 
 	public readonly ref struct Realizable<T> where T : allows ref struct
@@ -659,6 +673,33 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
+		public static Realizable<IEither<TLeftResult, TRightResult>> Select3<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this Realizable<IEither<TLeftSource, TRightSource>> either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+        {
+			if (either.TryRealize(out var realized, out var future))
+			{
+				return realized.Select2(leftSelector, rightSelector);
+			}
+			else
+			{
+				return new Realizable<IEither<TLeftResult, TRightResult>>(
+					future.ContinueWith(task => task.GetAwaiter().GetResult().Select2(leftSelector, rightSelector).GetAwaiter().GetResult()));
+			}
+        }
+		
+		public static Realizable<IEither<TLeftResult, TRightResult>> Select2<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+        {
+            return new Realizable<IEither<TLeftResult, TRightResult>>(
+				either.Apply(
+					async left => Either<TLeftResult, TRightResult>.Left(await leftSelector(left).ConfigureAwait(false)),
+					async right => Either<TLeftResult, TRightResult>.Right(await rightSelector(right).ConfigureAwait(false))));
+        }
+		
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftSelector,
@@ -1758,7 +1799,8 @@ namespace Fx.Either
                 ref context);
         }
 
-        public static TResult Apply<TLeft, TRight, TResult>( //// TODO is this a fold?
+		//// TODO you temporarily are commenting this out because of an ambigous call error from the compiler
+        /*public static TResult Apply<TLeft, TRight, TResult>( //// TODO is this a fold?
             this IEither<TLeft, TRight> either,
             Map<TLeft, TResult> leftMap,
             Map<TRight, TResult> rightMap)
@@ -1777,7 +1819,7 @@ namespace Fx.Either
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
-        }
+        }*/
 
         //// there are 39 overloads that can't have `tresult : allows ref struct`
         //// 
