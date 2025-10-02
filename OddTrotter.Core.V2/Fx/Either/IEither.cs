@@ -137,7 +137,7 @@ namespace Fx.Either
             }
         }
 
-        public ITask<TResult> ApplyImpl1<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
+        public Realizable<TResult> ApplyImpl1<TResult, TContext>(AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap, RefContextualizedMap<TRight, TContext, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
@@ -568,7 +568,7 @@ namespace Fx.Either
 
     public interface IApply1<out TLeft, out TRight>
     {
-        ITask<TResult> ApplyImpl1<TResult, TContext>(
+        Realizable<TResult> ApplyImpl1<TResult, TContext>(
             AsyncRefContextualizedMap<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
@@ -803,8 +803,7 @@ namespace Fx.Either
         {
             if (either is IApply1<TLeft, TRight> apply)
             {
-                return new Realizable<TResult>(
-					apply.ApplyImpl1(leftMap, rightMap, ref context));
+                return apply.ApplyImpl1(leftMap, rightMap, ref context);
             }
 
 			if (either.Decompose(out var left, out var right))
@@ -826,20 +825,15 @@ namespace Fx.Either
 			}
 			else
 			{
-				var result = rightMap(right, ref context);
-				return new Realizable<TResult>(result);
-				/*return resultFuture.ContinueWith(
-					future =>
-					{
-						try
-						{
-							return future.GetAwaiter().GetResult();
-						}
-						catch (Exception exception)
-						{
-							throw new RightMapException(exception);
-						}
-					});*/
+                try
+                {
+                    var result = rightMap(right, ref context);
+                    return new Realizable<TResult>(result);
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(exception);
+                }
 			}
         }
 
@@ -852,7 +846,8 @@ namespace Fx.Either
         {
             if (either is IApply1<TLeft, TRight> apply)
             {
-                return apply.ApplyImpl1(leftMap, rightMap, ref context);
+                apply.ApplyImpl1(leftMap, rightMap, ref context).TryRealize(out _, out var task);
+                return task!;
             }
 
 			if (either.Decompose(out var left, out var right))
