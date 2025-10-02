@@ -17,4 +17,41 @@ namespace System.Threading.Tasks
 		ITask<TResult> ContinueWith<TResult>(Func<ITask<T>,TResult> continuationFunction) //// TODO this should take in like a "futureValue" or something that has the exception, canceled, value DU
 			where TResult : allows ref struct;
     }
+
+    public static class Realized
+    {
+        public static IRealized<T> Result<T>(T result)
+            where T : allows ref struct
+        {
+        }
+
+        public static IRealized<T> Exception<T>(Exception exception)
+            where T : allows ref struct
+        {
+        }
+
+        public static IRealized<T> Canceled<T>()
+            where T : allows ref struct
+        {
+        }
+    }
+
+    public interface IRealized<out T> where T : allows ref struct
+    {
+        internal protected void Internal();
+
+        public interface IResult : IRealized<T> //// TODO do you want 3 interfaces? do you want an `apply` method? both? if it's just an `apply` method, then do you really need the `internal` method?
+        {
+            T Value { get; }
+        }
+
+        public interface IException : IRealized<T>
+        {
+            Exception Value { get; }
+        }
+
+        public interface ICanceled : IRealized<T>
+        {
+        }
+    }
 }
