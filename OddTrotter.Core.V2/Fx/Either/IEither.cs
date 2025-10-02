@@ -909,25 +909,26 @@ namespace Fx.Either
 		//// TODO there's a "proper" name for this, I think
 		private static bool Decompose<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
 		{
+            var context = true;
 			var tempLeft = default(TLeft);
 			var tempRight = default(TRight);
 			var result = either
 				.Apply(
-					(value, nothing) =>
+					(TLeft value, ref bool nothing) =>
 					{
 						tempLeft = value;
-						return true;
+						return new TaskWrapper<bool>(Task.FromResult(true));
 					},
-					(value, nothing) =>
+					(TRight value, ref bool nothing) =>
 					{
 						tempRight = value;
-						return false;
+						return new TaskWrapper<bool>(Task.FromResult(false));
 					},
-					true);
+					ref context);
 				
 			left = tempLeft;
 			right = tempRight;
-			return result;
+			return result.ConfigureAwait(false).GetAwaiter().GetResult();
 		}
 
         public static ITask<TResult> Apply<TLeft, TRight, TResult, TContext>(
