@@ -627,17 +627,43 @@ namespace Fx.Either
 					right => new TaskWrapper<string>(Task.FromResult(right.Substring(0, 5))));
 		}
 	}
+	
+	public readonly ref struct NullableRef<T> where T : allows ref struct
+	{
+		private readonly T value;
+		
+		private readonly bool hasValue;
+		
+		public NullableRef()
+		{
+			this.value = default!;
+			this.hasValue = false;
+		}
+		
+		public NullableRef(T value)
+		{
+			this.value = value;
+			
+			this.hasValue = true;
+		}
+		
+		public bool TryGetValue([MaybeNullWhen(false)] out T value)
+		{
+			value = this.value;
+			return this.hasValue;
+		}
+	}
+
 
 	public readonly ref struct Realizable<T> where T : allows ref struct
 	{
-		//// TODO invent a nullable for this
-		private readonly T value;
+		private readonly NullableRef<T> value;
 		
 		private readonly ITask<T>? future;
 		
 		public Realizable(T value)
 		{
-			this.value = value;
+			this.value = new NullableRef<T>(value);
 			
 			this.future = null;
 		}
@@ -649,12 +675,22 @@ namespace Fx.Either
 			this.value = default!;
 		}
 		
-		public bool TryRealize([MaybeNullWhen(false)] out T realized, [MaybeNullWhen(true)] out ITask<T> future)
+		public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
 		{
-			realized = this.value;
-			future = this.future;
-			
-			return this.future != null;
+            if (this.value.TryGetValue(out realized))
+            {
+                future = null;
+                return true;
+            }
+            else if (this.future != null)
+            {
+                future = this.future;
+                return false;
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
 		}
 	}
 	
