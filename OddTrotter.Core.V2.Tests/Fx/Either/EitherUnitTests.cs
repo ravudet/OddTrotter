@@ -129,6 +129,11 @@
                 throw new NotImplementedException();
             }
 
+            public ITask<TResult> ContinueWith<TResult>(Func<ITask<T>, TResult> continuationFunction) where TResult : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+
             public ITaskAwaiter<T> GetAwaiter()
             {
                 return new TaskAwaiter(this.promise);

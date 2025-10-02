@@ -674,8 +674,8 @@ namespace Fx.Either
 			
 			this.value = default!;
 		}
-		
-		public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
+
+        public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
 		{
             if (this.value.TryGetValue(out realized))
             {
