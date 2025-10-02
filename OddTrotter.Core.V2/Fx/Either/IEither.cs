@@ -143,14 +143,35 @@ namespace Fx.Either
         {
             if (this.left != null)
             {
-                return new CustomTask<TResult>(leftMap(this.left, ref context), true);
+                return new Realizable<TResult>(
+                    leftMap(this.left, ref context)
+                    .ContinueWith(task =>
+                    {
+                        try
+                        {
+                            return task.GetAwaiter().GetResult();
+                        }
+                        catch (Exception exception)
+                        {
+                            throw new LeftMapException(exception);
+                        }
+                    }));
             }
             else if (this.right != null)
             {
+                try
+                {
+                    return new Realizable<TResult>(rightMap(this.right, ref context));
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(exception);
+                }
+
                 //// TODO can you compute the result, then use a "memory" and have a task that transforms the memory back into the result?
                 //// TODO you can also try casting `TResult` to `IBoxable<TResult>` (something you've done elsewhere, but isn't in this repo yet)
 
-                try
+                /*try
                 {
                     var result = rightMap(this.right, ref context);
 					throw new Exception("TODO");
@@ -170,7 +191,7 @@ namespace Fx.Either
                 catch (Exception exception)
                 {
                     throw new RightMapException(exception);
-                }
+                }*/
             }
             else
             {
