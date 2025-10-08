@@ -20,7 +20,7 @@ namespace System.Threading.Tasks
 
     public static class Realized
     {
-        public static IRealized<T> Result<T>(T result)
+        /*public static IRealized<T> Result<T>(T result)
             where T : allows ref struct
         {
         }
@@ -33,7 +33,7 @@ namespace System.Threading.Tasks
         public static IRealized<T> Canceled<T>()
             where T : allows ref struct
         {
-        }
+        }*/
     }
 
     public interface IRealized<out T> where T : allows ref struct

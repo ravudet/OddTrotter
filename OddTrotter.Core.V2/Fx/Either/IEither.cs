@@ -7,6 +7,7 @@ namespace Fx.Either
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Transactions;
+
     using static Fx.Either.Playground;
     using static Fx.Either2.Playground;
 
@@ -676,7 +677,8 @@ namespace Fx.Either
 	}
 
 
-	public readonly ref struct Realizable<T> where T : allows ref struct
+    public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>
+        where T : allows ref struct
 	{
 		private readonly NullableRef<T> value;
 		
@@ -696,26 +698,192 @@ namespace Fx.Either
 			this.value = default!;
 		}
 
-        public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
-		{
-            if (this.value.TryGetValue(out realized))
+        public readonly ref struct Result
+        {
+            public Result(T value, Exception exception)
             {
-                future = null;
-                return true;
+                this.Value = value;
+                this.Exception = exception;
+            }
+
+            public T Value { get; }
+
+            public Exception Exception { get; }
+        }
+
+        public Realizable<TResult> ContinueWith<TResult>(Func<Result, TResult> continuationFunction)
+            where TResult : allows ref struct
+        {
+            if (this.TryRealize(out var realized, out var future))
+            {
+                return new Realizable<TResult>(continuationFunction(new Result(realized, null!)));
+            }
+            else
+            {
+                return new Realizable<TResult>(
+                    future
+                        .ContinueWith(result => 
+                            continuationFunction(
+                                new Result(
+                                    result.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+            }
+        }
+
+        public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<ITask<T>, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (this.value.TryGetValue(out var realized))
+            {
+                return 
+                    leftMap(realized, ref context)
+                    .ContinueWith(result =>
+                    {
+                        if (result.Exception == null)
+                        {
+                            return result.Value;
+                        }
+                        else
+                        { 
+                            throw new LeftMapException(result.Exception);
+                        }
+                    });
             }
             else if (this.future != null)
             {
-                future = this.future;
-                return false;
+                return 
+                    rightMap(this.future, ref context)
+                    .ContinueWith(result =>
+                    {
+                        if (result.Exception == null)
+                        {
+                            return result.Value;
+                        }
+                        else
+                        {
+                            throw new RightMapException(result.Exception);
+                        }
+                    });
             }
             else
             {
                 throw new Exception("TODO");
             }
+        }
+
+        public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
+		{
+            var context = new Context<bool, T, ITask<T>>();
+            var result = this.Apply(
+                (T left, ref Context<bool, T, ITask<T>> context) =>
+                {
+                    context.Item1 = true;
+                    context.Item2 = left;
+                    return new Realizable<bool>();
+                },
+                (ITask<T> right, ref Context<bool, T, ITask<T>> context) =>
+                {
+                    context.Item1 = false;
+                    context.Item3 = right;
+                    return new Realizable<bool>();
+                },
+                ref context);
+
+            realized = context.Item2;
+            future = context.Item3;
+            return context.Item1;
 		}
+
+        private ref struct Context<T1, T2, T3>
+            where T1 : allows ref struct
+            where T2 : allows ref struct
+            where T3 : allows ref struct
+        {
+            public T1 Item1 { get; set; }
+            public T2 Item2 { get; set; }
+            public T3 Item3 { get; set; }
+        }
 	}
-	
-	public static class RealizableExtensions
+
+    public interface IEither2<out TLeft, out TRight> 
+        where TLeft : allows ref struct 
+        where TRight : allows ref struct
+    {
+        Realizable<TResult> Apply<TResult, TContext>(
+            AsyncRefContextualizedMap2<TLeft, TContext, TResult> leftMap,
+            AsyncRefContextualizedMap2<TRight, TContext, TResult> rightMap,
+            ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct;
+    }
+
+    public sealed class Either2<TLeft, TRight> : IEither2<TLeft, TRight>
+    {
+        private readonly TLeft? left;
+        private readonly TRight? right;
+
+        public Either2(TLeft left)
+        {
+            this.left = left;
+        }
+
+        public Either2(TRight right)
+        {
+            this.right = right;
+        }
+
+        public Realizable<TResult> Apply<TResult, TContext>(
+            AsyncRefContextualizedMap2<TLeft, TContext, TResult> leftMap, 
+            AsyncRefContextualizedMap2<TRight, TContext, TResult> rightMap, 
+            ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (this.left != null)
+            {
+                return
+                    leftMap(this.left, ref context)
+                    .ContinueWith(result =>
+                    {
+                        if (result.Exception == null)
+                        {
+                            return result.Value;
+                        }
+                        else
+                        {
+                            throw new LeftMapException(result.Exception);
+                        }
+                    });
+            }
+            else if (this.right != null)
+            {
+                return
+                    rightMap(this.right, ref context)
+                    .ContinueWith(result =>
+                    {
+                        if (result.Exception == null)
+                        {
+                            return result.Value;
+                        }
+                        else
+                        {
+                            throw new RightMapException(result.Exception);
+                        }
+                    });
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+    }
+
+    public delegate Realizable<TResult> AsyncRefContextualizedMap2<in TValue, TContext, TResult>(TValue value, ref TContext context)
+        where TValue : allows ref struct
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
+    public static class RealizableExtensions
 	{
 		public static ITaskAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
 		{
