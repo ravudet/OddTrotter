@@ -898,7 +898,61 @@ namespace Fx.Either
 
     public static partial class EitherExtensions
     {
-		public static Realizable<IEither<TLeftResult, TRightResult>> Select3<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static Realizable<IEither2<TLeftResult, TRightResult>> Select3<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this Realizable<IEither2<TLeftSource, TRightSource>> either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+        {
+            if (either.TryRealize(out var realized, out var future))
+            {
+                return realized.Select2(leftSelector, rightSelector);
+            }
+            else
+            {
+                return new Realizable<IEither2<TLeftResult, TRightResult>>(
+                    future.ContinueWith(task => task.GetAwaiter().GetResult().Select2(leftSelector, rightSelector).GetAwaiter().GetResult()));
+            }
+        }
+
+        public static Realizable<IEither2<TLeftResult, TRightResult>> Select2<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither2<TLeftSource, TRightSource> either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+        {
+            return
+                either.Apply(
+                    async left => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await leftSelector(left).ConfigureAwait(false)),
+                    async right => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await rightSelector(right).ConfigureAwait(false)));
+        }
+
+        public static Realizable<TResult> Apply<TLeft, TRight, TResult>(
+            this IEither2<TLeft, TRight> either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap)
+            where TResult : allows ref struct
+        {
+            return either.Apply(
+                Convert16<TLeft, bool, TResult>(leftMap),
+                Convert16<TRight, bool, TResult>(rightMap),
+                ref EitherExtensions.Context);
+        }
+
+        public static bool Context = true;
+
+        private static AsyncRefContextualizedMap2<TValue, TContext, TResult> Convert16<TValue, TContext, TResult>(AsyncMap<TValue, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new Realizable<TResult>(map(value));
+        }
+
+
+
+
+
+
+
+        public static Realizable<IEither<TLeftResult, TRightResult>> Select3<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this Realizable<IEither<TLeftSource, TRightSource>> either,
             Func<TLeftSource, ITask<TLeftResult>> leftSelector,
             Func<TRightSource, ITask<TRightResult>> rightSelector)
