@@ -831,7 +831,8 @@ namespace Fx.Either
     {
         public static ITaskAwaiter<T> GetAwaiter<T>(this Continuable<T> continuable)
         {
-
+            //// TODO i don't see how to do this without some `internal` stuff and breaking separation of concerns
+            //// TODO i think you need to do a minimal fleshing out of this `realizable`, `continuable`, `realized`, etc. stuff and implement `queryresult` on top to make sure it all still works
 
             if (continuable.TryRealize(out var realized, out var future))
             {
