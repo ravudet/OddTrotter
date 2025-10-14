@@ -693,8 +693,55 @@ namespace Fx.Either
             public Exception Exception { get; }
         }
 
+        public readonly ref struct Result2 : IEither2<T, Exception>
+        {
+            private readonly NullableRef<T> value;
+
+            private readonly Exception? exception;
+
+            private readonly Func<T>? func;
+
+            private readonly ITask<T>? future;
+
+            private readonly IContinuable<T>? continuable;
+
+            public Result2(T value)
+            {
+                this.value = new NullableRef<T>(value);
+            }
+
+            public Result2(Exception exception)
+            {
+                this.exception = exception;
+            }
+
+            public Result2(Func<T> func)
+            {
+                this.func = func;
+            }
+
+            public Result2(ITask<T> future)
+            {
+                this.future = future;
+            }
+
+            public Result2(IContinuable<T> continuable)
+            {
+                this.continuable = continuable;
+            }
+
+            public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<Exception, TContext, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         Continuable<TResult> ContinueWith<TResult>(Func<Result, TResult> continuationFunction)
             where TResult : allows ref struct;
+
+        Result2 Realize();
     }
 
     public readonly ref struct Continuable<T> : IContinuable<T>
@@ -753,6 +800,45 @@ namespace Fx.Either
             {
                 throw new Exception("TODO can't reach");
             }
+        }
+
+        public IContinuable<T>.Result2 Realize()
+        {
+            if (this.value.TryGetValue(out var realized))
+            {
+                return new IContinuable<T>.Result2(realized);
+            }
+            else if (this.func != null)
+            {
+                return new IContinuable<T>.Result2(this.func);
+            }
+            else if (this.future != null)
+            {
+                return new IContinuable<T>.Result2(this.future);
+            }
+            else if (this.continuable != null)
+            {
+                return new IContinuable<T>.Result2(this.continuable);
+            }
+            else
+            {
+                throw new Exception("TODO can't reach");
+            }
+        }
+    }
+
+    public static class ContinuableExtensions
+    {
+        public static ITaskAwaiter<T> GetAwaiter<T>(this Continuable<T> continuable)
+        {
+
+
+            if (continuable.TryRealize(out var realized, out var future))
+            {
+                future = new TaskWrapper<T>(Task.FromResult(realized));
+            }
+
+            return future.GetAwaiter();
         }
     }
 
