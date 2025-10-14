@@ -803,6 +803,14 @@ namespace Fx.Either
             public T2 Item2 { get; set; }
             public T3 Item3 { get; set; }
         }
+
+        public Extensions<Realizable<T>, T, ITask<T>> Extensions
+        {
+            get
+            {
+                return new Extensions<Realizable<T>, T, ITask<T>>(this);
+            }
+        }
 	}
 
     public interface IEither2<out TLeft, out TRight> 
@@ -883,6 +891,27 @@ namespace Fx.Either
         where TContext : allows ref struct
         where TResult : allows ref struct;
 
+    public interface IExtensible<TSelf, T1, T2>
+        where TSelf : IExtensible<TSelf, T1, T2>, allows ref struct
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        TSelf Extensions { get; }
+    }
+
+    public readonly ref struct Extensions<TSelf, T1, T2>
+        where TSelf : /*IExtensible<TSelf, T1, T2>, */allows ref struct
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        public Extensions(TSelf self)
+        {
+            Self = self;
+        }
+
+        public TSelf Self { get; }
+    }
+
     public static class RealizableExtensions
 	{
 		public static ITaskAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
@@ -894,7 +923,57 @@ namespace Fx.Either
 			
 			return future.GetAwaiter();
 		}
+
+        public static void TestSelect<T>(Realizable<T> realizable)
+        {
+            var result = realizable.SelectRef<Realizable<T>, T, ITask<T>, string, int>(left => new TaskWrapper<string>(Task.FromResult("asdf")), right => new TaskWrapper<int>(Task.FromResult(1)));
+
+
+            var result2 = realizable.Extensions.SelectRef2(
+                left => new TaskWrapper<string>(Task.FromResult("asdf")), 
+                right => new TaskWrapper<int>(Task.FromResult(1)));
+        }
 	}
+
+    public static partial class EitherExtensions
+    {
+        public static Realizable<IEither2<TLeftResult, TRightResult>> SelectRef2<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this Extensions<TEither, TLeftSource, TRightSource> extensions,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+            where TEither : IEither2<TLeftSource, TRightSource>, allows ref struct
+        {
+            return
+                extensions.Self.ApplyRef<TEither, TLeftSource, TRightSource, IEither2<TLeftResult, TRightResult>>(
+                    async left => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await leftSelector(left).ConfigureAwait(false)),
+                    async right => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await rightSelector(right).ConfigureAwait(false)));
+        }
+
+        public static Realizable<IEither2<TLeftResult, TRightResult>> SelectRef<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this TEither either,
+            Func<TLeftSource, ITask<TLeftResult>> leftSelector,
+            Func<TRightSource, ITask<TRightResult>> rightSelector)
+            where TEither : IEither2<TLeftSource, TRightSource>, allows ref struct
+        {
+            return 
+                either.ApplyRef<TEither, TLeftSource, TRightSource, IEither2<TLeftResult, TRightResult>>(
+                    async left => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await leftSelector(left).ConfigureAwait(false)),
+                    async right => (IEither2<TLeftResult, TRightResult>)new Either2<TLeftResult, TRightResult>(await rightSelector(right).ConfigureAwait(false)));
+        }
+
+        public static Realizable<TResult> ApplyRef<TEither, TLeft, TRight, TResult>(
+            this TEither either,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Apply(
+                Convert16<TLeft, bool, TResult>(leftMap),
+                Convert16<TRight, bool, TResult>(rightMap),
+                ref EitherExtensions.Context);
+        }
+    }
 
     public static partial class EitherExtensions
     {
