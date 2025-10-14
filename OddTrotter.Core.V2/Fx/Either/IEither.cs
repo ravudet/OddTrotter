@@ -677,6 +677,86 @@ namespace Fx.Either
 	}
 
 
+    public interface IContinuable<T>
+        where T : allows ref struct
+    {
+        public readonly ref struct Result
+        {
+            public Result(T value, Exception exception)
+            {
+                this.Value = value;
+                this.Exception = exception;
+            }
+
+            public T Value { get; }
+
+            public Exception Exception { get; }
+        }
+
+        Continuable<TResult> ContinueWith<TResult>(Func<Result, TResult> continuationFunction)
+            where TResult : allows ref struct;
+    }
+
+    public readonly ref struct Continuable<T> : IContinuable<T>
+        where T : allows ref struct
+    {
+        private readonly NullableRef<T> value;
+
+        private readonly Func<T>? func;
+
+        private readonly ITask<T>? future;
+
+        private readonly IContinuable<T>? continuable;
+
+        public Continuable(T value)
+        {
+            this.value = new NullableRef<T>(value);
+        }
+
+        public Continuable(Func<T> func)
+        {
+            this.func = func;
+        }
+
+        public Continuable(ITask<T> future)
+        {
+            this.future = future;
+        }
+
+        public Continuable(IContinuable<T> continuable)
+        {
+            this.continuable = continuable;
+        }
+
+        public Continuable<TResult> ContinueWith<TResult>(Func<IContinuable<T>.Result, TResult> continuationFunction)
+            where TResult : allows ref struct
+        {
+            if (this.value.TryGetValue(out var realized))
+            {
+                return new Continuable<TResult>(continuationFunction(new IContinuable<T>.Result(realized, null!)));
+            }
+            else if (this.func != null)
+            {
+                //// TODO when `T` is *not* a ref struct, you don't have to realize the `func`s
+                var result = continuationFunction(new IContinuable<T>.Result(this.func(), null!));
+                return new Continuable<TResult>(result);
+            }
+            else if (this.future != null)
+            {
+                return new Continuable<TResult>(this.future.ContinueWith(_ => continuationFunction(new IContinuable<T>.Result(_.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+            }
+            else if (this.continuable != null)
+            {
+                return this.continuable.ContinueWith(continuationFunction);
+            }
+            else
+            {
+                throw new Exception("TODO can't reach");
+            }
+        }
+    }
+
+
     public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>
         where T : allows ref struct
 	{
