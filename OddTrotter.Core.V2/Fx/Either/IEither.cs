@@ -3,6 +3,7 @@ namespace Fx.Either
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
@@ -632,13 +633,19 @@ namespace Fx.Either
 
         public ref struct ForAttempt4
         {
+            public ForAttempt4(int value)
+            {
+                this.Value = value;
+            }
+
+            public int Value { get; }
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public static async Realizable<ForAttempt4> Attempt4()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            return new ForAttempt4();
+            return new ForAttempt4(31);
         }
 
         public static async Realizable<int> Attempt5()
@@ -1038,6 +1045,96 @@ public sealed class Test
             }
         }
     }
+
+
+    [AsyncMethodBuilder(typeof(Realizable.AsyncTaskMethodBuilder))]
+    public readonly struct Realizable
+    {
+        public IConfiguredAwaitable<int> ConfigureAwait(bool continueOnCapturedContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ITask<TResult> ContinueWith<TResult>(Func<ITask<int>, TResult> continuationFunction) where TResult : allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
+        public Awaiter GetAwaiter()
+        {
+            return new Awaiter();
+        }
+
+        public readonly struct Awaiter : ICriticalNotifyCompletion
+        {
+            public bool IsCompleted
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public int GetResult()
+            {
+                return 17;
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+            }
+        }
+
+        public struct AsyncTaskMethodBuilder
+        {
+            private System.Runtime.CompilerServices.AsyncTaskMethodBuilder asyncTaskMethodBuilder;
+
+            private Realizable? m_task;
+
+            public static AsyncTaskMethodBuilder Create() => default;
+
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine =>
+                asyncTaskMethodBuilder.Start(ref stateMachine);
+
+            public void SetStateMachine(IAsyncStateMachine stateMachine) =>
+                asyncTaskMethodBuilder.SetStateMachine(stateMachine);
+
+            public void AwaitOnCompleted<TAwaiter, TStateMachine>(
+                ref TAwaiter awaiter, ref TStateMachine stateMachine)
+                where TAwaiter : INotifyCompletion
+                where TStateMachine : IAsyncStateMachine =>
+                asyncTaskMethodBuilder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
+                ref TAwaiter awaiter, ref TStateMachine stateMachine)
+                where TAwaiter : ICriticalNotifyCompletion
+                where TStateMachine : IAsyncStateMachine =>
+                asyncTaskMethodBuilder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
+
+            public Realizable Task
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_task.HasValue ? m_task.Value : (m_task = new Realizable()).Value;
+            }
+
+            public void SetResult()
+            {
+                m_task = new Realizable();
+            }
+
+            public void SetException(Exception exception) =>
+                asyncTaskMethodBuilder.SetException(exception);
+
+        }
+    }
+
 
 
     [AsyncMethodBuilder(typeof(RealizableMethodBuilder<>))]

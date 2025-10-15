@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Security.Cryptography;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,6 +43,42 @@
                 return await future.ConfigureAwait(false);
             }
         }
+
+
+        [TestMethod]
+        public async Task AsyncRealizableRefStructAgain()
+        {
+            var forAttempt4 = await AsyncRealizableRefStructAgain3();
+            Console.WriteLine(forAttempt4);
+        }
+
+        private async Realizable AsyncRealizableRefStructAgain3()
+        {
+            NewThing.ForAttempt4 forAttempt4;
+            if (AsyncRealizableRefStructAgain2().TryRealize(out var realized, out var future))
+            {
+                forAttempt4 = realized;
+            }
+            else
+            {
+                forAttempt4 = await future.ConfigureAwait(false);
+            }
+
+            Console.WriteLine(forAttempt4.Value);
+        }
+
+        private async Realizable<NewThing.ForAttempt4> AsyncRealizableRefStructAgain2()
+        {
+            if (NewThing.Attempt4().TryRealize(out var realized, out var future))
+            {
+                return realized;
+            }
+            else
+            {
+                return await future.ConfigureAwait(false);
+            }
+        }
+
 
         public class LeftContainer
         {
