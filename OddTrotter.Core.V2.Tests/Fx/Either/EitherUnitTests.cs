@@ -17,6 +17,32 @@
             Console.WriteLine(await NewThing.Attempt5());
         }
 
+        [TestMethod]
+        public async Task AsyncRealizableRefStruct()
+        {
+            NewThing.ForAttempt4 forAttempt4;
+            if (AsyncRealizableRefStruct2().TryRealize(out var realized, out var future))
+            {
+                forAttempt4 = realized;
+            }
+            else
+            {
+                forAttempt4 = await future.ConfigureAwait(false);
+            }
+        }
+
+        private async Realizable<NewThing.ForAttempt4> AsyncRealizableRefStruct2()
+        {
+            if (NewThing.Attempt4().TryRealize(out var realized, out var future))
+            {
+                return realized;
+            }
+            else
+            {
+                return await future.ConfigureAwait(false);
+            }
+        }
+
         public class LeftContainer
         {
             public static LeftContainer Create()
