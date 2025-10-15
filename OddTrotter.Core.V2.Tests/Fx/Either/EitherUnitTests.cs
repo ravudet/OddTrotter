@@ -48,6 +48,8 @@
         [TestMethod]
         public async Task AsyncRealizableRefStructAgain()
         {
+            //// TODO to get the console output from the called method, i think that `realizable` needs to know about `realizable<T>`; but i don't think we have a way to do that, so i think what you need is for `realizable<T>` to have a `getnongeneric` method that returns the `realizable` that can be used for tracking
+
             var forAttempt4 = await AsyncRealizableRefStructAgain3();
             Console.WriteLine(forAttempt4);
         }
