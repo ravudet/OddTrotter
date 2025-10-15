@@ -629,8 +629,24 @@ namespace Fx.Either
 		{
 			return new Realizable<T>(default(T)!);
 		}
-		
-		public static async Task Attempt3()
+
+        public ref struct ForAttempt4
+        {
+        }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public static async Realizable<ForAttempt4> Attempt4()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            return new ForAttempt4();
+        }
+
+        public static async Realizable<int> Attempt5()
+        {
+            return await Task.FromResult(5);
+        }
+
+        public static async Task Attempt3()
 		{
 			await Attempt2<int>();
 		}
@@ -829,7 +845,7 @@ namespace Fx.Either
 
     public static class ContinuableExtensions
     {
-        public static ITaskAwaiter<T> GetAwaiter<T>(this Continuable<T> continuable)
+        /*public static ITaskAwaiter<T> GetAwaiter<T>(this Continuable<T> continuable)
         {
             //// TODO i don't see how to do this without some `internal` stuff and breaking separation of concerns
             //// TODO i think you need to do a minimal fleshing out of this `realizable`, `continuable`, `realized`, etc. stuff and implement `queryresult` on top to make sure it all still works
@@ -840,10 +856,191 @@ namespace Fx.Either
             }
 
             return future.GetAwaiter();
+        }*/
+    }
+
+
+
+
+    public struct RealizableMethodBuilder<T>
+    {
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <remarks>
+        /// Must not be `readonly` because the underlying type mutates its state. I can't find any reference material that
+        /// explains this, but the behavior can be reproduced using the following code:
+        /// ```
+        /// [TestMethod]
+        /// public void SetVal()
+        /// {
+        ///     var customBuilder = new CustomBuilder();
+        ///     customBuilder.AwaitOnCompleted();
+        /// 
+        ///     Assert.AreEqual(42, customBuilder.Task);
+        /// }
+        /// 
+        /// public struct CustomBuilder
+        /// {
+        ///     private readonly BuildInBuilder builtInBuilder;
+        /// 
+        ///     public void AwaitOnCompleted()
+        ///     {
+        ///         this.builtInBuilder.AwaitOnCompleted();
+        ///     }
+        /// 
+        ///     public int Task
+        ///     {
+        ///         get
+        ///         {
+        ///             return this.builtInBuilder.Task;
+        ///         }
+        ///     }
+        /// }
+        /// 
+        /// public struct BuildInBuilder
+        /// {
+        ///     private int task;
+        /// 
+        ///     public void AwaitOnCompleted()
+        ///     {
+        ///         this.task = 42;
+        ///     }
+        /// 
+        ///     public int Task
+        ///     {
+        ///         get
+        ///         {
+        ///             return this.task;
+        ///         }
+        ///     }
+        /// }
+        /// ```
+        /// </remarks>
+        private AsyncTaskMethodBuilder<T> builder;
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Create"/>
+        public static RealizableMethodBuilder<T> Create()
+            => new RealizableMethodBuilder<T>();
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Start{TStateMachine}(ref TStateMachine)"/>
+        public void Start<TStateMachine>(ref TStateMachine stateMachine)
+            where TStateMachine : IAsyncStateMachine
+        {
+            ArgumentNullException.ThrowIfNull(stateMachine);
+
+            this.builder.Start(ref stateMachine);
+        }
+
+        private const string setStateMachineMessage =
+$$"""
+'{nameof(SetStateMachine)}' is not supported. '{nameof(TaskMethodBuilder<T>)}' is only intended to target the .NET runtime, which doesn't make use of the '{nameof(SetStateMachine)}' call; only the .NET framework runtime will make use of the '{nameof(SetStateMachine)}' call. You can find more details [here](https://devblogs.microsoft.com/dotnet/how-async-await-really-works/):
+
+> Note that line which the source comments as "important". This takes the place of that complicated SetStateMachine dance in .NET Framework, **such that `SetStateMachine` isn't actually used at all in .NET Core.**
+
+The **intended** implementation of this method for .NET framework would be:
+
+```
+builder.SetStateMachine(stateMachine);
+```
+
+For this method to be invoked, there are 3 requirements:
+1. the binary needs to be compiled with the `Release` configuration
+2. the binary needs to target .NET framework (.NET framework 4.8.1 was used to reproduce these steps)
+3. the method leveraging the '{nameof(TaskMethodBuilder<T>)}' must actually await (i.e. it needs to not just return a completed task)
+
+The third requirement can be met using the following code:
+
+```
+[TestClass]
+public sealed class Test
+{
+    private sealed class AwaiterType<T>
+    {
+        private readonly T value;
+
+        public AwaiterType(T value)
+        {
+            this.value = value;
+        }
+
+        public async ITask<T> GetValueWithDelay()
+        {
+            await Task.Delay(100).ConfigureAwait(false);
+            return this.value;
+        }
+    }
+
+    [TestMethod]
+    public async Task Await()
+    {
+        var value = "asdf";
+        var result = await new AwaiterType<string>(value).GetValueWithDelay().ConfigureAwait(false);
+
+        Assert.AreEqual(value, result);
+    }
+}
+```
+""";
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="stateMachine"></param>
+        /// <exception cref="NotSupportedException">
+        /// Always thrown because this method is not supported by the currently supported .NET runtimes
+        /// </exception>
+        /// <remarks>
+        /// This method always throws <see cref="NotSupportedException"/>
+        /// </remarks>
+        [ExcludeFromCodeCoverage(Justification = setStateMachineMessage)]
+        public void SetStateMachine(IAsyncStateMachine stateMachine)
+        {
+            throw new NotSupportedException(setStateMachineMessage);
+        }
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.SetException(Exception)"/>
+        public void SetException(Exception exception)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            this.builder.SetException(exception);
+        }
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.SetResult(TResult)"/>
+        public void SetResult(T result)
+        {
+            this.builder.SetResult(result);
+        }
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.AwaitOnCompleted{TAwaiter, TStateMachine}(ref TAwaiter, ref TStateMachine)"/>
+        public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+            where TAwaiter : INotifyCompletion
+            where TStateMachine : IAsyncStateMachine
+        {
+            this.builder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+        }
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.AwaitUnsafeOnCompleted{TAwaiter, TStateMachine}(ref TAwaiter, ref TStateMachine)"/>
+        public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+            where TAwaiter : ICriticalNotifyCompletion
+            where TStateMachine : IAsyncStateMachine
+        {
+            this.builder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
+        }
+
+        /// <inheritdoc cref="AsyncTaskMethodBuilder{TResult}.Task"/>
+        public Realizable<T> Task
+        {
+            get
+            {
+                return new Realizable<T>(new TaskWrapper<T>(this.builder.Task));
+            }
         }
     }
 
 
+    [AsyncMethodBuilder(typeof(RealizableMethodBuilder<>))]
     public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>
         where T : allows ref struct
 	{
@@ -881,7 +1078,7 @@ namespace Fx.Either
         public Realizable<TResult> ContinueWith<TResult>(Func<Result, TResult> continuationFunction)
             where TResult : allows ref struct
         {
-            if (this.TryRealize(out var realized, out var future))
+            /*if (this.TryRealize(out var realized, out var future))
             {
                 return new Realizable<TResult>(continuationFunction(new Result(realized, null!)));
             }
@@ -893,6 +1090,26 @@ namespace Fx.Either
                             continuationFunction(
                                 new Result(
                                     result.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+            }*/
+
+
+
+            if (this.value.TryGetValue(out var realized))
+            {
+                return new Realizable<TResult>(continuationFunction(new Result(realized, null!)));
+            }
+            else if (this.future != null)
+            {
+                return new Realizable<TResult>(
+                    future
+                        .ContinueWith(result =>
+                            continuationFunction(
+                                new Result(
+                                    result.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+            }
+            else
+            {
+                throw new Exception("TODO");
             }
         }
 
@@ -946,13 +1163,13 @@ namespace Fx.Either
                 {
                     context.Item1 = true;
                     context.Item2 = left;
-                    return new Realizable<bool>();
+                    return new Realizable<bool>(true);
                 },
                 (ITask<T> right, ref Context<bool, T, ITask<T>> context) =>
                 {
                     context.Item1 = false;
                     context.Item3 = right;
-                    return new Realizable<bool>();
+                    return new Realizable<bool>(true);
                 },
                 ref context);
 

@@ -11,6 +11,12 @@
     [TestClass]
     public class Tests
     {
+        [TestMethod]
+        public async Task AsyncRealizable()
+        {
+            Console.WriteLine(await NewThing.Attempt5());
+        }
+
         public class LeftContainer
         {
             public static LeftContainer Create()
