@@ -287,7 +287,7 @@
                     }
                 }
 
-                private sealed class CustomHeaderReader : ICustomHeaderReader<GetResponseHeadersReader>
+                private sealed class CustomHeaderReader : ICustomHeaderReader<IGetResponseHeadersReader>
                 {
                     private readonly HttpResponseMessage httpResponseMessage;
                     private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
@@ -308,13 +308,13 @@
                         return ValueTask.CompletedTask;
                     }
 
-                    public ICustomHeaderFieldNameReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
+                    public ICustomHeaderFieldNameReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                     {
                         moved = true;
                         return new CustomHeaderFieldNameReader(this.httpResponseMessage, this.headersEnumerator, this.dispositionManager);
                     }
 
-                    private sealed class CustomHeaderFieldNameReader : ICustomHeaderFieldNameReader<GetResponseHeadersReader>
+                    private sealed class CustomHeaderFieldNameReader : ICustomHeaderFieldNameReader<IGetResponseHeadersReader>
                     {
                         private readonly HttpResponseMessage httpResponseMessage;
                         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
@@ -341,13 +341,13 @@
                             return new CustomHeaderFieldName(headersEnumerator.Current.Key);
                         }
 
-                        public ICustomHeaderFieldValueReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
+                        public ICustomHeaderFieldValueReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                         {
                             moved = true;
                             return new CustomHeaderFieldValueReader(this.httpResponseMessage, this.headersEnumerator, this.dispositionManager);
                         }
 
-                        private sealed class CustomHeaderFieldValueReader : ICustomHeaderFieldValueReader<GetResponseHeadersReader>
+                        private sealed class CustomHeaderFieldValueReader : ICustomHeaderFieldValueReader<IGetResponseHeadersReader>
                         {
                             private readonly HttpResponseMessage httpResponseMessage;
                             private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
@@ -368,7 +368,7 @@
                                 return ValueTask.CompletedTask;
                             }
 
-                            public ICustomHeaderFieldValueElementReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
+                            public ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                             {
                                 var headerValuesEnumerator = this.dispositionManager.Register(() => this.headersEnumerator.Current.Value.GetEnumerator());
 
@@ -380,7 +380,7 @@
                                     this.dispositionManager);
                             }
 
-                            private sealed class CustomHeaderFieldValueElementReader : ICustomHeaderFieldValueElementReader<GetResponseHeadersReader>
+                            private sealed class CustomHeaderFieldValueElementReader : ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader>
                             {
                                 private readonly HttpResponseMessage httpResponseMessage;
                                 private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
@@ -404,15 +404,17 @@
                                     return ValueTask.CompletedTask;
                                 }
 
-                                public ICustomHeaderFieldValueElementToken<GetResponseHeadersReader> TryMoveNext(out bool moved)
+                                public ICustomHeaderFieldValueElementToken<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                                 {
                                     //// TODO you are here
                                     //// implement this method
                                     
                                     if (!this.headerValuesEnumerator.MoveNext())
                                     {
-                                        // unregister (+ dispose)
-                                        // return getresponseheadersreader
+                                        this.dispositionManager.Unregister(this.headerValuesEnumerator);
+
+                                        moved = true;
+                                        return new CustomHeaderFieldValueElementToken.GetResponseHeaders(new GetResponseHeadersReader(this.httpResponseMessage, this.headersEnumerator, this.dispositionManager));
                                     }
 
                                     if (char.IsWhiteSpace(this.headerValuesEnumerator.Current[0]))
