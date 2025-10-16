@@ -318,12 +318,14 @@
 
                         public CustomHeaderFieldName TryGetValue(out bool moved)
                         {
-                            //// TODO you are here
-                            throw new NotImplementedException();
+                            moved = true;
+                            return new CustomHeaderFieldName(headersEnumerator.Current.Key);
                         }
 
                         public ICustomHeaderFieldValueReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
                         {
+                            //// TODO you are here
+
                             throw new NotImplementedException();
                         }
                     }

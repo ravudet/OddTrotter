@@ -12,9 +12,12 @@
 
     public sealed class CustomHeaderFieldName
     {
-        private CustomHeaderFieldName()
+        internal CustomHeaderFieldName(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface ICustomHeaderFieldValueReader<out TNextReader> : IReader<ICustomHeaderFieldValueElementReader<TNextReader>>
