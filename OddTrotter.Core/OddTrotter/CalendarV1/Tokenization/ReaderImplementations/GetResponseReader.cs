@@ -310,7 +310,6 @@
                             this.headersEnumerator = headersEnumerator;
                         }
 
-
                         public ValueTask Read()
                         {
                             return ValueTask.CompletedTask;
@@ -324,9 +323,30 @@
 
                         public ICustomHeaderFieldValueReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
                         {
-                            //// TODO you are here
+                            moved = true;
+                            return new CustomHeaderFieldValueReader(this.httpResponseMessage, this.headersEnumerator);
+                        }
 
-                            throw new NotImplementedException();
+                        private sealed class CustomHeaderFieldValueReader : ICustomHeaderFieldValueReader<GetResponseHeadersReader>
+                        {
+                            private readonly HttpResponseMessage httpResponseMessage;
+                            private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
+
+                            public CustomHeaderFieldValueReader(HttpResponseMessage httpResponseMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator)
+                            {
+                                this.httpResponseMessage = httpResponseMessage;
+                                this.headersEnumerator = headersEnumerator;
+                            }
+
+                            public ValueTask Read()
+                            {
+                                return ValueTask.CompletedTask;
+                            }
+
+                            public ICustomHeaderFieldValueElementReader<GetResponseHeadersReader> TryMoveNext(out bool moved)
+                            {
+
+                            }
                         }
                     }
                 }
