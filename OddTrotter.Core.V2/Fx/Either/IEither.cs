@@ -1504,6 +1504,11 @@ public sealed class Test
 			return future.GetAwaiter();
 		}
 
+        public static TaskAwaiter GetAwaiter2<T>(this Realizable<T> realizable)
+        {
+            //// this will let you await any realizable, so long as you don't need the result (e.g. realizable<nothing>)
+        }
+
         public static void TestSelect<T>(Realizable<T> realizable)
         {
             var result = realizable.SelectRef<Realizable<T>, T, ITask<T>, string, int>(left => new TaskWrapper<string>(Task.FromResult("asdf")), right => new TaskWrapper<int>(Task.FromResult(1)));
