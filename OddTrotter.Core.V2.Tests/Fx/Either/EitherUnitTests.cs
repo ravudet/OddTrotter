@@ -50,14 +50,16 @@
         {
             //// TODO to get the console output from the called method, i think that `realizable` needs to know about `realizable<T>`; but i don't think we have a way to do that, so i think what you need is for `realizable<T>` to have a `getnongeneric` method that returns the `realizable` that can be used for tracking
 
-            var forAttempt4 = await AsyncRealizableRefStructAgain3();
-            Console.WriteLine(forAttempt4);
+            await AsyncRealizableRefStructAgain3().ConfigureAwait(false);
+            await AsyncRealizableRefStructAgain2().ConfigureAwait(false);
+            ////var tracker = realizable.Tracker;
+            ////await tracker;
         }
 
-        private async Realizable AsyncRealizableRefStructAgain3()
+        private async Task AsyncRealizableRefStructAgain3()
         {
             NewThing.ForAttempt4 forAttempt4;
-            if (AsyncRealizableRefStructAgain2().TryRealize(out var realized, out var future))
+            if (NewThing.Attempt100().TryRealize(out var realized, out var future))
             {
                 forAttempt4 = realized;
             }
@@ -69,18 +71,20 @@
             Console.WriteLine(forAttempt4.Value);
         }
 
-        private async Realizable<NewThing.ForAttempt4> AsyncRealizableRefStructAgain2()
+        private async Task AsyncRealizableRefStructAgain2()
         {
-            if (NewThing.Attempt4().TryRealize(out var realized, out var future))
+            NewThing.ForAttempt4 forAttempt4;
+            if (NewThing.Attempt101().TryRealize(out var realized, out var future))
             {
-                return realized;
+                forAttempt4 = realized;
             }
             else
             {
-                return await future.ConfigureAwait(false);
+                forAttempt4 = await future;
             }
-        }
 
+            Console.WriteLine(forAttempt4.Value);
+        }
 
         public class LeftContainer
         {

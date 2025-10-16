@@ -648,6 +648,80 @@ namespace Fx.Either
             return new ForAttempt4(31);
         }
 
+        public static Realizable<ForAttempt4> Attempt100()
+        {
+            return new Realizable<ForAttempt4>(new ForAttempt4(67));
+        }
+
+        public static Realizable<ForAttempt4> Attempt101()
+        {
+            return new Realizable<ForAttempt4>(new Attempt101Task(71));
+        }
+
+        private sealed class Attempt101Task : ITask<ForAttempt4>
+        {
+            private readonly int value;
+
+            private readonly Task delay;
+
+            public Attempt101Task(int value)
+            {
+                this.value = value;
+
+                this.delay = Task.Delay(1000);
+            }
+
+            public IConfiguredAwaitable<ForAttempt4> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITask<TResult> ContinueWith<TResult>(Func<ITask<ForAttempt4>, TResult> continuationFunction) where TResult : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<ForAttempt4> GetAwaiter()
+            {
+                return new Awaiter(this.value, this.delay.GetAwaiter());
+            }
+
+            private sealed class Awaiter : ITaskAwaiter<ForAttempt4>
+            {
+                private readonly int value;
+                private readonly TaskAwaiter delay;
+
+                public Awaiter(int value, TaskAwaiter delay)
+                {
+                    this.value = value;
+                    this.delay = delay;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.delay.IsCompleted;
+                    }
+                }
+
+                public ForAttempt4 GetResult()
+                {
+                    return new ForAttempt4(this.value);
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.delay.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.delay.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
         public static async Realizable<int> Attempt5()
         {
             return await Task.FromResult(5);
@@ -1144,20 +1218,45 @@ public sealed class Test
 		private readonly NullableRef<T> value;
 		
 		private readonly ITask<T>? future;
-		
-		public Realizable(T value)
-		{
-			this.value = new NullableRef<T>(value);
-			
-			this.future = null;
-		}
-		
-		public Realizable(ITask<T> future)
-		{
-			this.future = future;
-			
-			this.value = default!;
-		}
+
+        private readonly Task tracker;
+
+        public Realizable(T value)
+        {
+            this.value = new NullableRef<T>(value);
+
+            this.future = null;
+            this.tracker = Task.CompletedTask;
+        }
+
+        public Realizable(ITask<T> future)
+        {
+            this.future = future;
+
+            this.value = default!;
+            this.tracker = new Task(async state =>
+            {
+                if (!(state is ITask<T> future))
+                {
+                    throw new Exception("tODO will this actaully get exposed?");
+                }
+
+                var awaiter = future.ConfigureAwait(false).GetAwaiter();
+                while (!awaiter.IsCompleted)
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+            },
+            this.future);
+        }
+
+        public Task Tracker
+        {
+            get
+            {
+                return this.tracker;
+            }
+        }
 
         public readonly ref struct Result
         {
