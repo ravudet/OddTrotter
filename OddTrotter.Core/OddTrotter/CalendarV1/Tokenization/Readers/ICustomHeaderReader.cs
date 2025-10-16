@@ -20,8 +20,15 @@
         internal string Value { get; }
     }
 
-    public interface ICustomHeaderFieldValueReader<out TNextReader> : IReader<ICustomHeaderFieldValueElementReader<TNextReader>>
+    public interface ICustomHeaderFieldValueReader<out TNextReader> : IReader<ICustomerHeaderFieldValueToken<TNextReader>>
     {
+    }
+
+    public interface ICustomerHeaderFieldValueToken<out TNextReader>
+    {
+        TResult Apply<TResult>(
+            Func<ICustomHeaderFieldValueElementReader<TNextReader>, TResult> customerHeaderFieldValueElementReader,
+            Func<TNextReader, TResult> nextReader);
     }
 
     public interface ICustomHeaderFieldValueElementReader<out TNextReader> : IReader<ICustomHeaderFieldValueElementToken<TNextReader>>
@@ -53,8 +60,11 @@
 
     public sealed class CustomHeaderLws
     {
-        private CustomHeaderLws()
+        internal CustomHeaderLws(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 }
