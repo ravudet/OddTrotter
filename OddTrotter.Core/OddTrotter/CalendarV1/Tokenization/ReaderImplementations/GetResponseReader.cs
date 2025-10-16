@@ -216,7 +216,7 @@
 
                     public TResult Apply<TResult>(Func<ICustomHeaderReader<IGetResponseHeadersReader>, TResult> customHeaderReader)
                     {
-                        throw new NotImplementedException();
+                        return new DelegateVisitor<TResult, Nothing>(customHeaderReader).Visit(this, new Nothing());
                     }
 
                     private sealed class DelegateVisitor<TResult, TContext> : Visitor<TResult, TContext>
@@ -407,8 +407,6 @@
                                 public ICustomHeaderFieldValueElementToken<GetResponseHeadersReader> TryMoveNext(out bool moved)
                                 {
                                     //// TODO you are here
-                                    //// implement the `apply` method of the exiting tokens
-                                    //// implement the ICustomHeaderFieldValueElementToken following the pattern of the tokens above
                                     //// implement this method
                                     
                                     if (!this.headerValuesEnumerator.MoveNext())
@@ -427,15 +425,114 @@
                                     }
                                 }
 
-                                private abstract class CustomHeaderFieldValueElementToken : ICustomHeaderFieldValueElementToken<GetResponseHeadersReader>
+                                private abstract class CustomHeaderFieldValueElementToken : ICustomHeaderFieldValueElementToken<IGetResponseHeadersReader>
                                 {
                                     private CustomHeaderFieldValueElementToken()
                                     {
                                     }
 
-                                    public TResult Apply<TResult>(Func<ICustomHeaderFieldContentReader<GetResponseHeadersReader>, TResult> customHeaderFieldContentReader, Func<ICustomHeaderLwsReader<GetResponseHeadersReader>, TResult> customHeaderLwsReader, Func<GetResponseHeadersReader, TResult> nextReader)
+                                    public TResult Apply<TResult>(
+                                        Func<ICustomHeaderFieldContentReader<IGetResponseHeadersReader>, TResult> customHeaderFieldContentReader,
+                                        Func<ICustomHeaderLwsReader<IGetResponseHeadersReader>, TResult> customHeaderLwsReader, 
+                                        Func<IGetResponseHeadersReader, TResult> nextReader)
                                     {
-                                        throw new NotImplementedException();
+                                        return new DelegateVisitor<TResult, Nothing>(
+                                            customHeaderFieldContentReader, 
+                                            customHeaderLwsReader, 
+                                            nextReader).Visit(this, new Nothing());
+                                    }
+
+                                    private sealed class DelegateVisitor<TResult, TContext> : Visitor<TResult, TContext>
+                                    {
+                                        private readonly Func<ICustomHeaderFieldContentReader<IGetResponseHeadersReader>, TResult> customHeaderFieldContentReader;
+                                        private readonly Func<ICustomHeaderLwsReader<IGetResponseHeadersReader>, TResult> customHeaderLwsReader;
+                                        private readonly Func<IGetResponseHeadersReader, TResult> nextReader;
+
+                                        public DelegateVisitor(
+                                            Func<ICustomHeaderFieldContentReader<IGetResponseHeadersReader>, TResult> customHeaderFieldContentReader, 
+                                            Func<ICustomHeaderLwsReader<IGetResponseHeadersReader>, TResult> customHeaderLwsReader,
+                                            Func<IGetResponseHeadersReader, TResult> nextReader)
+                                        {
+                                            this.customHeaderFieldContentReader = customHeaderFieldContentReader;
+                                            this.customHeaderLwsReader = customHeaderLwsReader;
+                                            this.nextReader = nextReader;
+                                        }
+
+                                        protected internal override TResult Accept(CustomHeaderFieldContent node, TContext context)
+                                        {
+                                            return this.customHeaderFieldContentReader(node.CustomHeaderFieldContentReader);
+                                        }
+
+                                        protected internal override TResult Accept(CustomHeaderLws node, TContext context)
+                                        {
+                                            return this.customHeaderLwsReader(node.CustomHeaderLwsReader);
+                                        }
+
+                                        protected internal override TResult Accept(GetResponseHeaders node, TContext context)
+                                        {
+                                            return this.nextReader(node.GetResponseHeadersReader);
+                                        }
+                                    }
+
+                                    protected abstract TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context);
+
+                                    public abstract class Visitor<TResult, TContext>
+                                    {
+                                        public TResult Visit(CustomHeaderFieldValueElementToken node, TContext context)
+                                        {
+                                            ArgumentNullException.ThrowIfNull(node);
+
+                                            return node.Dispatch(this, context);
+                                        }
+
+                                        protected internal abstract TResult Accept(CustomHeaderFieldContent node, TContext context);
+                                        protected internal abstract TResult Accept(CustomHeaderLws node, TContext context);
+                                        protected internal abstract TResult Accept(GetResponseHeaders node, TContext context);
+                                    }
+
+                                    public sealed class CustomHeaderFieldContent : CustomHeaderFieldValueElementToken
+                                    {
+                                        public CustomHeaderFieldContent(ICustomHeaderFieldContentReader<IGetResponseHeadersReader> customHeaderFieldContentReader)
+                                        {
+                                            CustomHeaderFieldContentReader = customHeaderFieldContentReader;
+                                        }
+
+                                        public ICustomHeaderFieldContentReader<IGetResponseHeadersReader> CustomHeaderFieldContentReader { get; }
+
+                                        protected override TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context)
+                                        {
+                                            return visitor.Accept(this, context);
+                                        }
+                                    }
+
+                                    public sealed class CustomHeaderLws : CustomHeaderFieldValueElementToken
+                                    {
+                                        public CustomHeaderLws(ICustomHeaderLwsReader<IGetResponseHeadersReader> customHeaderLwsReader)
+                                        {
+                                            CustomHeaderLwsReader = customHeaderLwsReader;
+                                        }
+
+                                        public ICustomHeaderLwsReader<IGetResponseHeadersReader> CustomHeaderLwsReader { get; }
+
+                                        protected override TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context)
+                                        {
+                                            return visitor.Accept(this, context);
+                                        }
+                                    }
+
+                                    public sealed class GetResponseHeaders : CustomHeaderFieldValueElementToken
+                                    {
+                                        public GetResponseHeaders(IGetResponseHeadersReader getResponseHeadersReader)
+                                        {
+                                            GetResponseHeadersReader = getResponseHeadersReader;
+                                        }
+
+                                        public IGetResponseHeadersReader GetResponseHeadersReader { get; }
+
+                                        protected override TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context)
+                                        {
+                                            return visitor.Accept(this, context);
+                                        }
                                     }
                                 }
                             }
