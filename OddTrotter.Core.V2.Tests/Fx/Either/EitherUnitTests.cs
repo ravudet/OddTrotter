@@ -44,6 +44,7 @@
                 //// TODO this might be a compiler bug; if you use an intermediate variable, there's a compilation error:
                 //// var result = await future.ConfigureAwait(false);
                 //// return result;
+                //// plus, the code doesn't even run because it violates the generic constraints on `task<T>` that are invoked through the asynctaskmethodbuilder when `await` is used above
             }
         }
 
