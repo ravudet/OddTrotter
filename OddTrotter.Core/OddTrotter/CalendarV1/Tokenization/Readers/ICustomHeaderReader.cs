@@ -49,9 +49,12 @@
 
     public sealed class CustomHeaderFieldContent
     {
-        private CustomHeaderFieldContent()
+        internal CustomHeaderFieldContent(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface ICustomHeaderLwsReader<out TNextReader> : IReader<ICustomHeaderFieldValueElementReader<TNextReader>, CustomHeaderLws>

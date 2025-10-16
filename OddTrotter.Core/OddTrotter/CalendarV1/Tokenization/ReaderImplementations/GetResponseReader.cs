@@ -634,8 +634,6 @@
                                     private readonly int currentHeaderValueIndex;
                                     private readonly IDispositionManager dispositionManager;
 
-                                    private Index? nonWhitespaceIndex;
-
                                     public CustomHeaderLwsReader(
                                         HttpResponseMessage httpResponseMessage,
                                         IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator,
@@ -648,8 +646,6 @@
                                         this.headerValuesEnumerator = headerValuesEnumerator;
                                         this.currentHeaderValueIndex = currentHeaderValueIndex;
                                         this.dispositionManager = dispositionManager;
-
-                                        this.nonWhitespaceIndex = null;
                                     }
 
                                     public ValueTask Read()
@@ -657,60 +653,69 @@
                                         return ValueTask.CompletedTask;
                                     }
 
-                                    [MemberNotNull("nonWhitespaceIndex")] //// TODO shouldn't the compiler track the graph and not need this twice?
                                     public CustomHeaderLws TryGetValue(out bool moved)
                                     {
-                                        NonWhitespaceIndex();
-
-                                        moved = true;
-                                        return new CustomHeaderLws(this.headerValuesEnumerator.Current.Substring(this.currentHeaderValueIndex, this.nonWhitespaceIndex.Value - this.currentHeaderValueIndex));
+                                        return TryGetValue(out moved, out _);
                                     }
 
                                     public ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                                     {
-                                        TryGetValue(out _);
+                                        TryGetValue(out moved, out var nonWhitespaceIndex);
+                                        if (!moved)
+                                        {
+                                            return default!;
+                                        }
 
                                         moved = true;
-                                        return new CustomHeaderFieldValueElementReader(this.httpResponseMessage, this.headersEnumerator, this.headerValuesEnumerator, this.nonWhitespaceIndex.Value, this.dispositionManager);
+                                        return new CustomHeaderFieldValueElementReader(this.httpResponseMessage, this.headersEnumerator, this.headerValuesEnumerator, nonWhitespaceIndex, this.dispositionManager);
                                     }
 
-                                    [MemberNotNull("nonWhitespaceIndex")]
-                                    private void NonWhitespaceIndex()
+                                    public CustomHeaderLws TryGetValue(out bool moved, out int nonWhitespaceIndex)
                                     {
-                                        int nonWhitespaceIndex;
                                         for (nonWhitespaceIndex = this.currentHeaderValueIndex; nonWhitespaceIndex < this.headerValuesEnumerator.Current.Length && char.IsWhiteSpace(this.headerValuesEnumerator.Current[nonWhitespaceIndex]); ++nonWhitespaceIndex)
                                         {
                                         }
 
-                                        this.nonWhitespaceIndex = new Index(nonWhitespaceIndex);
-                                    }
-
-                                    private sealed class Index
-                                    {
-                                        public Index(int value)
-                                        {
-                                            Value = value;
-                                        }
-
-                                        public int Value { get; }
+                                        moved = true;
+                                        return new CustomHeaderLws(this.headerValuesEnumerator.Current.Substring(this.currentHeaderValueIndex, nonWhitespaceIndex - this.currentHeaderValueIndex));
                                     }
                                 }
 
                                 private sealed class CustomHeaderFieldContentReader : ICustomHeaderFieldContentReader<IGetResponseHeadersReader>
                                 {
+                                    private readonly HttpResponseMessage httpResponseMessage;
+                                    private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator;
+                                    private readonly IEnumerator<string> headerValuesEnumerator;
+                                    private readonly int currentHeaderValueIndex;
+                                    private readonly IDispositionManager dispositionManager;
+
+                                    public CustomHeaderFieldContentReader(
+                                        HttpResponseMessage httpResponseMessage,
+                                        IEnumerator<KeyValuePair<string, IEnumerable<string>>> headersEnumerator,
+                                        IEnumerator<string> headerValuesEnumerator,
+                                        int currentHeaderValueIndex,
+                                        IDispositionManager dispositionManager)
+                                    {
+                                        this.httpResponseMessage = httpResponseMessage;
+                                        this.headersEnumerator = headersEnumerator;
+                                        this.headerValuesEnumerator = headerValuesEnumerator;
+                                        this.currentHeaderValueIndex = currentHeaderValueIndex;
+                                        this.dispositionManager = dispositionManager;
+                                    }
+
                                     public ValueTask Read()
                                     {
-                                        throw new NotImplementedException();
+                                        return ValueTask.CompletedTask;
                                     }
 
                                     public CustomHeaderFieldContent TryGetValue(out bool moved)
                                     {
-                                        throw new NotImplementedException();
+                                        //// TODO you are here
                                     }
 
                                     public ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                                     {
-                                        throw new NotImplementedException();
+
                                     }
                                 }
                             }
