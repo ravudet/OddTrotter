@@ -12,9 +12,12 @@
     {
         private readonly HttpResponseMessage httpResponseMessage;
 
-        public GetResponseReader(HttpResponseMessage httpResponseMessage)
+        private readonly IDispositionManager dispositionManager;
+
+        public GetResponseReader(HttpResponseMessage httpResponseMessage, IDispositionManager dispositionManager)
         {
             this.httpResponseMessage = httpResponseMessage;
+            this.dispositionManager = dispositionManager;
         }
 
         public ValueTask Read()
@@ -25,8 +28,9 @@
         public IGetResponseHeadersReader TryMoveNext(out bool moved)
         {
             moved = true;
-            //// TODO disposable
-            return new GetResponseHeadersReader(httpResponseMessage, httpResponseMessage.Headers.GetEnumerator());
+
+            var headersEnumerator = this.dispositionManager.Register(() => httpResponseMessage.Headers.GetEnumerator());
+            return new GetResponseHeadersReader(httpResponseMessage, headersEnumerator);
         }
 
         private sealed class GetResponseHeadersReader : IGetResponseHeadersReader
@@ -315,7 +319,6 @@
                         public CustomHeaderFieldName TryGetValue(out bool moved)
                         {
                             //// TODO you are here
-                            //// TODO but you should really do the disposable thing before continuing to implement
                             throw new NotImplementedException();
                         }
 
