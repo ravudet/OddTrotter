@@ -41,6 +41,9 @@
             else
             {
                 return await future.ConfigureAwait(false);
+                //// TODO this might be a compiler bug; if you use an intermediate variable, there's a compilation error:
+                //// var result = await future.ConfigureAwait(false);
+                //// return result;
             }
         }
 
