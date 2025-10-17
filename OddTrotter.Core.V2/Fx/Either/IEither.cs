@@ -1294,6 +1294,16 @@ public sealed class Test
             }*/
 
 
+            //// TODO you are trying to see if `apply` is the kernel
+            return this.Extensions.ApplyRef(
+                realized => continuationFunction(new Result(realized, null!)),
+                future => 
+                    future
+                        .ContinueWith(result =>
+                            continuationFunction(
+                                new Result(
+                                    result.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+
 
             if (this.value.TryGetValue(out var realized))
             {
@@ -1471,6 +1481,12 @@ public sealed class Test
         }
     }
 
+
+
+    public delegate TResult Map2<in TValue, out TResult>(TValue value)
+        where TValue : allows ref struct
+        where TResult : allows ref struct;
+
     public delegate Realizable<TResult> AsyncRefContextualizedMap2<in TValue, TContext, TResult>(TValue value, ref TContext context)
         where TValue : allows ref struct
         where TContext : allows ref struct
@@ -1571,6 +1587,45 @@ public sealed class Test
                 Convert16<TRight, bool, TResult>(rightMap),
                 ref EitherExtensions.Context);
         }
+
+        public static Realizable<TResult> ApplyRef<TEither, TLeft, TRight, TResult>(
+            this Extensions<TEither, TLeft, TRight> extensions,
+            AsyncMap<TLeft, TResult> leftMap,
+            AsyncMap<TRight, TResult> rightMap)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return ApplyRef<TEither, TLeft, TRight, TResult>(extensions.Self, leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyRef2<TEither, TLeft, TRight, TResult>(
+            this TEither either,
+            Map2<TLeft, TResult> leftMap,
+            Map2<TRight, TResult> rightMap)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Apply(
+                Convert17<TLeft, bool, TResult>(leftMap),
+                Convert17<TRight, bool, TResult>(rightMap),
+                ref EitherExtensions.Context);
+        }
+
+        public static Realizable<TResult> ApplyRef2<TEither, TLeft, TRight, TResult>(
+            this Extensions<TEither, TLeft, TRight> extensions,
+            Map2<TLeft, TResult> leftMap,
+            Map2<TRight, TResult> rightMap)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return ApplyRef2<TEither, TLeft, TRight, TResult>(extensions.Self, leftMap, rightMap);
+        }
     }
 
     public static partial class EitherExtensions
@@ -1617,6 +1672,14 @@ public sealed class Test
         public static bool Context = true;
 
         private static AsyncRefContextualizedMap2<TValue, TContext, TResult> Convert16<TValue, TContext, TResult>(AsyncMap<TValue, TResult> map)
+            where TContext : allows ref struct
+            where TResult : allows ref struct
+        {
+            return (TValue value, ref TContext context) => new Realizable<TResult>(map(value));
+        }
+
+        private static AsyncRefContextualizedMap2<TValue, TContext, TResult> Convert17<TValue, TContext, TResult>(Map2<TValue, TResult> map)
+            where TValue : allows ref struct
             where TContext : allows ref struct
             where TResult : allows ref struct
         {
