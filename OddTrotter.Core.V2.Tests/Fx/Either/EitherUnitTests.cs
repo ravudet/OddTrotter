@@ -60,6 +60,14 @@
             ////await tracker;
         }
 
+        [TestMethod]
+        public async Task AsyncRealizableRefStructAgainSomeMore()
+        {
+            await NewThing.Attempt100().Tracker;
+            await NewThing.Attempt101().Tracker;
+
+        }
+
         private async Task AsyncRealizableRefStructAgain3()
         {
             NewThing.ForAttempt4 forAttempt4;

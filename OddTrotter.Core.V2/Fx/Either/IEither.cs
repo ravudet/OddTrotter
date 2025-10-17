@@ -6,6 +6,7 @@ namespace Fx.Either
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
 
@@ -668,7 +669,10 @@ namespace Fx.Either
             {
                 this.value = value;
 
-                this.delay = Task.Delay(1000);
+                this.delay = Task.Delay(1000).ContinueWith(task =>
+                {
+                    Console.WriteLine("got result");
+                });
             }
 
             public IConfiguredAwaitable<ForAttempt4> ConfigureAwait(bool continueOnCapturedContext)
@@ -1234,17 +1238,18 @@ public sealed class Test
             this.future = future;
 
             this.value = default!;
-            this.tracker = new Task(async state =>
+            this.tracker = Task.Factory.StartNew(state =>
             {
                 if (!(state is ITask<T> future))
                 {
                     throw new Exception("tODO will this actaully get exposed?");
                 }
 
-                var awaiter = future.ConfigureAwait(false).GetAwaiter();
+                var awaiter = future/*.ConfigureAwait(false) TODO add this back*/.GetAwaiter();
                 while (!awaiter.IsCompleted)
                 {
-                    await Task.Delay(100).ConfigureAwait(false);
+                    //// TODO can you use `task.delay` instead?
+                    Thread.Sleep(100);
                 }
             },
             this.future);
@@ -1496,6 +1501,8 @@ public sealed class Test
 	{
 		public static ITaskAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
 		{
+            //// TODO realizable needs a `configureawait`
+            
 			if (realizable.TryRealize(out var realized, out var future))
 			{
 				future = new TaskWrapper<T>(Task.FromResult(realized));
@@ -1505,8 +1512,14 @@ public sealed class Test
 		}
 
         public static TaskAwaiter GetAwaiter2<T>(this Realizable<T> realizable)
+            where T : allows ref struct
         {
+            //// TODO realizable needs a `configureawait`
+
+
             //// this will let you await any realizable, so long as you don't need the result (e.g. realizable<nothing>)
+
+            return realizable.Tracker.GetAwaiter();
         }
 
         public static void TestSelect<T>(Realizable<T> realizable)
