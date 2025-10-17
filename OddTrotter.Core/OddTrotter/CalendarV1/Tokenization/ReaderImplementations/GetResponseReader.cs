@@ -1,9 +1,12 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.ReaderImplementations
 {
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
     using System.Net.Http;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using Fx.Either;
 
@@ -15,7 +18,9 @@
 
         private readonly IDispositionManager dispositionManager;
 
-        public GetResponseReader(HttpResponseMessage httpResponseMessage, IDispositionManager dispositionManager)
+        public GetResponseReader(
+            HttpResponseMessage httpResponseMessage, 
+            IDispositionManager dispositionManager)
         {
             this.httpResponseMessage = httpResponseMessage;
             this.dispositionManager = dispositionManager;
@@ -743,14 +748,68 @@
 
             private sealed class GetResponseBodyReader : IGetResponseBodyReader
             {
-                public ValueTask Read()
+                private readonly HttpResponseMessage httpResponseMessage;
+
+                private readonly IDispositionManager dispositionManager;
+
+                private Stream? responseContent; //// TODO have a single type that has each of the nullable properties
+
+                private byte[]? buffer;
+
+                public GetResponseBodyReader(
+                    HttpResponseMessage httpResponseMessage,
+                    IDispositionManager dispositionManager)
                 {
-                    throw new NotImplementedException();
+                    this.httpResponseMessage = httpResponseMessage;
+                    this.dispositionManager = dispositionManager;
+                }
+
+                //[MemberNotNull(nameof(this.responseContent))]
+                public async ValueTask Read()
+                {
+                    if (this.responseContent != null)
+                    {
+                        return;
+                    }
+
+                    this.responseContent = await this
+                        .dispositionManager
+                        .RegisterAsync(async () =>
+                             await this.httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        .ConfigureAwait(false);
+                    if (this.responseContent == null)
+                    {
+                        throw new Exception("TODO create a custom exception type and document this");
+                    }
+
+
+                    //// TODO you are here playing around with this stuff; you actually need to be doing this in the iodatacontextreader, though
+                    
+                    this.buffer = new byte[500]; //// TODO configurable size
+                    var read = this.responseContent.Read(this.buffer, 0, this.buffer.Length);
+
+                    var bufferSpan = new Span<byte>(this.buffer, 0, read);
+                    var reader = new Utf8JsonReader(bufferSpan);
+
+                    if (!reader.Read())
+                    {
+                        var propertyName = reader.GetString();
+                        if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
+                        {
+                            reader.Read();
+                        }
+                    }
+
+
                 }
 
                 public IOdataContextReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                 {
-                    throw new NotImplementedException();
+                    if (this.responseContent == null)
+                    {
+                        moved = false;
+                        return default!;
+                    }
                 }
             }
         }

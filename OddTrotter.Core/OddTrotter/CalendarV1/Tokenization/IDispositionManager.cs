@@ -10,6 +10,8 @@ namespace OddTrotter.CalendarV1.Tokenization
     {
         T Register<T>(Func<T> factory) where T : IDisposable;
 
+        Task<T> RegisterAsync<T>(Func<Task<T>> factory) where T : IDisposable;
+
         void Unregister<T>(T disposable) where T : IDisposable; //// TODO make sure to document (and implement) that this needs to dispose the item as well
     }
 }
