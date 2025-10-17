@@ -511,7 +511,7 @@
                                     else
                                     {
                                         moved = true;
-                                        return new CustomHeaderFieldValueElementToken.CustomHeaderFieldContent(new CustomHeaderFieldContentReader());
+                                        return new CustomHeaderFieldValueElementToken.CustomHeaderFieldContent(new CustomHeaderFieldContentReader(this.httpResponseMessage, this.headersEnumerator, this.headerValuesEnumerator, this.currentHeaderValueIndex, this.dispositionManager));
                                     }
                                 }
 
@@ -655,12 +655,12 @@
 
                                     public CustomHeaderLws TryGetValue(out bool moved)
                                     {
-                                        return TryGetValue(out moved, out _);
+                                        return this.TryGetValue(out moved, out _);
                                     }
 
                                     public ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                                     {
-                                        TryGetValue(out moved, out var nonWhitespaceIndex);
+                                        this.TryGetValue(out moved, out var nonWhitespaceIndex);
                                         if (!moved)
                                         {
                                             return default!;
@@ -670,7 +670,7 @@
                                         return new CustomHeaderFieldValueElementReader(this.httpResponseMessage, this.headersEnumerator, this.headerValuesEnumerator, nonWhitespaceIndex, this.dispositionManager);
                                     }
 
-                                    public CustomHeaderLws TryGetValue(out bool moved, out int nonWhitespaceIndex)
+                                    private CustomHeaderLws TryGetValue(out bool moved, out int nonWhitespaceIndex)
                                     {
                                         for (nonWhitespaceIndex = this.currentHeaderValueIndex; nonWhitespaceIndex < this.headerValuesEnumerator.Current.Length && char.IsWhiteSpace(this.headerValuesEnumerator.Current[nonWhitespaceIndex]); ++nonWhitespaceIndex)
                                         {
@@ -710,12 +710,29 @@
 
                                     public CustomHeaderFieldContent TryGetValue(out bool moved)
                                     {
-                                        //// TODO you are here
+                                        return this.TryGetValue(out moved, out _);
                                     }
 
                                     public ICustomHeaderFieldValueElementReader<IGetResponseHeadersReader> TryMoveNext(out bool moved)
                                     {
+                                        this.TryGetValue(out moved, out var whitespaceIndex);
+                                        if (!moved)
+                                        {
+                                            return default!;
+                                        }
 
+                                        moved = true;
+                                        return new CustomHeaderFieldValueElementReader(this.httpResponseMessage, this.headersEnumerator, this.headerValuesEnumerator, whitespaceIndex, this.dispositionManager);
+                                    }
+
+                                    private CustomHeaderFieldContent TryGetValue(out bool moved, out int whitespaceIndex)
+                                    {
+                                        for (whitespaceIndex = this.currentHeaderValueIndex; whitespaceIndex < this.headerValuesEnumerator.Current.Length && !char.IsWhiteSpace(this.headerValuesEnumerator.Current[whitespaceIndex]); ++whitespaceIndex)
+                                        {
+                                        }
+
+                                        moved = true;
+                                        return new CustomHeaderFieldContent(this.headerValuesEnumerator.Current.Substring(this.currentHeaderValueIndex, whitespaceIndex - this.currentHeaderValueIndex));
                                     }
                                 }
                             }
