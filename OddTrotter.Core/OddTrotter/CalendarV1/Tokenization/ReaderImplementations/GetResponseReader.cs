@@ -746,15 +746,29 @@
                 }
             }
 
+            private sealed class ResponseContext
+            {
+                public ResponseContext(Stream responseContent, byte[] buffer, int bufferValidity)
+                {
+                    ResponseContent = responseContent;
+                    Buffer = buffer;
+                    BufferValidity = bufferValidity;
+                }
+
+                public Stream ResponseContent { get; }
+
+                public byte[] Buffer { get; }
+
+                public int BufferValidity { get; }
+            }
+
             private sealed class GetResponseBodyReader : IGetResponseBodyReader
             {
                 private readonly HttpResponseMessage httpResponseMessage;
 
                 private readonly IDispositionManager dispositionManager;
 
-                private Stream? responseContent; //// TODO have a single type that has each of the nullable properties
-
-                private byte[]? buffer;
+                private ResponseContext? responseContext;
 
                 public GetResponseBodyReader(
                     HttpResponseMessage httpResponseMessage,
@@ -764,20 +778,20 @@
                     this.dispositionManager = dispositionManager;
                 }
 
-                //[MemberNotNull(nameof(this.responseContent))]
+                //[MemberNotNull(nameof(this.responseContext))]
                 public async ValueTask Read()
                 {
-                    if (this.responseContent != null)
+                    if (this.responseContext != null)
                     {
                         return;
                     }
 
-                    this.responseContent = await this
+                    var responseContent = await this
                         .dispositionManager
                         .RegisterAsync(async () =>
                              await this.httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         .ConfigureAwait(false);
-                    if (this.responseContent == null)
+                    if (responseContent == null)
                     {
                         throw new Exception("TODO create a custom exception type and document this");
                     }
@@ -786,10 +800,12 @@
                     //// TODO you are here playing around with this stuff; you actually need to be doing this in the iodatacontextreader, though
                     //// TODO you should read into the initial JSON object, *then* pass to odatacontextreader; the odatacontextreader should be able to be re-used in sitautions where it isn't reading a response body
                     
-                    this.buffer = new byte[500]; //// TODO configurable size
-                    var read = this.responseContent.Read(this.buffer, 0, this.buffer.Length);
+                    var buffer = new byte[500]; //// TODO configurable size
+                    var read = responseContent.Read(buffer, 0, buffer.Length);
 
-                    var bufferSpan = new Span<byte>(this.buffer, 0, read);
+                    this.responseContext = new ResponseContext(responseContent, buffer, read);
+
+                    var bufferSpan = new Span<byte>(this.responseContext.Buffer, 0, read);
                     var reader = new Utf8JsonReader(bufferSpan);
 
                     if (!reader.Read())
@@ -806,7 +822,7 @@
 
                 public IOdataContextReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                 {
-                    if (this.responseContent == null)
+                    if (this.responseContext == null)
                     {
                         moved = false;
                         return default!;
