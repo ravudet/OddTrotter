@@ -1332,7 +1332,7 @@ public sealed class Test
             if (this.value.TryGetValue(out var realized))
             {
                 return 
-                    leftMap(realized, ref context)
+                    leftMap(realized, ref context) //// TODO you also need to wrap the call to `leftmap` and `rightmap`
                     .ContinueWith(result =>
                     {
                         if (result.Exception == null)
@@ -1607,7 +1607,7 @@ public sealed class Test
         {
 
             //// TODO if you look at `realizable` not as implementing `itask` but instead implementing `ieither2` (so, it's `refeither` or something instead of `realizable`, then the return type of `apply` needs to be isomorphic with `ieither`; and the return type on `ieither` is `itask`, so for `ieither2`, the return type needs to 1. be continuable and 2. be realizable; so `realizable` has these two requirements; now we are recursive if we treat `realizable` as `ieither2`, so we cannot implement `apply` on `realizable` unless we have `realizable` expose something to continue and something to realize, otherwise we end up recursive
-
+            //// TODO expose `decompose` as a mixin and then have `realizable` implement that mixin instead of having `tryrealize`
 
 
 
@@ -1866,7 +1866,7 @@ public sealed class Test
 
 			if (either.Decompose(out var left, out var right))
 			{
-				var resultFuture = leftMap(left, ref context);
+				var resultFuture = leftMap(left, ref context); //// TODO you also need to wrap the call to `leftmap`
 				return new Realizable<TResult>(
 					resultFuture.ContinueWith(
 						future =>
