@@ -1612,7 +1612,7 @@ public sealed class Test
 
 
 
-            if (either.Decompose(out var left, out var right))
+            if (either.Decompose2<TEither, TLeft, TRight>(out var left, out var right))
             {
                 try
                 {
@@ -1641,26 +1641,49 @@ public sealed class Test
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            var context = true;
-            var tempLeft = default(TLeft);
-            var tempRight = default(TRight);
-            var result = either
-                .Apply(
-                    (TLeft value, ref bool nothing) =>
-                    {
-                        tempLeft = value;
-                        return new TaskWrapper<bool>(Task.FromResult(true));
-                    },
-                    (TRight value, ref bool nothing) =>
-                    {
-                        tempRight = value;
-                        return new TaskWrapper<bool>(Task.FromResult(false));
-                    },
-                    ref context);
+            if (either.GetType().inter is IDecomposeMixin<TLeft, TRight, IDecomposed<TLeft, TRight>> decompose)
+            {
+                var decomposed = decompose.Decompose(out var isLeft);
+                left = decomposed.Left;
+                right = decomposed.Right;
+                return isLeft;
+            }
 
-            left = tempLeft;
-            right = tempRight;
-            return result.ConfigureAwait(false).GetAwaiter().GetResult();
+            var context = new RefTuple<bool, TLeft, TRight>();
+            var result = either.Apply(
+                (TLeft left, ref RefTuple<bool, TLeft, TRight> context) =>
+                {
+                    context.Item1 = true;
+                    context.Item2 = left;
+                    return new Realizable<bool>(true);
+                },
+                (TRight right, ref RefTuple<bool, TLeft, TRight> context) =>
+                {
+                    context.Item1 = false;
+                    context.Item3 = right;
+                    return new Realizable<bool>(true);
+                },
+                ref context);
+
+            left = context.Item2;
+            right = context.Item3;
+            return context.Item1;
+        }
+
+        private delegate IDecomposed<TLeft, TRight> DecomposeDelegate<in TEither, out TLeft, out TRight>(TEither either)
+
+        private static bool TryCastToDecompose<T>(T, out Func<T, >)
+        {
+        }
+
+        private ref struct RefTuple<T1, T2, T3>
+            where T1 : allows ref struct
+            where T2 : allows ref struct
+            where T3 : allows ref struct
+        {
+            public T1 Item1 { get; set; }
+            public T2 Item2 { get; set; }
+            public T3 Item3 { get; set; }
         }
 
         public static TResult ApplyRef2<TEither, TLeft, TRight, TResult>(
@@ -1701,6 +1724,22 @@ public sealed class Test
         {
             return ApplyRef2(extensions.Self, leftMap, rightMap);
         }
+    }
+
+    public interface IDecomposeMixin<out TLeft, out TRight, out TDecomposed>
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+        where TDecomposed : IDecomposed<TLeft, TRight>, allows ref struct
+    {
+        TDecomposed Decompose(out bool isLeft);
+    }
+
+    public interface IDecomposed<out TLeft, out TRight>
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        TLeft Left { get; } 
+        TRight Right { get; }
     }
 
     public static partial class EitherExtensions
