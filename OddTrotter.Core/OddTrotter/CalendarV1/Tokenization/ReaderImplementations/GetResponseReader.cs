@@ -6,8 +6,10 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http;
+    using System.Runtime.InteropServices.JavaScript;
     using System.Text.Json;
     using System.Threading.Tasks;
+
     using Fx.Either;
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
@@ -778,6 +780,63 @@
                     this.dispositionManager = dispositionManager;
                 }
 
+                private void Read(ref Utf8JsonReader jsonReader)
+                {
+                    if (this.responseContext == null)
+                    {
+                        throw new Exception("tODO");
+                    }
+
+                    bool read;
+                    try
+                    {
+                        read = jsonReader.Read();
+                    }
+                    catch (JsonException jsonException)
+                    {
+                        throw new Exception("TODO", jsonException);
+                    }
+
+                    if (!read)
+                    {
+                        // we couldn't read either because we have consumed the whole buffer, or because the buffer is not large enough for the current JSON token
+
+                        // let's start by assuming that we just consumed the whole buffer
+                        var remainder = (int)(this.responseContext.BufferValidity - jsonReader.BytesConsumed); //// TODO off by 1?
+                        Array.Copy(this.responseContext.Buffer, (int)jsonReader.BytesConsumed, this.responseContext.Buffer, 0, remainder);
+                        var bytesRead = this.responseContext.ResponseContent.Read(this.responseContext.Buffer, remainder, this.responseContext.Buffer.Length - remainder);
+                        this.responseContext = new ResponseContext(this.responseContext.ResponseContent, this.responseContext.Buffer, bytesRead);
+
+                        jsonReader = new Utf8JsonReader(this.responseContext.Buffer.AsSpan(0, this.responseContext.BufferValidity));
+                        try
+                        {
+                            read = jsonReader.Read();
+                        }
+                        catch (JsonException jsonException)
+                        {
+                            throw new Exception("TODO", jsonException);
+                        }
+
+                        // if we still can't read, we need to increase the size of the buffer until we *can* read (or we run out of memory)
+                        while (!read)
+                        {
+                            var oldBuffer = this.responseContext.Buffer;
+                            Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
+                            bytesRead = this.responseContext.ResponseContent.Read(oldBuffer, this.responseContext.BufferValidity, oldBuffer.Length - this.responseContext.BufferValidity + 1);
+                            this.responseContext = new ResponseContext(this.responseContext.ResponseContent, oldBuffer, this.responseContext.BufferValidity + bytesRead);
+                            jsonReader = new Utf8JsonReader(this.responseContext.Buffer.AsSpan(0, this.responseContext.BufferValidity));
+                            try
+                            {
+                                read = jsonReader.Read();
+                            }
+                            catch (JsonException jsonException)
+                            {
+                                throw new Exception("TODO", jsonException);
+                            }
+                        }
+                    }
+                }
+
                 //[MemberNotNull(nameof(this.responseContext))]
                 public async ValueTask Read()
                 {
@@ -803,46 +862,39 @@
                     // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/use-utf8jsonreader
 
                     var buffer = new byte[500]; //// TODO configurable size
-                    var read = responseContent.Read(buffer, 0, buffer.Length);
+                    var bytesRead = responseContent.Read(buffer, 0, buffer.Length);
 
-                    this.responseContext = new ResponseContext(responseContent, buffer, read);
+                    this.responseContext = new ResponseContext(responseContent, buffer, bytesRead);
 
-                    var reader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
-
-                    //// TODO all of this is wrong; `read` will be `false` when the buffer is used up
-                    //// TODO `read` can throw; when does it throw?
-                    if (!reader.Read())
+                    var jsonReader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
+                    Read(ref jsonReader);
+                    while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        throw new Exception("TODO no JSON tokens");
+                        Read(ref jsonReader);
                     }
 
-                    var wasRead = true;
-                    //// TODO `read` can throw; when does it throw?
-                    while (reader.TokenType == JsonTokenType.Comment && (wasRead = reader.Read()))
+                    if (jsonReader.TokenType != JsonTokenType.StartObject)
                     {
+                        throw new Exception("tODO not a valid odata payload");
                     }
 
-                    if (!wasRead)
+                    Read(ref jsonReader);
+                    while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        throw new Exception("TODO there were only comments in the response JSON");
+                        Read(ref jsonReader);
                     }
 
-                    if (reader.TokenType != JsonTokenType.StartObject)
+                    if (jsonReader.TokenType != JsonTokenType.PropertyName)
                     {
-                        throw new Exception("TODO not valid OData");
+                        throw new Exception("tODO not a valid odata payload");
                     }
 
-                    reader.Read();
-
-
-
-
-                    var propertyName = reader.GetString();
+                    //// TODO this goes into the next reader
+                    var propertyName = jsonReader.GetString();
                     if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
                     {
-                        reader.Read();
+                        jsonReader.Read();
                     }
-
 
                 }
 
