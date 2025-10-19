@@ -1295,17 +1295,18 @@ public sealed class Test
 
 
             //// TODO you are trying to see if `apply` is the kernel
-            return this.Extensions.ApplyRef(
-                realized => continuationFunction(new Result(realized, null!)),
-                future => 
+            return this.Extensions.ApplyRef2(
+                realized => new Realizable<TResult>(continuationFunction(new Result(realized, null!))),
+                future =>
+                    new Realizable<TResult>(
                     future
                         .ContinueWith(result =>
                             continuationFunction(
                                 new Result(
-                                    result.ConfigureAwait(false).GetAwaiter().GetResult(), null!))));
+                                    result.ConfigureAwait(false).GetAwaiter().GetResult(), null!)))));
 
 
-            if (this.value.TryGetValue(out var realized))
+            /*if (this.value.TryGetValue(out var realized))
             {
                 return new Realizable<TResult>(continuationFunction(new Result(realized, null!)));
             }
@@ -1321,7 +1322,7 @@ public sealed class Test
             else
             {
                 throw new Exception("TODO");
-            }
+            }*/
         }
 
         public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<ITask<T>, TContext, TResult> rightMap, ref TContext context)
@@ -1492,6 +1493,11 @@ public sealed class Test
         where TContext : allows ref struct
         where TResult : allows ref struct;
 
+    public delegate TResult RefContextualizedMap2<in TValue, TContext, out TResult>(TValue value, ref TContext context)
+        where TValue : allows ref struct
+        where TContext : allows ref struct
+        where TResult : allows ref struct;
+
     public interface IExtensible<TSelf, T1, T2>
         where TSelf : IExtensible<TSelf, T1, T2>, allows ref struct
         where T1 : allows ref struct
@@ -1588,19 +1594,76 @@ public sealed class Test
                 ref EitherExtensions.Context);
         }
 
-        public static Realizable<TResult> ApplyRef<TEither, TLeft, TRight, TResult>(
-            this Extensions<TEither, TLeft, TRight> extensions,
-            AsyncMap<TLeft, TResult> leftMap,
-            AsyncMap<TRight, TResult> rightMap)
+        public static TResult ApplyRef3<TEither, TLeft, TRight, TResult, TContext>(
+            this TEither either,
+            RefContextualizedMap2<TLeft, TContext, TResult> leftMap,
+            RefContextualizedMap2<TRight, TContext, TResult> rightMap,
+            ref TContext context)
             where TEither : IEither2<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
+            where TContext : allows ref struct
         {
-            return ApplyRef<TEither, TLeft, TRight, TResult>(extensions.Self, leftMap, rightMap);
+
+            //// TODO if you look at `realizable` not as implementing `itask` but instead implementing `ieither2` (so, it's `refeither` or something instead of `realizable`, then the return type of `apply` needs to be isomorphic with `ieither`; and the return type on `ieither` is `itask`, so for `ieither2`, the return type needs to 1. be continuable and 2. be realizable; so `realizable` has these two requirements; now we are recursive if we treat `realizable` as `ieither2`, so we cannot implement `apply` on `realizable` unless we have `realizable` expose something to continue and something to realize, otherwise we end up recursive
+
+
+
+
+
+            if (either.Decompose(out var left, out var right))
+            {
+                try
+                {
+                    return leftMap(left, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new LeftMapException(exception);
+                }
+            }
+            else
+            {
+                try
+                {
+                    return rightMap(right, ref context);
+                }
+                catch (Exception exception)
+                {
+                    throw new RightMapException(exception);
+                }
+            }
         }
 
-        public static Realizable<TResult> ApplyRef2<TEither, TLeft, TRight, TResult>(
+        private static bool Decompose2<TEither, TLeft, TRight>(this TEither either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            var context = true;
+            var tempLeft = default(TLeft);
+            var tempRight = default(TRight);
+            var result = either
+                .Apply(
+                    (TLeft value, ref bool nothing) =>
+                    {
+                        tempLeft = value;
+                        return new TaskWrapper<bool>(Task.FromResult(true));
+                    },
+                    (TRight value, ref bool nothing) =>
+                    {
+                        tempRight = value;
+                        return new TaskWrapper<bool>(Task.FromResult(false));
+                    },
+                    ref context);
+
+            left = tempLeft;
+            right = tempRight;
+            return result.ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        public static TResult ApplyRef2<TEither, TLeft, TRight, TResult>(
             this TEither either,
             Map2<TLeft, TResult> leftMap,
             Map2<TRight, TResult> rightMap)
@@ -1609,13 +1672,25 @@ public sealed class Test
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.Apply(
-                Convert17<TLeft, bool, TResult>(leftMap),
-                Convert17<TRight, bool, TResult>(rightMap),
-                ref EitherExtensions.Context);
+            TResult context = default!;
+            var result = either
+                .ApplyRef3(
+                    (TLeft left, ref TResult context) =>
+                    {
+                        context = leftMap(left);
+                        return true;
+                    },
+                    (TRight right, ref TResult context) =>
+                    {
+                        context = rightMap(right);
+                        return true;
+                    },
+                    ref context);
+
+            return context;
         }
 
-        public static Realizable<TResult> ApplyRef2<TEither, TLeft, TRight, TResult>(
+        public static TResult ApplyRef2<TEither, TLeft, TRight, TResult>(
             this Extensions<TEither, TLeft, TRight> extensions,
             Map2<TLeft, TResult> leftMap,
             Map2<TRight, TResult> rightMap)
@@ -1624,7 +1699,7 @@ public sealed class Test
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return ApplyRef2<TEither, TLeft, TRight, TResult>(extensions.Self, leftMap, rightMap);
+            return ApplyRef2(extensions.Self, leftMap, rightMap);
         }
     }
 
