@@ -807,16 +807,40 @@
 
                     this.responseContext = new ResponseContext(responseContent, buffer, read);
 
-                    var bufferSpan = new Span<byte>(this.responseContext.Buffer, 0, read);
-                    var reader = new Utf8JsonReader(bufferSpan);
+                    var reader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
 
+                    //// TODO all of this is wrong; `read` will be `false` when the buffer is used up
+                    //// TODO `read` can throw; when does it throw?
                     if (!reader.Read())
                     {
-                        var propertyName = reader.GetString();
-                        if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
-                        {
-                            reader.Read();
-                        }
+                        throw new Exception("TODO no JSON tokens");
+                    }
+
+                    var wasRead = true;
+                    //// TODO `read` can throw; when does it throw?
+                    while (reader.TokenType == JsonTokenType.Comment && (wasRead = reader.Read()))
+                    {
+                    }
+
+                    if (!wasRead)
+                    {
+                        throw new Exception("TODO there were only comments in the response JSON");
+                    }
+
+                    if (reader.TokenType != JsonTokenType.StartObject)
+                    {
+                        throw new Exception("TODO not valid OData");
+                    }
+
+                    reader.Read();
+
+
+
+
+                    var propertyName = reader.GetString();
+                    if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
+                    {
+                        reader.Read();
                     }
 
 
