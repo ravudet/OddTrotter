@@ -1641,9 +1641,9 @@ public sealed class Test
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            if (either.GetType().inter is IDecomposeMixin<TLeft, TRight, IDecomposed<TLeft, TRight>> decompose)
+            if (TryCastToDecompose<TEither, TLeft, TRight>(either, out var decomposeDelegate))
             {
-                var decomposed = decompose.Decompose(out var isLeft);
+                var decomposed = decomposeDelegate(either, out var isLeft);
                 left = decomposed.Left;
                 right = decomposed.Right;
                 return isLeft;
@@ -1670,10 +1670,17 @@ public sealed class Test
             return context.Item1;
         }
 
-        private delegate IDecomposed<TLeft, TRight> DecomposeDelegate<in TEither, out TLeft, out TRight>(TEither either)
+        private delegate IDecomposed<TLeft, TRight> DecomposeDelegate<in TEither, out TLeft, out TRight>(TEither either, out bool isLeft)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct;
 
-        private static bool TryCastToDecompose<T>(T, out Func<T, >)
+        private static bool TryCastToDecompose<TEither, TLeft, TRight>(TEither either, out DecomposeDelegate<TEither, TLeft, TRight> decomposeDelegate)
+            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
         {
+
         }
 
         private ref struct RefTuple<T1, T2, T3>
