@@ -1216,10 +1216,17 @@ public sealed class Test
 
 
     [AsyncMethodBuilder(typeof(RealizableMethodBuilder<>))]
-    public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>
+    public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>, IDecomposeMixin<T, ITask<T>, Realizable<T>.Decomposed>
         where T : allows ref struct
 	{
-		private readonly NullableRef<T> value;
+        public readonly ref struct Decomposed : IDecomposed<T, ITask<T>>
+        {
+            public T Left => throw new NotImplementedException();
+
+            public ITask<T> Right => throw new NotImplementedException();
+        }
+
+        private readonly NullableRef<T> value;
 		
 		private readonly ITask<T>? future;
 
@@ -1389,6 +1396,11 @@ public sealed class Test
             future = context.Item3;
             return context.Item1;
 		}
+
+        public Decomposed Decompose(out bool isLeft)
+        {
+            throw new NotImplementedException();
+        }
 
         private ref struct Context<T1, T2, T3>
             where T1 : allows ref struct
@@ -1680,7 +1692,7 @@ public sealed class Test
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-
+            throw new NotImplementedException("tODO");
         }
 
         private ref struct RefTuple<T1, T2, T3>

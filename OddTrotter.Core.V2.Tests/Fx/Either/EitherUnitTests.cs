@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Security.Cryptography;
     using System.Threading.Tasks;
@@ -12,6 +14,75 @@
     [TestClass]
     public class Tests
     {
+        [TestMethod]
+        public void ReflectionDecompose()
+        {
+            ReflectionDecompose(new Realizable<int>(100));
+        }
+
+        private void ReflectionDecompose<T>(T value)
+            where T : allows ref struct
+        {
+            var type = typeof(T);
+            var interfaces = type.GetInterfaces();
+
+            var @interface = interfaces.Where(@interface => @interface == typeof(IDecomposeMixin<,,>)).First();
+
+            var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) });
+            var methodInfos = type.GetMethods();
+            var typeMethodInfo = methodInfos.Where(methodInfo => methodInfo == interfaceMethodInfo).First();
+        }
+
+        /// <summary>
+        /// Given a lambda expression that calls a method, returns the method info.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public static MethodInfo GetMethodInfo(Expression<Action> expression)
+        {
+            return GetMethodInfo((LambdaExpression)expression);
+        }
+
+        /// <summary>
+        /// Given a lambda expression that calls a method, returns the method info.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
+        {
+            return GetMethodInfo((LambdaExpression)expression);
+        }
+
+        /// <summary>
+        /// Given a lambda expression that calls a method, returns the method info.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public static MethodInfo GetMethodInfo<T, TResult>(Expression<Func<T, TResult>> expression)
+        {
+            return GetMethodInfo((LambdaExpression)expression);
+        }
+
+        /// <summary>
+        /// Given a lambda expression that calls a method, returns the method info.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public static MethodInfo GetMethodInfo(LambdaExpression expression)
+        {
+            MethodCallExpression? outermostExpression = expression.Body as MethodCallExpression;
+
+            if (outermostExpression == null)
+            {
+                throw new ArgumentException("Invalid Expression. Expression should consist of a Method call only.");
+            }
+
+            return outermostExpression.Method;
+        }
+
         [TestMethod]
         public async Task AsyncRealizable()
         {
