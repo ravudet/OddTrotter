@@ -1398,9 +1398,23 @@ public sealed class Test
             return context.Item1;
 		}
 
+        public delegate Decomposed DecomposeDelegate(Realizable<T> either, out bool isLeft);
+
+        public DecomposeDelegate Delegate
+        {
+            get
+            {
+                return (Realizable<T> realizable, out bool isLeft) => realizable.Decompose(out isLeft);
+            }
+        }
+
         public Decomposed Decompose(out bool isLeft)
         {
             throw new NotImplementedException();
+        }
+
+        public TCast TryCast<TCast>()
+        {
         }
 
         private ref struct Context<T1, T2, T3>

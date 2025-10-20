@@ -29,9 +29,71 @@
             var @interface = interfaces.Where(@interface => @interface == typeof(IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>)).First();
 
             var interfaceMethodInfos = @interface.GetMethods();
-            var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) });
+            /*var parameterModifier = new ParameterModifier(1);
+            parameterModifier[0] = true;
+            var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) }, new[] { parameterModifier});*/
+            var interfaceMethodInfo = interfaceMethodInfos.First();
+
             var methodInfos = type.GetMethods();
-            var typeMethodInfo = methodInfos.Where(methodInfo => methodInfo == interfaceMethodInfo).First();
+            var typeMethodInfo = methodInfos
+                .Where(methodInfo =>
+                    methodInfo.Name == interfaceMethodInfo.Name &&
+                    methodInfo.GetParameters().Length == interfaceMethodInfo.GetParameters().Length)
+                .First();
+            ////.Where(methodInfo => methodInfo.MetadataToken == interfaceMethodInfo.MetadataToken)
+            //// TODO because the method is on a ref struct, it's harder to compare conventionally
+            /*.Where(methodInfo =>
+                methodInfo.ContainsGenericParameters == interfaceMethodInfo.ContainsGenericParameters &&
+                methodInfo
+                    .GetParameters()
+                    .Zip(interfaceMethodInfo.GetParameters())
+                    .All(parameterInfos => 
+                        parameterInfos.First.IsIn == parameterInfos.Second.IsIn &&
+                        parameterInfos.First.IsOut == parameterInfos.Second.IsOut &&
+                        parameterInfos.First.IsRetval == parameterInfos.Second.IsRetval &&
+                        //// parameterInfos.First.Name == parameterInfos.Second.Name &&
+                        parameterInfos.First.ParameterType == parameterInfos.Second.ParameterType &&
+                        parameterInfos.First.Position == parameterInfos.Second.Position
+                        ) &&
+                methodInfo.IsAbstract == interfaceMethodInfo.IsAbstract &&
+                methodInfo.IsConstructor == interfaceMethodInfo.IsConstructor &&
+                methodInfo.IsPrivate == interfaceMethodInfo.IsPrivate &&
+                methodInfo.IsPublic == interfaceMethodInfo.IsPublic &&
+                methodInfo.IsSpecialName == interfaceMethodInfo.IsSpecialName &&
+                methodInfo.IsStatic == interfaceMethodInfo.IsStatic &&
+                methodInfo.MemberType == interfaceMethodInfo.MemberType &&
+                methodInfo.Name == interfaceMethodInfo.Name &&
+                methodInfo.ReturnType == interfaceMethodInfo.ReturnType
+                )
+            .First();*/
+
+            ////
+            typeMethodInfo.Invoke(value, null);
+
+            ReflectionDecompose2(value);
+
+            new Placeholder<T>(value);
+        }
+
+        public readonly ref struct Placeholder<T> : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>
+            where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
+        {
+            private readonly T value;
+
+            public Placeholder(T value)
+            {
+                this.value = value;
+            }
+
+            public Realizable<int>.Decomposed Decompose(out bool isLeft)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private void ReflectionDecompose2<T>(T value)
+            where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
+        {
         }
 
         /// <summary>
