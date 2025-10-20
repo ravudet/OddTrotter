@@ -26,8 +26,9 @@
             var type = typeof(T);
             var interfaces = type.GetInterfaces();
 
-            var @interface = interfaces.Where(@interface => @interface == typeof(IDecomposeMixin<,,>)).First();
+            var @interface = interfaces.Where(@interface => @interface == typeof(IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>)).First();
 
+            var interfaceMethodInfos = @interface.GetMethods();
             var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) });
             var methodInfos = type.GetMethods();
             var typeMethodInfo = methodInfos.Where(methodInfo => methodInfo == interfaceMethodInfo).First();

@@ -1221,6 +1221,7 @@ public sealed class Test
 	{
         public readonly ref struct Decomposed : IDecomposed<T, ITask<T>>
         {
+            //// TODO you can have only two implmenetations of idecomposed, one is a ref struct and the other is a class (maybe a third for a struct?); so, idecomposed needs the internal interface member trick //// TODO actually, can't you just always use a ref struct?
             public T Left => throw new NotImplementedException();
 
             public ITask<T> Right => throw new NotImplementedException();
