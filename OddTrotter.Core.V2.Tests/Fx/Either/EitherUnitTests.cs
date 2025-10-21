@@ -6,7 +6,6 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-    using System.Security.Cryptography;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,6 +14,39 @@
     public class Tests
     {
         [TestMethod]
+        public async Task TryCast()
+        {
+            var realizable = new Realizable<int>(37);
+            if (realizable.TryCast<Realizable<int>.DecomposeDelegate>(out var decompose))
+            {
+                var decomposed = decompose(realizable, out var isLeft);
+                Assert.IsTrue(isLeft);
+                Assert.AreEqual(37, decomposed.Left);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
+
+            realizable = new Realizable<int>(Constant(41));
+            if (realizable.TryCast<Realizable<int>.DecomposeDelegate>(out decompose))
+            {
+                var decomposed = decompose(realizable, out var isLeft);
+                Assert.IsFalse(isLeft);
+                Assert.AreEqual(41, await decomposed.Right);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
+        }
+
+        private static async ITask<int> Constant(int value)
+        {
+            return await Task.FromResult(value).ConfigureAwait(false);
+        }
+
+        /*[TestMethod]
         public void ReflectionDecompose()
         {
             ReflectionDecompose(new Realizable<int>(100));
@@ -32,7 +64,7 @@
             /*var parameterModifier = new ParameterModifier(1);
             parameterModifier[0] = true;
             var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) }, new[] { parameterModifier});*/
-            var interfaceMethodInfo = interfaceMethodInfos.First();
+            /*var interfaceMethodInfo = interfaceMethodInfos.First();
 
             var methodInfos = type.GetMethods();
             var typeMethodInfo = methodInfos
@@ -68,7 +100,7 @@
             .First();*/
 
             ////
-            typeMethodInfo.Invoke(value, null);
+            /*typeMethodInfo.Invoke(value, null);
 
             ReflectionDecompose2(value);
 
@@ -94,7 +126,7 @@
         private void ReflectionDecompose2<T>(T value)
             where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
         {
-        }
+        }*/
 
         /// <summary>
         /// Given a lambda expression that calls a method, returns the method info.

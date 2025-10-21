@@ -1221,10 +1221,24 @@ public sealed class Test
 	{
         public readonly ref struct Decomposed : IDecomposed<T, ITask<T>>
         {
-            //// TODO you can have only two implmenetations of idecomposed, one is a ref struct and the other is a class (maybe a third for a struct?); so, idecomposed needs the internal interface member trick //// TODO actually, can't you just always use a ref struct?
-            public T Left => throw new NotImplementedException();
+            public Decomposed(T left)
+            {
+                this.Left = left;
 
-            public ITask<T> Right => throw new NotImplementedException();
+                this.Right = default!;
+            }
+
+            public Decomposed(ITask<T> right)
+            {
+                this.Right = right;
+
+                this.Left = default!;
+            }
+
+            //// TODO you can have only two implmenetations of idecomposed, one is a ref struct and the other is a class (maybe a third for a struct?); so, idecomposed needs the internal interface member trick //// TODO actually, can't you just always use a ref struct?
+            public T Left { get; }
+
+            public ITask<T> Right { get; }
         }
 
         private readonly NullableRef<T> value;
@@ -1410,11 +1424,33 @@ public sealed class Test
 
         public Decomposed Decompose(out bool isLeft)
         {
-            throw new NotImplementedException();
+            if (this.value.TryGetValue(out var realized))
+            {
+                isLeft = true;
+                return new Decomposed(realized);
+            }
+            else if (this.future != null)
+            {
+                isLeft = false;
+                return new Decomposed(this.future);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
         }
 
-        public TCast TryCast<TCast>()
+        public bool TryCast<TCast>([MaybeNullWhen(false)] [NotNullWhen(true)] out TCast cast)
         {
+            if (typeof(TCast) == typeof(DecomposeDelegate))
+            {
+                DecomposeDelegate @delegate = (Realizable<T> either, out bool isLeft) => either.Decompose(out isLeft);
+                cast = (TCast)(object)@delegate;
+                return true;
+            }
+
+            cast = default;
+            return false;
         }
 
         private ref struct Context<T1, T2, T3>
