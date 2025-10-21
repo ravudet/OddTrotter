@@ -1453,6 +1453,40 @@ public sealed class Test
             return false;
         }
 
+        public bool TryCast2<TCast>([MaybeNullWhen(false)][NotNullWhen(true)] out TCast cast)
+            where TCast : IEither2<T, ITask<T>>
+        {
+            if (typeof(TCast) == typeof(IDecomposable<Realizable<T>>))
+            {
+                cast = (TCast)(IEither2<T, ITask<T>>)new Decomposable();
+                return true;
+            }
+
+            cast = default;
+            return false;
+        }
+
+        private sealed class Decomposable : IDecomposable<Realizable<T>>
+        {
+            public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<ITask<T>, TContext, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+
+            public Decomposed Decompose(Realizable<T> either, out bool isLeft)
+            {
+                return either.Decompose(out isLeft);
+            }
+        }
+
+        public interface IDecomposable<TEither> : IEither2<T, ITask<T>>
+            where TEither : IEither2<T, ITask<T>>, allows ref struct
+        {
+            Decomposed Decompose(TEither either, out bool isLeft);
+        }
+
         private ref struct Context<T1, T2, T3>
             where T1 : allows ref struct
             where T2 : allows ref struct

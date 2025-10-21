@@ -46,6 +46,34 @@
             return await Task.FromResult(value).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task TryCast2()
+        {
+            var realizable = new Realizable<int>(37);
+            if (realizable.TryCast2<Realizable<int>.IDecomposable<Realizable<int>>>(out var decompose))
+            {
+                var decomposed = decompose.Decompose(realizable, out var isLeft);
+                Assert.IsTrue(isLeft);
+                Assert.AreEqual(37, decomposed.Left);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
+
+            realizable = new Realizable<int>(Constant(41));
+            if (realizable.TryCast2<Realizable<int>.IDecomposable<Realizable<int>>>(out decompose))
+            {
+                var decomposed = decompose.Decompose(realizable, out var isLeft);
+                Assert.IsFalse(isLeft);
+                Assert.AreEqual(41, await decomposed.Right);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
+        }
+
         /*[TestMethod]
         public void ReflectionDecompose()
         {
@@ -64,69 +92,69 @@
             /*var parameterModifier = new ParameterModifier(1);
             parameterModifier[0] = true;
             var interfaceMethodInfo = @interface.GetMethod("Decompose", new[] { typeof(bool) }, new[] { parameterModifier});*/
-            /*var interfaceMethodInfo = interfaceMethodInfos.First();
+        /*var interfaceMethodInfo = interfaceMethodInfos.First();
 
-            var methodInfos = type.GetMethods();
-            var typeMethodInfo = methodInfos
-                .Where(methodInfo =>
-                    methodInfo.Name == interfaceMethodInfo.Name &&
-                    methodInfo.GetParameters().Length == interfaceMethodInfo.GetParameters().Length)
-                .First();
-            ////.Where(methodInfo => methodInfo.MetadataToken == interfaceMethodInfo.MetadataToken)
-            //// TODO because the method is on a ref struct, it's harder to compare conventionally
-            /*.Where(methodInfo =>
-                methodInfo.ContainsGenericParameters == interfaceMethodInfo.ContainsGenericParameters &&
-                methodInfo
-                    .GetParameters()
-                    .Zip(interfaceMethodInfo.GetParameters())
-                    .All(parameterInfos => 
-                        parameterInfos.First.IsIn == parameterInfos.Second.IsIn &&
-                        parameterInfos.First.IsOut == parameterInfos.Second.IsOut &&
-                        parameterInfos.First.IsRetval == parameterInfos.Second.IsRetval &&
-                        //// parameterInfos.First.Name == parameterInfos.Second.Name &&
-                        parameterInfos.First.ParameterType == parameterInfos.Second.ParameterType &&
-                        parameterInfos.First.Position == parameterInfos.Second.Position
-                        ) &&
-                methodInfo.IsAbstract == interfaceMethodInfo.IsAbstract &&
-                methodInfo.IsConstructor == interfaceMethodInfo.IsConstructor &&
-                methodInfo.IsPrivate == interfaceMethodInfo.IsPrivate &&
-                methodInfo.IsPublic == interfaceMethodInfo.IsPublic &&
-                methodInfo.IsSpecialName == interfaceMethodInfo.IsSpecialName &&
-                methodInfo.IsStatic == interfaceMethodInfo.IsStatic &&
-                methodInfo.MemberType == interfaceMethodInfo.MemberType &&
+        var methodInfos = type.GetMethods();
+        var typeMethodInfo = methodInfos
+            .Where(methodInfo =>
                 methodInfo.Name == interfaceMethodInfo.Name &&
-                methodInfo.ReturnType == interfaceMethodInfo.ReturnType
-                )
-            .First();*/
+                methodInfo.GetParameters().Length == interfaceMethodInfo.GetParameters().Length)
+            .First();
+        ////.Where(methodInfo => methodInfo.MetadataToken == interfaceMethodInfo.MetadataToken)
+        //// TODO because the method is on a ref struct, it's harder to compare conventionally
+        /*.Where(methodInfo =>
+            methodInfo.ContainsGenericParameters == interfaceMethodInfo.ContainsGenericParameters &&
+            methodInfo
+                .GetParameters()
+                .Zip(interfaceMethodInfo.GetParameters())
+                .All(parameterInfos => 
+                    parameterInfos.First.IsIn == parameterInfos.Second.IsIn &&
+                    parameterInfos.First.IsOut == parameterInfos.Second.IsOut &&
+                    parameterInfos.First.IsRetval == parameterInfos.Second.IsRetval &&
+                    //// parameterInfos.First.Name == parameterInfos.Second.Name &&
+                    parameterInfos.First.ParameterType == parameterInfos.Second.ParameterType &&
+                    parameterInfos.First.Position == parameterInfos.Second.Position
+                    ) &&
+            methodInfo.IsAbstract == interfaceMethodInfo.IsAbstract &&
+            methodInfo.IsConstructor == interfaceMethodInfo.IsConstructor &&
+            methodInfo.IsPrivate == interfaceMethodInfo.IsPrivate &&
+            methodInfo.IsPublic == interfaceMethodInfo.IsPublic &&
+            methodInfo.IsSpecialName == interfaceMethodInfo.IsSpecialName &&
+            methodInfo.IsStatic == interfaceMethodInfo.IsStatic &&
+            methodInfo.MemberType == interfaceMethodInfo.MemberType &&
+            methodInfo.Name == interfaceMethodInfo.Name &&
+            methodInfo.ReturnType == interfaceMethodInfo.ReturnType
+            )
+        .First();*/
 
-            ////
-            /*typeMethodInfo.Invoke(value, null);
+        ////
+        /*typeMethodInfo.Invoke(value, null);
 
-            ReflectionDecompose2(value);
+        ReflectionDecompose2(value);
 
-            new Placeholder<T>(value);
+        new Placeholder<T>(value);
+    }
+
+    public readonly ref struct Placeholder<T> : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>
+        where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
+    {
+        private readonly T value;
+
+        public Placeholder(T value)
+        {
+            this.value = value;
         }
 
-        public readonly ref struct Placeholder<T> : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>
-            where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
+        public Realizable<int>.Decomposed Decompose(out bool isLeft)
         {
-            private readonly T value;
-
-            public Placeholder(T value)
-            {
-                this.value = value;
-            }
-
-            public Realizable<int>.Decomposed Decompose(out bool isLeft)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
+    }
 
-        private void ReflectionDecompose2<T>(T value)
-            where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
-        {
-        }*/
+    private void ReflectionDecompose2<T>(T value)
+        where T : IDecomposeMixin<int, ITask<int>, Realizable<int>.Decomposed>, allows ref struct
+    {
+    }*/
 
         /// <summary>
         /// Given a lambda expression that calls a method, returns the method info.
