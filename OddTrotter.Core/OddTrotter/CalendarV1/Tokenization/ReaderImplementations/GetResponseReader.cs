@@ -769,7 +769,20 @@
                 public int BytesConsumed { get; set; } //// TODO this being mutable is not ideal
             }
 
-            private static void Read(ref ResponseContext responseContext, ref Utf8JsonReader jsonReader)
+            private static Utf8JsonReader ToUtf8JsonReader(ResponseContext responseContext)
+            {
+                return new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
+            }
+
+            /// <summary>
+            /// TODO better docs
+            /// if it returns <see langword="true"/>, keep using <paramref name="jsonReader"/>, otherwise create a new one from the return <see cref="ResponseContext"/>
+            /// </summary>
+            /// <param name="responseContext"></param>
+            /// <param name="jsonReader"></param>
+            /// <returns></returns>
+            /// <exception cref="Exception"></exception>
+            private static Task<(bool, ResponseContext)> Read2(ResponseContext responseContext, ref Utf8JsonReader jsonReader)
             {
                 bool read;
                 try
@@ -781,16 +794,43 @@
                     throw new Exception("TODO", jsonException);
                 }
 
-                if (!read)
+                if (read)
                 {
-                    // we couldn't read either because we have consumed the whole buffer, or because the buffer is not large enough for the current JSON token
+                    responseContext.BytesConsumed = (int)jsonReader.BytesConsumed;
+                    return Task.FromResult((true, default(ResponseContext)!));
+                }
 
-                    // let's start by assuming that we just consumed the whole buffer
-                    var remainder = (int)(responseContext.BufferValidity - jsonReader.BytesConsumed); //// TODO off by 1?
-                    Array.Copy(responseContext.Buffer, (int)jsonReader.BytesConsumed, responseContext.Buffer, 0, remainder);
-                    var bytesRead = responseContext.ResponseContent.Read(responseContext.Buffer, remainder, responseContext.Buffer.Length - remainder);
-                    responseContext = new ResponseContext(responseContext.ResponseContent, responseContext.Buffer, bytesRead);
+                return ReadMore(responseContext, (int)jsonReader.BytesConsumed);
+            }
 
+            private static async Task<(bool, ResponseContext)> ReadMore(ResponseContext responseContext, int bytesConsumed) //// TODO it would have been cool for this to return `task<responsecontext>`, but that would mean in the caller you need to be able to convert `(bool, task<responsecontext>)` to `task<(bool, responsecontext)>` and you were too lazy to figure that out in the first go, so instead this method always returns `(false, {something})`
+            {
+                // we couldn't read either because we have consumed the whole buffer, or because the buffer is not large enough for the current JSON token
+
+                // let's start by assuming that we just consumed the whole buffer
+                var remainder = responseContext.BufferValidity - bytesConsumed; //// TODO off by 1?
+                Array.Copy(responseContext.Buffer, bytesConsumed, responseContext.Buffer, 0, remainder);
+                var bytesRead = await responseContext.ResponseContent.ReadAsync(responseContext.Buffer, remainder, responseContext.Buffer.Length - remainder).ConfigureAwait(false);
+                responseContext = new ResponseContext(responseContext.ResponseContent, responseContext.Buffer, bytesRead);
+
+                bool read;
+                var jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
+                try
+                {
+                    read = jsonReader.Read();
+                }
+                catch (JsonException jsonException)
+                {
+                    throw new Exception("TODO", jsonException);
+                }
+
+                // if we still can't read, we need to increase the size of the buffer until we *can* read (or we run out of memory)
+                while (!read)
+                {
+                    var oldBuffer = responseContext.Buffer;
+                    Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
+                    bytesRead = await responseContext.ResponseContent.ReadAsync(oldBuffer, responseContext.BufferValidity, oldBuffer.Length - responseContext.BufferValidity + 1).ConfigureAwait(false);
+                    responseContext = new ResponseContext(responseContext.ResponseContent, oldBuffer, responseContext.BufferValidity + bytesRead);
                     jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
                     try
                     {
@@ -800,25 +840,9 @@
                     {
                         throw new Exception("TODO", jsonException);
                     }
-
-                    // if we still can't read, we need to increase the size of the buffer until we *can* read (or we run out of memory)
-                    while (!read)
-                    {
-                        var oldBuffer = responseContext.Buffer;
-                        Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
-                        bytesRead = responseContext.ResponseContent.Read(oldBuffer, responseContext.BufferValidity, oldBuffer.Length - responseContext.BufferValidity + 1); //// TODO make this async
-                        responseContext = new ResponseContext(responseContext.ResponseContent, oldBuffer, responseContext.BufferValidity + bytesRead);
-                        jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
-                        try
-                        {
-                            read = jsonReader.Read();
-                        }
-                        catch (JsonException jsonException)
-                        {
-                            throw new Exception("TODO", jsonException);
-                        }
-                    }
                 }
+
+                return (false, responseContext);
             }
 
             private sealed class GetResponseBodyReader : IGetResponseBodyReader
@@ -858,15 +882,26 @@
                     // TODO https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/use-utf8jsonreader
 
                     var buffer = new byte[500]; //// TODO configurable size
-                    var bytesRead = responseContent.Read(buffer, 0, buffer.Length);
+                    var bytesRead = await responseContent.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 
                     this.responseContext = new ResponseContext(responseContent, buffer, bytesRead);
 
                     var jsonReader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
-                    GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
+                    var (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                    if (!read)
+                    {
+                        this.responseContext = newResponseContext;
+                        jsonReader = ToUtf8JsonReader(this.responseContext);
+                    }
+
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
+                        (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                        if (!read)
+                        {
+                            this.responseContext = newResponseContext;
+                            jsonReader = ToUtf8JsonReader(this.responseContext);
+                        }
                     }
 
                     if (jsonReader.TokenType != JsonTokenType.StartObject)
@@ -874,10 +909,20 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
+                    (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                    if (!read)
+                    {
+                        this.responseContext = newResponseContext;
+                        jsonReader = ToUtf8JsonReader(this.responseContext);
+                    }
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
+                        (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                        if (!read)
+                        {
+                            this.responseContext = newResponseContext;
+                            jsonReader = ToUtf8JsonReader(this.responseContext);
+                        }
                     }
 
                     //// TODO this could actually also be the end of the object, e.g. a single-valued response that doesn't need a context where no properties were selected
@@ -932,8 +977,11 @@
                         if (jsonReader.TokenType == JsonTokenType.EndObject)
                         {
                             // there was no content in the response, e.g. a single-valued response that doesn't need a context where no properties were selected
-
+                            this.responseContext = this.consumedResponseContext;
+                            return;
                         }
+
+
 
                         /*var propertyName = jsonReader.GetString();
                         if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
@@ -1053,6 +1101,10 @@
 
                     public sealed class GetResponseBodyAfterOdataContextReader : IGetResponseBodyAfterOdataContextReader
                     {
+                        public GetResponseBodyAfterOdataContextReader()
+                        {
+                        }
+
                         public ValueTask Read()
                         {
                             throw new NotImplementedException();
