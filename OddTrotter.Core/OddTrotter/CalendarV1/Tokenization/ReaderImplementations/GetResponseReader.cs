@@ -4,6 +4,7 @@
     using System.Buffers;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Formats.Asn1;
     using System.IO;
     using System.Net.Http;
     using System.Runtime.InteropServices.JavaScript;
@@ -755,6 +756,8 @@
                     ResponseContent = responseContent;
                     Buffer = buffer;
                     BufferValidity = bufferValidity;
+
+                    this.BytesConsumed = 0;
                 }
 
                 public Stream ResponseContent { get; }
@@ -762,6 +765,60 @@
                 public byte[] Buffer { get; }
 
                 public int BufferValidity { get; }
+
+                public ulong BytesConsumed { get; set; } //// TODO this being mutable is not ideal
+            }
+
+            private static void Read(ref ResponseContext responseContext, ref Utf8JsonReader jsonReader)
+            {
+                bool read;
+                try
+                {
+                    read = jsonReader.Read();
+                }
+                catch (JsonException jsonException)
+                {
+                    throw new Exception("TODO", jsonException);
+                }
+
+                if (!read)
+                {
+                    // we couldn't read either because we have consumed the whole buffer, or because the buffer is not large enough for the current JSON token
+
+                    // let's start by assuming that we just consumed the whole buffer
+                    var remainder = (int)(responseContext.BufferValidity - jsonReader.BytesConsumed); //// TODO off by 1?
+                    Array.Copy(responseContext.Buffer, (int)jsonReader.BytesConsumed, responseContext.Buffer, 0, remainder);
+                    var bytesRead = responseContext.ResponseContent.Read(responseContext.Buffer, remainder, responseContext.Buffer.Length - remainder);
+                    responseContext = new ResponseContext(responseContext.ResponseContent, responseContext.Buffer, bytesRead);
+
+                    jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
+                    try
+                    {
+                        read = jsonReader.Read();
+                    }
+                    catch (JsonException jsonException)
+                    {
+                        throw new Exception("TODO", jsonException);
+                    }
+
+                    // if we still can't read, we need to increase the size of the buffer until we *can* read (or we run out of memory)
+                    while (!read)
+                    {
+                        var oldBuffer = responseContext.Buffer;
+                        Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
+                        bytesRead = responseContext.ResponseContent.Read(oldBuffer, responseContext.BufferValidity, oldBuffer.Length - responseContext.BufferValidity + 1);
+                        responseContext = new ResponseContext(responseContext.ResponseContent, oldBuffer, responseContext.BufferValidity + bytesRead);
+                        jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
+                        try
+                        {
+                            read = jsonReader.Read();
+                        }
+                        catch (JsonException jsonException)
+                        {
+                            throw new Exception("TODO", jsonException);
+                        }
+                    }
+                }
             }
 
             private sealed class GetResponseBodyReader : IGetResponseBodyReader
@@ -778,63 +835,6 @@
                 {
                     this.httpResponseMessage = httpResponseMessage;
                     this.dispositionManager = dispositionManager;
-                }
-
-                private void Read(ref Utf8JsonReader jsonReader)
-                {
-                    if (this.responseContext == null)
-                    {
-                        throw new Exception("tODO");
-                    }
-
-                    bool read;
-                    try
-                    {
-                        read = jsonReader.Read();
-                    }
-                    catch (JsonException jsonException)
-                    {
-                        throw new Exception("TODO", jsonException);
-                    }
-
-                    if (!read)
-                    {
-                        // we couldn't read either because we have consumed the whole buffer, or because the buffer is not large enough for the current JSON token
-
-                        // let's start by assuming that we just consumed the whole buffer
-                        var remainder = (int)(this.responseContext.BufferValidity - jsonReader.BytesConsumed); //// TODO off by 1?
-                        Array.Copy(this.responseContext.Buffer, (int)jsonReader.BytesConsumed, this.responseContext.Buffer, 0, remainder);
-                        var bytesRead = this.responseContext.ResponseContent.Read(this.responseContext.Buffer, remainder, this.responseContext.Buffer.Length - remainder);
-                        this.responseContext = new ResponseContext(this.responseContext.ResponseContent, this.responseContext.Buffer, bytesRead);
-
-                        jsonReader = new Utf8JsonReader(this.responseContext.Buffer.AsSpan(0, this.responseContext.BufferValidity));
-                        try
-                        {
-                            read = jsonReader.Read();
-                        }
-                        catch (JsonException jsonException)
-                        {
-                            throw new Exception("TODO", jsonException);
-                        }
-
-                        // if we still can't read, we need to increase the size of the buffer until we *can* read (or we run out of memory)
-                        while (!read)
-                        {
-                            var oldBuffer = this.responseContext.Buffer;
-                            Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
-                            bytesRead = this.responseContext.ResponseContent.Read(oldBuffer, this.responseContext.BufferValidity, oldBuffer.Length - this.responseContext.BufferValidity + 1);
-                            this.responseContext = new ResponseContext(this.responseContext.ResponseContent, oldBuffer, this.responseContext.BufferValidity + bytesRead);
-                            jsonReader = new Utf8JsonReader(this.responseContext.Buffer.AsSpan(0, this.responseContext.BufferValidity));
-                            try
-                            {
-                                read = jsonReader.Read();
-                            }
-                            catch (JsonException jsonException)
-                            {
-                                throw new Exception("TODO", jsonException);
-                            }
-                        }
-                    }
                 }
 
                 //[MemberNotNull(nameof(this.responseContext))]
@@ -867,10 +867,10 @@
                     this.responseContext = new ResponseContext(responseContent, buffer, bytesRead);
 
                     var jsonReader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
-                    Read(ref jsonReader);
+                    GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        Read(ref jsonReader);
+                        GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
                     }
 
                     if (jsonReader.TokenType != JsonTokenType.StartObject)
@@ -878,10 +878,10 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    Read(ref jsonReader);
+                    GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        Read(ref jsonReader);
+                        GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
                     }
 
                     if (jsonReader.TokenType != JsonTokenType.PropertyName)
@@ -889,13 +889,7 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    //// TODO this goes into the next reader
-                    var propertyName = jsonReader.GetString();
-                    if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
-                    {
-                        jsonReader.Read();
-                    }
-
+                    this.responseContext.BytesConsumed = (ulong)jsonReader.BytesConsumed;
                 }
 
                 public IOdataContextReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
@@ -904,6 +898,123 @@
                     {
                         moved = false;
                         return default!;
+                    }
+
+                    moved = true;
+                    return new OdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
+                }
+
+                private sealed class OdataContextReader : IOdataContextReader<IGetResponseBodyAfterOdataContextReader>
+                {
+                    private readonly HttpResponseMessage httpResponseMessage;
+
+                    private readonly IDispositionManager dispositionManager;
+
+                    private ResponseContext responseContext;
+
+                    public OdataContextReader(
+                        HttpResponseMessage httpResponseMessage,
+                        IDispositionManager dispositionManager,
+                        ResponseContext responseContext)
+                    {
+                        this.httpResponseMessage = httpResponseMessage;
+                        this.dispositionManager = dispositionManager;
+                        this.responseContext = responseContext;
+                    }
+
+                    public ValueTask Read()
+                    {
+                        /*var propertyName = jsonReader.GetString();
+                        if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
+                        {
+                            jsonReader.Read();
+                        }*/
+                        throw new NotImplementedException();
+                    }
+
+                    public IOdataContextToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    private abstract class OdataContextToken : IOdataContextToken<IGetResponseBodyAfterOdataContextReader>
+                    {
+                        private OdataContextToken()
+                        {
+                        }
+
+                        public TResult Apply<TResult>(Func<IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader>, TResult> odataContextUrlReader, Func<IGetResponseBodyAfterOdataContextReader, TResult> nextReader)
+                        {
+                            return new DelegateVisitor<TResult, Nothing>(odataContextUrlReader, nextReader).Visit(this, new Nothing());
+                        }
+
+                        private sealed class DelegateVisitor<TResult, TContext> : Visitor<TResult, TContext>
+                        {
+                            private readonly Func<IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader>, TResult> odataContextUrlReader;
+                            private readonly Func<IGetResponseBodyAfterOdataContextReader, TResult> nextReader;
+
+                            public DelegateVisitor(Func<IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader>, TResult> odataContextUrlReader, Func<IGetResponseBodyAfterOdataContextReader, TResult> nextReader)
+                            {
+                                this.odataContextUrlReader = odataContextUrlReader;
+                                this.nextReader = nextReader;
+                            }
+
+                            protected internal override TResult Accept(OdataContextUrl node, TContext context)
+                            {
+                                return this.odataContextUrlReader(node.OdataContextUrlReader);
+                            }
+
+                            protected internal override TResult Accept(GetResponseBodyAfterOdataContext node, TContext context)
+                            {
+                                return this.nextReader(node.GetResponseBodyAfterOdataContextReader);
+                            }
+                        }
+
+                        protected abstract TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context);
+
+                        public abstract class Visitor<TResult, TContext>
+                        {
+                            public TResult Visit(OdataContextToken node, TContext context)
+                            {
+                                ArgumentNullException.ThrowIfNull(node);
+
+                                return node.Dispatch(this, context);
+                            }
+
+                            protected internal abstract TResult Accept(OdataContextUrl node, TContext context);
+
+                            protected internal abstract TResult Accept(GetResponseBodyAfterOdataContext node, TContext context);
+                        }
+
+                        public sealed class OdataContextUrl : OdataContextToken
+                        {
+                            public OdataContextUrl(IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader> odataContextUrlReader)
+                            {
+                                OdataContextUrlReader = odataContextUrlReader;
+                            }
+
+                            public IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader> OdataContextUrlReader { get; }
+
+                            protected override TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context)
+                            {
+                                return visitor.Accept(this, context);
+                            }
+                        }
+
+                        public sealed class GetResponseBodyAfterOdataContext : OdataContextToken
+                        {
+                            public GetResponseBodyAfterOdataContext(IGetResponseBodyAfterOdataContextReader getResponseBodyAfterOdataContextReader)
+                            {
+                                GetResponseBodyAfterOdataContextReader = getResponseBodyAfterOdataContextReader;
+                            }
+
+                            public IGetResponseBodyAfterOdataContextReader GetResponseBodyAfterOdataContextReader { get; }
+
+                            protected override TResult Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, TContext context)
+                            {
+                                return visitor.Accept(this, context);
+                            }
+                        }
                     }
                 }
             }
