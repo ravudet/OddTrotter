@@ -855,10 +855,6 @@
                         throw new Exception("TODO create a custom exception type and document this");
                     }
 
-
-                    //// TODO you are here playing around with this stuff; you actually need to be doing this in the iodatacontextreader, though
-                    //// TODO you should read into the initial JSON object, *then* pass to odatacontextreader; the odatacontextreader should be able to be re-used in sitautions where it isn't reading a response body
-
                     // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/use-utf8jsonreader
 
                     var buffer = new byte[500]; //// TODO configurable size
