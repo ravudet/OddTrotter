@@ -884,6 +884,7 @@
                         GetResponseHeadersReader.Read(ref this.responseContext, ref jsonReader);
                     }
 
+                    //// TODO this could actually also be the end of the object, e.g. a single-valued response that doesn't need a context where no properties were selected
                     if (jsonReader.TokenType != JsonTokenType.PropertyName)
                     {
                         throw new Exception("tODO not a valid odata payload");
@@ -1014,6 +1015,37 @@
                             {
                                 return visitor.Accept(this, context);
                             }
+                        }
+                    }
+
+                    public sealed class OdataContextUrlReader : IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader>
+                    {
+                        public ValueTask Read()
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        public OdataContextUrl TryGetValue(out bool moved)
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    public sealed class GetResponseBodyAfterOdataContextReader : IGetResponseBodyAfterOdataContextReader
+                    {
+                        public ValueTask Read()
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        public IGetResponseBodyAfterOdataContextToken TryMoveNext(out bool moved)
+                        {
+                            throw new NotImplementedException();
                         }
                     }
                 }
