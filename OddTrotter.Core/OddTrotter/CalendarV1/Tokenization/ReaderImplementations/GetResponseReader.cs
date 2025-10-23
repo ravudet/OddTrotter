@@ -766,7 +766,7 @@
 
                 public int BufferValidity { get; }
 
-                public ulong BytesConsumed { get; set; } //// TODO this being mutable is not ideal
+                public int BytesConsumed { get; set; } //// TODO this being mutable is not ideal
             }
 
             private static void Read(ref ResponseContext responseContext, ref Utf8JsonReader jsonReader)
@@ -806,7 +806,7 @@
                     {
                         var oldBuffer = responseContext.Buffer;
                         Array.Resize(ref oldBuffer, oldBuffer.Length * 2); //// TODO make the resizing configurable
-                        bytesRead = responseContext.ResponseContent.Read(oldBuffer, responseContext.BufferValidity, oldBuffer.Length - responseContext.BufferValidity + 1);
+                        bytesRead = responseContext.ResponseContent.Read(oldBuffer, responseContext.BufferValidity, oldBuffer.Length - responseContext.BufferValidity + 1); //// TODO make this async
                         responseContext = new ResponseContext(responseContext.ResponseContent, oldBuffer, responseContext.BufferValidity + bytesRead);
                         jsonReader = new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
                         try
@@ -890,7 +890,7 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    this.responseContext.BytesConsumed = (ulong)jsonReader.BytesConsumed;
+                    this.responseContext.BytesConsumed = (int)jsonReader.BytesConsumed;
                 }
 
                 public IOdataContextReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
@@ -911,7 +911,9 @@
 
                     private readonly IDispositionManager dispositionManager;
 
-                    private ResponseContext responseContext;
+                    private readonly ResponseContext consumedResponseContext;
+
+                    private ResponseContext? responseContext;
 
                     public OdataContextReader(
                         HttpResponseMessage httpResponseMessage,
@@ -920,11 +922,23 @@
                     {
                         this.httpResponseMessage = httpResponseMessage;
                         this.dispositionManager = dispositionManager;
-                        this.responseContext = responseContext;
+                        this.consumedResponseContext = responseContext;
                     }
 
                     public ValueTask Read()
                     {
+                        if (this.responseContext != null)
+                        {
+                            return;
+                        }
+
+                        var jsonReader = new Utf8JsonReader(this.consumedResponseContext.Buffer.AsSpan(this.consumedResponseContext.BytesConsumed, this.consumedResponseContext.BufferValidity - this.consumedResponseContext.BytesConsumed));
+                        if (jsonReader.TokenType == JsonTokenType.EndObject)
+                        {
+                            // there was no content in the response, e.g. a single-valued response that doesn't need a context where no properties were selected
+
+                        }
+
                         /*var propertyName = jsonReader.GetString();
                         if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
                         {
@@ -935,7 +949,12 @@
 
                     public IOdataContextToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                     {
-                        throw new NotImplementedException();
+                        if (this.responseContext == null)
+                        {
+                            moved = false;
+                            return default!;
+                        }
+
                     }
 
                     private abstract class OdataContextToken : IOdataContextToken<IGetResponseBodyAfterOdataContextReader>
