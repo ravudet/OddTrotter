@@ -10,9 +10,6 @@ namespace Fx.Either
     using System.Threading.Tasks;
     using System.Transactions;
 
-    using static Fx.Either.Playground;
-    using static Fx.Either2.Playground;
-
     public interface IEither<out TLeft, out TRight> //// TODO these generics can allow ref struct without the concrete implementation allowing ref struct or the extension methods allowing ref struct
     {
         /// <summary>
@@ -1216,9 +1213,9 @@ public sealed class Test
 
 
     [AsyncMethodBuilder(typeof(RealizableMethodBuilder<>))]
-    public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>, IDecomposeMixin<T, ITask<T>, Realizable<T>.Decomposed>
+    public readonly ref struct Realizable<T> : IEither2<T, ITask<T>>, IDecomposeMixin<T, ITask<T>, Realizable<T>.Decomposed>, IEither2Mixable
         where T : allows ref struct
-	{
+    {
         public readonly ref struct Decomposed : IDecomposed<T, ITask<T>>
         {
             public Decomposed(T left)
@@ -1242,8 +1239,8 @@ public sealed class Test
         }
 
         private readonly NullableRef<T> value;
-		
-		private readonly ITask<T>? future;
+
+        private readonly ITask<T>? future;
 
         private readonly Task tracker;
 
@@ -1353,7 +1350,7 @@ public sealed class Test
         {
             if (this.value.TryGetValue(out var realized))
             {
-                return 
+                return
                     leftMap(realized, ref context) //// TODO you also need to wrap the call to `leftmap` and `rightmap`
                     .ContinueWith(result =>
                     {
@@ -1362,14 +1359,14 @@ public sealed class Test
                             return result.Value;
                         }
                         else
-                        { 
+                        {
                             throw new LeftMapException(result.Exception);
                         }
                     });
             }
             else if (this.future != null)
             {
-                return 
+                return
                     rightMap(this.future, ref context)
                     .ContinueWith(result =>
                     {
@@ -1389,8 +1386,8 @@ public sealed class Test
             }
         }
 
-        public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)] [MaybeNullWhen(true)] out ITask<T> future)
-		{
+        public bool TryRealize([MaybeNullWhen(false)] out T realized, [NotNullWhen(false)][MaybeNullWhen(true)] out ITask<T> future)
+        {
             var context = new Context<bool, T, ITask<T>>();
             var result = this.Apply(
                 (T left, ref Context<bool, T, ITask<T>> context) =>
@@ -1410,7 +1407,7 @@ public sealed class Test
             realized = context.Item2;
             future = context.Item3;
             return context.Item1;
-		}
+        }
 
         public delegate Decomposed DecomposeDelegate(Realizable<T> either, out bool isLeft);
 
@@ -1440,7 +1437,7 @@ public sealed class Test
             }
         }
 
-        public bool TryCast<TCast>([MaybeNullWhen(false)] [NotNullWhen(true)] out TCast cast)
+        public bool TryCast<TCast>([MaybeNullWhen(false)][NotNullWhen(true)] out TCast cast)
         {
             if (typeof(TCast) == typeof(DecomposeDelegate))
             {
@@ -1481,10 +1478,45 @@ public sealed class Test
             }
         }
 
-        public interface IDecomposable<TEither> : IEither2<T, ITask<T>>
+        public interface IDecomposable<TEither> : IEither2Mixin, IEither2<T, ITask<T>>
             where TEither : IEither2<T, ITask<T>>, allows ref struct
         {
             Decomposed Decompose(TEither either, out bool isLeft);
+        }
+
+        public TMixin TryCast<TMixin>(out bool casted)
+            where TMixin : IEither2Mixin
+        {
+            if (typeof(TMixin) == typeof(IDecomposable2<Realizable<T>, T, ITask<T>>))
+            {
+                casted = true;
+                return (TMixin)(IDecomposable2<Realizable<T>, T, ITask<T>>)Decomposable2.Instance;
+            }
+
+            casted = false;
+            return default!;
+        }
+
+        public sealed class Decomposable2 : IDecomposable2<Realizable<T>, T, ITask<T>>
+        {
+            private Decomposable2()
+            {
+            }
+
+            public static Decomposable2 Instance { get; } = new Decomposable2();
+
+            public Decomposed2<T, ITask<T>> Decompose(Realizable<T> either, out bool isLeft)
+            {
+                var decomposed = either.Decompose(out isLeft);
+                if (isLeft)
+                {
+                    return new Decomposed2<T, ITask<T>>(decomposed.Left);
+                }
+                else
+                {
+                    return new Decomposed2<T, ITask<T>>(decomposed.Right);
+                }
+            }
         }
 
         private ref struct Context<T1, T2, T3>
@@ -1504,7 +1536,50 @@ public sealed class Test
                 return new Extensions<Realizable<T>, T, ITask<T>>(this);
             }
         }
-	}
+    }
+
+    public interface IDecomposable2<in TEither, TLeft, TRight> : IEither2Mixin
+        where TEither : IEither2<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        Decomposed2<TLeft, TRight> Decompose(TEither either, out bool isLeft); //// TODO should this return a generic that implements an interface so that tleft and tright can be covariant?
+    }
+
+    public readonly ref struct Decomposed2<TLeft, TRight>
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        public Decomposed2(TLeft left)
+        {
+            this.Left = left;
+
+            this.Right = default!;
+        }
+
+        public Decomposed2(TRight right)
+        {
+            this.Right = right;
+
+            this.Left = default!;
+        }
+
+        //// TODO you can have only two implmenetations of idecomposed, one is a ref struct and the other is a class (maybe a third for a struct?); so, idecomposed needs the internal interface member trick //// TODO actually, can't you just always use a ref struct?
+        public TLeft Left { get; }
+
+        public TRight Right { get; }
+    }
+
+    public interface IEither2Mixable
+    {
+        //// TODO there's no covariance, so doing the backwards try doesn't make sense
+        TMixin TryCast<TMixin>(out bool casted) //// TODO this should be on the `ieither` interface, i think; it seems like it would simplify the extensions methods
+            where TMixin : IEither2Mixin; // does not allow ref struct; we want interfaces, not concrete implementations
+    }
+
+    public interface IEither2Mixin
+    {
+    }
 
     public interface IEither2<out TLeft, out TRight> 
         where TLeft : allows ref struct 
@@ -1696,7 +1771,7 @@ public sealed class Test
             RefContextualizedMap2<TLeft, TContext, TResult> leftMap,
             RefContextualizedMap2<TRight, TContext, TResult> rightMap,
             ref TContext context)
-            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TEither : IEither2<TLeft, TRight>, IEither2Mixable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
@@ -1709,7 +1784,7 @@ public sealed class Test
 
 
 
-            if (either.Decompose2<TEither, TLeft, TRight>(out var left, out var right))
+            if (either.Decompose3<TEither, TLeft, TRight>(out var left, out var right))
             {
                 try
                 {
@@ -1731,6 +1806,41 @@ public sealed class Test
                     throw new RightMapException(exception);
                 }
             }
+        }
+
+        private static bool Decompose3<TEither, TLeft, TRight>(this TEither either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+            where TEither : IEither2<TLeft, TRight>, IEither2Mixable, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            var decomposable = either.TryCast<IDecomposable2<TEither, TLeft, TRight>>(out var casted);
+            if (casted)
+            {
+                var decomposed = decomposable.Decompose(either, out var isLeft);
+                left = decomposed.Left;
+                right = decomposed.Right;
+                return isLeft;
+            }
+
+            var context = new RefTuple<bool, TLeft, TRight>();
+            var result = either.Apply(
+                (TLeft left, ref RefTuple<bool, TLeft, TRight> context) =>
+                {
+                    context.Item1 = true;
+                    context.Item2 = left;
+                    return new Realizable<bool>(true);
+                },
+                (TRight right, ref RefTuple<bool, TLeft, TRight> context) =>
+                {
+                    context.Item1 = false;
+                    context.Item3 = right;
+                    return new Realizable<bool>(true);
+                },
+                ref context);
+
+            left = context.Item2;
+            right = context.Item3;
+            return context.Item1;
         }
 
         private static bool Decompose2<TEither, TLeft, TRight>(this TEither either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
@@ -1794,7 +1904,7 @@ public sealed class Test
             this TEither either,
             Map2<TLeft, TResult> leftMap,
             Map2<TRight, TResult> rightMap)
-            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TEither : IEither2<TLeft, TRight>, IEither2Mixable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
@@ -1821,7 +1931,7 @@ public sealed class Test
             this Extensions<TEither, TLeft, TRight> extensions,
             Map2<TLeft, TResult> leftMap,
             Map2<TRight, TResult> rightMap)
-            where TEither : IEither2<TLeft, TRight>, allows ref struct
+            where TEither : IEither2<TLeft, TRight>, IEither2Mixable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
@@ -1830,7 +1940,7 @@ public sealed class Test
         }
     }
 
-    public interface IDecomposeMixin<out TLeft, out TRight, out TDecomposed>
+    public interface IDecomposeMixin<out TLeft, out TRight, out TDecomposed> : IEither2Mixin
         where TLeft : allows ref struct
         where TRight : allows ref struct
         where TDecomposed : IDecomposed<TLeft, TRight>, allows ref struct
