@@ -1492,7 +1492,15 @@ public sealed class Test
                 casted = true;
                 return (TMixin)(IDecomposable2<Realizable<T>, T, ITask<T>>)Decomposable2.Instance;
             }
-            else if (typeof(TMixin) == typeof(Decomposable5<Realizable<T>, T, ITask<T>>))
+            
+            casted = false;
+            return default!;
+        }
+
+        public TMixin TryCast5<TMixin>(out bool casted)
+            where TMixin : IEither2Mixin5<Realizable<T>, TMixin>
+        {
+            if (typeof(TMixin) == typeof(Decomposable5<Realizable<T>, T, ITask<T>>))
             {
                 //// TODO can you make this work so that the caller can just take the return value and say `decompose` instead of leaking that it's all basically static?
                 /*casted = true;
@@ -1543,6 +1551,21 @@ public sealed class Test
             }
         }
     }
+
+
+    public interface IEither2Mixin5<TEither, TMixin>
+        where TEither : allows ref struct
+        where TMixin : IEither2Mixin5<TEither, TMixin>, allows ref struct
+    {
+        static abstract TMixin Create<THelper>(TEither either, THelper helper)
+            where THelper : IEither2MixinHelper<TEither>;
+    }
+
+    public interface IEither2MixinHelper<TEither>
+        where TEither : allows ref struct
+    {
+    }
+
     public interface IDecomposer5<in TEither, TLeft, TRight>
         where TEither : IEither2<TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct
@@ -1551,7 +1574,7 @@ public sealed class Test
         Decomposed2<TLeft, TRight> Decompose(TEither either, out bool isLeft); //// TODO should this return a generic that implements an interface so that tleft and tright can be covariant?
     }
 
-    public readonly ref struct Decomposable5<TEither, TLeft, TRight> : IEither2Mixin
+    public readonly ref struct Decomposable5<TEither, TLeft, TRight> : IEither2Mixin5<TEither, Decomposable5<TEither, TLeft, TRight>>
         where TEither : IEither2<TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct
         where TRight : allows ref struct
@@ -1565,6 +1588,11 @@ public sealed class Test
         }
 
         public TEither Either { get; }
+
+        public static Decomposable5<TEither, TLeft, TRight> Create<THelper>(TEither either, THelper helper) where THelper : IEither2MixinHelper<TEither>
+        {
+            return new Decomposable5<TEither, TLeft, TRight>(either, helper);
+        }
 
         public Decomposed2<TLeft, TRight> Decompose(out bool isLeft)
         {
