@@ -1018,7 +1018,7 @@
                         if (this.responseContext == this.consumedResponseContext)
                         {
                             moved = true;
-                            return new OdataContextToken.GetResponseBodyAfterOdataContext(new GetResponseBodyAfterOdataContextReader());
+                            return new OdataContextToken.GetResponseBodyAfterOdataContext(new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                         }
 
                         moved = true;
@@ -1223,11 +1223,54 @@
                             {
                                 return;
                             }
+
+                            var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                            var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader).ConfigureAwait(false);
+                            if (!read)
+                            {
+                                this.responseContext = newResponseContext;
+                                jsonReader = ToUtf8JsonReader(this.responseContext);
+                            }
+                            else
+                            {
+                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                            }
+
+                            this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                            //// TODO you need to skip all of the comments (you forgot to do this in the previous reader too)
+                            if (jsonReader.TokenType != JsonTokenType.PropertyName)
+                            {
+                                throw new Exception("TODO invalid odata payload");
+                            }
                         }
 
                         public IGetResponseBodyAfterOdataContextToken TryMoveNext(out bool moved)
                         {
-                            throw new NotImplementedException();
+                            if (this.responseContext == null)
+                            {
+                                moved = false;
+                                return default!;
+                            }
+
+                            var jsonReader = ToUtf8JsonReader(this.responseContext);
+                            if (jsonReader.TokenType != JsonTokenType.PropertyName)
+                            {
+                                throw new Exception("TODO this would be a bug in the internal consistency");
+                            }
+
+                            var propertyName = jsonReader.GetString();
+                            if (propertyName == null)
+                            {
+                                throw new Exception("tODO invalid odata payload"); //// TODO really, trymovenext shouldn't throw for invald payloads
+                            }
+
+                            //// TODO you recently added several TODOs because you weren't able to access the documentation; go through all of those
+
+                            //// TODO not sure if root annotations can actually start with "@"; i don't think the can, and the below code is written under that assumption
+                            if (propertyName.StartsWith('@'))
+                            {
+                            }
                         }
 
                         private abstract class GetResponseBodyAfterOdataContextToken : IGetResponseBodyAfterOdataContextToken
