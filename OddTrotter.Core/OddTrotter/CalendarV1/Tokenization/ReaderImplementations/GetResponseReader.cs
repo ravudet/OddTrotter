@@ -1277,7 +1277,7 @@
                             {
                                 //// TODO not sure if root annotations can actually start with "@"; i don't think they can, and the below code is written under that assumption
                                 moved = true;
-                                return new GetResponseBodyAfterOdataContextToken.ResponseRootControlInformation(new ResponseRootControlInformationReader());
+                                return new GetResponseBodyAfterOdataContextToken.ResponseRootControlInformation(new ResponseRootControlInformationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
                             }
 
                             if (propertyName.Contains('@'))
@@ -1343,9 +1343,58 @@
 
                         private sealed class ResponseRootControlInformationReader : IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>
                         {
-                            public ValueTask Read()
+                            private readonly HttpResponseMessage httpResponseMessage;
+
+                            private readonly IDispositionManager dispositionManager;
+
+                            private readonly ResponseContext consumedResponseContext;
+
+                            private ResponseContext? responseContext;
+
+                            public ResponseRootControlInformationReader(
+                                HttpResponseMessage httpResponseMessage,
+                                IDispositionManager dispositionManager,
+                                ResponseContext responseContext)
                             {
-                                throw new NotImplementedException();
+                                this.httpResponseMessage = httpResponseMessage;
+                                this.dispositionManager = dispositionManager;
+                                this.consumedResponseContext = responseContext;
+                            }
+
+                            public async ValueTask Read()
+                            {
+                                if (this.responseContext != null)
+                                {
+                                    return;
+                                }
+
+                                //// TODO you messed this up, you are reading the control information name at the moment
+                                var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                if (!read)
+                                {
+                                    this.responseContext = newResponseContext;
+                                    jsonReader = ToUtf8JsonReader(this.responseContext);
+                                }
+                                else
+                                {
+                                    this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                }
+
+                                this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                //// TODO can control information be something besides a string?
+                                if (jsonReader.TokenType != JsonTokenType.String)
+                                {
+                                    throw new Exception("TODO not a valid odata payload");
+                                }
+
+                                var propertyValue = jsonReader.GetString();
+                                if (propertyValue == null)
+                                {
+                                    //// TODO can any control information 
+                                    throw new Exception("TODO not a valid odata payload");
+                                }
                             }
 
                             public IResponseRootControlInformationToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
