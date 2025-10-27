@@ -1193,24 +1193,131 @@
                             }
 
                             moved = true;
-                            return new GetResponseBodyAfterOdataContextReader();
+                            return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                         }
                     }
 
                     public sealed class GetResponseBodyAfterOdataContextReader : IGetResponseBodyAfterOdataContextReader
                     {
-                        public GetResponseBodyAfterOdataContextReader()
+                        private readonly HttpResponseMessage httpResponseMessage; //// TODO i think at some point you don't need the response message anymore
+
+                        private readonly IDispositionManager dispositionManager;
+
+                        private readonly ResponseContext consumedResponseContext;
+
+                        private ResponseContext? responseContext;
+
+                        public GetResponseBodyAfterOdataContextReader(
+                            HttpResponseMessage httpResponseMessage,
+                            IDispositionManager dispositionManager,
+                            ResponseContext responseContext)
                         {
+                            this.httpResponseMessage = httpResponseMessage;
+                            this.dispositionManager = dispositionManager;
+                            this.consumedResponseContext = responseContext;
                         }
 
-                        public ValueTask Read()
+                        public async ValueTask Read()
                         {
-                            throw new NotImplementedException();
+                            if (this.responseContext != null)
+                            {
+                                return;
+                            }
                         }
 
                         public IGetResponseBodyAfterOdataContextToken TryMoveNext(out bool moved)
                         {
                             throw new NotImplementedException();
+                        }
+
+                        private abstract class GetResponseBodyAfterOdataContextToken : IGetResponseBodyAfterOdataContextToken
+                        {
+                            private GetResponseBodyAfterOdataContextToken()
+                            {
+                            }
+
+                            public TResult Apply<TResult>(Func<IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootControlInformationReader, Func<IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> responseRootAnnotationReader, Func<IPropertyReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyReader, Func<Nothing, TResult> terminal)
+                            {
+                                throw new NotImplementedException("TODO");
+                            }
+
+                            public sealed class ResponseRootControlInformation : GetResponseBodyAfterOdataContextToken
+                            {
+                                public ResponseRootControlInformation(IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader> responseRootControlInformationReader)
+                                {
+                                    ResponseRootControlInformationReader = responseRootControlInformationReader;
+                                }
+
+                                public IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader> ResponseRootControlInformationReader { get; }
+                            }
+
+                            public sealed class ResponseRootAnnotation : GetResponseBodyAfterOdataContextToken
+                            {
+                                public ResponseRootAnnotation(IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader> responseRootAnnotationReader)
+                                {
+                                    ResponseRootAnnotationReader = responseRootAnnotationReader;
+                                }
+
+                                public IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader> ResponseRootAnnotationReader { get; }
+                            }
+
+                            public sealed class Property : GetResponseBodyAfterOdataContextToken
+                            {
+                                public Property(IPropertyReader<IGetResponseBodyAfterOdataContextReader> propertyReader)
+                                {
+                                    PropertyReader = propertyReader;
+                                }
+
+                                public IPropertyReader<IGetResponseBodyAfterOdataContextReader> PropertyReader { get; }
+                            }
+
+                            public sealed class Terminal : GetResponseBodyAfterOdataContextToken
+                            {
+                                private Terminal()
+                                {
+                                }
+
+                                public static Terminal Instance { get; } = new Terminal();
+                            }
+                        }
+
+                        private sealed class ResponseRootControlInformationReader : IResponseRootControlInformationReader<IGetResponseBodyAfterOdataContextReader>
+                        {
+                            public ValueTask Read()
+                            {
+                                throw new NotImplementedException();
+                            }
+
+                            public IResponseRootControlInformationToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                            {
+                                throw new NotImplementedException();
+                            }
+                        }
+
+                        public sealed class ResponseRootAnnotationReader : IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>
+                        {
+                            public ValueTask Read()
+                            {
+                                throw new NotImplementedException();
+                            }
+
+                            public IResponseRootAnnotationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                            {
+                                throw new NotImplementedException();
+                            }
+                        }
+
+                        public sealed class PropertyReader : IPropertyReader<IGetResponseBodyAfterOdataContextReader>
+                        {
+                            public ValueTask Read()
+                            {
+                                throw new NotImplementedException();
+                            }
+
+                            public IPropertyNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                            {
+                                throw new NotImplementedException();
+                            }
                         }
                     }
                 }
