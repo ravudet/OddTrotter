@@ -766,7 +766,7 @@
 
                 public int BufferValidity { get; }
 
-                public int BytesConsumed { get; set; } //// TODO this being mutable is not ideal
+                public long BytesConsumed { get; set; } //// TODO this being mutable is not ideal
             }
 
             private static Utf8JsonReader ToUtf8JsonReader(ResponseContext responseContext)
@@ -796,7 +796,7 @@
 
                 if (read)
                 {
-                    responseContext.BytesConsumed = (int)jsonReader.BytesConsumed;
+                    responseContext.BytesConsumed = jsonReader.BytesConsumed;
                     return Task.FromResult((true, default(ResponseContext)!));
                 }
 
@@ -931,7 +931,7 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    this.responseContext.BytesConsumed = (int)jsonReader.BytesConsumed;
+                    this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
                 }
 
                 public IOdataContextReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
@@ -970,24 +970,31 @@
                     {
                         if (this.responseContext != null)
                         {
-                            return;
+                            return ValueTask.CompletedTask;
                         }
 
-                        var jsonReader = new Utf8JsonReader(this.consumedResponseContext.Buffer.AsSpan(this.consumedResponseContext.BytesConsumed, this.consumedResponseContext.BufferValidity - this.consumedResponseContext.BytesConsumed));
+                        var jsonReader = new Utf8JsonReader(this.consumedResponseContext.Buffer.AsSpan((int)this.consumedResponseContext.BytesConsumed, this.consumedResponseContext.BufferValidity - (int)this.consumedResponseContext.BytesConsumed));
                         if (jsonReader.TokenType == JsonTokenType.EndObject)
                         {
                             // there was no content in the response, e.g. a single-valued response that doesn't need a context where no properties were selected
                             this.responseContext = this.consumedResponseContext;
-                            return;
+                            return ValueTask.CompletedTask;
                         }
 
                         if (jsonReader.TokenType == JsonTokenType.PropertyName)
                         {
                             //// TODO are we case sensitive? if so, use reader.valuetextequals
                             var propertyName = jsonReader.GetString();
-                            if (string.Equals(propertyName, "@odata.context", StringComparison.OrdinalIgnoreCase))
+                            if (!string.Equals(propertyName, "@odata.context", StringComparison.OrdinalIgnoreCase))
                             {
-                                jsonReader.Read();
+                                this.responseContext = this.consumedResponseContext; //// TODO this is going to result in the property reader reading the property name a second time, since we aren't passing the value that we just read
+                                return ValueTask.CompletedTask;
+                            }
+                            else
+                            {
+                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+                                return ValueTask.CompletedTask;
                             }
                         }
 
