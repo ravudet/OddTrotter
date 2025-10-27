@@ -15,6 +15,12 @@
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
 
+    using Stash;
+
+
+    //// TODO when do you give the caller the http status code?
+
+
     public sealed class GetResponseReader : IGetResponseReader
     {
         private readonly HttpResponseMessage httpResponseMessage;
@@ -771,7 +777,7 @@
 
             private static Utf8JsonReader ToUtf8JsonReader(ResponseContext responseContext)
             {
-                return new Utf8JsonReader(responseContext.Buffer.AsSpan(0, responseContext.BufferValidity));
+                return new Utf8JsonReader(responseContext.Buffer.AsSpan((int)responseContext.BytesConsumed, responseContext.BufferValidity - (int)responseContext.BytesConsumed));
             }
 
             /// <summary>
@@ -782,7 +788,7 @@
             /// <param name="jsonReader"></param>
             /// <returns></returns>
             /// <exception cref="Exception"></exception>
-            private static Task<(bool, ResponseContext)> Read2(ResponseContext responseContext, ref Utf8JsonReader jsonReader)
+            private static Task<(bool, ResponseContext)> ConsumeNextToken(ResponseContext responseContext, ref Utf8JsonReader jsonReader)
             {
                 bool read;
                 try
@@ -887,7 +893,7 @@
                     this.responseContext = new ResponseContext(responseContent, buffer, bytesRead);
 
                     var jsonReader = new Utf8JsonReader(buffer.AsSpan(0, this.responseContext.BufferValidity));
-                    var (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                    var (read, newResponseContext) = await GetResponseHeadersReader.ConsumeNextToken(this.responseContext, ref jsonReader).ConfigureAwait(false);
                     if (!read)
                     {
                         this.responseContext = newResponseContext;
@@ -896,7 +902,7 @@
 
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                        (read, newResponseContext) = await GetResponseHeadersReader.ConsumeNextToken(this.responseContext, ref jsonReader).ConfigureAwait(false);
                         if (!read)
                         {
                             this.responseContext = newResponseContext;
@@ -909,7 +915,7 @@
                         throw new Exception("tODO not a valid odata payload");
                     }
 
-                    (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                    (read, newResponseContext) = await GetResponseHeadersReader.ConsumeNextToken(this.responseContext, ref jsonReader).ConfigureAwait(false);
                     if (!read)
                     {
                         this.responseContext = newResponseContext;
@@ -917,7 +923,7 @@
                     }
                     while (jsonReader.TokenType == JsonTokenType.Comment)
                     {
-                        (read, newResponseContext) = await GetResponseHeadersReader.Read2(this.responseContext, ref jsonReader).ConfigureAwait(false);
+                        (read, newResponseContext) = await GetResponseHeadersReader.ConsumeNextToken(this.responseContext, ref jsonReader).ConfigureAwait(false);
                         if (!read)
                         {
                             this.responseContext = newResponseContext;
@@ -1016,7 +1022,7 @@
                         }
 
                         moved = true;
-                        return new OdataContextToken.OdataContextUrl(new OdataContextUrlReader());
+                        return new OdataContextToken.OdataContextUrl(new OdataContextUrlReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
                     }
 
                     private abstract class OdataContextToken : IOdataContextToken<IGetResponseBodyAfterOdataContextReader>
@@ -1101,19 +1107,93 @@
 
                     public sealed class OdataContextUrlReader : IOdataContextUrlReader<IGetResponseBodyAfterOdataContextReader>
                     {
-                        public ValueTask Read()
+                        private readonly HttpResponseMessage httpResponseMessage; //// TODO i think at some point you don't need the response message anymore
+
+                        private readonly IDispositionManager dispositionManager;
+
+                        private readonly ResponseContext consumedResponseContext;
+
+                        private ResponseContext? responseContext;
+
+                        public OdataContextUrlReader(
+                            HttpResponseMessage httpResponseMessage,
+                            IDispositionManager dispositionManager,
+                            ResponseContext responseContext)
                         {
-                            throw new NotImplementedException();
+                            this.httpResponseMessage = httpResponseMessage;
+                            this.dispositionManager = dispositionManager;
+                            this.consumedResponseContext = responseContext;
+                        }
+
+                        public async ValueTask Read()
+                        {
+                            if (this.responseContext != null)
+                            {
+                                return;
+                            }
+
+                            var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                            var (read, newResponseContext) = await GetResponseHeadersReader.ConsumeNextToken(this.consumedResponseContext, ref jsonReader).ConfigureAwait(false);
+                            if (!read)
+                            {
+                                this.responseContext = newResponseContext;
+                                jsonReader = ToUtf8JsonReader(this.responseContext);
+                            }
+                            else
+                            {
+                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                            }
+
+                            this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                            //// TODO what do you want the behavior to be if we throw, but htey call read again? nothing will change, but as written, the initial null check will result in the second call not throwing
+                            if (jsonReader.TokenType != JsonTokenType.String)
+                            {
+                                throw new Exception("TODO invalid odata payload");
+                            }
                         }
 
                         public OdataContextUrl TryGetValue(out bool moved)
                         {
-                            throw new NotImplementedException();
+                            if (this.responseContext == null)
+                            {
+                                moved = false;
+                                return default!;
+                            }
+
+                            var jsonReader = ToUtf8JsonReader(this.responseContext);
+
+                            if (jsonReader.TokenType != JsonTokenType.String)
+                            {
+                                throw new Exception("TODO this would a bug in the internal consistency of the reader");
+                            }
+
+                            var propertyValue = jsonReader.GetString();
+                            if (propertyValue == null)
+                            {
+                                throw new Exception("TODO invalid odata payload, i think; look at the documentation");
+                            }
+
+                            moved = true;
+                            return new OdataContextUrl(propertyValue);
                         }
 
                         public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
                         {
-                            throw new NotImplementedException();
+                            if (this.responseContext == null)
+                            {
+                                moved = false;
+                                return default!;
+                            }
+
+                            this.TryGetValue(out moved);
+                            if (!moved)
+                            {
+                                return default!;
+                            }
+
+                            moved = true;
+                            return new GetResponseBodyAfterOdataContextReader();
                         }
                     }
 

@@ -19,8 +19,11 @@
 
     public sealed class OdataContextUrl
     {
-        private OdataContextUrl()
+        internal OdataContextUrl(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 }
