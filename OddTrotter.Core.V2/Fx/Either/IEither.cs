@@ -1492,6 +1492,12 @@ public sealed class Test
                 casted = true;
                 return (TMixin)(IDecomposable2<Realizable<T>, T, ITask<T>>)Decomposable2.Instance;
             }
+            else if (typeof(TMixin) == typeof(Decomposable5<Realizable<T>, T, ITask<T>>))
+            {
+                //// TODO can you make this work so that the caller can just take the return value and say `decompose` instead of leaking that it's all basically static?
+                /*casted = true;
+                return (TMixin)(IEither2Mixin)new Decomposable5<Realizable<T>, T, ITask<T>>(this, null);*/
+            }
 
             casted = false;
             return default!;
@@ -1537,6 +1543,36 @@ public sealed class Test
             }
         }
     }
+    public interface IDecomposer5<in TEither, TLeft, TRight>
+        where TEither : IEither2<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        Decomposed2<TLeft, TRight> Decompose(TEither either, out bool isLeft); //// TODO should this return a generic that implements an interface so that tleft and tright can be covariant?
+    }
+
+    public readonly ref struct Decomposable5<TEither, TLeft, TRight> : IEither2Mixin
+        where TEither : IEither2<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        private readonly IDecomposer5<TEither, TLeft, TRight> decomposer;
+
+        public Decomposable5(TEither either, IDecomposer5<TEither, TLeft, TRight> decomposer)
+        {
+            this.Either = either;
+            this.decomposer = decomposer;
+        }
+
+        public TEither Either { get; }
+
+        public Decomposed2<TLeft, TRight> Decompose(out bool isLeft)
+        {
+            return this.decomposer.Decompose(this.Either, out isLeft);
+        }
+    }
+
+
 
     public interface IDecomposable2<in TEither, TLeft, TRight> : IEither2Mixin
         where TEither : IEither2<TLeft, TRight>, allows ref struct
