@@ -925,9 +925,9 @@
                         }
                     }
 
-                    //// TODO this could actually also be the end of the object, e.g. a single-valued response that doesn't need a context where no properties were selected
-                    if (jsonReader.TokenType != JsonTokenType.PropertyName)
+                    if (jsonReader.TokenType != JsonTokenType.PropertyName && jsonReader.TokenType != JsonTokenType.EndObject)
                     {
+                        //// this could actually also be the end of the object, e.g. a single-valued response that doesn't need a context where no properties were selected
                         throw new Exception("tODO not a valid odata payload");
                     }
 
@@ -981,14 +981,17 @@
                             return;
                         }
 
-
-
-                        /*var propertyName = jsonReader.GetString();
-                        if (string.Equals(propertyName, "@odata.context")) //// TODO are we case sensitive? if so, use reader.valuetextequals
+                        if (jsonReader.TokenType == JsonTokenType.PropertyName)
                         {
-                            jsonReader.Read();
-                        }*/
-                        throw new NotImplementedException();
+                            //// TODO are we case sensitive? if so, use reader.valuetextequals
+                            var propertyName = jsonReader.GetString();
+                            if (string.Equals(propertyName, "@odata.context", StringComparison.OrdinalIgnoreCase))
+                            {
+                                jsonReader.Read();
+                            }
+                        }
+
+                        throw new Exception("TODO not valid payload; actually, internally inconsistent state across your implementation");
                     }
 
                     public IOdataContextToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
@@ -998,6 +1001,14 @@
                             moved = false;
                             return default!;
                         }
+
+                        if (this.responseContext == this.consumedResponseContext)
+                        {
+                            moved = true;
+                            return new OdataContextToken.GetResponseBodyAfterOdataContext(null);
+                        }
+
+
 
                     }
 
