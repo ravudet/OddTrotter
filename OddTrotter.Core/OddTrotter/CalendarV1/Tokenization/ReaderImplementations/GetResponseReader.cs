@@ -1012,11 +1012,11 @@
                         if (this.responseContext == this.consumedResponseContext)
                         {
                             moved = true;
-                            return new OdataContextToken.GetResponseBodyAfterOdataContext(null);
+                            return new OdataContextToken.GetResponseBodyAfterOdataContext(new GetResponseBodyAfterOdataContextReader());
                         }
 
-
-
+                        moved = true;
+                        return new OdataContextToken.OdataContextUrl(new OdataContextUrlReader());
                     }
 
                     private abstract class OdataContextToken : IOdataContextToken<IGetResponseBodyAfterOdataContextReader>
