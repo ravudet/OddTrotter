@@ -1239,7 +1239,7 @@
                             this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
 
                             //// TODO you need to skip all of the comments (you forgot to do this in the previous reader too)
-                            if (jsonReader.TokenType != JsonTokenType.PropertyName)
+                            if (jsonReader.TokenType != JsonTokenType.PropertyName && jsonReader.TokenType != JsonTokenType.EndObject)
                             {
                                 throw new Exception("TODO invalid odata payload");
                             }
@@ -1254,6 +1254,12 @@
                             }
 
                             var jsonReader = ToUtf8JsonReader(this.responseContext);
+                            if (jsonReader.TokenType == JsonTokenType.EndObject)
+                            {
+                                moved = true;
+                                return GetResponseBodyAfterOdataContextToken.Terminal.Instance;
+                            }
+
                             if (jsonReader.TokenType != JsonTokenType.PropertyName)
                             {
                                 throw new Exception("TODO this would be a bug in the internal consistency");
@@ -1267,10 +1273,21 @@
 
                             //// TODO you recently added several TODOs because you weren't able to access the documentation; go through all of those
 
-                            //// TODO not sure if root annotations can actually start with "@"; i don't think the can, and the below code is written under that assumption
                             if (propertyName.StartsWith('@'))
                             {
+                                //// TODO not sure if root annotations can actually start with "@"; i don't think they can, and the below code is written under that assumption
+                                moved = true;
+                                return new GetResponseBodyAfterOdataContextToken.ResponseRootControlInformation(new ResponseRootControlInformationReader());
                             }
+
+                            if (propertyName.Contains('@'))
+                            {
+                                moved = true;
+                                return new GetResponseBodyAfterOdataContextToken.ResponseRootAnnotation(new ResponseRootAnnotationReader());
+                            }
+
+                            moved = true;
+                            return new GetResponseBodyAfterOdataContextToken.Property(new PropertyReader());
                         }
 
                         private abstract class GetResponseBodyAfterOdataContextToken : IGetResponseBodyAfterOdataContextToken
