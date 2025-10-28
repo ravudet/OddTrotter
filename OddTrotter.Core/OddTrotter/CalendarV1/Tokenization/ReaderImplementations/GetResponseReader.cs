@@ -1349,8 +1349,6 @@
 
                             private readonly ResponseContext consumedResponseContext;
 
-                            private ResponseContext? responseContext;
-
                             public ResponseRootControlInformationReader(
                                 HttpResponseMessage httpResponseMessage,
                                 IDispositionManager dispositionManager,
@@ -1361,45 +1359,118 @@
                                 this.consumedResponseContext = responseContext;
                             }
 
-                            public async ValueTask Read()
+                            public ValueTask Read()
                             {
-                                if (this.responseContext != null)
-                                {
-                                    return;
-                                }
-
-                                //// TODO you messed this up, you are reading the control information name at the moment
-                                var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
-                                var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
-                                if (!read)
-                                {
-                                    this.responseContext = newResponseContext;
-                                    jsonReader = ToUtf8JsonReader(this.responseContext);
-                                }
-                                else
-                                {
-                                    this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
-                                }
-
-                                this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
-
-                                //// TODO can control information be something besides a string?
-                                if (jsonReader.TokenType != JsonTokenType.String)
-                                {
-                                    throw new Exception("TODO not a valid odata payload");
-                                }
-
-                                var propertyValue = jsonReader.GetString();
-                                if (propertyValue == null)
-                                {
-                                    //// TODO can any control information 
-                                    throw new Exception("TODO not a valid odata payload");
-                                }
+                                return ValueTask.CompletedTask;
                             }
 
                             public IResponseRootControlInformationToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                             {
-                                throw new NotImplementedException();
+                                var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                if (jsonReader.TokenType != JsonTokenType.PropertyName)
+                                {
+                                    throw new Exception("TODO bug in internal consistency; is this really the correct place to check this?");
+                                }
+
+                                var propertyName = jsonReader.GetString();
+                                if (
+                                    string.Equals(propertyName, "@odata.nextLink", StringComparison.Ordinal) || 
+                                    string.Equals(propertyName, "@nextLink"))
+                                {
+                                    moved = true;
+                                    return new ResponseRootControlInformationToken.ResponseRootNextLink(new ResponseRootNextLinkReader());
+                                }
+
+                                moved = true;
+                                return new ResponseRootControlInformationToken.ResponseRootUnknownControlInformation(new ResponseRootUnknownControlInformationReader());
+                            }
+
+                            private abstract class ResponseRootControlInformationToken : IResponseRootControlInformationToken<IGetResponseBodyAfterOdataContextReader>
+                            {
+                                private ResponseRootControlInformationToken()
+                                {
+                                }
+
+                                public TResult Apply<TResult>(Func<IResponseRootNextLinkReader<IGetResponseBodyAfterOdataContextReader>, TResult> nextLinkReader, Func<IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> unknownControlInformationReader)
+                                {
+                                    throw new NotImplementedException();
+                                }
+
+                                public sealed class ResponseRootNextLink : ResponseRootControlInformationToken
+                                {
+                                    public ResponseRootNextLink(IResponseRootNextLinkReader<IGetResponseBodyAfterOdataContextReader> responseRootNextLinkReader)
+                                    {
+                                        ResponseRootNextLinkReader = responseRootNextLinkReader;
+                                    }
+
+                                    public IResponseRootNextLinkReader<IGetResponseBodyAfterOdataContextReader> ResponseRootNextLinkReader { get; }
+                                }
+
+                                public sealed class ResponseRootUnknownControlInformation : ResponseRootControlInformationToken
+                                {
+                                    public ResponseRootUnknownControlInformation(IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader> responseRootUnknownControlInformationReader)
+                                    {
+                                        ResponseRootUnknownControlInformationReader = responseRootUnknownControlInformationReader;
+                                    }
+
+                                    public IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader> ResponseRootUnknownControlInformationReader { get; } //// TODO can you just always name these properties `Reader` as a convention?
+                                }
+                            }
+
+                            private sealed class ResponseRootNextLinkReader : IResponseRootNextLinkReader<IGetResponseBodyAfterOdataContextReader>
+                            {
+                                public ValueTask Read()
+                                {
+
+                                    /*var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                    if (!read)
+                                    {
+                                        this.responseContext = newResponseContext;
+                                        jsonReader = ToUtf8JsonReader(this.responseContext);
+                                    }
+                                    else
+                                    {
+                                        this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                    }
+
+                                    this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                    //// TODO can control information be something besides a string?
+                                    if (jsonReader.TokenType != JsonTokenType.String)
+                                    {
+                                        throw new Exception("TODO not a valid odata payload");
+                                    }
+
+                                    var propertyValue = jsonReader.GetString();
+                                    if (propertyValue == null)
+                                    {
+                                        //// TODO can any control information 
+                                        throw new Exception("TODO not a valid odata payload");
+                                    }*/
+                                }
+
+                                public NextLink TryGetValue(out bool moved)
+                                {
+                                    throw new NotImplementedException();
+                                }
+
+                                public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+
+                            public sealed class ResponseRootUnknownControlInformationReader : IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>
+                            {
+                                public ValueTask Read()
+                                {
+                                    throw new NotImplementedException();
+                                }
+
+                                public IResponseRootUnknownControlInformationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                {
+                                    throw new NotImplementedException();
+                                }
                             }
                         }
 
