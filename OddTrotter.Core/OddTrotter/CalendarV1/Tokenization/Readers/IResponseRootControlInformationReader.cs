@@ -53,7 +53,7 @@
     {
     }
 
-    public sealed class ControlInformationValue
+    public abstract class ControlInformationValue
     {
         private ControlInformationValue()
         {
