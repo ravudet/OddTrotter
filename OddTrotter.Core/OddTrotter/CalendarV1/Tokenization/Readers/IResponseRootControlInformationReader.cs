@@ -41,9 +41,12 @@
 
     public sealed class ControlInformationName
     {
-        private ControlInformationName()
+        internal ControlInformationName(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface IResponseRootUnknownControlInformationValueReader<out TNextReader> : IReader<TNextReader, ControlInformationValue>

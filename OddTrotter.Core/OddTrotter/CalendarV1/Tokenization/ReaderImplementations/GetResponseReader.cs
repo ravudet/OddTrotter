@@ -3,6 +3,7 @@
     using System;
     using System.Buffers;
     using System.Collections.Generic;
+    using System.ComponentModel.Design;
     using System.Diagnostics.CodeAnalysis;
     using System.Formats.Asn1;
     using System.IO;
@@ -1382,7 +1383,7 @@
                                 }
 
                                 moved = true;
-                                return new ResponseRootControlInformationToken.ResponseRootUnknownControlInformation(new ResponseRootUnknownControlInformationReader());
+                                return new ResponseRootControlInformationToken.ResponseRootUnknownControlInformation(new ResponseRootUnknownControlInformationReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                             }
 
                             private abstract class ResponseRootControlInformationToken : IResponseRootControlInformationToken<IGetResponseBodyAfterOdataContextReader>
@@ -1510,19 +1511,143 @@
                                 }
                             }
 
-                            public sealed class ResponseRootUnknownControlInformationReader : IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>
+                            private sealed class ResponseRootUnknownControlInformationReader : IResponseRootUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>
                             {
+                                private readonly HttpResponseMessage httpResponseMessage;
+
+                                private readonly IDispositionManager dispositionManager;
+
+                                private readonly ResponseContext consumedResponseContext;
+
+                                public ResponseRootUnknownControlInformationReader(
+                                    HttpResponseMessage httpResponseMessage,
+                                    IDispositionManager dispositionManager,
+                                    ResponseContext responseContext)
+                                {
+                                    this.httpResponseMessage = httpResponseMessage;
+                                    this.dispositionManager = dispositionManager;
+                                    this.consumedResponseContext = responseContext;
+                                }
+
                                 public ValueTask Read()
                                 {
-                                    //// TODO can control infromation be not strings? yes, odata.count
-                                    //// TODO can any control information be null?
-
-                                    throw new NotImplementedException();
+                                    return ValueTask.CompletedTask;
                                 }
 
                                 public IResponseRootUnknownControlInformationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                                 {
-                                    throw new NotImplementedException();
+                                    moved = true;
+                                    return new ResponseRootUnknownControlInformationNameReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext);
+                                }
+
+                                private sealed class ResponseRootUnknownControlInformationNameReader : IResponseRootUnknownControlInformationNameReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    private readonly HttpResponseMessage httpResponseMessage;
+
+                                    private readonly IDispositionManager dispositionManager;
+
+                                    private readonly ResponseContext consumedResponseContext;
+
+                                    public ResponseRootUnknownControlInformationNameReader(
+                                        HttpResponseMessage httpResponseMessage,
+                                        IDispositionManager dispositionManager,
+                                        ResponseContext responseContext)
+                                    {
+                                        this.httpResponseMessage = httpResponseMessage;
+                                        this.dispositionManager = dispositionManager;
+                                        this.consumedResponseContext = responseContext;
+                                    }
+
+                                    public ValueTask Read()
+                                    {
+                                        return ValueTask.CompletedTask;
+                                    }
+
+                                    public ControlInformationName TryGetValue(out bool moved)
+                                    {
+                                        var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                        var propertyName = jsonReader.GetString();
+                                        if (propertyName == null)
+                                        {
+                                            throw new Exception("TODO internal consistency");
+                                        }
+
+                                        moved = true;
+                                        return new ControlInformationName(propertyName);
+                                    }
+
+                                    public IResponseRootUnknownControlInformationValueReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                    {
+                                        this.TryGetValue(out moved);
+                                        if (!moved)
+                                        {
+                                            return default!;
+                                        }
+
+                                        moved = true;
+                                        return new ResponseRootUnknownControlInformationValueReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext);
+                                    }
+
+                                    private sealed class ResponseRootUnknownControlInformationValueReader : IResponseRootUnknownControlInformationValueReader<IGetResponseBodyAfterOdataContextReader>
+                                    {
+                                        private readonly HttpResponseMessage httpResponseMessage;
+
+                                        private readonly IDispositionManager dispositionManager;
+
+                                        private readonly ResponseContext consumedResponseContext;
+
+                                        private ResponseContext? responseContext;
+
+                                        public ResponseRootUnknownControlInformationValueReader(
+                                            HttpResponseMessage httpResponseMessage,
+                                            IDispositionManager dispositionManager,
+                                            ResponseContext responseContext)
+                                        {
+                                            this.httpResponseMessage = httpResponseMessage;
+                                            this.dispositionManager = dispositionManager;
+                                            this.consumedResponseContext = responseContext;
+                                        }
+
+                                        public async ValueTask Read()
+                                        {
+                                            if (this.responseContext != null)
+                                            {
+                                                return;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                            var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                            if (!read)
+                                            {
+                                                this.responseContext = newResponseContext;
+                                                jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            }
+                                            else
+                                            {
+                                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                            }
+
+                                            this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                            // `odata.count` is a non-string, and `odata.id` can be `null`
+                                            // while annotations can definitely use objects as the value, there are currently no control informations which do this; the closest is the `collectionAnnotations` control information, which is a collection; regardless, it seems possible, or even likely, that at some point an object could be returned; further, we are not supposed to fail for invalid annotations or control informations, so we need to handle this case anyway
+
+                                            jsonReader.TokenType == JsonTokenType.
+                                            var propertyValue = jsonReader.GetString();
+
+
+                                        }
+
+                                        public ControlInformationValue TryGetValue(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+                                    }
                                 }
                             }
                         }
