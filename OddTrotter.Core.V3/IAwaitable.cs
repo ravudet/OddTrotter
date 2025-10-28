@@ -9,4 +9,9 @@
 
         TConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext);
     }
+
+    public interface IAwaitable<out T> : IAwaitable<T, TODO>
+        where T : allows ref struct
+    {
+    }
 }
