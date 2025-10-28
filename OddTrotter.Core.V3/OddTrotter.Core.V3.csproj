@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Fx.Core\Fx.Core\Fx.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Fx\" />
+  </ItemGroup>
+
 </Project>
