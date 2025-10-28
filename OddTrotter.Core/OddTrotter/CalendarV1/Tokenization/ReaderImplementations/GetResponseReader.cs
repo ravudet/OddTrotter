@@ -79,7 +79,7 @@
                 }
                 else
                 {
-
+                    return new GetResponseHeadersToken.GetResponseBody(new GetResponseBodyReader(this.httpResponseMessage, this.dispositionManager));
                 }
             }
 
