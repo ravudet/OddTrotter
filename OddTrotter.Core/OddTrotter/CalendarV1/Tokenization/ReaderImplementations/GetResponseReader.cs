@@ -1378,7 +1378,7 @@
                                     string.Equals(propertyName, "@nextLink"))
                                 {
                                     moved = true;
-                                    return new ResponseRootControlInformationToken.ResponseRootNextLink(new ResponseRootNextLinkReader());
+                                    return new ResponseRootControlInformationToken.ResponseRootNextLink(new ResponseRootNextLinkReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                                 }
 
                                 moved = true;
@@ -1419,10 +1419,33 @@
 
                             private sealed class ResponseRootNextLinkReader : IResponseRootNextLinkReader<IGetResponseBodyAfterOdataContextReader>
                             {
-                                public ValueTask Read()
-                                {
+                                private readonly HttpResponseMessage httpResponseMessage;
 
-                                    /*var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                private readonly IDispositionManager dispositionManager;
+
+                                private readonly ResponseContext consumedResponseContext;
+
+                                private ResponseContext? responseContext;
+
+                                public ResponseRootNextLinkReader(
+                                    HttpResponseMessage httpResponseMessage,
+                                    IDispositionManager dispositionManager,
+                                    ResponseContext responseContext)
+                                {
+                                    this.httpResponseMessage = httpResponseMessage;
+                                    this.dispositionManager = dispositionManager;
+                                    this.consumedResponseContext = responseContext;
+                                }
+
+                                public async ValueTask Read()
+                                {
+                                    if (this.responseContext != null)
+                                    {
+                                        return;
+                                    }
+
+                                    var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                    var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
                                     if (!read)
                                     {
                                         this.responseContext = newResponseContext;
@@ -1435,7 +1458,6 @@
 
                                     this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
 
-                                    //// TODO can control information be something besides a string?
                                     if (jsonReader.TokenType != JsonTokenType.String)
                                     {
                                         throw new Exception("TODO not a valid odata payload");
@@ -1444,14 +1466,23 @@
                                     var propertyValue = jsonReader.GetString();
                                     if (propertyValue == null)
                                     {
-                                        //// TODO can any control information 
                                         throw new Exception("TODO not a valid odata payload");
-                                    }*/
+                                    }
                                 }
 
                                 public NextLink TryGetValue(out bool moved)
                                 {
-                                    throw new NotImplementedException();
+                                    if (this.responseContext == null)
+                                    {
+                                        moved = false;
+                                        return default!;
+                                    }
+
+                                    //// TODO what you've implemented up to this point actually requires `read` to *always* be called before the `try` methods; the try methods should only return `false` if `jsonreader.read` returns false
+
+                                    var jsonReader = ToUtf8JsonReader(this.responseContext);
+                                    var propertyValue = jsonReader.GetString();
+                                    
                                 }
 
                                 public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
@@ -1464,6 +1495,9 @@
                             {
                                 public ValueTask Read()
                                 {
+                                    //// TODO can control infromation be not strings? yes, odata.count
+                                    //// TODO can any control information be null?
+
                                     throw new NotImplementedException();
                                 }
 

@@ -19,9 +19,12 @@
 
     public sealed class NextLink
     {
-        private NextLink()
+        internal NextLink(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface IResponseRootUnknownControlInformationReader<out TNextReader> : IReader<IResponseRootUnknownControlInformationNameReader<TNextReader>>
