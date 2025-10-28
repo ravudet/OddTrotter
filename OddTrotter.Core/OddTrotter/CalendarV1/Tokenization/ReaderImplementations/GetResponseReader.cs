@@ -1482,12 +1482,31 @@
 
                                     var jsonReader = ToUtf8JsonReader(this.responseContext);
                                     var propertyValue = jsonReader.GetString();
-                                    
+                                    if (propertyValue == null)
+                                    {
+                                        throw new Exception("TODO internal consistency");
+                                    }
+
+                                    moved = true;
+                                    return new NextLink(propertyValue);
                                 }
 
                                 public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
                                 {
-                                    throw new NotImplementedException();
+                                    if (this.responseContext == null)
+                                    {
+                                        moved = false;
+                                        return default!;
+                                    }
+
+                                    this.TryGetValue(out moved);
+                                    if (!moved)
+                                    {
+                                        return default!;
+                                    }
+
+                                    moved = true;
+                                    return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                                 }
                             }
 
