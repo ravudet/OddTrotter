@@ -2112,7 +2112,7 @@
                                             string.Equals(controlInformationName, "navigationLink", StringComparison.Ordinal))
                                         {
                                             moved = true;
-                                            return new PropertyControlInformationToken.NavigationLink(new PropertyNavigationLinkReader());
+                                            return new PropertyControlInformationToken.NavigationLink(new PropertyNavigationLinkReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                                         }
 
                                         if (
