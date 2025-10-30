@@ -68,7 +68,7 @@
     {
     }
 
-    public interface IPropertyNameReader<out TNextReader> : IReader<IPropertyValueReader<TNextReader>, PropertyName>
+    public interface IPropertyNameReader<out TNextReader> : IReader<IPropertyNameToken<TNextReader>, PropertyName>
     {
     }
 
@@ -82,11 +82,11 @@
         internal string Value { get; }
     }
 
-    public interface IPropertyValueReader<out TNextReader> : IReader<IPropertyValueToken<TNextReader>>
+    public interface IPropertyValueReader
     {
     }
 
-    public interface IPropertyValueToken<out TNextReader>
+    public interface IPropertyNameToken<out TNextReader>
     {
         TResult Apply<TResult>(
             Func<IPropertyControlInformationReader<TNextReader>, TResult> propertyControlInformationReader,
@@ -157,7 +157,7 @@
     {
     }
 
-    public interface IPropertyValueReader<out TNextReader> : IReader<IPropertyValueToken<TNextReader>>
+    public interface IPropertyValueReader<out TNextReader> : IReader<IPropertyNameToken<TNextReader>>
     {
     }
 

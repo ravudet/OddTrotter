@@ -1986,28 +1986,12 @@
                                     return new PropertyName(propertyName);
                                 }
 
-                                public IPropertyValueReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                public IPropertyNameToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                                 {
                                     this.TryGetValue(out moved);
                                     if (!moved)
                                     {
                                         return default!;
-                                    }
-
-                                    moved = true;
-                                    return new PropertyValueReader();
-                                }
-
-                                private sealed class PropertyValueReader : IPropertyValueReader<IGetResponseBodyAfterOdataContextReader>
-                                {
-                                    public ValueTask Read()
-                                    {
-                                        throw new NotImplementedException();
-                                    }
-
-                                    public IPropertyValueToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
-                                    {
-                                        throw new NotImplementedException();
                                     }
                                 }
                             }
