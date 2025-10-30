@@ -1994,6 +1994,87 @@
                                         return default!;
                                     }
                                 }
+
+                                private abstract class PropertyNameToken : IPropertyNameToken<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    private PropertyNameToken()
+                                    {
+                                    }
+
+                                    public TResult Apply<TResult>(Func<IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyControlInformationReader, Func<IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyAnnotationReader, Func<IPropertyValueReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyValueReader)
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+
+                                    public sealed class ControlInformation : PropertyNameToken
+                                    {
+                                        public ControlInformation(IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                        {
+                                            Reader = reader;
+                                        }
+
+                                        public IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                    }
+
+                                    public sealed class Annotation : PropertyNameToken
+                                    {
+                                        public Annotation(IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                        {
+                                            Reader = reader;
+                                        }
+
+                                        public IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                    }
+
+                                    public sealed class Value : PropertyNameToken
+                                    {
+                                        public Value(IPropertyValueReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                        {
+                                            Reader = reader;
+                                        }
+
+                                        public IPropertyValueReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                    }
+                                }
+
+                                public sealed class PropertyControlInformationReader : IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    public ValueTask Read()
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+
+                                    public IPropertyControlInformationToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+                                }
+
+                                public sealed class PropertyAnnotationReader : IPropertyAnnotationReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    public ValueTask Read()
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+
+                                    public IPropertyAnnotationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+                                }
+
+                                public sealed class PropertyValueReader : IPropertyValueReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    public ValueTask Read()
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+
+                                    public IPropertyNameToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+                                }
                             }
                         }
                     }
