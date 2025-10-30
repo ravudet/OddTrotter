@@ -57,6 +57,59 @@
     {
         private ControlInformationValue()
         {
+        }
+
+        internal sealed class Boolean : ControlInformationValue
+        {
+            public Boolean(bool value)
+            {
+                Value = value;
+            }
+
+            public bool Value { get; }
+        }
+
+        internal sealed class Null : ControlInformationValue
+        {
+            private Null()
+            {
+            }
+
+            public static Null Instance { get; } = new Null();
+        }
+
+        internal sealed class Signed : ControlInformationValue //// TODO i don't know if you need a better breakdown for numeric values than signed vs unsigned
+        {
+            public Signed(long value)
+            {
+                Value = value;
+            }
+
+            public long Value { get; }
+        }
+
+        internal sealed class Unsigned : ControlInformationValue
+        {
+            public Unsigned(ulong value)
+            {
+                Value = value;
+            }
+
+            public ulong Value { get; }
+        }
+
+        internal sealed class String : ControlInformationValue
+        {
+            public String(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
+        internal ControlInformationValue(object value)
+        {
             //// TODO this is a DU between strings and each of the different primitives //// TODO actually, could it be any json token?
         }
     }

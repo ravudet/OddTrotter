@@ -1632,21 +1632,80 @@
                                             // `odata.count` is a non-string, and `odata.id` can be `null`
                                             // while annotations can definitely use objects as the value, there are currently no control informations which do this; the closest is the `collectionAnnotations` control information, which is a collection; regardless, it seems possible, or even likely, that at some point an object could be returned; further, we are not supposed to fail for invalid annotations or control informations, so we need to handle this case anyway
 
-                                            jsonReader.TokenType == JsonTokenType.
-                                            var propertyValue = jsonReader.GetString();
-
-                                            
-
+                                            if (jsonReader.TokenType != JsonTokenType.False &&
+                                                jsonReader.TokenType != JsonTokenType.Null &&
+                                                jsonReader.TokenType != JsonTokenType.Number &&
+                                                jsonReader.TokenType != JsonTokenType.StartArray &&
+                                                jsonReader.TokenType != JsonTokenType.StartObject &&
+                                                jsonReader.TokenType != JsonTokenType.String &&
+                                                jsonReader.TokenType != JsonTokenType.True)
+                                            {
+                                                throw new Exception("TODO invalid odata payload");
+                                            }
                                         }
 
                                         public ControlInformationValue TryGetValue(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            switch (jsonReader.TokenType)
+                                            {
+                                                case JsonTokenType.False:
+                                                    moved = true;
+                                                    return new ControlInformationValue.Boolean(jsonReader.GetBoolean());
+                                                case JsonTokenType.Null:
+                                                    moved = true;
+                                                    return ControlInformationValue.Null.Instance;
+                                                case JsonTokenType.Number:
+                                                    moved = true;
+                                                    if (jsonReader.TryGetInt64(out var @long))
+                                                    {
+                                                        return new ControlInformationValue.Signed(@long);
+                                                    }
+                                                    else if (jsonReader.TryGetUInt64(out var @ulong))
+                                                    {
+                                                        return new ControlInformationValue.Unsigned(@ulong);
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new Exception("TODO not valid JSON, i think");
+                                                    }
+                                                case JsonTokenType.StartArray:
+                                                    throw new Exception("TODO not supported TODO according to the standard, you actually ahve to implement skipping this value...");
+                                                case JsonTokenType.StartObject:
+                                                    throw new Exception("TODO not supported TODO according to the standard, you actually ahve to implement skipping this value...");
+                                                case JsonTokenType.String:
+                                                    moved = true;
+                                                    var @string = jsonReader.GetString();
+                                                    if (@string == null)
+                                                    {
+                                                        throw new Exception("TODO not valid JSON, we already checked for null");
+                                                    }
+
+                                                    return new ControlInformationValue.String(@string);
+                                                case JsonTokenType.True:
+                                                    moved = true;
+                                                    return new ControlInformationValue.Boolean(jsonReader.GetBoolean());
+                                                default:
+                                                    throw new Exception("TODO internal consistency");
+                                            }
                                         }
 
                                         public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            moved = true;
+                                            return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                                         }
                                     }
                                 }
