@@ -2028,7 +2028,7 @@
                                     }
 
                                     moved = true;
-                                    return new PropertyNameToken.ControlInformation(new PropertyControlInformationReader());
+                                    return new PropertyNameToken.ControlInformation(new PropertyControlInformationReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                                 }
 
                                 private abstract class PropertyNameToken : IPropertyNameToken<IGetResponseBodyAfterOdataContextReader>
@@ -2075,14 +2075,147 @@
 
                                 public sealed class PropertyControlInformationReader : IPropertyControlInformationReader<IGetResponseBodyAfterOdataContextReader>
                                 {
+                                    private readonly HttpResponseMessage httpResponseMessage;
+
+                                    private readonly IDispositionManager dispositionManager;
+
+                                    private readonly ResponseContext consumedResponseContext;
+
+                                    public PropertyControlInformationReader(
+                                        HttpResponseMessage httpResponseMessage,
+                                        IDispositionManager dispositionManager,
+                                        ResponseContext responseContext)
+                                    {
+                                        this.httpResponseMessage = httpResponseMessage;
+                                        this.dispositionManager = dispositionManager;
+                                        this.consumedResponseContext = responseContext;
+                                    }
+
                                     public ValueTask Read()
                                     {
-                                        throw new NotImplementedException();
+                                        return ValueTask.CompletedTask;
                                     }
 
                                     public IPropertyControlInformationToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                                     {
-                                        throw new NotImplementedException();
+                                        var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                        var propertyName = jsonReader.GetString();
+                                        if (propertyName == null)
+                                        {
+                                            throw new Exception("TODO internal consistency");
+                                        }
+
+                                        var atIndex = propertyName.IndexOf('@');
+                                        var controlInformationName = propertyName.Substring(atIndex + 1);
+                                        if (
+                                            string.Equals(controlInformationName, "odata.navigationLink", StringComparison.Ordinal) ||
+                                            string.Equals(controlInformationName, "navigationLink", StringComparison.Ordinal))
+                                        {
+                                            moved = true;
+                                            return new PropertyControlInformationToken.NavigationLink(new PropertyNavigationLinkReader());
+                                        }
+
+                                        if (
+                                            string.Equals(controlInformationName, "odata.associationLink", StringComparison.Ordinal) ||
+                                            string.Equals(controlInformationName, "associationLink", StringComparison.Ordinal))
+                                        {
+                                            moved = true;
+                                            return new PropertyControlInformationToken.AssociationLink(new PropertyAssociationLinkReader());
+                                        }
+
+                                        moved = true;
+                                        return new PropertyControlInformationToken.Unknown(new PropertyUnknownControlInformationReader());
+                                    }
+
+                                    private abstract class PropertyControlInformationToken : IPropertyControlInformationToken<IGetResponseBodyAfterOdataContextReader>
+                                    {
+                                        private PropertyControlInformationToken()
+                                        {
+                                        }
+
+                                        public TResult Apply<TResult>(Func<IPropertyAssociationLinkReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyAssociationLinkReader, Func<IPropertyNavigationLinkReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyNavigationLinkReader, Func<IPropertyUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>, TResult> propertyUnknownControlInformationReader)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public sealed class AssociationLink : PropertyControlInformationToken
+                                        {
+                                            public AssociationLink(IPropertyAssociationLinkReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                            {
+                                                Reader = reader;
+                                            }
+
+                                            public IPropertyAssociationLinkReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                        }
+
+                                        public sealed class NavigationLink : PropertyControlInformationToken
+                                        {
+                                            public NavigationLink(IPropertyNavigationLinkReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                            {
+                                                Reader = reader;
+                                            }
+
+                                            public IPropertyNavigationLinkReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                        }
+
+                                        public sealed class Unknown : PropertyControlInformationToken
+                                        {
+                                            public Unknown(IPropertyUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader> reader)
+                                            {
+                                                Reader = reader;
+                                            }
+
+                                            public IPropertyUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader> Reader { get; }
+                                        }
+                                    }
+
+                                    private sealed class PropertyAssociationLinkReader : IPropertyAssociationLinkReader<IGetResponseBodyAfterOdataContextReader>
+                                    {
+                                        public ValueTask Read()
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public AssociationLink TryGetValue(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+                                    }
+
+                                    public sealed class PropertyNavigationLinkReader : IPropertyNavigationLinkReader<IGetResponseBodyAfterOdataContextReader>
+                                    {
+                                        public ValueTask Read()
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public NavigationLink TryGetValue(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+                                    }
+
+                                    public sealed class PropertyUnknownControlInformationReader : IPropertyUnknownControlInformationReader<IGetResponseBodyAfterOdataContextReader>
+                                    {
+                                        public ValueTask Read()
+                                        {
+                                            throw new NotImplementedException();
+                                        }
+
+                                        public IPropertyUnknownControlInformationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                        {
+                                            throw new NotImplementedException();
+                                        }
                                     }
                                 }
 
