@@ -2,15 +2,20 @@
 {
     public interface IAwaitable<out T, out TAwaiter, out TConfiguredAwaitable>
         where T : allows ref struct
-        where TAwaiter : allows ref struct
-        where TConfiguredAwaitable : allows ref struct
+        where TAwaiter : IAwaiter<T>, allows ref struct
+        where TConfiguredAwaitable : IAwaitable<T, TAwaiter, TConfiguredAwaitable>, allows ref struct
     {
-        TAwaiter GetAWaiter();
+        TAwaiter GetAwaiter();
 
         TConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext);
     }
 
-    public interface IAwaitable<out T> : IAwaitable<T, TODO>
+    public interface IAwaitable<out T> : IAwaitable<T, IAwaiter<T>, IAwaitable<T>>
+        where T : allows ref struct
+    {
+    }
+
+    public interface IAwaiter<out T>
         where T : allows ref struct
     {
     }
