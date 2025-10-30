@@ -107,10 +107,5 @@
 
             public string Value { get; }
         }
-
-        internal ControlInformationValue(object value)
-        {
-            //// TODO this is a DU between strings and each of the different primitives //// TODO actually, could it be any json token?
-        }
     }
 }

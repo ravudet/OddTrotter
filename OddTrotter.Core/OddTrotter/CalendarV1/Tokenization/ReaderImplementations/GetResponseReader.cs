@@ -1704,6 +1704,12 @@
                                                 return default!;
                                             }
 
+                                            this.TryGetValue(out moved);
+                                            if (!moved)
+                                            {
+                                                return default!;
+                                            }
+
                                             moved = true;
                                             return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                                         }
@@ -1714,14 +1720,204 @@
 
                         public sealed class ResponseRootAnnotationReader : IResponseRootAnnotationReader<IGetResponseBodyAfterOdataContextReader>
                         {
+                            private readonly HttpResponseMessage httpResponseMessage;
+
+                            private readonly IDispositionManager dispositionManager;
+
+                            private readonly ResponseContext consumedResponseContext;
+
+                            public ResponseRootAnnotationReader(
+                                HttpResponseMessage httpResponseMessage,
+                                IDispositionManager dispositionManager,
+                                ResponseContext responseContext)
+                            {
+                                this.httpResponseMessage = httpResponseMessage;
+                                this.dispositionManager = dispositionManager;
+                                this.consumedResponseContext = responseContext;
+                            }
+
                             public ValueTask Read()
                             {
-                                throw new NotImplementedException();
+                                return ValueTask.CompletedTask;
                             }
 
                             public IResponseRootAnnotationNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                             {
-                                throw new NotImplementedException();
+                                moved = true;
+                                return new ResponseRootAnnotationNameReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext);
+                            }
+
+                            private sealed class ResponseRootAnnotationNameReader : IResponseRootAnnotationNameReader<IGetResponseBodyAfterOdataContextReader>
+                            {
+                                private readonly HttpResponseMessage httpResponseMessage;
+
+                                private readonly IDispositionManager dispositionManager;
+
+                                private readonly ResponseContext consumedResponseContext;
+
+                                public ResponseRootAnnotationNameReader(
+                                    HttpResponseMessage httpResponseMessage,
+                                    IDispositionManager dispositionManager,
+                                    ResponseContext responseContext)
+                                {
+                                    this.httpResponseMessage = httpResponseMessage;
+                                    this.dispositionManager = dispositionManager;
+                                    this.consumedResponseContext = responseContext;
+                                }
+
+                                public ValueTask Read()
+                                {
+                                    return ValueTask.CompletedTask;
+                                }
+
+                                public AnnotationName TryGetValue(out bool moved)
+                                {
+                                    var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                    var propertyName = jsonReader.GetString();
+                                    if (propertyName == null)
+                                    {
+                                        throw new Exception("TODO internal consistency");
+                                    }
+
+                                    moved = true;
+                                    return new AnnotationName(propertyName);
+                                }
+
+                                public IResponseRootAnnotationValueReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                {
+                                    this.TryGetValue(out moved);
+                                    if (!moved)
+                                    {
+                                        return default!;
+                                    }
+
+                                    moved = true;
+                                    return new ResponseRootAnnotationValueReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext);
+                                }
+
+                                private sealed class ResponseRootAnnotationValueReader : IResponseRootAnnotationValueReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    private readonly HttpResponseMessage httpResponseMessage;
+
+                                    private readonly IDispositionManager dispositionManager;
+
+                                    private readonly ResponseContext consumedResponseContext;
+
+                                    private ResponseContext? responseContext;
+
+                                    public ResponseRootAnnotationValueReader(
+                                        HttpResponseMessage httpResponseMessage,
+                                        IDispositionManager dispositionManager,
+                                        ResponseContext responseContext)
+                                    {
+                                        this.httpResponseMessage = httpResponseMessage;
+                                        this.dispositionManager = dispositionManager;
+                                        this.consumedResponseContext = responseContext;
+                                    }
+
+                                    public async ValueTask Read()
+                                    {
+                                        if (this.responseContext != null)
+                                        {
+                                            return;
+                                        }
+
+                                        var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                        var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                        if (!read)
+                                        {
+                                            this.responseContext = newResponseContext;
+                                            jsonReader = ToUtf8JsonReader(this.responseContext);
+                                        }
+                                        else
+                                        {
+                                            this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                        }
+
+                                        this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                        if (jsonReader.TokenType != JsonTokenType.False &&
+                                            jsonReader.TokenType != JsonTokenType.Null &&
+                                            jsonReader.TokenType != JsonTokenType.Number &&
+                                            jsonReader.TokenType != JsonTokenType.StartArray &&
+                                            jsonReader.TokenType != JsonTokenType.StartObject &&
+                                            jsonReader.TokenType != JsonTokenType.String &&
+                                            jsonReader.TokenType != JsonTokenType.True)
+                                        {
+                                            throw new Exception("TODO invalid odata payload");
+                                        }
+                                    }
+
+                                    public AnnotationValue TryGetValue(out bool moved)
+                                    {
+                                        if (this.responseContext == null)
+                                        {
+                                            moved = false;
+                                            return default!;
+                                        }
+
+                                        var jsonReader = ToUtf8JsonReader(this.responseContext);
+                                        switch (jsonReader.TokenType)
+                                        {
+                                            case JsonTokenType.False:
+                                                moved = true;
+                                                return new AnnotationValue.Boolean(jsonReader.GetBoolean());
+                                            case JsonTokenType.Null:
+                                                moved = true;
+                                                return AnnotationValue.Null.Instance;
+                                            case JsonTokenType.Number:
+                                                moved = true;
+                                                if (jsonReader.TryGetInt64(out var @long))
+                                                {
+                                                    return new AnnotationValue.Signed(@long);
+                                                }
+                                                else if (jsonReader.TryGetUInt64(out var @ulong))
+                                                {
+                                                    return new AnnotationValue.Unsigned(@ulong);
+                                                }
+                                                else
+                                                {
+                                                    throw new Exception("TODO not valid JSON, i think");
+                                                }
+                                            case JsonTokenType.StartArray:
+                                                throw new Exception("TODO not supported TODO according to the standard, you actually ahve to implement skipping this value...");
+                                            case JsonTokenType.StartObject:
+                                                throw new Exception("TODO not supported TODO according to the standard, you actually ahve to implement skipping this value...");
+                                            case JsonTokenType.String:
+                                                moved = true;
+                                                var @string = jsonReader.GetString();
+                                                if (@string == null)
+                                                {
+                                                    throw new Exception("TODO not valid JSON, we already checked for null");
+                                                }
+
+                                                return new AnnotationValue.String(@string);
+                                            case JsonTokenType.True:
+                                                moved = true;
+                                                return new AnnotationValue.Boolean(jsonReader.GetBoolean());
+                                            default:
+                                                throw new Exception("TODO internal consistency");
+                                        }
+                                    }
+
+                                    public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
+                                    {
+                                        if (this.responseContext == null)
+                                        {
+                                            moved = false;
+                                            return default!;
+                                        }
+
+                                        this.TryGetValue(out moved);
+                                        if (!moved)
+                                        {
+                                            return default!;
+                                        }
+
+                                        moved = true;
+                                        return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
+                                    }
+                                }
                             }
                         }
 
