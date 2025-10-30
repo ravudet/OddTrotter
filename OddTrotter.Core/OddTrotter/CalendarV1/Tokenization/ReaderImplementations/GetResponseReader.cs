@@ -1284,11 +1284,11 @@
                             if (propertyName.Contains('@'))
                             {
                                 moved = true;
-                                return new GetResponseBodyAfterOdataContextToken.ResponseRootAnnotation(new ResponseRootAnnotationReader());
+                                return new GetResponseBodyAfterOdataContextToken.ResponseRootAnnotation(new ResponseRootAnnotationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
                             }
 
                             moved = true;
-                            return new GetResponseBodyAfterOdataContextToken.Property(new PropertyReader());
+                            return new GetResponseBodyAfterOdataContextToken.Property(new PropertyReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
                         }
 
                         private abstract class GetResponseBodyAfterOdataContextToken : IGetResponseBodyAfterOdataContextToken
@@ -1923,14 +1923,93 @@
 
                         public sealed class PropertyReader : IPropertyReader<IGetResponseBodyAfterOdataContextReader>
                         {
+                            private readonly HttpResponseMessage httpResponseMessage;
+
+                            private readonly IDispositionManager dispositionManager;
+
+                            private readonly ResponseContext consumedResponseContext;
+
+                            public PropertyReader(
+                                HttpResponseMessage httpResponseMessage,
+                                IDispositionManager dispositionManager,
+                                ResponseContext responseContext)
+                            {
+                                this.httpResponseMessage = httpResponseMessage;
+                                this.dispositionManager = dispositionManager;
+                                this.consumedResponseContext = responseContext;
+                            }
+
                             public ValueTask Read()
                             {
-                                throw new NotImplementedException();
+                                return ValueTask.CompletedTask;
                             }
 
                             public IPropertyNameReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
                             {
-                                throw new NotImplementedException();
+                                moved = true;
+                                return new PropertyNameReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext);
+                            }
+
+                            private sealed class PropertyNameReader : IPropertyNameReader<IGetResponseBodyAfterOdataContextReader>
+                            {
+                                private readonly HttpResponseMessage httpResponseMessage;
+
+                                private readonly IDispositionManager dispositionManager;
+
+                                private readonly ResponseContext consumedResponseContext;
+
+                                public PropertyNameReader(
+                                    HttpResponseMessage httpResponseMessage,
+                                    IDispositionManager dispositionManager,
+                                    ResponseContext responseContext)
+                                {
+                                    this.httpResponseMessage = httpResponseMessage;
+                                    this.dispositionManager = dispositionManager;
+                                    this.consumedResponseContext = responseContext;
+                                }
+
+                                public ValueTask Read()
+                                {
+                                    return ValueTask.CompletedTask;
+                                }
+
+                                public PropertyName TryGetValue(out bool moved)
+                                {
+                                    var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                    var propertyName = jsonReader.GetString();
+                                    if (propertyName == null)
+                                    {
+                                        throw new Exception("TODO internal consistency");
+                                    }
+
+                                    moved = true;
+                                    return new PropertyName(propertyName);
+                                }
+
+                                public IPropertyValueReader<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                {
+                                    this.TryGetValue(out moved);
+                                    if (!moved)
+                                    {
+                                        return default!;
+                                    }
+
+                                    moved = true;
+                                    return new PropertyValueReader();
+                                }
+
+                                private sealed class PropertyValueReader : IPropertyValueReader<IGetResponseBodyAfterOdataContextReader>
+                                {
+                                    public ValueTask Read()
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+
+                                    public IPropertyValueToken<IGetResponseBodyAfterOdataContextReader> TryMoveNext(out bool moved)
+                                    {
+                                        throw new NotImplementedException();
+                                    }
+                                }
                             }
                         }
                     }
