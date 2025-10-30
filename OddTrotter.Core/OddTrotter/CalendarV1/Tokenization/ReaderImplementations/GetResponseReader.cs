@@ -1277,14 +1277,17 @@
                             if (propertyName.StartsWith('@'))
                             {
                                 //// TODO not sure if root annotations can actually start with "@"; i don't think they can, and the below code is written under that assumption
-                                moved = true;
-                                return new GetResponseBodyAfterOdataContextToken.ResponseRootControlInformation(new ResponseRootControlInformationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
-                            }
 
-                            if (propertyName.Contains('@'))
-                            {
-                                moved = true;
-                                return new GetResponseBodyAfterOdataContextToken.ResponseRootAnnotation(new ResponseRootAnnotationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
+                                if (propertyName.Contains('.'))
+                                {
+                                    moved = true;
+                                    return new GetResponseBodyAfterOdataContextToken.ResponseRootAnnotation(new ResponseRootAnnotationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
+                                }
+                                else
+                                {
+                                    moved = true;
+                                    return new GetResponseBodyAfterOdataContextToken.ResponseRootControlInformation(new ResponseRootControlInformationReader(this.httpResponseMessage, this.dispositionManager, this.responseContext));
+                                }
                             }
 
                             moved = true;
@@ -1982,6 +1985,15 @@
                                         throw new Exception("TODO internal consistency");
                                     }
 
+                                    var atIndex = propertyName.IndexOf('@');
+                                    if (atIndex < 0)
+                                    {
+                                        moved = true;
+                                        return new PropertyName(propertyName);
+                                    }
+
+                                    propertyName = propertyName.Substring(0, atIndex);
+
                                     moved = true;
                                     return new PropertyName(propertyName);
                                 }
@@ -1993,6 +2005,30 @@
                                     {
                                         return default!;
                                     }
+
+                                    var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                    var propertyName = jsonReader.GetString();
+                                    if (propertyName == null)
+                                    {
+                                        throw new Exception("TODO internal consistency");
+                                    }
+
+                                    var atIndex = propertyName.IndexOf('@');
+                                    if (atIndex < 0)
+                                    {
+                                        moved = true;
+                                        return new PropertyNameToken.Value(new PropertyValueReader());
+                                    }
+
+                                    var dotIndex = propertyName.IndexOf('.', atIndex);
+                                    if (dotIndex < 0)
+                                    {
+                                        moved = true;
+                                        return new PropertyNameToken.Annotation(new PropertyAnnotationReader());
+                                    }
+
+                                    moved = true;
+                                    return new PropertyNameToken.ControlInformation(new PropertyControlInformationReader());
                                 }
 
                                 private abstract class PropertyNameToken : IPropertyNameToken<IGetResponseBodyAfterOdataContextReader>
