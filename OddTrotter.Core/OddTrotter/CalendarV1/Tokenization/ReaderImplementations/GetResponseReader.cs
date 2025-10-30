@@ -2262,6 +2262,24 @@
 
                                     public sealed class PropertyNavigationLinkReader : IPropertyNavigationLinkReader<IGetResponseBodyAfterOdataContextReader>
                                     {
+                                        private readonly HttpResponseMessage httpResponseMessage;
+
+                                        private readonly IDispositionManager dispositionManager;
+
+                                        private readonly ResponseContext consumedResponseContext;
+
+                                        private ResponseContext? responseContext;
+
+                                        public PropertyNavigationLinkReader(
+                                            HttpResponseMessage httpResponseMessage,
+                                            IDispositionManager dispositionManager,
+                                            ResponseContext responseContext)
+                                        {
+                                            this.httpResponseMessage = httpResponseMessage;
+                                            this.dispositionManager = dispositionManager;
+                                            this.consumedResponseContext = responseContext;
+                                        }
+
                                         public ValueTask Read()
                                         {
                                             throw new NotImplementedException();
