@@ -2120,7 +2120,7 @@
                                             string.Equals(controlInformationName, "associationLink", StringComparison.Ordinal))
                                         {
                                             moved = true;
-                                            return new PropertyControlInformationToken.AssociationLink(new PropertyAssociationLinkReader());
+                                            return new PropertyControlInformationToken.AssociationLink(new PropertyAssociationLinkReader(this.httpResponseMessage, this.dispositionManager, this.consumedResponseContext));
                                         }
 
                                         moved = true;
@@ -2171,19 +2171,92 @@
 
                                     private sealed class PropertyAssociationLinkReader : IPropertyAssociationLinkReader<IGetResponseBodyAfterOdataContextReader>
                                     {
-                                        public ValueTask Read()
+                                        private readonly HttpResponseMessage httpResponseMessage;
+
+                                        private readonly IDispositionManager dispositionManager;
+
+                                        private readonly ResponseContext consumedResponseContext;
+
+                                        private ResponseContext? responseContext;
+
+                                        public PropertyAssociationLinkReader(
+                                            HttpResponseMessage httpResponseMessage,
+                                            IDispositionManager dispositionManager,
+                                            ResponseContext responseContext)
                                         {
-                                            throw new NotImplementedException();
+                                            this.httpResponseMessage = httpResponseMessage;
+                                            this.dispositionManager = dispositionManager;
+                                            this.consumedResponseContext = responseContext;
+                                        }
+
+                                        public async ValueTask Read()
+                                        {
+                                            if (this.responseContext != null)
+                                            {
+                                                return;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                            var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader); //// TODO you need to add configureawait everywhere
+                                            if (!read)
+                                            {
+                                                this.responseContext = newResponseContext;
+                                                jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            }
+                                            else
+                                            {
+                                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                            }
+
+                                            this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                            if (jsonReader.TokenType != JsonTokenType.String)
+                                            {
+                                                throw new Exception("TODO invalid odata payload");
+                                            }
+
+                                            var propertyValue = jsonReader.GetString();
+                                            if (propertyValue == null)
+                                            {
+                                                throw new Exception("TODO invalid odata payload");
+                                            }
                                         }
 
                                         public AssociationLink TryGetValue(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            var propertyValue = jsonReader.GetString();
+                                            if (propertyValue == null)
+                                            {
+                                                throw new Exception("TODO internal consistency");
+                                            }
+
+                                            moved = true;
+                                            return new AssociationLink(propertyValue);
                                         }
 
                                         public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            this.TryGetValue(out moved);
+                                            if (!moved)
+                                            {
+                                                return default!;
+                                            }
+
+                                            moved = true;
+                                            return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                                         }
                                     }
 

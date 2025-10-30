@@ -113,9 +113,12 @@
 
     public sealed class AssociationLink
     {
-        private AssociationLink()
+        internal AssociationLink(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface IPropertyNavigationLinkReader<out TNextReader> : IReader<TNextReader, NavigationLink>
