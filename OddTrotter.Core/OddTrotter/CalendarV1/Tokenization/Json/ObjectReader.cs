@@ -269,6 +269,12 @@
 
     public readonly ref struct NumberToken
     {
+        public NumberToken(ulong value)
+        {
+            Value = value;
+        }
+
+        public ulong Value { get; }
     }
 
     public ref struct StringReader<TNextReader> : IReader<TNextReader, StringToken>
@@ -292,6 +298,12 @@
 
     public readonly ref struct StringToken
     {
+        public StringToken(string value)
+        {
+            Value = value;
+        }
+
+        public string Value { get; }
     }
 
 
