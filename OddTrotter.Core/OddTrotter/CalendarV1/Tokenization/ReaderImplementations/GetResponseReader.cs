@@ -2280,19 +2280,74 @@
                                             this.consumedResponseContext = responseContext;
                                         }
 
-                                        public ValueTask Read()
+                                        public async ValueTask Read()
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext != null)
+                                            {
+                                                return;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.consumedResponseContext);
+                                            var (read, newResponseContext) = await ConsumeNextToken(this.consumedResponseContext, ref jsonReader);
+                                            if (!read)
+                                            {
+                                                this.responseContext = newResponseContext;
+                                                jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            }
+                                            else
+                                            {
+                                                this.responseContext = new ResponseContext(this.consumedResponseContext.ResponseContent, this.consumedResponseContext.Buffer, this.consumedResponseContext.BufferValidity);
+                                            }
+
+                                            this.responseContext.BytesConsumed = jsonReader.BytesConsumed;
+
+                                            if (jsonReader.TokenType != JsonTokenType.String)
+                                            {
+                                                throw new Exception("TODO invalid odata payload");
+                                            }
+
+                                            var propertyValue = jsonReader.GetString();
+                                            if (propertyValue == null)
+                                            {
+                                                throw new Exception("TODO invalid odata payload");
+                                            }
                                         }
 
                                         public NavigationLink TryGetValue(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            var jsonReader = ToUtf8JsonReader(this.responseContext);
+                                            var propertyValue = jsonReader.GetString();
+                                            if (propertyValue == null)
+                                            {
+                                                throw new Exception("TODO internal consistency");
+                                            }
+
+                                            moved = true;
+                                            return new NavigationLink(propertyValue);
                                         }
 
                                         public IGetResponseBodyAfterOdataContextReader TryMoveNext(out bool moved)
                                         {
-                                            throw new NotImplementedException();
+                                            if (this.responseContext == null)
+                                            {
+                                                moved = false;
+                                                return default!;
+                                            }
+
+                                            this.TryGetValue(out moved);
+                                            if (!moved)
+                                            {
+                                                return default!;
+                                            }
+
+                                            moved = true;
+                                            return new GetResponseBodyAfterOdataContextReader(this.httpResponseMessage, this.dispositionManager, this.responseContext);
                                         }
                                     }
 

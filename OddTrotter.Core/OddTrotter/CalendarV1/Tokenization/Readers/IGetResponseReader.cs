@@ -82,10 +82,6 @@
         internal string Value { get; }
     }
 
-    public interface IPropertyValueReader
-    {
-    }
-
     public interface IPropertyNameToken<out TNextReader>
     {
         TResult Apply<TResult>(
@@ -127,9 +123,12 @@
 
     public sealed class NavigationLink
     {
-        private NavigationLink()
+        internal NavigationLink(string value)
         {
+            Value = value;
         }
+
+        internal string Value { get; }
     }
 
     public interface IPropertyUnknownControlInformationReader<out TNextReader> : IReader<IPropertyUnknownControlInformationNameReader<TNextReader>>
@@ -217,7 +216,7 @@
     public interface IStringValueReader<out TNextReader> : IReader<TNextReader, StringValue>
     {
     }
-    `
+
     public sealed class StringValue
     {
         private StringValue()
