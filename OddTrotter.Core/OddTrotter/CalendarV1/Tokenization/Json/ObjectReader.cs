@@ -46,6 +46,13 @@
         {
             throw new Exception("TODO");
         }
+
+        public static ValueReader<TNextReader> Read<TNextReader>(this ValueReader<TNextReader> reader)
+        {
+            //// TODO implement everything without async
+            //// TODO then implement methods like this, making it async using a new `reftask` type that is able to async return the new reader; the input reader will need to have the necessary properties to actually implement the stream read and the creation of the new reader
+            throw new Exception("TODO");
+        }
     }
 
     public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>

@@ -22,7 +22,7 @@
     //// TODO when do you give the caller the http status code?
 
 
-    public sealed class GetResponseReader : IGetResponseReader
+    /*public sealed class GetResponseReader : IGetResponseReader
     {
         private readonly HttpResponseMessage httpResponseMessage;
 
@@ -2396,5 +2396,5 @@
                 }
             }
         }
-    }
+    }*/
 }
