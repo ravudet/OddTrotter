@@ -2,7 +2,116 @@
 {
     using System;
     using System.Runtime.CompilerServices;
+    using System.Security.AccessControl;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
+
+
+    public readonly ref struct TypeContainer<TValue, T1, T2>
+        where TValue : allows ref struct
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        public TypeContainer(TValue value)
+        {
+            Value = value;
+        }
+
+        public TValue Value { get; }
+    }
+
+    public readonly ref struct TypeContainer<TValue, T1>
+        where TValue : allows ref struct
+        where T1 : allows ref struct
+    {
+        public TypeContainer(TValue value)
+        {
+            Value = value;
+        }
+
+        public TValue Value { get; }
+    }
+
+    public readonly ref struct Foo<T1, T2> : IFoo<T1, T2>
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        public void Work()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TypeContainer<Foo<T1, T2>, T1, T2> Container
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+        public static implicit operator TypeContainer<Foo<T1, T2>, T1, T2>(Foo<T1, T2> foo)
+        {
+            return new TypeContainer<Foo<T1, T2>, T1, T2>(foo);
+        }
+    }
+
+    public interface IFoo<T1, T2>
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        void Work();
+    }
+
+    public static class FooExtensions
+    {
+        public static void Something<TFoo, T1, T2>(TFoo foo)
+            where TFoo : IFoo<T1, T2>, allows ref struct
+            where T1 : allows ref struct
+            where T2 : allows ref struct
+        {
+            foo.Work();
+        }
+
+        public static void Something<TFoo, T1, T2>(this TypeContainer<TFoo, T1, T2> container)
+            where TFoo : IFoo<T1, T2>, allows ref struct
+            where T1 : allows ref struct
+            where T2 : allows ref struct
+        {
+            Something<TFoo, T1, T2>(container.Value);
+        }
+
+        public static void Play()
+        {
+            var foo = new Foo<int, string>();
+            foo.Something();
+        }
+
+
+        public sealed class Fizz
+        {
+            public static implicit operator Buzz(Fizz fizz)
+            {
+                return new Buzz();
+            }
+        }
+
+        public sealed class Buzz
+        {
+        }
+
+        public static void Extension(this Buzz buzz)
+        {
+        }
+
+        public static void FizzBuzzPlay()
+        {
+            var fizz = new Fizz();
+            fizz.Extension();
+            Extension(fizz);
+        }
+    }
+
+
 
     public readonly ref struct Future<T>
         where T : allows ref struct
@@ -82,6 +191,47 @@
                         (Exception exception, ref bool context) => GetOtherInt(exception),
                         ref context),
                 ref context);
+
+
+
+            var result3 = await either.Apply2(
+                (IEither<int, string> value, ref bool context) =>
+                    value
+                        .Apply2(
+                            (int left, ref bool context) => GetInt3(left).Container,
+                            (string right, ref bool context) => GetAnotherInt3(right).Container,
+                            ref context)
+                        .Container,
+                (IEither<int, Exception> error, ref bool context) =>
+                    error
+                        .Apply2(
+                            (int errorCode, ref bool context) => GetInt3(errorCode).Container,
+                            (Exception exception, ref bool context) => GetOtherInt3(exception).Container,
+                            ref context)
+                        .Container,
+                ref context);
+
+
+            var result4 = await either.Apply4<IEither<int, string>, IEither<int, Exception>, int>(
+                async value =>
+                    await value
+                        .Apply4<int, string, int>(
+                            async left => await GetInt3(left),
+                            async right => await GetAnotherInt3(right)),
+                async error =>
+                    await error
+                        .Apply4(
+                            errorCode => GetInt3(errorCode),
+                            exception => GetOtherInt3(exception)),
+                ref context);
+        }
+
+        public static Realizable<TResult> Apply4<TLeft, TRight, TResult>(this IEither<TLeft, TRight> either, Func<TLeft, Realizable<TResult>> leftMap, Func<TRight, Realizable<TResult>> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+
         }
 
         public static unsafe Realizable<int> Drive(IEither<int, Exception> either)
@@ -207,7 +357,31 @@
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct;
+
+
+
+
+
+        Realizable<TResult> Apply2<TResult, TContext, TAwaitable, TAwaiter>(
+            AsyncRefContextualizedMap3<TLeft, TContext, TResult, TAwaitable, TAwaiter> leftMap,
+            AsyncRefContextualizedMap3<TRight, TContext, TResult, TAwaitable, TAwaiter> rightMap,
+            ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter, TAwaitable>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct;
+
+
     }
+
+
+
+    public delegate TypeContainer<TAwaitable, TResult, TAwaiter> AsyncRefContextualizedMap3<in TValue, TContext, TResult, TAwaitable, TAwaiter>(TValue value, ref TContext context)
+        where TValue : allows ref struct
+        where TContext : allows ref struct
+        where TResult : allows ref struct
+        where TAwaitable : IAwaitable<TResult, TAwaiter, TAwaitable>, allows ref struct
+        where TAwaiter : IAwaiter<TResult>, allows ref struct;
 
 
     //// TODO it's not clear that this needs to 
@@ -262,6 +436,19 @@
             public T GetResult()
             {
                 throw new Exception("TODO");
+            }
+        }
+
+        public static implicit operator TypeContainer<Realizable<T>, T, Realizable<T>.Awaiter>(Realizable<T> realizable)
+        {
+            return new TypeContainer<Realizable<T>, T, Awaiter>(realizable);
+        }
+
+        public TypeContainer<Realizable<T>, T, Realizable<T>.Awaiter> Container
+        {
+            get
+            {
+                return this;
             }
         }
     }
