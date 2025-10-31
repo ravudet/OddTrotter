@@ -212,6 +212,7 @@
                 ref context);
 
 
+            //// TODO you are going to need to flesh out more types to actually test this...
             var result4 = await either.Apply4<IEither<int, string>, IEither<int, Exception>, int>(
                 async value =>
                     await value
