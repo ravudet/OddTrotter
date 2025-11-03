@@ -7,6 +7,88 @@
     using System.Threading.Tasks;
 
 
+    public static class AnotherPlayground
+    {
+        public readonly ref struct ReturnType<T> : IAwaitable<T, ReturnType<T>.Awaiter>
+            where T : allows ref struct
+        {
+            public static implicit operator Container<ReturnType<T>, T>(ReturnType<T> returnType)
+            {
+                return new Container<ReturnType<T>, T>(returnType);
+            }
+
+            public Container<ReturnType<T>, T> Container
+            {
+                get
+                {
+                    return this;
+                }
+            }
+
+            public readonly ref struct Awaiter : IAwaiter<T>
+            {
+            }
+        }
+
+        public readonly ref struct Container<TValue, T1>
+            where TValue : allows ref struct
+            where T1 : allows ref struct
+        {
+            public Container(TValue value)
+            {
+                Value = value;
+            }
+
+            public TValue Value { get; }
+        }
+
+        public interface IAwaitable<TValue, TAwaiter>
+            where TValue : allows ref struct
+            where TAwaiter : IAwaiter<TValue>, allows ref struct
+        {
+        }
+
+        public interface IAwaiter<TValue>
+            where TValue : allows ref struct
+        {
+        }
+
+        public delegate Container<TAwaitable, TResult> SomeMap<TResult, TAwaitable, TAwaiter>()
+            where TResult : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct;
+
+        public interface IEither<TLeft, TRight>
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+        }
+
+        public static ReturnType<TResult> Apply<TLeft, TRight, TResult, TAwaitable, TAwaiter>(
+            this IEither<TLeft, TRight> either,
+            SomeMap<TResult, TAwaitable, TAwaiter> map)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct
+        {
+        }
+
+        public static void DoWork(IEither<int, Exception> either)
+        {
+            either.Apply<int, Exception, string, ReturnType<string>, ReturnType<string>.Awaiter>(
+                () => Adapt().Container);
+        }
+
+        private static ReturnType<string> Adapt()
+        {
+            return new ReturnType<string>();
+        }
+    }
+
+
+
     public readonly ref struct TypeContainer<TValue, T1, T2>
         where TValue : allows ref struct
         where T1 : allows ref struct
