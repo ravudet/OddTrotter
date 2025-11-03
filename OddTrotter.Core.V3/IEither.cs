@@ -12,12 +12,12 @@
         public readonly ref struct ReturnType<T> : IAwaitable<T, ReturnType<T>.Awaiter>
             where T : allows ref struct
         {
-            public static implicit operator Container<ReturnType<T>, T>(ReturnType<T> returnType)
+            public static implicit operator Container<ReturnType<T>, ReturnType<T>.Awaiter, T>(ReturnType<T> returnType)
             {
-                return new Container<ReturnType<T>, T>(returnType);
+                return new Container<ReturnType<T>, ReturnType<T>.Awaiter, T>(returnType);
             }
 
-            public Container<ReturnType<T>, T> Container
+            public Container<ReturnType<T>, ReturnType<T>.Awaiter, T> Container
             {
                 get
                 {
@@ -30,9 +30,10 @@
             }
         }
 
-        public readonly ref struct Container<TValue, T1>
+        public readonly ref struct Container<TValue, T1, T2>
             where TValue : allows ref struct
             where T1 : allows ref struct
+            where T2 : allows ref struct
         {
             public Container(TValue value)
             {
@@ -53,16 +54,16 @@
         {
         }
 
-        public delegate Container<TAwaitable, TResult> SomeMap<TResult, TAwaitable, TAwaiter>()
-            where TResult : allows ref struct
-            where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
-            where TAwaiter : IAwaiter<TResult>, allows ref struct;
-
         public interface IEither<TLeft, TRight>
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
         }
+
+        public delegate TAwaitable SomeMap<TResult, TAwaitable, TAwaiter>()
+            where TResult : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct;
 
         public static ReturnType<TResult> Apply<TLeft, TRight, TResult, TAwaitable, TAwaiter>(
             this IEither<TLeft, TRight> either,
@@ -75,10 +76,24 @@
         {
         }
 
+        public delegate ReturnType<TResult> SomeMap2<TResult>()
+            where TResult : allows ref struct;
+
+        public static ReturnType<TResult> Apply2<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            SomeMap2<TResult> map)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Apply<TLeft, TRight, TResult, ReturnType<TResult>, ReturnType<TResult>.Awaiter>(
+                () => map());
+        }
+
         public static void DoWork(IEither<int, Exception> either)
         {
-            either.Apply<int, Exception, string, ReturnType<string>, ReturnType<string>.Awaiter>(
-                () => Adapt().Container);
+            either.Apply2(
+                () => Adapt());
         }
 
         private static ReturnType<string> Adapt()
