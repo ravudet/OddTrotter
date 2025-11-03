@@ -60,12 +60,12 @@
         {
         }
 
-        public delegate TAwaitable SomeMap<TResult, TAwaitable, TAwaiter>()
+        public delegate Container<TAwaitable, TAwaiter, TResult> SomeMap<TResult, TAwaitable, TAwaiter>()
             where TResult : allows ref struct
             where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
             where TAwaiter : IAwaiter<TResult>, allows ref struct;
 
-        public static ReturnType<TResult> Apply<TLeft, TRight, TResult, TAwaitable, TAwaiter>(
+        public static TAwaitable Apply<TLeft, TRight, TResult, TAwaitable, TAwaiter>(
             this IEither<TLeft, TRight> either,
             SomeMap<TResult, TAwaitable, TAwaiter> map)
             where TLeft : allows ref struct
@@ -86,8 +86,7 @@
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.Apply<TLeft, TRight, TResult, ReturnType<TResult>, ReturnType<TResult>.Awaiter>(
-                () => map());
+            return either.Apply(() => map().Container);
         }
 
         public static void DoWork(IEither<int, Exception> either)
