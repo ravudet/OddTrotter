@@ -69,8 +69,8 @@
         /// <exception cref="LeftMapException"></exception>
         /// <exception cref="RightMapException"></exception>
         Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
-            AsyncRefContextualizedMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
-            AsyncRefContextualizedMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap,
+            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
+            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
@@ -116,7 +116,7 @@
             where TResult : allows ref struct;
     }
 
-    public delegate TContinuable AsyncRefContextualizedMap<in TValue, TContext, out TContinuable, out TContinuableSource, out TResult>(TValue value, ref TContext context)
+    public delegate TContinuable AsyncRefContextualizedContinuableMap<in TValue, TContext, out TContinuable, out TContinuableSource, out TResult>(TValue value, ref TContext context) //// TODO you also need AsyncRefContextualizedTaskMap, AsyncRefContextualizedValueTaskMap, AsyncRefContextualizedITaskMap, AsyncRefContextualizedRealizableMap
         where TValue : allows ref struct
         where TContext : allows ref struct
         where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
@@ -181,8 +181,8 @@
         }
 
         public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
-            AsyncRefContextualizedMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
-            AsyncRefContextualizedMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, 
+            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
+            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, 
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
