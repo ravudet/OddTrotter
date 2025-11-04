@@ -132,6 +132,10 @@
 
 
 
+    public interface IArrayResizer
+    {
+        byte[] Resize(byte[]? previous); //// TODO you should really do the disposable thing to make sure they get put back in the pool
+    }
 
     public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
         where TNextReader : allows ref struct
@@ -143,17 +147,21 @@
         private readonly int validBytes;
 
         public ValueReader(Stream stream, byte[] buffer)
+            : this(stream, buffer, 0, 0)
+        {
+        }
+
+        private ValueReader(Stream stream, byte[] buffer, int currentIndex, int validBytes)
         {
             this.stream = stream;
             this.buffer = buffer;
-
             this.currentIndex = 0;
             this.validBytes = 0;
         }
 
         public RefTask Read2()
         {
-            throw new NotImplementedException();
+            return new RefTask(this.stream, this.buffer, this.currentIndex, this.validBytes);
         }
 
         public readonly struct RefTask
@@ -164,18 +172,17 @@
             private readonly int currentIndex;
             private readonly int validBytes;
 
-            public RefTask(Stream stream, byte[] buffer)
+            public RefTask(Stream stream, byte[] buffer, int currentIndex, int validBytes)
             {
                 this.stream = stream;
                 this.buffer = buffer;
-
-                this.currentIndex = 0;
-                this.validBytes = 0;
+                this.currentIndex = currentIndex;
+                this.validBytes = validBytes;
             }
 
             public Awaiter GetAwaiter()
             {
-                return new Awaiter();
+                return new Awaiter(this.stream, this.buffer, this.currentIndex, this.validBytes);
             }
 
             public readonly struct Awaiter : ICriticalNotifyCompletion
@@ -185,24 +192,24 @@
 
                 private readonly int currentIndex;
                 private readonly int validBytes;
+                private readonly int copiedBuffer;
 
 
                 private readonly ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter awaiter;
 
-                public Awaiter(Stream stream, byte[] buffer)
+                public Awaiter(Stream stream, byte[] buffer, int currentIndex, int validBytes)
                 {
                     this.stream = stream;
                     this.buffer = buffer;
-
-                    this.currentIndex = 0;
-                    this.validBytes = 0;
+                    this.currentIndex = currentIndex;
+                    this.validBytes = validBytes;
 
                     // copy the remaining bytes to the beginning of the buffer
-                    var remainingBuffer = this.validBytes - this.currentIndex;
-                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, remainingBuffer);
+                    this.copiedBuffer = this.validBytes - this.currentIndex;
+                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, this.copiedBuffer);
 
                     // read more data into the now-freed buffer space
-                    this.awaiter = this.stream.ReadAsync(this.buffer, remainingBuffer, this.buffer.Length - remainingBuffer).ConfigureAwait(false).GetAwaiter();
+                    this.awaiter = this.stream.ReadAsync(this.buffer, this.copiedBuffer, this.buffer.Length - this.copiedBuffer).ConfigureAwait(false).GetAwaiter();
                 }
 
                 public bool IsCompleted
@@ -225,7 +232,11 @@
 
                 public ValueReader<TNextReader> GetResult()
                 {
-                    throw new NotImplementedException();
+                    return new ValueReader<TNextReader>(
+                        this.stream,
+                        this.buffer,
+                        0,
+                        this.copiedBuffer + this.awaiter.GetResult());
                 }
             }
         }
