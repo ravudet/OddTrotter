@@ -14,6 +14,8 @@
                 (int value, ref bool context) => Parse(value),
                 (Exception exception, ref bool context) => ToString(exception),
                 ref context);
+
+            //// TODO implement an example that uses nested eithers to demonstrate that the maps passed to `apply` can leverage `realizable`
         }
 
 
