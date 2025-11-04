@@ -204,12 +204,21 @@
                     this.currentIndex = currentIndex;
                     this.validBytes = validBytes;
 
-                    // copy the remaining bytes to the beginning of the buffer
-                    this.copiedBuffer = this.validBytes - this.currentIndex;
-                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, this.copiedBuffer);
+                    if (this.currentIndex == 0)
+                    {
+                        // we've tried just reading more into the buffer, we now need to resize the buffer
+                    }
+                    else
+                    {
+                        // the buffer *might* be plenty big for the next token, we just read through the end of the buffer
 
-                    // read more data into the now-freed buffer space
-                    this.awaiter = this.stream.ReadAsync(this.buffer, this.copiedBuffer, this.buffer.Length - this.copiedBuffer).ConfigureAwait(false).GetAwaiter();
+                        // copy the remaining bytes to the beginning of the buffer
+                        this.copiedBuffer = this.validBytes - this.currentIndex;
+                        Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, this.copiedBuffer);
+
+                        // read more data into the now-freed buffer space
+                        this.awaiter = this.stream.ReadAsync(this.buffer, this.copiedBuffer, this.buffer.Length - this.copiedBuffer).ConfigureAwait(false).GetAwaiter();
+                    }
                 }
 
                 public bool IsCompleted
