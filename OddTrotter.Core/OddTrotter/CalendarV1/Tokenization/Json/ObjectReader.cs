@@ -134,26 +134,28 @@
 
     public interface IArrayResizer
     {
-        byte[] Resize(byte[]? previous); //// TODO you should really do the disposable thing to make sure they get put back in the pool
+        byte[] Resize(byte[] previous); //// TODO you should really do the disposable thing to make sure they get put back in the pool
     }
 
-    public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
+    public readonly ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
-        private readonly byte[] buffer;
+        private readonly IArrayResizer arrayResizer;
 
+        private readonly byte[] buffer;
         private readonly int currentIndex;
         private readonly int validBytes;
 
-        public ValueReader(Stream stream, byte[] buffer)
-            : this(stream, buffer, 0, 0)
+        public ValueReader(Stream stream, IArrayResizer arrayResizer)
+            : this(stream, arrayResizer, Array.Empty<byte>(), 0, 0)
         {
         }
 
-        private ValueReader(Stream stream, byte[] buffer, int currentIndex, int validBytes)
+        private ValueReader(Stream stream, IArrayResizer arrayResizer, byte[] buffer, int currentIndex, int validBytes)
         {
             this.stream = stream;
+            this.arrayResizer = arrayResizer;
             this.buffer = buffer;
             this.currentIndex = 0;
             this.validBytes = 0;
@@ -161,20 +163,21 @@
 
         public RefTask Read2()
         {
-            return new RefTask(this.stream, this.buffer, this.currentIndex, this.validBytes);
+            return new RefTask(this.stream, this.arrayResizer, this.buffer, this.currentIndex, this.validBytes);
         }
 
-        public readonly struct RefTask
+        public readonly ref struct RefTask
         {
             private readonly Stream stream;
+            private readonly IArrayResizer arrayResizer;
             private readonly byte[] buffer;
-
             private readonly int currentIndex;
             private readonly int validBytes;
 
-            public RefTask(Stream stream, byte[] buffer, int currentIndex, int validBytes)
+            public RefTask(Stream stream, IArrayResizer arrayResizer, byte[] buffer, int currentIndex, int validBytes)
             {
                 this.stream = stream;
+                this.arrayResizer = arrayResizer;
                 this.buffer = buffer;
                 this.currentIndex = currentIndex;
                 this.validBytes = validBytes;
@@ -182,14 +185,14 @@
 
             public Awaiter GetAwaiter()
             {
-                return new Awaiter(this.stream, this.buffer, this.currentIndex, this.validBytes);
+                return new Awaiter(this.stream, this.arrayResizer, this.buffer, this.currentIndex, this.validBytes);
             }
 
             public readonly struct Awaiter : ICriticalNotifyCompletion
             {
                 private readonly Stream stream;
+                private readonly IArrayResizer arrayResizer;
                 private readonly byte[] buffer;
-
                 private readonly int currentIndex;
                 private readonly int validBytes;
                 private readonly int copiedBuffer;
@@ -197,28 +200,26 @@
 
                 private readonly ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter awaiter;
 
-                public Awaiter(Stream stream, byte[] buffer, int currentIndex, int validBytes)
+                public Awaiter(Stream stream, IArrayResizer arrayResizer, byte[] buffer, int currentIndex, int validBytes)
                 {
                     this.stream = stream;
+                    this.arrayResizer = arrayResizer;
                     this.buffer = buffer;
                     this.currentIndex = currentIndex;
                     this.validBytes = validBytes;
 
                     if (this.currentIndex == 0)
                     {
-                        // we've tried just reading more into the buffer, we now need to resize the buffer
+                        // we've tried just reading more into the buffer (or we are on the 0-length initial buffer), we now need to resize the buffer
+                        this.buffer = this.arrayResizer.Resize(this.buffer);
                     }
-                    else
-                    {
-                        // the buffer *might* be plenty big for the next token, we just read through the end of the buffer
 
-                        // copy the remaining bytes to the beginning of the buffer
-                        this.copiedBuffer = this.validBytes - this.currentIndex;
-                        Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, this.copiedBuffer);
+                    // copy the remaining bytes to the beginning of the buffer
+                    this.copiedBuffer = this.validBytes - this.currentIndex;
+                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, this.copiedBuffer);
 
-                        // read more data into the now-freed buffer space
-                        this.awaiter = this.stream.ReadAsync(this.buffer, this.copiedBuffer, this.buffer.Length - this.copiedBuffer).ConfigureAwait(false).GetAwaiter();
-                    }
+                    // read more data into the now-freed buffer space
+                    this.awaiter = this.stream.ReadAsync(this.buffer, this.copiedBuffer, this.buffer.Length - this.copiedBuffer).ConfigureAwait(false).GetAwaiter();
                 }
 
                 public bool IsCompleted
@@ -243,6 +244,7 @@
                 {
                     return new ValueReader<TNextReader>(
                         this.stream,
+                        this.arrayResizer,
                         this.buffer,
                         0,
                         this.copiedBuffer + this.awaiter.GetResult());
