@@ -7,9 +7,12 @@
         where TRight : allows ref struct
     {
         Realizable<TResult> Apply<TResult, TContext, TContinuable>(
-            AsyncRefContextualizedMap<TLeft, TContext, TContinuable, TResult> leftMap)
-        {
-        }
+            AsyncRefContextualizedMap<TLeft, TContext, TContinuable, TResult> leftMap,
+            AsyncRefContextualizedMap<TRight, TContext, TContinuable, TResult> rightMap,
+            ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct;
     }
 
     public readonly ref struct Realizable<T>
