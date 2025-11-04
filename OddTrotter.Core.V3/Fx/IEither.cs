@@ -2,22 +2,70 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
+
+    public static class Playground
+    {
+        public static void DoWork(IEither<int, Exception> either)
+        {
+            bool context = false;
+            var result = either.Apply<string, bool, TaskWrapper<string>, TaskWrapper<string>.ContinuableSource>(
+                (int value, ref bool context) => Parse(value),
+                (Exception exception, ref bool context) => ToString(exception),
+                ref context);
+        }
+
+
+        public static TaskWrapper<string> Parse(int value)
+        {
+            return new TaskWrapper<string>(ParseImpl(value));
+        }
+
+        private static async Task<string> ParseImpl(int value)
+        {
+            return await Task.FromResult(value.ToString()).ConfigureAwait(false);
+        }
+
+        public static TaskWrapper<string> ToString(Exception exception)
+        {
+            return new TaskWrapper<string>(ToStringImpl(exception));
+        }
+
+        private static async Task<string> ToStringImpl(Exception exception)
+        {
+            return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
+        }
+
+        public sealed class TaskWrapper<T> : IContinuable<T, TaskWrapper<T>.ContinuableSource>
+        {
+            private readonly Task<T> task;
+
+            public TaskWrapper(Task<T> task)
+            {
+                this.task = task;
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<ContinuableSource, TResult> continuation) where TResult : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+
+            public readonly ref struct ContinuableSource : IContinuableSource<T>
+            {
+                public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception) where TResult : allows ref struct
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+    }
+
+
 
     public interface IEither<out TLeft, out TRight>
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
-        /// <typeparam name="TContinuable"></typeparam>
-        /// <typeparam name="TContinuableSource"></typeparam>
-        /// <param name="leftMap"></param>
-        /// <param name="rightMap"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
         /// <exception cref="LeftMapException"></exception>
         /// <exception cref="RightMapException"></exception>
         Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
