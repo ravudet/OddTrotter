@@ -7,6 +7,19 @@
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <typeparam name="TContinuable"></typeparam>
+        /// <typeparam name="TContinuableSource"></typeparam>
+        /// <param name="leftMap"></param>
+        /// <param name="rightMap"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="LeftMapException"></exception>
+        /// <exception cref="RightMapException"></exception>
         Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
             AsyncRefContextualizedMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
             AsyncRefContextualizedMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap,
@@ -17,6 +30,22 @@
             where TContinuableSource : IContinuableSource<TResult>, allows ref struct;
     }
 
+    public sealed class LeftMapException : Exception
+    {
+        public LeftMapException(Exception exception)
+            : base(null, exception)
+        {
+        }
+    }
+
+    public sealed class RightMapException : Exception
+    {
+        public RightMapException(Exception exception)
+            : base(null, exception)
+        {
+        }
+    }
+
     public readonly ref struct Realizable<T>
         where T : allows ref struct
     {
@@ -25,10 +54,10 @@
     public interface IContinuableSource<out TSource>
         where TSource : allows ref struct
     {
-        TResult Apply<TResult>(
+        TResult Apply<TResult>( //// TODO you need to add the "canceled" case
             Func<TSource, TResult> source,
-            Func<Exception, TResult> exception,
-            Func<TResult> canceled);
+            Func<Exception, TResult> exception)
+            where TResult : allows ref struct;
     }
 
     public interface IContinuable<out TSource, out TContinuableSource>
@@ -123,7 +152,23 @@
             {
                 return
                     leftMap(left, ref context)
-                    .ContinueWith()
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => result,
+                            exception => throw new LeftMapException(exception)));
+            }
+            else if (this.right.TryGetValue(out var right))
+            {
+                return
+                    rightMap(right, ref context)
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => result,
+                            exception => throw new RightMapException(exception)));
+            }
+            else
+            {
+                throw new Exception("TODO bug");
             }
         }
     }
