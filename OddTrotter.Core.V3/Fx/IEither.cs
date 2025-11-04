@@ -20,7 +20,8 @@
 
         public static void DoWork2(IEither<string, Exception> either)
         {
-
+            either.Apply(
+                )
         }
 
 
