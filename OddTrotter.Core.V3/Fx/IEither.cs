@@ -98,6 +98,7 @@
     public readonly ref struct Realizable<T>
         where T : allows ref struct
     {
+        //// TODO implement continuable and decompose
     }
 
     public interface IContinuableSource<out TSource>
