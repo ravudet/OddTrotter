@@ -94,11 +94,144 @@
             //// TODO i think you'll need a `stream` property and a `buffer` property on the readers
             throw new Exception("TODO");
         }
+
+
+
+
+
+
+
+
+        public static async Task Caller2<TNextReader>()
+            where TNextReader : allows ref struct
+        {
+            var reader = new ValueReader<TNextReader>();
+
+            ValueReaderToken<TNextReader> valueReaderToken;
+            while (!reader.TryMoveNext(out valueReaderToken))
+            {
+                reader = await reader.Read2();
+            }
+        }
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly byte[] buffer;
+
+        private readonly int currentIndex;
+        private readonly int validBytes;
+
+        public ValueReader(Stream stream, byte[] buffer)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+
+            this.currentIndex = 0;
+            this.validBytes = 0;
+        }
+
+        public RefTask Read2()
+        {
+            throw new NotImplementedException();
+        }
+
+        public readonly struct RefTask
+        {
+            private readonly Stream stream;
+            private readonly byte[] buffer;
+
+            private readonly int currentIndex;
+            private readonly int validBytes;
+
+            public RefTask(Stream stream, byte[] buffer)
+            {
+                this.stream = stream;
+                this.buffer = buffer;
+
+                this.currentIndex = 0;
+                this.validBytes = 0;
+            }
+
+            public Awaiter GetAwaiter()
+            {
+                return new Awaiter();
+            }
+
+            public readonly struct Awaiter : ICriticalNotifyCompletion
+            {
+                private readonly Stream stream;
+                private readonly byte[] buffer;
+
+                private readonly int currentIndex;
+                private readonly int validBytes;
+
+
+                private readonly ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter awaiter;
+
+                public Awaiter(Stream stream, byte[] buffer)
+                {
+                    this.stream = stream;
+                    this.buffer = buffer;
+
+                    this.currentIndex = 0;
+                    this.validBytes = 0;
+
+                    // copy the remaining bytes to the beginning of the buffer
+                    var remainingBuffer = this.validBytes - this.currentIndex;
+                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, remainingBuffer);
+
+                    // read more data into the now-freed buffer space
+                    this.awaiter = this.stream.ReadAsync(this.buffer, remainingBuffer, this.buffer.Length - remainingBuffer).ConfigureAwait(false).GetAwaiter();
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.awaiter.IsCompleted;
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.awaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.awaiter.UnsafeOnCompleted(continuation);
+                }
+
+                public ValueReader<TNextReader> GetResult()
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
