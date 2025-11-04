@@ -4,6 +4,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Runtime.CompilerServices;
+    using System.Text;
     using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
@@ -256,18 +257,73 @@
 
         public ValueTask Read()
         {
+            //// TODO update `ireader` interfaces to allow using the `reftask` stuff?
             throw new NotImplementedException();
         }
 
         public ValueReaderToken<TNextReader> TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
+            if (this.currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+
+            //// TODO actually leverage utf8
+            //// TODO you aren't allowing comments...
+            
+            switch ((char)this.buffer[this.currentIndex])
+            {
+                case '{':
+                    moved = true;
+                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Object);
+                case '[':
+                    moved = true;
+                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Array);
+            }
+
+            if (this.currentIndex + 1 >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            Span<byte> tokenText;
+            switch ((char)this.buffer[this.currentIndex])
+            {
+                case 'f':
+                    tokenText = new Span<byte>([(byte)'a', (byte)'l', (byte)'s', (byte)'e']);
+                    if (tokenText == this.buffer.AsSpan(this.currentIndex + 1, ))
+                    break;
+            }
+
+            moved = true;
+            return default;
         }
     }
 
     public ref struct ValueReaderToken<TNextReader>
         where TNextReader : allows ref struct
     {
+        public enum TokenType
+        {
+            False,
+            Null,
+            True,
+            Object,
+            Array,
+            Number,
+            String,
+        }
+
+        private readonly TokenType tokenType;
+
+        public ValueReaderToken(TokenType tokenType)
+        {
+            this.tokenType = tokenType;
+        }
+
         public TResult Apply<TResult>(
             Func<FalseReader<TNextReader>, TResult> @false,
             Func<NullReader<TNextReader>, TResult> @null,
