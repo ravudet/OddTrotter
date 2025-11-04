@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
@@ -47,18 +48,46 @@
             throw new Exception("TODO");
         }
 
-        public static ValueReader<TNextReader> ReadExt<TNextReader>(this ValueReader<TNextReader> reader)
+        public interface ITask<out T>
+            where T : allows ref struct
         {
-            //// TODO actually, before all this, make sure that you can write code like:
-            //// reader.TryMoveNext(out var moved);
-            //// if (!moved)
-            //// {
-            ////   reader = await reader.ReadExt();
-            //// }
-            ////
-            //// reader.TryMoveNext(out moved);
-            ////
-            //// i'm concerned that it won't let you make the second trymovenextcall because it can't preserve `reader` across the `await` boundary
+            /// <inheritdoc cref="Task{TResult}.GetAwaiter"/>
+            ITaskAwaiter<T> GetAwaiter();
+        }
+
+        public interface ITaskAwaiter<out T> : ICriticalNotifyCompletion
+            where T : allows ref struct
+        {
+            /// <inheritdoc cref="TaskAwaiter{TResult}.IsCompleted"/>
+            bool IsCompleted { get; }
+
+            /// <inheritdoc cref="TaskAwaiter{TResult}.GetResult"/>
+            T GetResult();
+        }
+
+        public static async Task Caller<TNextReader>()
+            where TNextReader : allows ref struct
+        {
+            var reader = new ValueReader<TNextReader>();
+
+            ValueReaderToken<TNextReader> valueReaderToken;
+            while (!reader.TryMoveNext(out valueReaderToken))
+            {
+                reader = await reader.ReadExt();
+            }
+        }
+
+        public static bool TryMoveNext<TCurrentReader, TNextReader>(this TCurrentReader reader, [MaybeNullWhen(false)] out TNextReader next)
+            where TCurrentReader : IReader<TNextReader>, allows ref struct
+            where TNextReader : allows ref struct
+        {
+            next = reader.TryMoveNext(out var moved);
+            return moved;
+        }
+
+        public static ITask<ValueReader<TNextReader>> ReadExt<TNextReader>(this ValueReader<TNextReader> reader)
+            where TNextReader : allows ref struct
+        {
             ////
             //// TODO implement everything without async
             //// TODO then implement methods like this, making it async using a new `reftask` type that is able to async return the new reader; the input reader will need to have the necessary properties to actually implement the stream read and the creation of the new reader
