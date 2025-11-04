@@ -1,6 +1,7 @@
 ﻿namespace Fx
 {
     using System;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
@@ -52,7 +53,7 @@
 
             public readonly ref struct ContinuableSource : IContinuableSource<T>
             {
-                public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception) where TResult : allows ref struct
+                public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
                 {
                     throw new NotImplementedException();
                 }
@@ -102,9 +103,10 @@
     public interface IContinuableSource<out TSource>
         where TSource : allows ref struct
     {
-        TResult Apply<TResult>( //// TODO you need to add the "canceled" case
+        TResult Apply<TResult>(
             Func<TSource, TResult> source,
-            Func<Exception, TResult> exception)
+            Func<Exception, TResult> exception,
+            Func<OperationCanceledException, TResult> canceled)
             where TResult : allows ref struct;
     }
 
@@ -196,7 +198,8 @@
                     .ContinueWith(source =>
                         source.Apply(
                             result => result,
-                            exception => throw new LeftMapException(exception)));
+                            exception => throw new LeftMapException(exception),
+                            canceled => throw canceled));
             }
             else if (this.right.TryGetValue(out var right))
             {
@@ -205,7 +208,8 @@
                     .ContinueWith(source =>
                         source.Apply(
                             result => result,
-                            exception => throw new RightMapException(exception)));
+                            exception => throw new RightMapException(exception),
+                            canceled => throw canceled));
             }
             else
             {
