@@ -90,7 +90,7 @@
         {
             ////
             //// TODO implement everything without async
-            //// TODO then implement methods like this, making it async using a new `reftask` type that is able to async return the new reader; the input reader will need to have the necessary properties to actually implement the stream read and the creation of the new reader
+            //// TODO then implement methods like this, making it async using a new `reftask` type that is able to async return the new reader; the input `reader` will need to have the necessary properties to actually implement the stream read and the creation of the new reader
             //// TODO i think you'll need a `stream` property and a `buffer` property on the readers
             throw new Exception("TODO");
         }
