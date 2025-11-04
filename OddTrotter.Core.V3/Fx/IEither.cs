@@ -129,13 +129,6 @@
 
 
 
-    public interface INullable<out T>
-        where T : allows ref struct
-    {
-        T TryGetValue(out bool retrieved);
-    }
-
-
     public readonly ref struct RefNullable<T>
         where T : allows ref struct
     {
