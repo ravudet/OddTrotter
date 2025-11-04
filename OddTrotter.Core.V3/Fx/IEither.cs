@@ -11,20 +11,99 @@
         {
             bool context = false;
             var result = either.Apply<string, bool, TaskWrapper<string>, TaskWrapper<string>.ContinuableSource>(
-                (int value, ref bool context) => Parse(value),
+                (int value, ref bool context) => ToString(value),
                 (Exception exception, ref bool context) => ToString(exception),
                 ref context);
 
             //// TODO implement an example that uses nested eithers to demonstrate that the maps passed to `apply` can leverage `realizable`
         }
 
-
-        public static TaskWrapper<string> Parse(int value)
+        public static void DoWork2(IEither<string, Exception> either)
         {
-            return new TaskWrapper<string>(ParseImpl(value));
+
         }
 
-        private static async Task<string> ParseImpl(int value)
+
+        public static TaskWrapper<IEither<int, Exception>> Parse(string value)
+        {
+            return new TaskWrapper<IEither<int, Exception>>(ParseImpl(value));
+        }
+
+        private static async Task<IEither<int, Exception>> ParseImpl(string value)
+        {
+            return await Task.FromResult(ParseInner(value)).ConfigureAwait(false);
+        }
+
+        private static IEither<int, Exception> ParseInner(string value)
+        {
+            try
+            {
+                return new Either<int, Exception>(int.Parse(value));
+            }
+            catch (Exception exception)
+            {
+                return new Either<int, Exception>(exception);
+            }
+        }
+
+        private sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
+        {
+            private readonly TLeft? left;
+            private readonly TRight? right;
+
+            public Either(TLeft left)
+            {
+                this.left = left;
+
+                this.right = default;
+            }
+
+            public Either(TRight right)
+            {
+                this.right = right;
+
+                this.left = default;
+            }
+
+            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+                where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
+                where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+            {
+                if (this.left != null)
+                {
+                    return
+                        leftMap(this.left, ref context)
+                        .ContinueWith(source =>
+                            source.Apply(
+                                result => result,
+                                exception => throw new LeftMapException(exception),
+                                canceled => throw canceled));
+                }
+                else if (this.right != null)
+                {
+                    return
+                        rightMap(this.right, ref context)
+                        .ContinueWith(source =>
+                            source.Apply(
+                                result => result,
+                                exception => throw new RightMapException(exception),
+                                canceled => throw canceled));
+                }
+                else
+                {
+                    throw new Exception("TODO bug");
+                }
+            }
+        }
+
+        public static TaskWrapper<string> ToString(int value)
+        {
+            return new TaskWrapper<string>(ToStringImpl(value));
+        }
+
+        private static async Task<string> ToStringImpl(int value)
         {
             return await Task.FromResult(value.ToString()).ConfigureAwait(false);
         }
