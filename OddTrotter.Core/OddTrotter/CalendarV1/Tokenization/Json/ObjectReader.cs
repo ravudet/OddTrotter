@@ -365,6 +365,7 @@
                 case '[':
                     moved = true;
                     return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Array);
+                case '-':
                 case '0':
                 case '1':
                 case '2':
@@ -837,7 +838,11 @@
 
         public NumberToken TryGetValue(out bool moved)
         {
-            throw new NotImplementedException();
+            bool positive;
+            ulong value;
+
+
+
         }
 
         public TNextReader TryMoveNext(out bool moved)
