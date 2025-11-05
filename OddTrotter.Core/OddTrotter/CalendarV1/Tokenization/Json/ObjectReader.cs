@@ -544,10 +544,10 @@
             this.readerFactory = readerFactory;
         }
 
-        public RefTask<FalseReader<TNextReader>> Read2()
+        public RefTask<NullReader<TNextReader>> Read2()
         {
             var readerFactory = this.readerFactory;
-            return new RefTask<FalseReader<TNextReader>>(
+            return new RefTask<NullReader<TNextReader>>(
                 this.currentIndex + bytes.Length - 1 < this.validBytes,
                 this.stream,
                 this.arrayResizer,
@@ -555,7 +555,7 @@
                 this.currentIndex,
                 this.validBytes,
                 (stream, arrayResizer, buffer, currentIndex, validBytes) =>
-                    new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+                    new NullReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
         }
 
         public ValueTask Read()
@@ -630,10 +630,10 @@
             this.readerFactory = readerFactory;
         }
 
-        public RefTask<FalseReader<TNextReader>> Read2()
+        public RefTask<TrueReader<TNextReader>> Read2()
         {
             var readerFactory = this.readerFactory;
-            return new RefTask<FalseReader<TNextReader>>(
+            return new RefTask<TrueReader<TNextReader>>(
                 this.currentIndex + bytes.Length - 1 < this.validBytes,
                 this.stream,
                 this.arrayResizer,
@@ -641,7 +641,7 @@
                 this.currentIndex,
                 this.validBytes,
                 (stream, arrayResizer, buffer, currentIndex, validBytes) =>
-                    new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+                    new TrueReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
         }
 
         public ValueTask Read()
@@ -788,7 +788,7 @@
         }
     }
 
-    public ref struct NumberReader<TNextReader> : IReader<TNextReader, NumberToken>
+    public readonly ref struct NumberReader<TNextReader> : IReader<TNextReader, NumberToken>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -814,18 +814,20 @@
             this.readerFactory = readerFactory;
         }
 
-        public RefTask<FalseReader<TNextReader>> Read2()
+        public RefTask<NumberReader<TNextReader>> Read2()
         {
+            this.TryGetValue(out var moved); //// TODO how much effort do you want to put into avoiding reading from the stream? because it's "possible" i guess that reading the current "number" value is very expensive, and we would be reading it so that we can know to return a "completed" reftask here; is it always better to read it, or sometimes does it make more sense to read from the stream and potentially resize the buffer?
+
             var readerFactory = this.readerFactory;
-            return new RefTask<FalseReader<TNextReader>>(
-                this.currentIndex + bytes.Length - 1 < this.validBytes,
+            return new RefTask<NumberReader<TNextReader>>(
+                moved,
                 this.stream,
                 this.arrayResizer,
                 this.buffer,
                 this.currentIndex,
                 this.validBytes,
                 (stream, arrayResizer, buffer, currentIndex, validBytes) =>
-                    new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+                    new NumberReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
         }
 
         public ValueTask Read()
