@@ -430,7 +430,7 @@
         }
     }
 
-    public ref struct FalseReader<TNextReader> : IReader<TNextReader, FalseToken>
+    public readonly ref struct FalseReader<TNextReader> : IReader<TNextReader, FalseToken>
         where TNextReader : allows ref struct
     {
         private static readonly byte[] bytes = [(byte)'f', (byte)'a', (byte)'l', (byte)'s', (byte)'e'];
@@ -516,7 +516,7 @@
     {
     }
 
-    public ref struct NullReader<TNextReader> : IReader<TNextReader, NullToken>
+    public readonly ref struct NullReader<TNextReader> : IReader<TNextReader, NullToken>
         where TNextReader : allows ref struct
     {
         private static readonly byte[] bytes = [(byte)'n', (byte)'u', (byte)'l', (byte)'l'];
@@ -602,9 +602,48 @@
     {
     }
 
-    public ref struct TrueReader<TNextReader> : IReader<TNextReader, TrueToken>
+    public readonly ref struct TrueReader<TNextReader> : IReader<TNextReader, TrueToken>
         where TNextReader : allows ref struct
     {
+        private static readonly byte[] bytes = [(byte)'t', (byte)'r', (byte)'e', (byte)'e'];
+
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public TrueReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<FalseReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            return new RefTask<FalseReader<TNextReader>>(
+                this.currentIndex + bytes.Length - 1 < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
@@ -612,12 +651,36 @@
 
         public TrueToken TryGetValue(out bool moved)
         {
-            throw new NotImplementedException();
+            if (this.currentIndex + bytes.Length - 1 >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            if (this.buffer.AsSpan(this.currentIndex, bytes.Length) == bytes.AsSpan())
+            {
+                moved = true;
+                return new TrueToken();
+            }
+
+            throw new Exception("TODO invalid JSON");
         }
 
         public TNextReader TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
+            this.TryGetValue(out moved);
+            if (!moved)
+            {
+                return default!;
+            }
+
+            moved = true;
+            return this.readerFactory(
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex + bytes.Length,
+                this.validBytes);
         }
     }
 
@@ -728,6 +791,43 @@
     public ref struct NumberReader<TNextReader> : IReader<TNextReader, NumberToken>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public NumberReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<FalseReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            return new RefTask<FalseReader<TNextReader>>(
+                this.currentIndex + bytes.Length - 1 < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
