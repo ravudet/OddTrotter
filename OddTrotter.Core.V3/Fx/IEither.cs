@@ -242,31 +242,81 @@
         }
     }
 
-    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource>
+    public readonly ref struct Realizable<T> : IContinuable<T, IContinuableSource<T>> //// TODO make this implement ieither, and remove the public `decompose` method so you can find what callers should actually be calling the extension `decompose` variant
         where T : allows ref struct
     {
+        private readonly RefEither<T, ITask<T>> either;
+
+        public Realizable(T value)
+        {
+            this.either = new RefEither<T, ITask<T>>(value);
+        }
+
+        public Realizable(ITask<T> future)
+        {
+            //// TODO do you really want `future` to be `itask` specifically, or should this be a generic on `realizable`?
+            this.either = new RefEither<T, ITask<T>>(future);
+        }
+
         public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
         {
-            throw new NotImplementedException();
+
+            //// TODo you are here
+            //// TODO do you want to implement IContinuable<T, IContinuableSource<T>> or IContinuable<T, Continuationsource>
+
+            if (either.Decompose(out var value, out var future))
+            {
+                return source(value);
+            }
+            else
+            {
+                future.ContinueWith(continuation);
+            }
         }
 
         //// TODO implement continuable and decompose
 
         public readonly ref struct ContinuationSource : IContinuableSource<T>
         {
+            private readonly RefEither<T, ITask<T>> either;
+
+            public ContinuationSource(RefEither<T, ITask<T>> either)
+            {
+                this.either = either;
+            }
+
             public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
-                throw new NotImplementedException();
+                if (either.Decompose(out var value, out var future))
+                {
+                    return source(value);
+                }
+                else
+                {
+                    future.ContinueWith()
+                }
             }
         }
 
-        public bool Decompose(out T value, out ITask<T> future) //// TODO do you really want `future` to be `itask` specifically, or should this be a generic on `realizable`?
+        public bool Decompose(out T value, out ITask<T> future)
         {
             throw new NotImplementedException();
         }
+
+        public Realizable<TResult> ContinueWith<TResult>(Func<IContinuableSource<T>, TResult> continuation) where TResult : allows ref struct
+        {
+            if (either.Decompose(out var value, out var future))
+            {
+                return source(value);
+            }
+            else
+            {
+                return future.ContinueWith(continuation);
+            }
+        }
     }
 
-    public interface ITask<out T>
+    public interface ITask<out T> : IContinuable<T, IContinuableSource<T>>
         where T : allows ref struct
     {
         IAwaiter<T> GetAwaiter();
@@ -305,6 +355,46 @@
 
 
 
+
+
+    public static class EitherExtensions
+    {
+        public static bool Decompose<TEither, TLeft, TRight>(
+            this TEither either,
+            out TLeft left,
+            out TRight right)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            var context = new DecomposeContext<TLeft, TRight>();
+            var result = either.Apply<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>, Realizable<bool>.ContinuationSource>(
+                (TLeft left, ref DecomposeContext<TLeft, TRight> context) =>
+                {
+                    context.Left = left;
+                    return new Realizable<bool>(true);
+                },
+                (TRight right, ref DecomposeContext<TLeft, TRight> context) =>
+                {
+                    context.Right = right;
+                    return new Realizable<bool>(true);
+                },
+                ref context);
+
+            left = context.Left;
+            right = context.Right;
+            return context.IsLeft;
+        }
+
+        private ref struct DecomposeContext<TLeft, TRight>
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            public bool IsLeft { get; set; }
+            public TLeft Left { get; set; }
+            public TRight Right { get; set; }
+        }
+    }
 
 
 
@@ -393,6 +483,12 @@
             {
                 throw new Exception("TODO bug");
             }
+        }
+
+        public bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
+        {
+            //// TODo implement this as an extension, mixin, monad combo
+            throw new NotImplementedException();
         }
     }
 }
