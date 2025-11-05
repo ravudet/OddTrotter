@@ -14,16 +14,81 @@
                 (int value, ref bool context) => ToString(value),
                 (Exception exception, ref bool context) => ToString(exception),
                 ref context);
-
-            //// TODO implement an example that uses nested eithers to demonstrate that the maps passed to `apply` can leverage `realizable`
         }
 
-        public static void DoWork2(IEither<string, Exception> either)
+        public static Realizable<string> DoWork2(IEither<string, Exception> either)
         {
-            either.Apply(
-                )
+            var parsed = either.Select(
+                value => Parse(value),
+                error => new TaskWrapper<Exception>(Task.FromResult(error)));
+
+            return parsed.Apply(
+                actualParsing => actualParsing.Apply(
+                    actuallyParsed => actuallyParsed.ToString(),
+                    parseError => parseError.ToString()),
+                readError => readError.ToString());
         }
 
+
+        public static Realizable<IEither<TLeftResult, TRightResult>> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, IContinuable<TLeftResult, TaskWrapper<TLeftResult>.ContinuableSource>> leftMap,
+            Func<TRightSource, IContinuable<TRightResult, TaskWrapper<TRightResult>.ContinuableSource>> rightMap)
+        {
+            return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>, Realizable<IEither<TLeftResult, TRightResult>>.ContinuationSource>(
+                (TLeftSource left, ref bool context) =>
+                    leftMap(left)
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                            exception => throw exception,
+                            canceled => throw canceled)),
+                (TRightSource right, ref bool context) =>
+                    rightMap(right)
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                            exception => throw exception,
+                            canceled => throw canceled)),
+                ref Context);
+        }
+
+
+        public static TResult Apply<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, TResult> rightMap)
+        {
+            var future = either.Apply<TResult, bool, TaskWrapper<TResult>, TaskWrapper<TResult>.ContinuableSource>(
+                (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(leftMap(left))),
+                (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(rightMap(right))),
+                ref Context);
+
+            if (future.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.GetAwaiter().GetResult();
+            }
+        }
+
+
+        public static Realizable<TResult> Apply<TLeft, TRight, TResult>(
+            this Realizable<IEither<TLeft, TRight>> either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, TResult> rightMap)
+        {
+            return either.ContinueWith(
+                source => source.Apply(
+                    result => result.Apply(leftMap, rightMap),
+                    exception => throw exception,
+                    canceled => throw canceled));
+        }
+
+
+        private static bool Context = false;
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
         {
@@ -177,10 +242,40 @@
         }
     }
 
-    public readonly ref struct Realizable<T>
+    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource>
         where T : allows ref struct
     {
+        public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
         //// TODO implement continuable and decompose
+
+        public readonly ref struct ContinuationSource : IContinuableSource<T>
+        {
+            public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool Decompose(out T value, out ITask<T> future) //// TODO do you really want `future` to be `itask` specifically, or should this be a generic on `realizable`?
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public interface ITask<out T>
+        where T : allows ref struct
+    {
+        IAwaiter<T> GetAwaiter();
+    }
+
+    public interface IAwaiter<out T>
+        where T : allows ref struct
+    {
+        T GetResult();
     }
 
     public interface IContinuableSource<out TSource>
