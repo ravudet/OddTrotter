@@ -479,7 +479,8 @@
         {
             if (typeof(TCasted) == typeof(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>))
             {
-
+                casted = (TCasted)(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>)Decomposer.Instance;
+                return true;
             }
 
             casted = default;
