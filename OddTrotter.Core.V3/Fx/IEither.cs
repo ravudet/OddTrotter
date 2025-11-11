@@ -268,7 +268,7 @@
 
         public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
         {
-            if (either.Decompose(out var value, out var future))
+            if (either.TypeHolder.Decompose(out var value, out var future))
             {
                 return new Realizable<TResult>(continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(value))));
             }
@@ -291,7 +291,7 @@
 
             public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
-                if (either.Decompose(out var value, out var continuableSource))
+                if (either.TypeHolder.Decompose(out var value, out var continuableSource))
                 {
                     return source(value);
                 }
@@ -491,7 +491,7 @@
         }
     }
 
-    public readonly ref struct RefEither<TLeft, TRight> : IEither<TLeft, TRight>, ICastable
+    public readonly ref struct RefEither<TLeft, TRight> : IEither<RefEither<TLeft, TRight>, TLeft, TRight>, ICastable
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
@@ -504,6 +504,14 @@
             this.left = new RefNullable<TLeft>(left);
 
             this.right = new RefNullable<TRight>();
+        }
+
+        public TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight> TypeHolder
+        {
+            get
+            {
+                return new TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>(this);
+            }
         }
 
         public RefEither(TRight right)
