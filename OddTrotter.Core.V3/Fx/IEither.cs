@@ -1,7 +1,6 @@
 ﻿namespace Fx
 {
     using System;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
@@ -210,6 +209,15 @@
 
 
 
+
+    public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>
+        where TEither : IEither<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        TypeHolder<TEither, TLeft, TRight> TypeHolder { get; }
+    }
+
     public interface IEither<out TLeft, out TRight>
         where TLeft : allows ref struct
         where TRight : allows ref struct
@@ -343,6 +351,69 @@
 
     public static class EitherExtensions
     {
+        public static bool Decompose<TEither, TLeft, TRight>(
+            this TypeHolder<TEither, TLeft, TRight> either,
+            out TLeft left,
+            out TRight right)
+            where TEither : IEither<TLeft, TRight>, ICastable, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return Decompose(either.Self, out left, out right);
+        }
+
+        public static bool Decompose<TLeft, TRight>(
+            this IEither<TLeft, TRight> either,
+            out TLeft left,
+            out TRight right)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return new Castable<TLeft, TRight>(either).TypeHolder.Decompose(out left, out right);
+        }
+
+        private readonly ref struct Castable<TLeft, TRight> : IEither<Castable<TLeft, TRight>, TLeft, TRight>, ICastable
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            private readonly IEither<TLeft, TRight> either;
+
+            public Castable(IEither<TLeft, TRight> either)
+            {
+                this.either = either;
+            }
+
+            public TypeHolder<Castable<TLeft, TRight>, TLeft, TRight> TypeHolder
+            {
+                get
+                {
+                    return new TypeHolder<Castable<TLeft, TRight>, TLeft, TRight>(this);
+                }
+            }
+
+            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+                where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
+                where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+            {
+                return this.either.Apply(leftMap, rightMap, ref context);
+            }
+
+            public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
+            {
+                //// TODO this isn't actually the correct implementation, `tcasted` will not be a "decomposable", it will be a "decomposer", while `either` will be a "decomposable"
+                if (this.either is TCasted temp)
+                {
+                    casted = temp;
+                    return true;
+                }
+
+                casted = default;
+                return false;
+            }
+        }
+
         public static bool Decompose<TEither, TLeft, TRight>(
             this TEither either,
             out TLeft left,
@@ -560,5 +631,18 @@
         TLeft Left { get; }
 
         TRight Right { get; }
+    }
+
+    public readonly ref struct TypeHolder<TSelf, T1, T2>
+        where TSelf : allows ref struct
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        public TypeHolder(TSelf self)
+        {
+            this.Self = self;
+        }
+
+        public TSelf Self { get; }
     }
 }
