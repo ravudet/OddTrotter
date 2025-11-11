@@ -361,10 +361,24 @@
             {
                 case '{':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Object);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.Object,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case '[':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Array);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.Array,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case '-':
                 case '0':
                 case '1':
@@ -377,19 +391,54 @@
                 case '8':
                 case '9':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Number);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.Number,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case '"':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.String);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.String,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case 'f':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.False);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.False,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case 'n':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.Null);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.Null,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
                 case 't':
                     moved = true;
-                    return new ValueReaderToken<TNextReader>(ValueReaderToken<TNextReader>.TokenType.True);
+                    return new ValueReaderToken<TNextReader>(
+                        ValueReaderToken<TNextReader>.TokenType.True,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
             }
 
             throw new Exception("TODO invalid JSON");
@@ -412,9 +461,30 @@
 
         private readonly TokenType tokenType;
 
-        public ValueReaderToken(TokenType tokenType)
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public ValueReaderToken(
+            TokenType tokenType,
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
         {
             this.tokenType = tokenType;
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer; 
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
         }
 
         public TResult Apply<TResult>(
@@ -427,7 +497,40 @@
             Func<StringReader<TNextReader>, TResult> @string)
             where TResult : allows ref struct
         {
-            throw new NotImplementedException();
+            switch (this.tokenType)
+            {
+                case TokenType.False:
+                    var falseReader = new FalseReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer, 
+                        this.currentIndex, 
+                        this.validBytes,
+                        this.readerFactory);
+                    return @false(falseReader);
+                case TokenType.Null:
+                    var nullReader = new NullReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                    return @null(nullReader);
+                case TokenType.True:
+                    var trueReader = new TrueReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                    return @true(trueReader);
+                case TokenType.Object:
+                    return;
+                case TokenType.Array:
+                    return;
+            }
         }
     }
 
