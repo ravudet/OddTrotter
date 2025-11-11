@@ -347,10 +347,18 @@
             this TEither either,
             out TLeft left,
             out TRight right)
-            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TEither : IEither<TLeft, TRight>, ICastable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            if (either.TryCast<IDecomposerMixin<TEither, TLeft, TRight, Decomposed<TLeft, TRight>>>(out var casted))
+            {
+                var decomposed = casted.Decompose(either, out var isLeft);
+                left = decomposed.Left;
+                right = decomposed.Right;
+                return isLeft;
+            }
+
             var context = new DecomposeContext<TLeft, TRight>();
             var result = either.Apply<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>, Realizable<bool>.ContinuationSource>(
                 (TLeft left, ref DecomposeContext<TLeft, TRight> context) =>
@@ -469,10 +477,22 @@
             }
         }
 
-        public bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
+        private bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
         {
-            //// TODo implement this as an extension, mixin, monad combo
-            throw new NotImplementedException();
+            if (this.left.TryGetValue(out value))
+            {
+                future = default;
+                return true;
+            }
+            else if (this.right.TryGetValue(out future))
+            {
+                value = default;
+                return false;
+            }
+            else
+            {
+                throw new Exception("TODO bug");
+            }
         }
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
@@ -497,20 +517,8 @@
 
             public Decomposed<TLeft, TRight> Decompose(RefEither<TLeft, TRight> either, out bool isLeft)
             {
-                if (either.left.TryGetValue(out var left))
-                {
-                    isLeft = true;
-                    return new Decomposed<TLeft, TRight>(left);
-                }
-                else if (either.right.TryGetValue(out var right))
-                {
-                    isLeft = false;
-                    return new Decomposed<TLeft, TRight>(right);
-                }
-                else
-                {
-                    throw new Exception("TODO bug");
-                }
+                isLeft = either.Decompose(out var left, out var right);
+                return new Decomposed<TLeft, TRight>(left!, right!);
             }
         }
     }
@@ -534,18 +542,10 @@
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
-        public Decomposed(TLeft left)
+        public Decomposed(TLeft left, TRight right)
         {
             Left = left;
-
-            this.Right = default!;
-        }
-
-        public Decomposed(TRight right)
-        {
             Right = right;
-
-            this.Left = default!;
         }
 
         public TLeft Left { get; }
