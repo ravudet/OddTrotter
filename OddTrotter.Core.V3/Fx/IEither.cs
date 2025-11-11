@@ -294,9 +294,9 @@
             }
         }
 
-        public bool Decompose(out T value, out ITask<T> future)
+        public bool Decompose([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)] out ITask<T> future)
         {
-            throw new NotImplementedException();
+            return this.either.Decompose(out value, out future);
         }
     }
 
