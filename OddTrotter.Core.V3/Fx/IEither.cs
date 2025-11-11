@@ -482,12 +482,21 @@
         bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted); //// note: `tcasted` should *not* allow ref struct; the point of this interface is to allow ref structs to be cast to interfaces //// TODO just because that's your narrow use-case right now doesn't mean it could never be useful for casts from ref structs to ref structs...
     }
 
-
-    public interface IEitherMixable //// TODO you are not currently calling this "monad" because it doesn't have the "unit" on it, and that's only because your current use-case doesn't return an either; this might actually be a monad though
+    public interface IDecomposeMixin<in TEither, out TLeft, out TRight, out TDecomposed>
+        where TEither : IEither<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+        where TDecomposed : IDecomposed<TLeft, TLeft>, allows ref struct
     {
+        TDecomposed Decompose(TEither either, out bool isLeft);
     }
 
-    public interface IEitherMixin //// TODO you only have this interface as a placeholder for those mixins which an either could be cast to; i think you might be "wanting" monads and mixins, but you're naming things here based on your fix for ref structs not having a cast
+    public interface IDecomposed<out TLeft, out TRight>
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
     {
+        TLeft Left { get; }
+
+        TRight Right { get; }
     }
 }
