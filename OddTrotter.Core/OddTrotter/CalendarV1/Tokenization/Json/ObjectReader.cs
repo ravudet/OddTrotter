@@ -1169,6 +1169,47 @@
     public ref struct StringReader<TNextReader> : IReader<TNextReader, StringToken>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        private int? finalIndex;
+
+        public StringReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<StringReader<TNextReader>> Read2()
+        {
+            this.TryGetValue(out var moved); //// TODO how much effort do you want to put into avoiding reading from the stream? because it's "possible" i guess that reading the current "number" value is very expensive, and we would be reading it so that we can know to return a "completed" reftask here; is it always better to read it, or sometimes does it make more sense to read from the stream and potentially resize the buffer?
+
+            var readerFactory = this.readerFactory;
+            return new RefTask<StringReader<TNextReader>>(
+                moved,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new StringReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
