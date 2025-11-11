@@ -540,6 +540,8 @@
                         this.validBytes,
                         this.readerFactory);
                     return number(numberReader);
+                case TokenType.String:
+
             }
         }
     }
