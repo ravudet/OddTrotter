@@ -412,7 +412,7 @@
         }
     }
 
-    public readonly ref struct RefEither<TLeft, TRight> : IEither<TLeft, TRight>
+    public readonly ref struct RefEither<TLeft, TRight> : IEither<TLeft, TRight>, ICastable
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
@@ -474,6 +474,44 @@
             //// TODo implement this as an extension, mixin, monad combo
             throw new NotImplementedException();
         }
+
+        public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
+        {
+            if (typeof(TCasted) == typeof(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>))
+            {
+
+            }
+
+            casted = default;
+            return false;
+        }
+
+        private sealed class Decomposer : IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>
+        {
+            private Decomposer()
+            {
+            }
+
+            public static Decomposer Instance { get; } = new Decomposer();
+
+            public Decomposed<TLeft, TRight> Decompose(RefEither<TLeft, TRight> either, out bool isLeft)
+            {
+                if (either.left.TryGetValue(out var left))
+                {
+                    isLeft = true;
+                    return new Decomposed<TLeft, TRight>(left);
+                }
+                else if (either.right.TryGetValue(out var right))
+                {
+                    isLeft = false;
+                    return new Decomposed<TLeft, TRight>(right);
+                }
+                else
+                {
+                    throw new Exception("TODO bug");
+                }
+            }
+        }
     }
 
 
@@ -482,13 +520,36 @@
         bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted); //// note: `tcasted` should *not* allow ref struct; the point of this interface is to allow ref structs to be cast to interfaces //// TODO just because that's your narrow use-case right now doesn't mean it could never be useful for casts from ref structs to ref structs...
     }
 
-    public interface IDecomposeMixin<in TEither, out TLeft, out TRight, out TDecomposed>
+    public interface IDecomposerMixin<in TEither, out TLeft, out TRight, out TDecomposed>
         where TEither : IEither<TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct
         where TRight : allows ref struct
-        where TDecomposed : IDecomposed<TLeft, TLeft>, allows ref struct
+        where TDecomposed : IDecomposed<TLeft, TRight>, allows ref struct
     {
         TDecomposed Decompose(TEither either, out bool isLeft);
+    }
+
+    public readonly ref struct Decomposed<TLeft, TRight> : IDecomposed<TLeft, TRight>
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        public Decomposed(TLeft left)
+        {
+            Left = left;
+
+            this.Right = default!;
+        }
+
+        public Decomposed(TRight right)
+        {
+            Right = right;
+
+            this.Left = default!;
+        }
+
+        public TLeft Left { get; }
+
+        public TRight Right { get; }
     }
 
     public interface IDecomposed<out TLeft, out TRight>
