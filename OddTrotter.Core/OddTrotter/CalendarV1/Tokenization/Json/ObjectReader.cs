@@ -941,7 +941,12 @@
 
         public NumberToken TryGetValue(out bool moved)
         {
-            bool positive;
+            var negative = false;
+            if (this.buffer[this.currentIndex] == '-')
+            {
+                negative = true;
+            }
+
             ulong value;
 
             //// TODO you are here
@@ -955,14 +960,59 @@
         }
     }
 
-    public readonly ref struct NumberToken
+    public readonly ref struct NumberToken //// TODO each part of this should probably be its own reader...
     {
-        public NumberToken(ulong value)
+        public NumberToken(bool negative, IntToken intToken, FractionToken fractionToken, ExponentToken exponentToken)
         {
-            Value = value;
+            Negative = negative;
+            IntToken = intToken;
+            FractionToken = fractionToken;
+            ExponentToken = exponentToken;
         }
 
-        public ulong Value { get; }
+        public bool Negative { get; }
+        public IntToken IntToken { get; }
+        public FractionToken FractionToken { get; }
+        public ExponentToken ExponentToken { get; }
+    }
+
+    public readonly ref struct IntToken
+    {
+        public IntToken(Span<char> digits)
+        {
+            Digits = digits;
+        }
+
+        public Span<char> Digits { get; }
+    }
+
+    public readonly ref struct FractionToken
+    {
+        public FractionToken(Span<char> digits)
+        {
+            Digits = digits;
+        }
+
+        public Span<char> Digits { get; }
+    }
+
+    public readonly ref struct ExponentToken
+    {
+        public enum SignValue
+        {
+            None,
+            Positive,
+            Negative,
+        }
+
+        public ExponentToken(SignValue sign, Span<char> digits)
+        {
+            Sign = sign;
+            Digits = digits;
+        }
+
+        public SignValue Sign { get; }
+        public Span<char> Digits { get; }
     }
 
     public ref struct StringReader<TNextReader> : IReader<TNextReader, StringToken>
