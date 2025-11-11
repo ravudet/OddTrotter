@@ -904,7 +904,7 @@
         }
     }
 
-    public readonly ref struct NumberReader<TNextReader> : IReader<TNextReader, NumberToken>
+    public ref struct NumberReader<TNextReader> : IReader<TNextReader, NumberToken>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -913,6 +913,8 @@
         private readonly int currentIndex;
         private readonly int validBytes;
         private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        private int? finalIndex;
 
         public NumberReader(
             Stream stream,
@@ -1085,15 +1087,27 @@
                 exponentToken = new ExponentToken(ExponentToken.SignValue.None, Span<byte>.Empty);
             }
 
+            this.finalIndex = currentIndex;
+
             moved = true;
             return new NumberToken(negative, intToken, fractionToken, exponentToken);
         }
 
         public TNextReader TryMoveNext(out bool moved)
         {
-            //// TODO you are here
-            //// TODO keep implementing stuff, but i was just getting skeptical about the nested generics for `valuereader`; hopefully it all just works out in the end...
+            if (this.finalIndex == null)
+            {
+                this.TryGetValue(out moved);
+                if (!moved)
+                {
+                    return default!;
+                }
+            }
 
+            //// TODO make the compiler undrstand final index won't be null
+            //// TODO your bounds checking needs to be on `validBytes` and not `buffer.length`
+            moved = true;
+            return this.readerFactory(this.stream, this.arrayResizer, this.buffer, this.finalIndex!.Value, this.validBytes);
         }
     }
 
@@ -1162,6 +1176,11 @@
 
         public StringToken TryGetValue(out bool moved)
         {
+
+            //// TODO you are here
+            //// TODO keep implementing stuff, but i was just getting skeptical about the nested generics for `valuereader`; hopefully it all just works out in the end...
+
+
             throw new NotImplementedException();
         }
 
