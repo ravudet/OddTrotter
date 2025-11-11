@@ -541,8 +541,17 @@
                         this.readerFactory);
                     return number(numberReader);
                 case TokenType.String:
-
+                    var stringReader = new StringReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                    return @string(stringReader);
             }
+
+            throw new Exception("TODO bug");
         }
     }
 
