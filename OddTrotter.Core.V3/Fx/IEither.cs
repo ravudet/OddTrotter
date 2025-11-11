@@ -242,7 +242,7 @@
         }
     }
 
-    public readonly ref struct Realizable<T> : IContinuable<T, IContinuableSource<T>> //// TODO make this implement ieither, and remove the public `decompose` method so you can find what callers should actually be calling the extension `decompose` variant
+    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource> //// TODO make this implement ieither, and remove the public `decompose` method so you can find what callers should actually be calling the extension `decompose` variant
         where T : allows ref struct
     {
         private readonly RefEither<T, ITask<T>> either;
@@ -260,40 +260,36 @@
 
         public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
         {
-
-            //// TODo you are here
-            //// TODO do you want to implement IContinuable<T, IContinuableSource<T>> or IContinuable<T, Continuationsource>
-
             if (either.Decompose(out var value, out var future))
             {
-                return source(value);
+                return new Realizable<TResult>(continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(value))));
             }
             else
             {
-                future.ContinueWith(continuation);
+                return future.ContinueWith(continuableSource => continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(continuableSource))));
             }
         }
 
-        //// TODO implement continuable and decompose
+        //// TODO implement decompose
 
         public readonly ref struct ContinuationSource : IContinuableSource<T>
         {
-            private readonly RefEither<T, ITask<T>> either;
+            private readonly RefEither<T, IContinuableSource<T>> either;
 
-            public ContinuationSource(RefEither<T, ITask<T>> either)
+            public ContinuationSource(RefEither<T, IContinuableSource<T>> either)
             {
                 this.either = either;
             }
 
             public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
-                if (either.Decompose(out var value, out var future))
+                if (either.Decompose(out var value, out var continuableSource))
                 {
                     return source(value);
                 }
                 else
                 {
-                    future.ContinueWith()
+                    return continuableSource.Apply(source, exception, canceled);
                 }
             }
         }
@@ -301,18 +297,6 @@
         public bool Decompose(out T value, out ITask<T> future)
         {
             throw new NotImplementedException();
-        }
-
-        public Realizable<TResult> ContinueWith<TResult>(Func<IContinuableSource<T>, TResult> continuation) where TResult : allows ref struct
-        {
-            if (either.Decompose(out var value, out var future))
-            {
-                return source(value);
-            }
-            else
-            {
-                return future.ContinueWith(continuation);
-            }
         }
     }
 
