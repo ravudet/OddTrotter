@@ -531,6 +531,15 @@
                     return;
                 case TokenType.Array:
                     return;
+                case TokenType.Number:
+                    var numberReader = new NumberReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                    return number(numberReader);
             }
         }
     }
@@ -1076,15 +1085,13 @@
 
             moved = true;
             return new NumberToken(negative, intToken, fractionToken, exponentToken);
-
-            //// TODO you are here
-            //// TODO keep implementing stuff, but i was just getting skeptical about the nested generics for `valuereader`; hopefully it all just works out in the end...
-
         }
 
         public TNextReader TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
+            //// TODO you are here
+            //// TODO keep implementing stuff, but i was just getting skeptical about the nested generics for `valuereader`; hopefully it all just works out in the end...
+
         }
     }
 
