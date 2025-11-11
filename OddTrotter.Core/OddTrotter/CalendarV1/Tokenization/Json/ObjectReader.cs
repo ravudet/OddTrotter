@@ -45,6 +45,7 @@
     {
         public static ValueReader<Nothing> StartReading(Stream stream, IArrayResizer arrayResizer)
         {
+            //// TODO if you give it "true1234234lkajsdflkja" it will "parse" that as a true token, and not give any indication that the rest isn't a valid json payload
             return new ValueReader<Nothing>(stream, arrayResizer, (_, _, _, _, _) => new Nothing());
         }
 
@@ -941,13 +942,140 @@
 
         public NumberToken TryGetValue(out bool moved)
         {
+            var currentIndex = this.currentIndex;
+            
             var negative = false;
-            if (this.buffer[this.currentIndex] == '-')
+            if (this.buffer[currentIndex] == '-')
             {
+                ++currentIndex;
                 negative = true;
             }
 
-            ulong value;
+            if (currentIndex >= this.buffer.Length)
+            {
+                moved = false;
+                return default;
+            }
+
+            IntToken intToken;
+            if (this.buffer[currentIndex] == '0')
+            {
+                ++currentIndex;
+                if (currentIndex >= this.buffer.Length)
+                {
+                    moved = false;
+                    return default;
+                }
+
+                intToken = new IntToken(this.buffer.AsSpan(currentIndex, 1));
+            }
+            else
+            {
+                var startIndex = currentIndex;
+                if (!char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                while (char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+                }
+
+                intToken = new IntToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
+            }
+
+            FractionToken fractionToken;
+            if (this.buffer[currentIndex] == '.')
+            {
+                ++currentIndex;
+                var startIndex = currentIndex;
+                if (!char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                while (char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+                }
+
+                fractionToken = new FractionToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
+            }
+            else
+            {
+                fractionToken = new FractionToken(Span<byte>.Empty);
+            }
+
+            ExponentToken exponentToken;
+            if (this.buffer[currentIndex] == 'e' || this.buffer[currentIndex] == 'E')
+            {
+                ++currentIndex;
+                if (currentIndex >= this.buffer.Length)
+                {
+                    moved = false;
+                    return default;
+                }
+
+                var sign = ExponentToken.SignValue.None;
+                if (this.buffer[currentIndex] == '+')
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+
+                    sign = ExponentToken.SignValue.Positive;
+                }
+                else if (this.buffer[currentIndex] == '-')
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+
+                    sign = ExponentToken.SignValue.Negative;
+                }
+
+                var startIndex = currentIndex;
+                if (!char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                while (char.IsAsciiDigit((char)this.buffer[currentIndex]))
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+                }
+
+                exponentToken = new ExponentToken(sign, this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
+            }
+            else
+            {
+                exponentToken = new ExponentToken(ExponentToken.SignValue.None, Span<byte>.Empty);
+            }
+
+            moved = true;
+            return new NumberToken(negative, intToken, fractionToken, exponentToken);
 
             //// TODO you are here
             //// TODO keep implementing stuff, but i was just getting skeptical about the nested generics for `valuereader`; hopefully it all just works out in the end...
@@ -978,22 +1106,22 @@
 
     public readonly ref struct IntToken
     {
-        public IntToken(Span<char> digits)
+        public IntToken(Span<byte> digits)
         {
             Digits = digits;
         }
 
-        public Span<char> Digits { get; }
+        public Span<byte> Digits { get; }
     }
 
     public readonly ref struct FractionToken
     {
-        public FractionToken(Span<char> digits)
+        public FractionToken(Span<byte> digits)
         {
             Digits = digits;
         }
 
-        public Span<char> Digits { get; }
+        public Span<byte> Digits { get; }
     }
 
     public readonly ref struct ExponentToken
@@ -1005,14 +1133,14 @@
             Negative,
         }
 
-        public ExponentToken(SignValue sign, Span<char> digits)
+        public ExponentToken(SignValue sign, Span<byte> digits)
         {
             Sign = sign;
             Digits = digits;
         }
 
         public SignValue Sign { get; }
-        public Span<char> Digits { get; }
+        public Span<byte> Digits { get; }
     }
 
     public ref struct StringReader<TNextReader> : IReader<TNextReader, StringToken>
