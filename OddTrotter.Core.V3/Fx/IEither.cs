@@ -580,12 +580,6 @@ namespace Fx
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
             where TCasted : allows ref struct
         {
-            /*if (typeof(TCasted) == typeof(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>))
-            {
-                casted = (TCasted)(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>)Decomposer.Instance;
-                return true;
-            }*/
-
             if (typeof(TCasted) == typeof(DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>))
             {
                 var mixin = new DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>(
