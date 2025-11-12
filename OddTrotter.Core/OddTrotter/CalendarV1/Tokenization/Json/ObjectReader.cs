@@ -529,10 +529,14 @@
                 case TokenType.Object:
                     return;
                 case TokenType.Array:
-
-                    //// TODO you are here
-
-                    return;
+                    var arrayReader = new ArrayReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                    return array(arrayReader);
                 case TokenType.Number:
                     var numberReader = new NumberReader<TNextReader>(
                         this.stream,
@@ -884,7 +888,7 @@
         public string Value { get; }
     }
 
-    public ref struct ArrayReader<TNextReader> : IReader<ArrayToken<TNextReader>>
+    public readonly ref struct ArrayReader<TNextReader> : IReader<ArrayToken<TNextReader>>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -894,7 +898,7 @@
         private readonly int validBytes;
         private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
 
-        private int? finalIndex;
+        private readonly bool isFirstElement;
 
         public ArrayReader(
             Stream stream,
@@ -903,6 +907,25 @@
             int currentIndex,
             int validBytes,
             Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+            : this(
+                  stream,
+                  arrayResizer,
+                  buffer,
+                  currentIndex,
+                  validBytes,
+                  readerFactory,
+                  true)
+        {
+        }
+
+        private ArrayReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory,
+            bool isFirstElement)
         {
             this.stream = stream;
             this.arrayResizer = arrayResizer;
@@ -910,6 +933,7 @@
             this.currentIndex = currentIndex;
             this.validBytes = validBytes;
             this.readerFactory = readerFactory;
+            this.isFirstElement = isFirstElement;
         }
 
         public RefTask<ArrayReader<TNextReader>> Read2()
@@ -933,18 +957,170 @@
 
         public ArrayToken<TNextReader> TryMoveNext(out bool moved)
         {
+            if (this.currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            if (this.isFirstElement)
+            {
+                var currentIndex = this.currentIndex;
+                if (this.buffer[currentIndex] != '{')
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                //// TODO is this a do-while? if it is, are there other places like it?
+                ++currentIndex;
+                if (currentIndex >= this.buffer.Length)
+                {
+                    moved = false;
+                    return default;
+                }
+
+                while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+                }
+
+                if (this.buffer[currentIndex] == '}')
+                {
+                    moved = true;
+                    return new ArrayToken<TNextReader>(
+                        ArrayToken<TNextReader>.TokenType.Next,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex + 1,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+                else
+                {
+                    moved = true;
+                    return new ArrayToken<TNextReader>(
+                        ArrayToken<TNextReader>.TokenType.Value,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+            }
+            else
+            {
+                var currentIndex = this.currentIndex;
+                if (this.buffer[currentIndex] == ',')
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.buffer.Length)
+                    {
+                        moved = false;
+                        return default;
+                    }
+
+                    while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                    {
+                        ++currentIndex;
+                        if (currentIndex >= this.buffer.Length)
+                        {
+                            moved = false;
+                            return default;
+                        }
+                    }
+
+                    moved = true;
+                    return new ArrayToken<TNextReader>(
+                        ArrayToken<TNextReader>.TokenType.Value,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+                else
+                {
+                    while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                    {
+                        ++currentIndex;
+                        if (currentIndex >= this.buffer.Length)
+                        {
+                            moved = false;
+                            return default;
+                        }
+                    }
+
+                    if (this.buffer[currentIndex] != '}')
+                    {
+                        throw new Exception("TODO invalid JSON");
+                    }
+
+                    moved = true;
+                    return new ArrayToken<TNextReader>(
+                        ArrayToken<TNextReader>.TokenType.Next,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex + 1,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+            }
         }
     }
 
     public readonly ref struct ArrayToken<TNextReader>
         where TNextReader : allows ref struct
     {
+        public enum TokenType
+        {
+            Value,
+            Next,
+        }
+
+        private readonly TokenType tokenType;
+
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public ArrayToken(
+            TokenType tokenType,
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.tokenType = tokenType;
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
         public TResult Apply<TResult>(
             Func<ValueReader<ArrayReader<TNextReader>>, TResult> value,
             Func<TNextReader, TResult> endArray)
             where TResult : allows ref struct
         {
-            throw new NotImplementedException();
+            //// TODO you are here
+
         }
     }
 
