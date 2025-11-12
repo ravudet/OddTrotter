@@ -527,6 +527,10 @@
                         this.readerFactory);
                     return @true(trueReader);
                 case TokenType.Object:
+
+                    //// TODO you are here
+
+
                     return;
                 case TokenType.Array:
                     var arrayReader = new ArrayReader<TNextReader>(
@@ -1119,8 +1123,36 @@
             Func<TNextReader, TResult> endArray)
             where TResult : allows ref struct
         {
-            //// TODO you are here
+            var localReaderFactory = this.readerFactory;
+            switch (this.tokenType)
+            {
+                case TokenType.Value:
+                    var valueReader = new ValueReader<ArrayReader<TNextReader>>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                            new ArrayReader<TNextReader>(
+                                stream,
+                                arrayResizer,
+                                buffer,
+                                currentIndex,
+                                validBytes,
+                                localReaderFactory));
+                    return value(valueReader);
+                case TokenType.Next:
+                    var nextReader = this.readerFactory(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes);
+                    return endArray(nextReader);
+            }
 
+            throw new Exception("TODO bug");
         }
     }
 
