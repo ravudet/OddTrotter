@@ -539,7 +539,8 @@
                         this.buffer,
                         this.currentIndex,
                         this.validBytes,
-                        this.readerFactory);
+                        this.readerFactory,
+                        true);
                     return array(arrayReader);
                 case TokenType.Number:
                     var numberReader = new NumberReader<TNextReader>(
@@ -823,28 +824,212 @@
     {
     }
 
-    public ref struct ObjectReader<TNextReader> : IReader<TNextReader, ObjectToken<TNextReader>>
+    public ref struct ObjectReader<TNextReader> : IReader<ObjectToken<TNextReader>>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        private readonly bool isFirstMember;
+
+        public ObjectReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory,
+            bool isFirstMember)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<ObjectReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            var isFirstMember = this.isFirstMember;
+            return new RefTask<ObjectReader<TNextReader>>(
+                this.currentIndex < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new ObjectReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory, isFirstMember));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
         }
 
-        public ObjectToken<TNextReader> TryGetValue(out bool moved)
+        public ObjectToken<TNextReader> TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
-        }
+            if (this.currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
 
-        public TNextReader TryMoveNext(out bool moved)
-        {
-            throw new NotImplementedException();
+            var currentIndex = this.currentIndex;
+            if (isFirstMember)
+            {
+                if (this.buffer[currentIndex] != '{')
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                ++currentIndex;
+                if (currentIndex >= this.validBytes)
+                {
+                    moved = false;
+                    return default;
+                }
+
+                while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.validBytes)
+                    {
+                        moved = false;
+                        return default;
+                    }
+                }
+
+                if (this.buffer[currentIndex] == '}')
+                {
+                    moved = true;
+                    return new ObjectToken<TNextReader>(
+                        ObjectToken<TNextReader>.TokenType.Next,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex + 1,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+                else
+                {
+                    moved = true;
+                    return new ObjectToken<TNextReader>(
+                        ObjectToken<TNextReader>.TokenType.Member,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+            }
+            else
+            {
+                if (this.buffer[currentIndex] == ',')
+                {
+                    ++currentIndex;
+                    if (currentIndex >= this.validBytes)
+                    {
+                        moved = false;
+                        return default;
+                    }
+
+                    while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                    {
+                        ++currentIndex;
+                        if (currentIndex >= this.validBytes)
+                        {
+                            moved = false;
+                            return default;
+                        }
+                    }
+
+                    moved = true;
+                    return new ObjectToken<TNextReader>(
+                        ObjectToken<TNextReader>.TokenType.Member,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+                else
+                {
+                    while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+                    {
+                        ++currentIndex;
+                        if (currentIndex >= this.validBytes)
+                        {
+                            moved = false;
+                            return default;
+                        }
+                    }
+
+                    if (this.buffer[currentIndex] != '}')
+                    {
+                        throw new Exception("tODO invalid JSON");
+                    }
+
+                    moved = true;
+                    return new ObjectToken<TNextReader>(
+                        ObjectToken<TNextReader>.TokenType.Next,
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        currentIndex + 1,
+                        this.validBytes,
+                        this.readerFactory);
+                }
+            }
         }
     }
 
     public readonly ref struct ObjectToken<TNextReader>
         where TNextReader : allows ref struct
     {
+        public enum TokenType
+        {
+            Member,
+            Next,
+        }
+
+        private readonly TokenType tokenType;
+
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public ObjectToken(
+            TokenType tokenType,
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.tokenType = tokenType;
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
         public TResult Apply<TResult>(
             Func<MemberReader<ObjectReader<TNextReader>>, TResult> member,
             Func<TNextReader, TResult> endObject)
@@ -868,7 +1053,7 @@
         }
     }
 
-    public ref struct MemberNameReader<TNextReader> : IReader<ValueReader<TNextReader>, MemberNameToken>
+    public ref struct MemberNameReader<TNextReader> : IReader<ValueReader<ObjectReader<TNextReader>>, MemberNameToken>
         where TNextReader : allows ref struct
     {
         public ValueTask Read()
@@ -881,7 +1066,7 @@
             throw new NotImplementedException();
         }
 
-        public ValueReader<TNextReader> TryMoveNext(out bool moved)
+        public ValueReader<ObjectReader<TNextReader>> TryMoveNext(out bool moved)
         {
             throw new NotImplementedException();
         }
@@ -910,24 +1095,6 @@
             byte[] buffer,
             int currentIndex,
             int validBytes,
-            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
-            : this(
-                  stream,
-                  arrayResizer,
-                  buffer,
-                  currentIndex,
-                  validBytes,
-                  readerFactory,
-                  true)
-        {
-        }
-
-        private ArrayReader(
-            Stream stream,
-            IArrayResizer arrayResizer,
-            byte[] buffer,
-            int currentIndex,
-            int validBytes,
             Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory,
             bool isFirstElement)
         {
@@ -943,6 +1110,7 @@
         public RefTask<ArrayReader<TNextReader>> Read2()
         {
             var readerFactory = this.readerFactory;
+            var isFirstElement = this.isFirstElement;
             return new RefTask<ArrayReader<TNextReader>>(
                 this.currentIndex < this.validBytes,
                 this.stream,
@@ -951,7 +1119,7 @@
                 this.currentIndex,
                 this.validBytes,
                 (stream, arrayResizer, buffer, currentIndex, validBytes) =>
-                    new ArrayReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+                    new ArrayReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory, isFirstElement));
         }
 
         public ValueTask Read()
@@ -970,7 +1138,7 @@
             if (this.isFirstElement)
             {
                 var currentIndex = this.currentIndex;
-                if (this.buffer[currentIndex] != '{')
+                if (this.buffer[currentIndex] != '[')
                 {
                     throw new Exception("TODO invalid JSON");
                 }
@@ -993,7 +1161,7 @@
                     }
                 }
 
-                if (this.buffer[currentIndex] == '}')
+                if (this.buffer[currentIndex] == ']')
                 {
                     moved = true;
                     return new ArrayToken<TNextReader>(
@@ -1062,7 +1230,7 @@
                         }
                     }
 
-                    if (this.buffer[currentIndex] != '}')
+                    if (this.buffer[currentIndex] != ']')
                     {
                         throw new Exception("TODO invalid JSON");
                     }
@@ -1140,7 +1308,8 @@
                                 buffer,
                                 currentIndex,
                                 validBytes,
-                                localReaderFactory));
+                                localReaderFactory,
+                                false));
                     return value(valueReader);
                 case TokenType.Next:
                     var nextReader = this.readerFactory(
