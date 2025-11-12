@@ -65,7 +65,7 @@ namespace Fx
                 (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(rightMap(right))),
                 ref Context);
 
-            if (future.Decompose(out var result, out var task))
+            if (future.TypeHolder.Decompose(out var result, out var task))
             {
                 return result;
             }
@@ -252,7 +252,7 @@ namespace Fx
         }
     }
 
-    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource> //// TODO make this implement ieither, and remove the public `decompose` method so you can find what callers should actually be calling the extension `decompose` variant
+    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource>, IEither<Realizable<T>, T, ITask<T>>, ICastable, IDecomposeMixin<Realizable<T>, T, ITask<T>>
         where T : allows ref struct
     {
         private readonly RefEither<T, ITask<T>> either;
@@ -268,6 +268,14 @@ namespace Fx
             this.either = new RefEither<T, ITask<T>>(future);
         }
 
+        public TypeHolder<Realizable<T>, T, ITask<T>> TypeHolder
+        {
+            get
+            {
+                return new TypeHolder<Realizable<T>, T, ITask<T>>(this);
+            }
+        }
+
         public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
         {
             if (either.TypeHolder.Decompose(out var value, out var future))
@@ -279,8 +287,6 @@ namespace Fx
                 return future.ContinueWith(continuableSource => continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(continuableSource))));
             }
         }
-
-        //// TODO implement decompose
 
         public readonly ref struct ContinuationSource : IContinuableSource<T>
         {
@@ -304,9 +310,34 @@ namespace Fx
             }
         }
 
-        public bool Decompose([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)] out ITask<T> future)
+        public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
+            where TContinuableSource : IContinuableSource<TResult>, allows ref struct
         {
-            return this.either.Decompose(out value, out future);
+            return this.either.Apply(leftMap, rightMap, ref context);
+        }
+
+        public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
+        {
+            //// TODO can you put this code into a single place? you've duplicated it a few times
+            if (typeof(TCasted) == typeof(DecomposeMixin<Realizable<T>, T, ITask<T>>))
+            {
+                var mixin = new DecomposeMixin<Realizable<T>, T, ITask<T>>(
+                    this,
+                    (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right));
+                casted = Unsafe.As<DecomposeMixin<Realizable<T>, T, ITask<T>>, TCasted>(ref mixin);
+                return true;
+            }
+
+            casted = default;
+            return false;
+        }
+
+        bool IDecomposeMixin<Realizable<T>, T, ITask<T>>.Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
+        {
+            return this.either.Decompose(out left, out right);
         }
     }
 
@@ -413,7 +444,6 @@ namespace Fx
                     casted = Unsafe.As<DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>, TCasted>(ref decomposeMixin);
                     return true;
                 }
-
 
                 casted = default;
                 return false;
