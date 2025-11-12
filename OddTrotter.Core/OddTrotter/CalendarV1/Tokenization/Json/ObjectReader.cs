@@ -1039,15 +1039,80 @@
             Func<TNextReader, TResult> endObject)
             where TResult : allows ref struct
         {
-            //// TODO you are here
+            var localReaderFactory = this.readerFactory;
+            switch (tokenType)
+            {
+                case TokenType.Member:
+                    var memberReader = new MemberReader<ObjectReader<TNextReader>>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                            new ObjectReader<TNextReader>(
+                                stream,
+                                arrayResizer,
+                                buffer,
+                                currentIndex,
+                                validBytes,
+                                localReaderFactory,
+                                false));
+                    return member(memberReader);
+                case TokenType.Next:
+                    var nextReader = this.readerFactory(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes);
+                    return endObject(nextReader);
+            }
 
-
+            throw new Exception("tODO bug");
         }
     }
 
     public ref struct MemberReader<TNextReader> : IReader<MemberNameReader<TNextReader>>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public MemberReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<MemberReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            return new RefTask<MemberReader<TNextReader>>(
+                this.currentIndex < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new MemberReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
@@ -1055,13 +1120,63 @@
 
         public MemberNameReader<TNextReader> TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
+            if (this.currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            moved = true;
+            return new MemberNameReader<TNextReader>(
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                this.readerFactory);
         }
     }
 
     public ref struct MemberNameReader<TNextReader> : IReader<ValueReader<ObjectReader<TNextReader>>, MemberNameToken>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        public MemberNameReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<MemberNameReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            return new RefTask<MemberNameReader<TNextReader>>(
+                this.currentIndex < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new MemberNameReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
@@ -1069,6 +1184,8 @@
 
         public MemberNameToken TryGetValue(out bool moved)
         {
+            //// TODO you are here
+
             throw new NotImplementedException();
         }
 
