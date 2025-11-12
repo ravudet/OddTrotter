@@ -862,7 +862,7 @@
             var readerFactory = this.readerFactory;
             var isFirstMember = this.isFirstMember;
             return new RefTask<ObjectReader<TNextReader>>(
-                this.currentIndex < this.validBytes,
+                this.currentIndex < this.validBytes, //// TODO check all of the `iscompleted` arguments to make sure they make sense
                 this.stream,
                 this.arrayResizer,
                 this.buffer,
