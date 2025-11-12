@@ -3,14 +3,13 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq;
     using System.Reflection.Metadata.Ecma335;
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
-
-    using Stash;
 
     internal readonly ref struct RefNullable<T>
         where T : allows ref struct
@@ -1226,27 +1225,50 @@
 
         public StringToken TryGetValue(out bool moved)
         {
+            var currentIndex = this.currentIndex;
+            if (this.buffer[currentIndex] != '"')
+            {
+                throw new Exception("tODO invalid JSON");
+            }
 
-            //// TODO you are here
+            ++currentIndex;
+            if (currentIndex >= this.buffer.Length)
+            {
+                moved = false;
+                return default;
+            }
 
+            var startIndex = currentIndex;
+            while (this.buffer[currentIndex] != '"')
+            {
+                ++currentIndex;
+                if (currentIndex >= this.buffer.Length)
+                {
+                    moved = false;
+                    return default;
+                }
+            }
 
-            throw new NotImplementedException();
+            moved = true;
+            return new StringToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
         }
 
         public TNextReader TryMoveNext(out bool moved)
         {
+            //// TODO you are here
+
             throw new NotImplementedException();
         }
     }
 
     public readonly ref struct StringToken
     {
-        public StringToken(string value)
+        public StringToken(Span<byte> value)
         {
             Value = value;
         }
 
-        public string Value { get; }
+        public Span<byte> Value { get; }
     }
 
 
