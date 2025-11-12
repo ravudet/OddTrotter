@@ -527,11 +527,11 @@
                         this.readerFactory);
                     return @true(trueReader);
                 case TokenType.Object:
+                    return;
+                case TokenType.Array:
 
                     //// TODO you are here
 
-                    return;
-                case TokenType.Array:
                     return;
                 case TokenType.Number:
                     var numberReader = new NumberReader<TNextReader>(
@@ -884,20 +884,54 @@
         public string Value { get; }
     }
 
-    public ref struct ArrayReader<TNextReader> : IReader<TNextReader, ArrayToken<TNextReader>>
+    public ref struct ArrayReader<TNextReader> : IReader<ArrayToken<TNextReader>>
         where TNextReader : allows ref struct
     {
+        private readonly Stream stream;
+        private readonly IArrayResizer arrayResizer;
+        private readonly byte[] buffer;
+        private readonly int currentIndex;
+        private readonly int validBytes;
+        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+        private int? finalIndex;
+
+        public ArrayReader(
+            Stream stream,
+            IArrayResizer arrayResizer,
+            byte[] buffer,
+            int currentIndex,
+            int validBytes,
+            Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+        {
+            this.stream = stream;
+            this.arrayResizer = arrayResizer;
+            this.buffer = buffer;
+            this.currentIndex = currentIndex;
+            this.validBytes = validBytes;
+            this.readerFactory = readerFactory;
+        }
+
+        public RefTask<ArrayReader<TNextReader>> Read2()
+        {
+            var readerFactory = this.readerFactory;
+            return new RefTask<ArrayReader<TNextReader>>(
+                this.currentIndex < this.validBytes,
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new ArrayReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }
+
         public ValueTask Read()
         {
             throw new NotImplementedException();
         }
 
-        public ArrayToken<TNextReader> TryGetValue(out bool moved)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TNextReader TryMoveNext(out bool moved)
+        public ArrayToken<TNextReader> TryMoveNext(out bool moved)
         {
             throw new NotImplementedException();
         }
