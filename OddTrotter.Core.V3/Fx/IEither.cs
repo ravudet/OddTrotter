@@ -1,7 +1,9 @@
-﻿namespace Fx
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Fx
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     public static class Playground
@@ -353,8 +355,8 @@
     {
         public static bool Decompose<TEither, TLeft, TRight>(
             this TypeHolder<TEither, TLeft, TRight> either,
-            out TLeft left,
-            out TRight right)
+            [MaybeNullWhen(false)] out TLeft left,
+            [MaybeNullWhen(true)] out TRight right)
             where TEither : IEither<TLeft, TRight>, ICastable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
@@ -364,30 +366,30 @@
 
         public static bool Decompose<TLeft, TRight>(
             this IEither<TLeft, TRight> either,
-            out TLeft left,
-            out TRight right)
+            [MaybeNullWhen(false)] out TLeft left,
+            [MaybeNullWhen(true)] out TRight right)
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            return new Castable<TLeft, TRight>(either).TypeHolder.Decompose(out left, out right);
+            return new DecomposeCastable<TLeft, TRight>(either).TypeHolder.Decompose(out left, out right);
         }
 
-        private readonly ref struct Castable<TLeft, TRight> : IEither<Castable<TLeft, TRight>, TLeft, TRight>, ICastable
+        private readonly ref struct DecomposeCastable<TLeft, TRight> : IEither<DecomposeCastable<TLeft, TRight>, TLeft, TRight>, ICastable
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
             private readonly IEither<TLeft, TRight> either;
 
-            public Castable(IEither<TLeft, TRight> either)
+            public DecomposeCastable(IEither<TLeft, TRight> either)
             {
                 this.either = either;
             }
 
-            public TypeHolder<Castable<TLeft, TRight>, TLeft, TRight> TypeHolder
+            public TypeHolder<DecomposeCastable<TLeft, TRight>, TLeft, TRight> TypeHolder
             {
                 get
                 {
-                    return new TypeHolder<Castable<TLeft, TRight>, TLeft, TRight>(this);
+                    return new TypeHolder<DecomposeCastable<TLeft, TRight>, TLeft, TRight>(this);
                 }
             }
 
@@ -401,13 +403,17 @@
             }
 
             public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
+                where TCasted : allows ref struct
             {
-                //// TODO this isn't actually the correct implementation, `tcasted` will not be a "decomposable", it will be a "decomposer", while `either` will be a "decomposable"
-                if (this.either is TCasted temp)
+                if (typeof(TCasted) == typeof(DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
                 {
-                    casted = temp;
+                    var decomposeMixin = new DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>(
+                        this.either,
+                        (IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => ((IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)either).Decompose(out left, out right));
+                    casted = Unsafe.As<DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>, TCasted>(ref decomposeMixin);
                     return true;
                 }
+
 
                 casted = default;
                 return false;
@@ -416,18 +422,15 @@
 
         public static bool Decompose<TEither, TLeft, TRight>(
             this TEither either,
-            out TLeft left,
-            out TRight right)
+            [MaybeNullWhen(false)] out TLeft left,
+            [MaybeNullWhen(true)] out TRight right)
             where TEither : IEither<TLeft, TRight>, ICastable, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            if (either.TryCast<IDecomposerMixin<TEither, TLeft, TRight, Decomposed<TLeft, TRight>>>(out var casted))
+            if (either.TryCast<DecomposeMixin<TEither, TLeft, TRight>>(out var casted))
             {
-                var decomposed = casted.Decompose(either, out var isLeft);
-                left = decomposed.Left;
-                right = decomposed.Right;
-                return isLeft;
+                return casted.Decompose(out left, out right);
             }
 
             var context = new DecomposeContext<TLeft, TRight>();
@@ -491,7 +494,7 @@
         }
     }
 
-    public readonly ref struct RefEither<TLeft, TRight> : IEither<RefEither<TLeft, TRight>, TLeft, TRight>, ICastable
+    public readonly ref struct RefEither<TLeft, TRight> : IEither<RefEither<TLeft, TRight>, TLeft, TRight>, ICastable, IDecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
@@ -556,7 +559,7 @@
             }
         }
 
-        private bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
+        public bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
         {
             if (this.left.TryGetValue(out value))
             {
@@ -575,10 +578,20 @@
         }
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
+            where TCasted : allows ref struct
         {
-            if (typeof(TCasted) == typeof(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>))
+            /*if (typeof(TCasted) == typeof(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>))
             {
                 casted = (TCasted)(IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>)Decomposer.Instance;
+                return true;
+            }*/
+
+            if (typeof(TCasted) == typeof(DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>))
+            {
+                var mixin = new DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>(
+                    this,
+                    (RefEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => either.Decompose(out left, out right));
+                casted = Unsafe.As<DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>, TCasted>(ref mixin);
                 return true;
             }
 
@@ -603,9 +616,53 @@
     }
 
 
+
+
+
+
+
+    public interface IDecomposeMixin<out TEither, TLeft, TRight> //// TODO covariance
+        where TEither : IEither<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right);
+    }
+
+    public delegate bool DecomposeDelegate<TEither, TLeft, TRight>(TEither either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+        where TEither : IEither<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct;
+
+    public readonly ref struct DecomposeMixin<TEither, TLeft, TRight> : IDecomposeMixin<TEither, TLeft, TRight>
+        where TEither : IEither<TLeft, TRight>, allows ref struct
+        where TLeft : allows ref struct
+        where TRight : allows ref struct
+    {
+        private readonly TEither either;
+        private readonly DecomposeDelegate<TEither, TLeft, TRight> @delegate;
+
+        public DecomposeMixin(TEither either, DecomposeDelegate<TEither, TLeft, TRight> @delegate)
+        {
+            this.either = either;
+            this.@delegate = @delegate;
+        }
+
+        public bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+        {
+            return this.@delegate(this.either, out left, out right);
+        }
+    }
+
+
+
+
+
+
+
     public interface ICastable
     {
-        bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted); //// note: `tcasted` should *not* allow ref struct; the point of this interface is to allow ref structs to be cast to interfaces //// TODO just because that's your narrow use-case right now doesn't mean it could never be useful for casts from ref structs to ref structs...
+        bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : allows ref struct; //// note: `tcasted` should *not* allow ref struct; the point of this interface is to allow ref structs to be cast to interfaces //// TODO just because that's your narrow use-case right now doesn't mean it could never be useful for casts from ref structs to ref structs...
     }
 
     public interface IDecomposerMixin<in TEither, out TLeft, out TRight, out TDecomposed>

@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
 
 
-    public static class AnotherPlayground
+    /*public static class AnotherPlayground
     {
         public readonly ref struct ReturnType<T> : IAwaitable<T, ReturnType<T>.Awaiter>
             where T : allows ref struct
@@ -74,6 +74,7 @@
             where TAwaitable : IAwaitable<TResult, TAwaiter>, allows ref struct
             where TAwaiter : IAwaiter<TResult>, allows ref struct
         {
+            throw new Exception("tODO");
         }
 
         public delegate ReturnType<TResult> SomeMap2<TResult>()
@@ -516,6 +517,22 @@
             throw new System.NotImplementedException();
         }
 
+        public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<IAwaitable<T>, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
+        public Realizable<TResult> Apply2<TResult, TContext, TAwaitable, TAwaiter>(AsyncRefContextualizedMap3<T, TContext, TResult, TAwaitable, TAwaiter> leftMap, AsyncRefContextualizedMap3<IAwaitable<T>, TContext, TResult, TAwaitable, TAwaiter> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter, TAwaitable>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
         public readonly struct Awaiter : IAwaiter<T>, ICriticalNotifyCompletion
         {
             public bool IsCompleted { get; }
@@ -560,6 +577,22 @@
             throw new System.NotImplementedException();
         }
 
+        public Realizable<TResult> Apply<TResult, TContext>(AsyncRefContextualizedMap2<T, TContext, TResult> leftMap, AsyncRefContextualizedMap2<IAwaitable<T>, TContext, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
+        public Realizable<TResult> Apply2<TResult, TContext, TAwaitable, TAwaiter>(AsyncRefContextualizedMap3<T, TContext, TResult, TAwaitable, TAwaiter> leftMap, AsyncRefContextualizedMap3<IAwaitable<T>, TContext, TResult, TAwaitable, TAwaiter> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TAwaitable : IAwaitable<TResult, TAwaiter, TAwaitable>, allows ref struct
+            where TAwaiter : IAwaiter<TResult>, allows ref struct
+        {
+            throw new NotImplementedException();
+        }
+
         public Realizable2<T> ConfigureAwait(bool continueOnCapturedContext)
         {
             throw new NotImplementedException();
@@ -574,5 +607,5 @@
         {
             return new Realizable2<T>();
         }
-    }
+    }*/
 }

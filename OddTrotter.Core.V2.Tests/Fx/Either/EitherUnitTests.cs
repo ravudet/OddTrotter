@@ -14,6 +14,27 @@
     public class Tests
     {
         [TestMethod]
+        public void UnsafeAsInterface()
+        {
+            var foo = new Implementation();
+            var casted = Unsafe.As<Implementation, IInterface>(ref foo);
+            casted.TheMethod();
+        }
+
+        public readonly ref struct Implementation : IInterface
+        {
+            public void TheMethod()
+            {
+                Console.WriteLine("hello");
+            }
+        }
+
+        public interface IInterface
+        {
+            void TheMethod();
+        }
+
+        [TestMethod]
         public async Task TryCast()
         {
             var realizable = new Realizable<int>(37);
