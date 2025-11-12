@@ -1249,6 +1249,8 @@
                 }
             }
 
+            this.finalIndex = currentIndex + 1;
+
             moved = true;
             return new StringToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
         }
@@ -1257,7 +1259,18 @@
         {
             //// TODO you are here
 
-            throw new NotImplementedException();
+            if (this.finalIndex == null)
+            {
+                this.TryGetValue(out moved);
+                if (!moved)
+                {
+                    return default!;
+                }
+            }
+
+            moved = true;
+            //// TODO convince the compiler that finalindex is not null here
+            return this.readerFactory(this.stream, this.arrayResizer, this.buffer, this.finalIndex!.Value, this.validBytes);
         }
     }
 
