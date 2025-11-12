@@ -622,21 +622,6 @@ namespace Fx
             casted = default;
             return false;
         }
-
-        private sealed class Decomposer : IDecomposerMixin<RefEither<TLeft, TRight>, TLeft, TRight, Decomposed<TLeft, TRight>>
-        {
-            private Decomposer()
-            {
-            }
-
-            public static Decomposer Instance { get; } = new Decomposer();
-
-            public Decomposed<TLeft, TRight> Decompose(RefEither<TLeft, TRight> either, out bool isLeft)
-            {
-                isLeft = either.Decompose(out var left, out var right);
-                return new Decomposed<TLeft, TRight>(left!, right!);
-            }
-        }
     }
 
 
@@ -687,39 +672,6 @@ namespace Fx
     public interface ICastable
     {
         bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct; //// note: `tcasted` *must* be a struct for mixin purposes when ref structs are allowed because we can't actually return an interface that also encapsulates the thing being cast
-    }
-
-    public interface IDecomposerMixin<in TEither, out TLeft, out TRight, out TDecomposed>
-        where TEither : IEither<TLeft, TRight>, allows ref struct
-        where TLeft : allows ref struct
-        where TRight : allows ref struct
-        where TDecomposed : IDecomposed<TLeft, TRight>, allows ref struct
-    {
-        TDecomposed Decompose(TEither either, out bool isLeft);
-    }
-
-    public readonly ref struct Decomposed<TLeft, TRight> : IDecomposed<TLeft, TRight>
-        where TLeft : allows ref struct
-        where TRight : allows ref struct
-    {
-        public Decomposed(TLeft left, TRight right)
-        {
-            Left = left;
-            Right = right;
-        }
-
-        public TLeft Left { get; }
-
-        public TRight Right { get; }
-    }
-
-    public interface IDecomposed<out TLeft, out TRight>
-        where TLeft : allows ref struct
-        where TRight : allows ref struct
-    {
-        TLeft Left { get; }
-
-        TRight Right { get; }
     }
 
     public readonly ref struct TypeHolder<TSelf, T1, T2>
