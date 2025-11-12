@@ -933,7 +933,6 @@
 
         public ArrayToken<TNextReader> TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
         }
     }
 
