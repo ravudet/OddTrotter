@@ -8,6 +8,8 @@ namespace Fx
 
     public static class Playground
     {
+        //// TODO write these two methods as tests (need to implement a class `ieither` implementation first)
+
         public static void DoWork(IEither<int, Exception> either)
         {
             bool context = false;
