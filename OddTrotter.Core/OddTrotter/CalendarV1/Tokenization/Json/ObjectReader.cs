@@ -527,11 +527,15 @@
                         this.readerFactory);
                     return @true(trueReader);
                 case TokenType.Object:
-
-                    //// TODO you are here
-
-
-                    return;
+                    var objectReader = new ObjectReader<TNextReader>(
+                        this.stream,
+                        this.arrayResizer,
+                        this.buffer,
+                        this.currentIndex,
+                        this.validBytes,
+                        this.readerFactory,
+                        true);
+                    return @object(objectReader);
                 case TokenType.Array:
                     var arrayReader = new ArrayReader<TNextReader>(
                         this.stream,
@@ -1035,7 +1039,9 @@
             Func<TNextReader, TResult> endObject)
             where TResult : allows ref struct
         {
-            throw new NotImplementedException();
+            //// TODO you are here
+
+
         }
     }
 
