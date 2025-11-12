@@ -9,6 +9,9 @@ namespace Fx
     public static class Playground
     {
         //// TODO write these two methods as tests (need to implement a class `ieither` implementation first)
+        //// TODO then split this into files
+        //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
+        //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
 
         public static void DoWork(IEither<int, Exception> either)
         {
