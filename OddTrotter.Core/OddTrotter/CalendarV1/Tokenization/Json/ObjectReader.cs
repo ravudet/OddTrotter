@@ -828,7 +828,7 @@
     {
     }
 
-    public ref struct ObjectReader<TNextReader> : IReader<ObjectToken<TNextReader>>
+    public readonly ref struct ObjectReader<TNextReader> : IReader<ObjectToken<TNextReader>>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -1073,7 +1073,7 @@
         }
     }
 
-    public ref struct MemberReader<TNextReader> : IReader<MemberNameReader<TNextReader>>
+    public readonly ref struct MemberReader<TNextReader> : IReader<MemberNameReader<TNextReader>>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -1147,6 +1147,8 @@
         private readonly int validBytes;
         private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
 
+        private int? finalIndex;
+
         public MemberNameReader(
             Stream stream,
             IArrayResizer arrayResizer,
@@ -1182,22 +1184,58 @@
             throw new NotImplementedException();
         }
 
+        //// TODO make sure all of the readers and tokens are `readonly` where appropriate
+
         public MemberNameToken TryGetValue(out bool moved)
         {
-            //// TODO you are here
+            var stringReader = new StringReader<Nothing>(
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                this.currentIndex,
+                this.validBytes,
+                (_, _, _, _, _) => new Nothing());
+            var stringToken = stringReader.TryGetValue(out moved);
+            if (!moved)
+            {
+                return default;
+            }
 
-            throw new NotImplementedException();
+            this.finalIndex = this.currentIndex + stringToken.Value.Length;
+            return new MemberNameToken(stringToken.Value);
         }
 
         public ValueReader<ObjectReader<TNextReader>> TryMoveNext(out bool moved)
         {
-            throw new NotImplementedException();
+            if (this.finalIndex == null)
+            {
+                this.TryGetValue(out moved);
+                if (!moved)
+                {
+                    return default;
+                }
+            }
+
+            var currentIndex = this.finalIndex;
+            if (currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            //// TODO you are here
+            //// TODO read whitespace, then equals sign, then whitespace
         }
     }
 
     public readonly ref struct MemberNameToken
     {
-        public string Value { get; }
+        public MemberNameToken(Span<byte> value)
+        {
+            this.Value = value;
+        }
+
+        public Span<byte> Value { get; }
     }
 
     public readonly ref struct ArrayReader<TNextReader> : IReader<ArrayToken<TNextReader>>
