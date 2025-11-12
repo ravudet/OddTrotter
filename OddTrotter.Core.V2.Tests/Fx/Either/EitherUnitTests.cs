@@ -17,8 +17,16 @@
         public void UnsafeAsInterface()
         {
             var foo = new Implementation();
+
+            Thing<Implementation>();
+
             var casted = Unsafe.As<Implementation, IInterface>(ref foo);
             casted.TheMethod();
+        }
+
+        public void Thing<T>() where T : struct, allows ref struct
+        {
+            Console.WriteLine("hey");
         }
 
         public readonly ref struct Implementation : IInterface

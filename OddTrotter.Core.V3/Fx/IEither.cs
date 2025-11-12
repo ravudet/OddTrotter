@@ -403,7 +403,7 @@ namespace Fx
             }
 
             public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
-                where TCasted : allows ref struct
+                where TCasted : struct, allows ref struct
             {
                 if (typeof(TCasted) == typeof(DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
                 {
@@ -578,7 +578,7 @@ namespace Fx
         }
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
-            where TCasted : allows ref struct
+            where TCasted : struct, allows ref struct
         {
             if (typeof(TCasted) == typeof(DecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>))
             {
@@ -656,7 +656,7 @@ namespace Fx
 
     public interface ICastable
     {
-        bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : allows ref struct; //// note: `tcasted` should *not* allow ref struct; the point of this interface is to allow ref structs to be cast to interfaces //// TODO just because that's your narrow use-case right now doesn't mean it could never be useful for casts from ref structs to ref structs...
+        bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct; //// note: `tcasted` *must* be a struct for mixin purposes when ref structs are allowed because we can't actually return an interface that also encapsulates the thing being cast
     }
 
     public interface IDecomposerMixin<in TEither, out TLeft, out TRight, out TDecomposed>
