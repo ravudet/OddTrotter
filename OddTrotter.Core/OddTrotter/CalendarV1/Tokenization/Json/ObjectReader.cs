@@ -527,6 +527,9 @@
                         this.readerFactory);
                     return @true(trueReader);
                 case TokenType.Object:
+
+                    //// TODO you are here
+
                     return;
                 case TokenType.Array:
                     return;
@@ -1257,8 +1260,6 @@
 
         public TNextReader TryMoveNext(out bool moved)
         {
-            //// TODO you are here
-
             if (this.finalIndex == null)
             {
                 this.TryGetValue(out moved);
