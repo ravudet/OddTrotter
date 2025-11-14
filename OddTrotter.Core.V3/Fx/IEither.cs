@@ -654,11 +654,13 @@ namespace Fx
             where TResult : allows ref struct;
     }
 
-    public interface IContinuable<out TSource, out TContinuableSource>
+    public interface IContinuable<out TSource>
         where TSource : allows ref struct
-        where TContinuableSource : IContinuableSource<TSource>, allows ref struct
     {
-        Realizable<TResult> ContinueWith<TResult>(Func<TContinuableSource, TResult> continuation)
+        Realizable<TResult> ContinueWith<TResult>(
+            Func<TSource, TResult> source,
+            Func<Exception, TResult> exception,
+            Func<OperationCanceledException, TResult> canceled)
             where TResult : allows ref struct;
     }
 
