@@ -325,21 +325,18 @@ namespace Fx
 
         public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
-        }
-
-
-        public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
-        {
             if (either.TypeHolder.Decompose(out var value, out var future))
             {
-                return new Realizable<TResult>(continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(value))));
+                return new Realizable<TResult>(source(value));
             }
             else
             {
-                return future.ContinueWith(continuableSource => continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(continuableSource))));
+                return future.ContinueWith(
+                    source,
+                    exception,
+                    canceled);
             }
         }
-
 
         public readonly ref struct ContinuationSource : IContinuableSource<T>
         {
