@@ -123,9 +123,17 @@
         }
 
 
-        public static void ReadToEnd(this ValueReader<NothingReader> valueReader)
+        public static async Task ReadToEnd(Func<ValueReader<NothingReader>> valueReaderFactory)
         {
-            var nothingReader = valueReader.ReadToEnd<NothingReader>();
+            var valueReader = valueReaderFactory();
+            ValueReaderToken<NothingReader> valueReaderToken;
+            while (!valueReader.TryMoveNext2(out valueReaderToken))
+            {
+                await valueReader.Read2();
+            }
+            
+
+            var nothingReader = valueReaderToken.ReadToEnd();
             nothingReader.ReadToEnd();
         }
 
@@ -138,15 +146,9 @@
             }
         }
 
-        private static TNextReader ReadToEnd<TNextReader>(this ValueReader<TNextReader> valueReader)
+        private static TNextReader ReadToEnd<TNextReader>(this ValueReaderToken<TNextReader> valueReaderToken)
             where TNextReader : allows ref struct
         {
-            var valueReaderToken = valueReader.TryMoveNext(out var moved);
-            if (!moved)
-            {
-                throw new Exception("TODO implement async");
-            }
-
             return valueReaderToken.Apply(
                 @false =>
                 {
@@ -206,7 +208,6 @@
 
                     return nextReader;
                 });
-
         }
 
         private static TNextReader ReadToEnd<TNextReader>(this ArrayReader<TNextReader> arrayReader)
@@ -257,7 +258,20 @@
                 nextReader => nextReader);
         }
 
-        
+        private static TNextReader ReadToEnd<TNextReader>(this ValueReader<TNextReader> valueReader)
+            where TNextReader : allows ref struct
+        {
+            var valueReaderToken = valueReader.TryMoveNext(out var moved);
+            if (!moved)
+            {
+                throw new Exception("TODO implement async");
+            }
+
+            return valueReaderToken.ReadToEnd();
+        }
+
+
+
 
 
 
