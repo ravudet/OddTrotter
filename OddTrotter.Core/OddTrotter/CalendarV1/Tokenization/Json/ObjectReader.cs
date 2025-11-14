@@ -11,6 +11,8 @@
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
 
+    using static System.Runtime.InteropServices.JavaScript.JSType;
+
     internal readonly ref struct RefNullable<T>
         where T : allows ref struct
     {
@@ -121,60 +123,141 @@
         }
 
 
-        public static async Task ReadToEnd(Func<ValueReader<NothingReader>> valueReaderFactory)
+        public static void ReadToEnd(this ValueReader<NothingReader> valueReader)
         {
-            var valueReader = valueReaderFactory();
+            var nothingReader = valueReader.ReadToEnd<NothingReader>();
+            nothingReader.ReadToEnd();
+        }
 
-            ValueReaderToken<NothingReader> valueReaderToken;
-            while (!valueReader.TryMoveNext2(out valueReaderToken))
+        private static void ReadToEnd(this NothingReader nothingReader)
+        {
+            var nothing = nothingReader.TryMoveNext(out var moved);
+            if (!moved)
             {
-                valueReader = await valueReader.Read2();
+                throw new Exception("TODO implement async");
+            }
+        }
+
+        private static TNextReader ReadToEnd<TNextReader>(this ValueReader<TNextReader> valueReader)
+            where TNextReader : allows ref struct
+        {
+            var valueReaderToken = valueReader.TryMoveNext(out var moved);
+            if (!moved)
+            {
+                throw new Exception("TODO implement async");
             }
 
-            valueReaderToken.Apply(
+            return valueReaderToken.Apply(
                 @false =>
                 {
-                    var nothingReader = @false.TryMoveNext(out var moved);
+                    var nextReader = @false.TryMoveNext(out var moved);
                     if (!moved)
                     {
                         throw new Exception("TODO implement async");
                     }
 
-                    return nothingReader;
+                    return nextReader;
                 },
                 @null =>
                 {
-                    var nothingReader = @null.TryMoveNext(out var moved);
+                    var nextReader = @null.TryMoveNext(out var moved);
                     if (!moved)
                     {
                         throw new Exception("TODO implement async");
                     }
 
-                    return nothingReader;
+                    return nextReader;
                 },
                 @true =>
                 {
-                    var nothingReader = @true.TryMoveNext(out var moved);
+                    var nextReader = @true.TryMoveNext(out var moved);
                     if (!moved)
                     {
                         throw new Exception("TODO implement async");
                     }
 
-                    return nothingReader;
+                    return nextReader;
                 },
                 @object =>
                 {
-                    var objectReaderToken = @object.TryMoveNext(out var moved);
+                    return @object.ReadToEnd();
+                },
+                array =>
+                {
+                    return array.ReadToEnd();
+                },
+                number =>
+                {
+                    var nextReader = number.TryMoveNext(out var moved);
                     if (!moved)
                     {
                         throw new Exception("TODO implement async");
                     }
 
-                    objectReaderToken.Apply(
-                        member => )
-                }
+                    return nextReader;
+                },
+                @string =>
+                {
+                    var nextReader = @string.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    return nextReader;
+                });
 
         }
+
+        private static TNextReader ReadToEnd<TNextReader>(this ArrayReader<TNextReader> arrayReader)
+            where TNextReader : allows ref struct
+        {
+            var arrayToken = arrayReader.TryMoveNext(out var moved);
+            if (!moved)
+            {
+                throw new Exception("TODO implement async");
+            }
+
+            return arrayToken.Apply(
+                value =>
+                {
+                    var arrayReader = value.ReadToEnd();
+                    return arrayReader.ReadToEnd();
+                },
+                end => end);
+        }
+
+        private static TNextReader ReadToEnd<TNextReader>(this ObjectReader<TNextReader> objectReader)
+            where TNextReader : allows ref struct
+        {
+            var objectReaderToken = objectReader.TryMoveNext(out var moved);
+            if (!moved)
+            {
+                throw new Exception("TODO implement async");
+            }
+
+            return objectReaderToken.Apply(
+                member =>
+                {
+                    var memberNameReader = member.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    var valueReader = memberNameReader.TryMoveNext(out moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    var objectReader = valueReader.ReadToEnd();
+                    return objectReader.ReadToEnd();
+                },
+                nextReader => nextReader);
+        }
+
+        
 
 
 
