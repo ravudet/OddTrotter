@@ -129,7 +129,7 @@
             ValueReaderToken<NothingReader> valueReaderToken;
             while (!valueReader.TryMoveNext2(out valueReaderToken))
             {
-                await valueReader.Read2();
+                valueReader = await valueReader.Read2();
             }
             
 

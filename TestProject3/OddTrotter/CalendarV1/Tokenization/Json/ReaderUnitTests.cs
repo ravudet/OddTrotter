@@ -11,7 +11,7 @@
     public sealed class ReaderUnitTests
     {
         [TestMethod]
-        public void Broad()
+        public async Task Broad()
         {
             var data =
 """
@@ -19,8 +19,7 @@
 """;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                var valueReader = Helpers.StartReading(stream, new ArrayResizer(stream.Length));
-                valueReader.ReadToEnd();
+                await Helpers.ReadToEnd(() => Helpers.StartReading(stream, new ArrayResizer(stream.Length))).ConfigureAwait(false);
             }
         }
 
