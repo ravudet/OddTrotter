@@ -207,21 +207,19 @@ namespace Fx
             {
                 return
                     leftMap(this.left, ref context)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => result,
-                            exception => throw new LeftMapException(exception),
-                            canceled => throw canceled));
+                    .ContinueWith(
+                        result => result,
+                        exception => throw new LeftMapException(exception),
+                        canceled => throw canceled);
             }
             else if (this.right != null)
             {
                 return
                     rightMap(this.right, ref context)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => result,
-                            exception => throw new RightMapException(exception),
-                            canceled => throw canceled));
+                    .ContinueWith(
+                        result => result,
+                        exception => throw new RightMapException(exception),
+                        canceled => throw canceled);
             }
             else
             {
