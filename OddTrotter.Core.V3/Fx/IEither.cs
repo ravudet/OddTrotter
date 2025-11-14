@@ -595,21 +595,19 @@ namespace Fx
             {
                 return
                     leftMap(left, ref context)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => result,
-                            exception => throw new LeftMapException(exception),
-                            canceled => throw canceled));
+                    .ContinueWith(
+                        result => result,
+                        exception => throw new LeftMapException(exception),
+                        canceled => throw canceled);
             }
             else if (this.right.TryGetValue(out var right))
             {
                 return
                     rightMap(right, ref context)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => result,
-                            exception => throw new RightMapException(exception),
-                            canceled => throw canceled));
+                    .ContinueWith(
+                        result => result,
+                        exception => throw new RightMapException(exception),
+                        canceled => throw canceled);
             }
             else
             {
