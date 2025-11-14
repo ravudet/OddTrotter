@@ -112,35 +112,6 @@
             }
         }
 
-        public interface ITask<out T>
-            where T : allows ref struct
-        {
-            /// <inheritdoc cref="Task{TResult}.GetAwaiter"/>
-            ITaskAwaiter<T> GetAwaiter();
-        }
-
-        public interface ITaskAwaiter<out T> : ICriticalNotifyCompletion
-            where T : allows ref struct
-        {
-            /// <inheritdoc cref="TaskAwaiter{TResult}.IsCompleted"/>
-            bool IsCompleted { get; }
-
-            /// <inheritdoc cref="TaskAwaiter{TResult}.GetResult"/>
-            T GetResult();
-        }
-
-        public static async Task Caller<TNextReader>()
-            where TNextReader : allows ref struct
-        {
-            var reader = new ValueReader<TNextReader>();
-
-            ValueReaderToken<TNextReader> valueReaderToken;
-            while (!reader.TryMoveNext(out valueReaderToken))
-            {
-                reader = await reader.ReadExt();
-            }
-        }
-
         public static bool TryMoveNext<TCurrentReader, TNextReader>(this TCurrentReader reader, [MaybeNullWhen(false)] out TNextReader next)
             where TCurrentReader : IReader<TNextReader>, allows ref struct
             where TNextReader : allows ref struct
@@ -149,15 +120,6 @@
             return moved;
         }
 
-        public static ITask<ValueReader<TNextReader>> ReadExt<TNextReader>(this ValueReader<TNextReader> reader)
-            where TNextReader : allows ref struct
-        {
-            ////
-            //// TODO implement everything without async
-            //// TODO then implement methods like this, making it async using a new `reftask` type that is able to async return the new reader; the input `reader` will need to have the necessary properties to actually implement the stream read and the creation of the new reader
-            //// TODO i think you'll need a `stream` property and a `buffer` property on the readers
-            throw new Exception("TODO");
-        }
 
 
 
@@ -919,6 +881,7 @@
             this.currentIndex = currentIndex;
             this.validBytes = validBytes;
             this.readerFactory = readerFactory;
+            this.isFirstMember = isFirstMember;
         }
 
         public RefTask<ObjectReader<TNextReader>> Read2()
