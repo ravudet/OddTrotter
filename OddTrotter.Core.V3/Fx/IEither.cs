@@ -338,28 +338,6 @@ namespace Fx
             }
         }
 
-        public readonly ref struct ContinuationSource : IContinuableSource<T>
-        {
-            private readonly RefEither<T, IContinuableSource<T>> either;
-
-            public ContinuationSource(RefEither<T, IContinuableSource<T>> either)
-            {
-                this.either = either;
-            }
-
-            public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
-            {
-                if (either.TypeHolder.Decompose(out var value, out var continuableSource))
-                {
-                    return source(value);
-                }
-                else
-                {
-                    return continuableSource.Apply(source, exception, canceled);
-                }
-            }
-        }
-
         public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
@@ -515,7 +493,7 @@ namespace Fx
             }
 
             var context = new DecomposeContext<TLeft, TRight>();
-            var result = either.Apply<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>, Realizable<bool>.ContinuationSource>(
+            var result = either.Apply<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>>(
                 (TLeft left, ref DecomposeContext<TLeft, TRight> context) =>
                 {
                     context.Left = left;
