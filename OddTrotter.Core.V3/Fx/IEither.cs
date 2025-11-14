@@ -90,10 +90,9 @@ namespace Fx
             Func<TRight, TResult> rightMap)
         {
             return either.ContinueWith(
-                source => source.Apply(
-                    result => result.Apply(leftMap, rightMap),
-                    exception => throw exception,
-                    canceled => throw canceled));
+                result => result.Apply(leftMap, rightMap),
+                exception => throw exception,
+                canceled => throw canceled);
         }
 
 
@@ -324,16 +323,9 @@ namespace Fx
             }
         }
 
-        public Realizable<TResult> ContinueWith<TResult>(Func<ContinuationSource, TResult> continuation) where TResult : allows ref struct
+        public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
-            if (either.TypeHolder.Decompose(out var value, out var future))
-            {
-                return new Realizable<TResult>(continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(value))));
-            }
-            else
-            {
-                return future.ContinueWith(continuableSource => continuation(new ContinuationSource(new RefEither<T, IContinuableSource<T>>(continuableSource))));
-            }
+
         }
 
         public readonly ref struct ContinuationSource : IContinuableSource<T>
