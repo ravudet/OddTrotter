@@ -48,6 +48,66 @@
             return new ValueReader<Nothing>(stream, arrayResizer, (_, _, _, _, _) => new Nothing());
         }
 
+        public readonly ref struct NothingReader : IReader<Nothing>
+        {
+            private static readonly byte[] bytes = [(byte)'t', (byte)'r', (byte)'e', (byte)'e'];
+
+            private readonly Stream stream;
+            private readonly IArrayResizer arrayResizer;
+            private readonly byte[] buffer;
+            private readonly int currentIndex;
+            private readonly int validBytes;
+
+            public NothingReader(
+                Stream stream,
+                IArrayResizer arrayResizer,
+                byte[] buffer,
+                int currentIndex,
+                int validBytes)
+            {
+                this.stream = stream;
+                this.arrayResizer = arrayResizer;
+                this.buffer = buffer;
+                this.currentIndex = currentIndex;
+                this.validBytes = validBytes;
+            }
+
+            public RefTask<NothingReader> Read2()
+            {
+                return new RefTask<NothingReader>(
+                    this.currentIndex < this.validBytes,
+                    this.stream,
+                    this.arrayResizer,
+                    this.buffer,
+                    this.currentIndex,
+                    this.validBytes,
+                    (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                        new NothingReader(stream, arrayResizer, buffer, currentIndex, validBytes));
+            }
+
+            public ValueTask Read()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Nothing TryMoveNext(out bool moved)
+            {
+                if (this.validBytes == 0)
+                {
+                    moved = true;
+                    return default;
+                }
+
+                if (this.currentIndex >= this.validBytes)
+                {
+                    moved = false;
+                    return default;
+                }
+
+                throw new Exception("TODO invalid JSON; there was more data to be read when no tokens were expected");
+            }
+        }
+
         public interface ITask<out T>
             where T : allows ref struct
         {
