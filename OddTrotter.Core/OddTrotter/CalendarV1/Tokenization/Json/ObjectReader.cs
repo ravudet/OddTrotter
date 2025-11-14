@@ -1321,13 +1321,22 @@
             }
 
             moved = true;
+            var readerFactory = this.readerFactory;
             return new ValueReader<ObjectReader<TNextReader>>(
                 this.stream,
                 this.arrayResizer,
                 this.buffer,
                 currentIndex,
                 this.validBytes,
-                this.readerFactory);
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new ObjectReader<TNextReader>(
+                        stream,
+                        arrayResizer,
+                        buffer,
+                        currentIndex,
+                        validBytes,
+                        readerFactory,
+                        false));
         }
     }
 
