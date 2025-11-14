@@ -8,8 +8,6 @@ namespace Fx
 
     using OddTrotter.Core.V3;
 
-    using static Fx.TaskWrapper<T>;
-
     public static class Playground
     {
         //// TODO write these two methods as tests (need to implement a class `ieither` implementation first)
@@ -23,7 +21,7 @@ namespace Fx
         public static void DoWork(IEither<int, Exception> either)
         {
             bool context = false;
-            var result = either.Apply<string, bool, TaskWrapper<string>, TaskWrapper<string>.ContinuableSource>(
+            var result = either.Apply<string, bool, TaskWrapper<string>>(
                 (int value, ref bool context) => ToString(value),
                 (Exception exception, ref bool context) => ToString(exception),
                 ref context);
@@ -45,24 +43,22 @@ namespace Fx
 
         public static Realizable<IEither<TLeftResult, TRightResult>> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
-            Func<TLeftSource, IContinuable<TLeftResult, TaskWrapper<TLeftResult>.ContinuableSource>> leftMap,
-            Func<TRightSource, IContinuable<TRightResult, TaskWrapper<TRightResult>.ContinuableSource>> rightMap)
+            Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
+            Func<TRightSource, IContinuable<TRightResult>> rightMap)
         {
-            return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>, Realizable<IEither<TLeftResult, TRightResult>>.ContinuationSource>(
+            return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
                 (TLeftSource left, ref bool context) =>
                     leftMap(left)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
-                            exception => throw exception,
-                            canceled => throw canceled)),
+                    .ContinueWith(
+                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                        exception => throw exception,
+                        canceled => throw canceled),
                 (TRightSource right, ref bool context) =>
                     rightMap(right)
-                    .ContinueWith(source =>
-                        source.Apply(
-                            result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
-                            exception => throw exception,
-                            canceled => throw canceled)),
+                    .ContinueWith(
+                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                        exception => throw exception,
+                        canceled => throw canceled),
                 ref Context);
         }
 
@@ -72,7 +68,7 @@ namespace Fx
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
         {
-            var future = either.Apply<TResult, bool, TaskWrapper<TResult>, TaskWrapper<TResult>.ContinuableSource>(
+            var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
                 (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(leftMap(left))),
                 (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(rightMap(right))),
                 ref Context);
@@ -160,7 +156,7 @@ namespace Fx
         }
     }
 
-    public sealed class TaskWrapper<T> : IContinuable<T, TaskWrapperContinuableSource<T>>
+    public sealed class TaskWrapper<T> : IContinuable<T>
     {
         private readonly Task<T> task;
 
@@ -435,11 +431,10 @@ namespace Fx
             this.left = default;
         }
 
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-            where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
         {
             if (this.left != null)
             {
@@ -515,14 +510,13 @@ namespace Fx
     {
         /// <exception cref="LeftMapException"></exception>
         /// <exception cref="RightMapException"></exception>
-        Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
-            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
-            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap,
+        Realizable<TResult> Apply<TResult, TContext, TContinuable>(
+            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
+            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap,
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-            where TContinuableSource : IContinuableSource<TResult>, allows ref struct;
+            where TContinuable : IContinuable<TResult>, allows ref struct;
     }
 
     public sealed class LeftMapException : Exception
@@ -541,7 +535,7 @@ namespace Fx
         }
     }
 
-    public readonly ref struct Realizable<T> : IContinuable<T, Realizable<T>.ContinuationSource>, IEither<Realizable<T>, T, ITask<T>>, ICastable, IDecomposeMixin<Realizable<T>, T, ITask<T>>
+    public readonly ref struct Realizable<T> : IContinuable<T>, IEither<Realizable<T>, T, ITask<T>>, ICastable, IDecomposeMixin<Realizable<T>, T, ITask<T>>
         where T : allows ref struct
     {
         private readonly RefEither<T, ITask<T>> either;
@@ -599,11 +593,10 @@ namespace Fx
             }
         }
 
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-            where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
         {
             return this.either.Apply(leftMap, rightMap, ref context);
         }
@@ -630,7 +623,7 @@ namespace Fx
         }
     }
 
-    public interface ITask<out T> : IContinuable<T, IContinuableSource<T>>
+    public interface ITask<out T> : IContinuable<T>
         where T : allows ref struct
     {
         IAwaiter<T> GetAwaiter();
@@ -664,11 +657,10 @@ namespace Fx
             where TResult : allows ref struct;
     }
 
-    public delegate TContinuable AsyncRefContextualizedContinuableMap<in TValue, TContext, out TContinuable, out TContinuableSource, out TResult>(TValue value, ref TContext context) //// TODO you also need AsyncRefContextualizedTaskMap, AsyncRefContextualizedValueTaskMap, AsyncRefContextualizedITaskMap, AsyncRefContextualizedRealizableMap
+    public delegate TContinuable AsyncRefContextualizedContinuableMap<in TValue, TContext, out TContinuable, out TResult>(TValue value, ref TContext context) //// TODO you also need AsyncRefContextualizedTaskMap, AsyncRefContextualizedValueTaskMap, AsyncRefContextualizedITaskMap, AsyncRefContextualizedRealizableMap
         where TValue : allows ref struct
         where TContext : allows ref struct
-        where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-        where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+        where TContinuable : IContinuable<TResult>, allows ref struct
         where TResult : allows ref struct;
 
 
@@ -717,11 +709,10 @@ namespace Fx
                 }
             }
 
-            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
                 where TResult : allows ref struct
                 where TContext : allows ref struct
-                where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-                where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+                where TContinuable : IContinuable<TResult>, allows ref struct
             {
                 return this.either.Apply(leftMap, rightMap, ref context);
             }
@@ -847,14 +838,13 @@ namespace Fx
             this.left = new RefNullable<TLeft>();
         }
 
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(
-            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap,
-            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, 
+        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(
+            AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
+            AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, 
             ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-            where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
         {
             if (this.left.TryGetValue(out var left))
             {
