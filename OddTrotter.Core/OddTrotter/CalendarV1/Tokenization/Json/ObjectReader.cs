@@ -1280,15 +1280,54 @@
                 }
             }
 
-            var currentIndex = this.finalIndex;
+            //// TODO convince the compiler finalidnex isn't null here
+            var currentIndex = this.finalIndex!.Value;
             if (currentIndex >= this.validBytes)
             {
                 moved = false;
                 return default;
             }
 
-            //// TODO you are here
-            //// TODO read whitespace, then equals sign, then whitespace
+            while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+            {
+                ++currentIndex;
+                if (currentIndex >= this.validBytes)
+                {
+                    moved = false;
+                    return default;
+                }
+            }
+
+            if (this.buffer[currentIndex] != '=')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            ++currentIndex;
+            if (currentIndex >= this.validBytes)
+            {
+                moved = false;
+                return default;
+            }
+
+            while (char.IsWhiteSpace((char)this.buffer[currentIndex]))
+            {
+                ++currentIndex;
+                if (currentIndex >= this.validBytes)
+                {
+                    moved = false;
+                    return default;
+                }
+            }
+
+            moved = true;
+            return new ValueReader<ObjectReader<TNextReader>>(
+                this.stream,
+                this.arrayResizer,
+                this.buffer,
+                currentIndex,
+                this.validBytes,
+                this.readerFactory);
         }
     }
 
