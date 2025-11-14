@@ -112,7 +112,7 @@
             }
         }
 
-        public static bool TryMoveNext<TCurrentReader, TNextReader>(this TCurrentReader reader, [MaybeNullWhen(false)] out TNextReader next)
+        public static bool TryMoveNext2<TCurrentReader, TNextReader>(this TCurrentReader reader, [MaybeNullWhen(false)] out TNextReader next)
             where TCurrentReader : IReader<TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
@@ -121,7 +121,60 @@
         }
 
 
+        public static async Task ReadToEnd(Func<ValueReader<NothingReader>> valueReaderFactory)
+        {
+            var valueReader = valueReaderFactory();
 
+            ValueReaderToken<NothingReader> valueReaderToken;
+            while (!valueReader.TryMoveNext2(out valueReaderToken))
+            {
+                valueReader = await valueReader.Read2();
+            }
+
+            valueReaderToken.Apply(
+                @false =>
+                {
+                    var nothingReader = @false.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    return nothingReader;
+                },
+                @null =>
+                {
+                    var nothingReader = @null.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    return nothingReader;
+                },
+                @true =>
+                {
+                    var nothingReader = @true.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    return nothingReader;
+                },
+                @object =>
+                {
+                    var objectReaderToken = @object.TryMoveNext(out var moved);
+                    if (!moved)
+                    {
+                        throw new Exception("TODO implement async");
+                    }
+
+                    objectReaderToken.Apply(
+                        member => )
+                }
+
+        }
 
 
 
@@ -134,7 +187,7 @@
             var reader = new ValueReader<TNextReader>();
 
             ValueReaderToken<TNextReader> valueReaderToken;
-            while (!reader.TryMoveNext(out valueReaderToken))
+            while (!reader.TryMoveNext2(out valueReaderToken))
             {
                 reader = await reader.Read2();
             }
@@ -854,7 +907,7 @@
     {
     }
 
-    public readonly ref struct ObjectReader<TNextReader> : IReader<ObjectToken<TNextReader>>
+    public readonly ref struct ObjectReader<TNextReader> : IReader<ObjectReaderToken<TNextReader>>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -904,7 +957,7 @@
             throw new NotImplementedException();
         }
 
-        public ObjectToken<TNextReader> TryMoveNext(out bool moved)
+        public ObjectReaderToken<TNextReader> TryMoveNext(out bool moved)
         {
             if (this.currentIndex >= this.validBytes)
             {
@@ -940,8 +993,8 @@
                 if (this.buffer[currentIndex] == '}')
                 {
                     moved = true;
-                    return new ObjectToken<TNextReader>(
-                        ObjectToken<TNextReader>.TokenType.Next,
+                    return new ObjectReaderToken<TNextReader>(
+                        ObjectReaderToken<TNextReader>.TokenType.Next,
                         this.stream,
                         this.arrayResizer,
                         this.buffer,
@@ -952,8 +1005,8 @@
                 else
                 {
                     moved = true;
-                    return new ObjectToken<TNextReader>(
-                        ObjectToken<TNextReader>.TokenType.Member,
+                    return new ObjectReaderToken<TNextReader>(
+                        ObjectReaderToken<TNextReader>.TokenType.Member,
                         this.stream,
                         this.arrayResizer,
                         this.buffer,
@@ -984,8 +1037,8 @@
                     }
 
                     moved = true;
-                    return new ObjectToken<TNextReader>(
-                        ObjectToken<TNextReader>.TokenType.Member,
+                    return new ObjectReaderToken<TNextReader>(
+                        ObjectReaderToken<TNextReader>.TokenType.Member,
                         this.stream,
                         this.arrayResizer,
                         this.buffer,
@@ -1011,8 +1064,8 @@
                     }
 
                     moved = true;
-                    return new ObjectToken<TNextReader>(
-                        ObjectToken<TNextReader>.TokenType.Next,
+                    return new ObjectReaderToken<TNextReader>(
+                        ObjectReaderToken<TNextReader>.TokenType.Next,
                         this.stream,
                         this.arrayResizer,
                         this.buffer,
@@ -1024,7 +1077,7 @@
         }
     }
 
-    public readonly ref struct ObjectToken<TNextReader>
+    public readonly ref struct ObjectReaderToken<TNextReader>
         where TNextReader : allows ref struct
     {
         public enum TokenType
@@ -1043,7 +1096,7 @@
         private readonly int validBytes;
         private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
 
-        public ObjectToken(
+        public ObjectReaderToken(
             TokenType tokenType,
             Stream stream,
             IArrayResizer arrayResizer,
@@ -1164,7 +1217,7 @@
         }
     }
 
-    public ref struct MemberNameReader<TNextReader> : IReader<ValueReader<ObjectReader<TNextReader>>, MemberNameToken>
+    public ref struct MemberNameReader<TNextReader> : IReader<ValueReader<TNextReader>, MemberNameToken>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -1232,7 +1285,7 @@
             return new MemberNameToken(stringToken.Value);
         }
 
-        public ValueReader<ObjectReader<TNextReader>> TryMoveNext(out bool moved)
+        public ValueReader<TNextReader> TryMoveNext(out bool moved)
         {
             if (this.finalIndex == null)
             {
@@ -1284,22 +1337,13 @@
             }
 
             moved = true;
-            var readerFactory = this.readerFactory;
-            return new ValueReader<ObjectReader<TNextReader>>(
+            return new ValueReader<TNextReader>(
                 this.stream,
                 this.arrayResizer,
                 this.buffer,
                 currentIndex,
                 this.validBytes,
-                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
-                    new ObjectReader<TNextReader>(
-                        stream,
-                        arrayResizer,
-                        buffer,
-                        currentIndex,
-                        validBytes,
-                        readerFactory,
-                        false));
+                this.readerFactory);
         }
     }
 
