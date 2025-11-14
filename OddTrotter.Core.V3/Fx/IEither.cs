@@ -169,7 +169,6 @@ namespace Fx
             Func<Exception, TResult> exception, 
             Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
-            throw new NotImplementedException();
         }
 
         public IAwaiter<T> GetAwaiter()
