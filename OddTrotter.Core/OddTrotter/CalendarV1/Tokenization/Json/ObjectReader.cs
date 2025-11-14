@@ -42,10 +42,14 @@
 
     public static class Helpers
     {
-        public static ValueReader<Nothing> StartReading(Stream stream, IArrayResizer arrayResizer)
+        public static ValueReader<NothingReader> StartReading(Stream stream, IArrayResizer arrayResizer)
         {
             //// TODO if you give it "true1234234lkajsdflkja" it will "parse" that as a true token, and not give any indication that the rest isn't a valid json payload
-            return new ValueReader<Nothing>(stream, arrayResizer, (_, _, _, _, _) => new Nothing());
+            return new ValueReader<NothingReader>(
+                stream, 
+                arrayResizer,
+                (stream, arrayResizer, buffer, currentIndex, validBytes) =>
+                    new NothingReader(stream, arrayResizer, buffer, currentIndex, validBytes));
         }
 
         public readonly ref struct NothingReader : IReader<Nothing>
