@@ -476,7 +476,7 @@ namespace Fx
                 }
             }
 
-            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
+            public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
                 where TResult : allows ref struct
                 where TContext : allows ref struct
                 where TContinuable : IContinuable<TResult>, allows ref struct
