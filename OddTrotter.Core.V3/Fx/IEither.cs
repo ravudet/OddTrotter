@@ -6,12 +6,17 @@ namespace Fx
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using OddTrotter.Core.V3;
+
+    using static Fx.TaskWrapper<T>;
+
     public static class Playground
     {
         //// TODO write these two methods as tests (need to implement a class `ieither` implementation first)
         //// TODO then split this into files
         //// TODO implement a test with ref structs
         //// TODO implement a test using actual async (like reading a file or something)
+        //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
         //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
         //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
 
@@ -120,58 +125,6 @@ namespace Fx
             }
         }
 
-        private sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
-        {
-            private readonly TLeft? left;
-            private readonly TRight? right;
-
-            public Either(TLeft left)
-            {
-                this.left = left;
-
-                this.right = default;
-            }
-
-            public Either(TRight right)
-            {
-                this.right = right;
-
-                this.left = default;
-            }
-
-            public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
-                where TResult : allows ref struct
-                where TContext : allows ref struct
-                where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
-                where TContinuableSource : IContinuableSource<TResult>, allows ref struct
-            {
-                if (this.left != null)
-                {
-                    return
-                        leftMap(this.left, ref context)
-                        .ContinueWith(source =>
-                            source.Apply(
-                                result => result,
-                                exception => throw new LeftMapException(exception),
-                                canceled => throw canceled));
-                }
-                else if (this.right != null)
-                {
-                    return
-                        rightMap(this.right, ref context)
-                        .ContinueWith(source =>
-                            source.Apply(
-                                result => result,
-                                exception => throw new RightMapException(exception),
-                                canceled => throw canceled));
-                }
-                else
-                {
-                    throw new Exception("TODO bug");
-                }
-            }
-        }
-
         public static TaskWrapper<string> ToString(int value)
         {
             return new TaskWrapper<string>(ToStringImpl(value));
@@ -192,31 +145,360 @@ namespace Fx
             return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
         }
 
-        public sealed class TaskWrapper<T> : IContinuable<T, TaskWrapper<T>.ContinuableSource>
-        {
-            private readonly Task<T> task;
+        
+    }
 
-            public TaskWrapper(Task<T> task)
+
+
+    public static class Throwaway
+    {
+        public static Task<TNewResult> ContinueWith2<TOldResult, TNewResult>(
+            this Task<TOldResult> task,
+            Func<Task<TOldResult>, TNewResult> func)
+        {
+            return task.ContinueWith(func);
+        }
+    }
+
+    public sealed class TaskWrapper<T> : IContinuable<T, TaskWrapperContinuableSource<T>>
+    {
+        private readonly Task<T> task;
+
+        public TaskWrapper(Task<T> task)
+        {
+            this.task = task;
+        }
+
+        public Realizable<TResult> ContinueWith<TResult>(Func<TaskWrapperContinuableSource<T>, TResult> continuation) where TResult : allows ref struct
+        {
+            return new Realizable<TResult>(
+                new Continuation<T, TResult>(
+                    new InternalTask<T>(this.task), 
+                    source => continuation(source.Apply(
+                        value => new ContinuableSource(value),
+                        exception => new ContinuableSource(exception),
+                        canceled => new ContinuableSource(canceled)))));
+        }
+
+        private interface IInternalTask<TNew>
+            where TNew : allows ref struct
+        {
+            bool IsCanceled { get; }
+
+            Exception? Exception { get; }
+
+            TNew Result { get; }
+
+            IAwaiter<TNew> GetAwaiter();
+
+            Realizable<TResult> ContinueWith<TResult>(Func<TaskWrapperContinuableSource<TNew>, TResult> continuation)
+            where TResult : allows ref struct;
+        }
+
+        private sealed class InternalTask<TNew> : IInternalTask<TNew>
+        {
+            private readonly Task<TNew> task;
+
+            public InternalTask(Task<TNew> task)
             {
                 this.task = task;
             }
 
-            public Realizable<TResult> ContinueWith<TResult>(Func<ContinuableSource, TResult> continuation) where TResult : allows ref struct
+            public bool IsCanceled
             {
-                throw new NotImplementedException();
+                get
+                {
+                    return this.task.IsCanceled;
+                }
             }
 
-            public readonly ref struct ContinuableSource : IContinuableSource<T>
+            public Exception? Exception
             {
-                public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+                get
                 {
-                    throw new NotImplementedException();
+                    return this.task.Exception;
                 }
+            }
+
+            public TNew Result
+            {
+                get
+                {
+                    return this.task.Result;
+                }
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<TaskWrapperContinuableSource<TNew>, TResult> continuation) where TResult : allows ref struct
+            {
+                return new Realizable<TResult>(new Continuation<TNew, TResult>(this, continuation));
+            }
+
+            public IAwaiter<TNew> GetAwaiter()
+            {
+                return new Awaiter(this.task.GetAwaiter());
+            }
+
+            private sealed class Awaiter : IAwaiter<TNew>
+            {
+                private readonly TaskAwaiter<TNew> taskAwaiter;
+
+                public Awaiter(TaskAwaiter<TNew> taskAwaiter)
+                {
+                    this.taskAwaiter = taskAwaiter;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.taskAwaiter.IsCompleted;
+                    }
+                }
+
+                public TNew GetResult()
+                {
+                    return this.taskAwaiter.GetResult();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        private sealed class Continuation<TOld, TNew> : IInternalTask<TNew>
+            where TOld : allows ref struct
+            where TNew : allows ref struct
+        {
+            private readonly IInternalTask<TOld> task;
+            private readonly Func<TaskWrapperContinuableSource<TOld>, TNew> continuation;
+
+            public Continuation(IInternalTask<TOld> task, Func<TaskWrapperContinuableSource<TOld>, TNew> continuation)
+            {
+                this.task = task;
+                this.continuation = continuation;
+            }
+
+            public bool IsCanceled => throw new NotImplementedException();
+
+            public Exception? Exception => throw new NotImplementedException();
+
+            public TNew Result => throw new NotImplementedException();
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<TaskWrapperContinuableSource<TNew>, TResult> continuation) where TResult : allows ref struct
+            {
+                return new Realizable<TResult>(new Continuation<TNew, TResult>(this, continuation));
+            }
+
+            public IAwaiter<TNew> GetAwaiter()
+            {
+                return new Awaiter(this.task, this.continuation);
+            }
+
+            private sealed class Awaiter : IAwaiter<TNew>
+            {
+                private readonly IInternalTask<TOld> task;
+                private readonly IAwaiter<TOld> taskAwaiter;
+                private readonly Func<TaskWrapperContinuableSource<TOld>, TNew> continuation;
+
+                public Awaiter(IInternalTask<TOld> task, Func<TaskWrapperContinuableSource<TOld>, TNew> continuation)
+                {
+                    this.task = task;
+                    this.taskAwaiter = this.task.GetAwaiter();
+                    this.continuation = continuation;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.taskAwaiter.IsCompleted;
+                    }
+                }
+
+                public TNew GetResult()
+                {
+                    //// TODO this mean that the continuation functions always run synchronously; i think you *should* be able to do better and make it async, but the task scheduling infrastructure just might not allow it; you need to investigate
+                    TaskWrapperContinuableSource<TOld> continuableSource;
+                    if (this.task.IsCanceled)
+                    {
+                        continuableSource = new TaskWrapperContinuableSource<TOld>(new OperationCanceledException("TODO"));
+                    }
+                    else if (this.task.Exception != null)
+                    {
+                        continuableSource = new TaskWrapperContinuableSource<TOld>(this.task.Exception);
+                    }
+                    else
+                    {
+                        continuableSource = new TaskWrapperContinuableSource<TOld>(this.task.Result);
+                    }
+
+                    return this.continuation(continuableSource);
+                }
+
+                private readonly ref struct ContinuableSource : IContinuableSource<TOld>
+                {
+                    private readonly OperationCanceledException? operationCanceledException;
+                    private readonly Exception? exception;
+                    private readonly RefNullable<TOld> value;
+
+                    public ContinuableSource(OperationCanceledException operationCanceledException)
+                    {
+                        this.operationCanceledException = operationCanceledException;
+                    }
+
+                    public ContinuableSource(Exception exception)
+                    {
+                        this.exception = exception;
+                    }
+
+                    public ContinuableSource(TOld value)
+                    {
+                        this.value = new RefNullable<TOld>(value);
+                    }
+
+                    public TResult Apply<TResult>(Func<TOld, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+                    {
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        public IAwaiter<T> GetAwaiter()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public readonly ref struct TaskWrapperContinuableSource<T> : IContinuableSource<T>
+        where T : allows ref struct
+    {
+        private readonly RefNullable<T> value;
+
+        private readonly Exception? exception;
+
+        private readonly OperationCanceledException? operationCanceledException;
+
+        public TaskWrapperContinuableSource(T value)
+        {
+            this.value = new RefNullable<T>(value);
+        }
+
+        public TaskWrapperContinuableSource(Exception exception)
+        {
+            this.exception = exception;
+        }
+
+        public TaskWrapperContinuableSource(OperationCanceledException operationCanceledException)
+        {
+            this.operationCanceledException = operationCanceledException;
+        }
+
+        public TResult Apply<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+        {
+
+        }
+    }
+
+    public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    {
+        private readonly TLeft? left;
+        private readonly TRight? right;
+
+        public Either(TLeft left)
+        {
+            this.left = left;
+
+            this.right = default;
+        }
+
+        public Either(TRight right)
+        {
+            this.right = right;
+
+            this.left = default;
+        }
+
+        public Realizable<TResult> Apply<TResult, TContext, TContinuable, TContinuableSource>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TContinuableSource, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TContinuableSource, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TContinuable : IContinuable<TResult, TContinuableSource>, allows ref struct
+            where TContinuableSource : IContinuableSource<TResult>, allows ref struct
+        {
+            if (this.left != null)
+            {
+                return
+                    leftMap(this.left, ref context)
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => result,
+                            exception => throw new LeftMapException(exception),
+                            canceled => throw canceled));
+            }
+            else if (this.right != null)
+            {
+                return
+                    rightMap(this.right, ref context)
+                    .ContinueWith(source =>
+                        source.Apply(
+                            result => result,
+                            exception => throw new RightMapException(exception),
+                            canceled => throw canceled));
+            }
+            else
+            {
+                throw new Exception("TODO bug");
             }
         }
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static class RealizableExtensions
+    {
+        public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
+        {
+            if (realizable.TypeHolder.Decompose(out var left, out var right))
+            {
+                return new TaskWrapper<T>(Task.FromResult(left)).GetAwaiter();
+            }
+            else
+            {
+                return right.GetAwaiter();
+            }
+        }
+    }
 
 
     public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>
@@ -354,9 +636,11 @@ namespace Fx
         IAwaiter<T> GetAwaiter();
     }
 
-    public interface IAwaiter<out T>
+    public interface IAwaiter<out T> : ICriticalNotifyCompletion
         where T : allows ref struct
     {
+        bool IsCompleted { get; }
+
         T GetResult();
     }
 
