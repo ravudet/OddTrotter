@@ -42,6 +42,7 @@
         }
     }
 
+
     public static class Helpers
     {
         public static ValueReader<NothingReader> StartReading(Stream stream, IArrayResizer arrayResizer)
@@ -458,6 +459,9 @@
             }
         }
     }
+
+
+
 
     public readonly ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
         where TNextReader : allows ref struct
@@ -921,7 +925,7 @@
     public readonly ref struct TrueReader<TNextReader> : IReader<TNextReader, TrueToken>
         where TNextReader : allows ref struct
     {
-        private static readonly byte[] bytes = [(byte)'t', (byte)'r', (byte)'e', (byte)'e'];
+        private static readonly byte[] bytes = [(byte)'t', (byte)'r', (byte)'u', (byte)'e'];
 
         private readonly Stream stream;
         private readonly IArrayResizer arrayResizer;
@@ -973,7 +977,7 @@
                 return default;
             }
 
-            if (this.buffer.AsSpan(this.currentIndex, bytes.Length) == bytes.AsSpan())
+            if (MemoryExtensions.SequenceEqual(this.buffer.AsSpan(this.currentIndex, bytes.Length), bytes.AsSpan()))
             {
                 moved = true;
                 return new TrueToken();

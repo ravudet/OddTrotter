@@ -15,7 +15,7 @@
         {
             var data =
 """
-
+true
 """;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
