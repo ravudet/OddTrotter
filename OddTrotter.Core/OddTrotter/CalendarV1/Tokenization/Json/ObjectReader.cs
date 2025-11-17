@@ -126,9 +126,13 @@
         }
 
 
-        public static async Task ReadToEnd(ValueReader<NothingReader> valueReader)
+        public static async ValueTask ReadToEnd(this ValueReader<NothingReader> valueReader)
         {
-            ValueReaderToken<NothingReader> valueReaderToken = await valueReader;
+            ValueReaderToken<NothingReader> valueReaderToken;
+            if (!valueReader.TryMoveNext2(out valueReaderToken)) //// TODO i *think* that the result of this is, if we have data in the buffer, we just use it and there'll be a completed valuetask, resulting in no boxing, and if not, we go to the stream, and the returned value task may be boxed
+            {
+                valueReaderToken = await valueReader;
+            }
             
             var nothingReader = valueReaderToken.ReadToEnd();
             nothingReader.ReadToEnd();
