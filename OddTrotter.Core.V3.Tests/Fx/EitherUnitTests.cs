@@ -26,6 +26,50 @@
                 ref context);
         }
 
+        [TestMethod]
+        public async Task TestMethod2()
+        {
+            var either = new Either<string, Exception>("42");
+            var result = await TestMethod2Impl(either);
+
+            Assert.AreEqual("42", result);
+        }
+
+        private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
+        {
+            var parsed = either.Select(
+                value => Parse(value),
+                error => new TaskWrapper<Exception>(Task.FromResult(error)));
+
+            return parsed.Apply(
+                actualParsing => actualParsing.Apply(
+                    actuallyParsed => actuallyParsed.ToString(),
+                    parseError => parseError.ToString()),
+                readError => readError.ToString());
+        }
+
+        public static TaskWrapper<IEither<int, Exception>> Parse(string value)
+        {
+            return new TaskWrapper<IEither<int, Exception>>(ParseImpl(value));
+        }
+
+        private static async Task<IEither<int, Exception>> ParseImpl(string value)
+        {
+            return await Task.FromResult(ParseInner(value)).ConfigureAwait(false);
+        }
+
+        private static IEither<int, Exception> ParseInner(string value)
+        {
+            try
+            {
+                return new Either<int, Exception>(int.Parse(value));
+            }
+            catch (Exception exception)
+            {
+                return new Either<int, Exception>(exception);
+            }
+        }
+
         public static TaskWrapper<string> ToString(int value)
         {
             return new TaskWrapper<string>(ToStringImpl(value));

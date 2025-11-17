@@ -18,14 +18,6 @@ namespace Fx
         //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
         //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
 
-        public static void DoWork(IEither<int, Exception> either)
-        {
-            bool context = false;
-            var result = either.Apply<string, bool, TaskWrapper<string>>(
-                (int value, ref bool context) => ToString(value),
-                (Exception exception, ref bool context) => ToString(exception),
-                ref context);
-        }
 
         public static Realizable<string> DoWork2(IEither<string, Exception> either)
         {
@@ -445,6 +437,7 @@ namespace Fx
     {
         public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
         {
+            //// TODO implement a configure await
             if (realizable.TypeHolder.Decompose(out var left, out var right))
             {
                 return new TaskWrapper<T>(Task.FromResult(left)).GetAwaiter();
