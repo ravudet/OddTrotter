@@ -6,236 +6,6 @@ namespace Fx
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    //// TODO then split this into files
-    //// TODO implement a test with ref structs
-    //// TODO implement a test using actual async (like reading a file or something)
-    //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
-    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
-    //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
-    //// TODO it seems like you have determine that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
-
-
-
-    public sealed class TaskWrapper<T> : IContinuable<T>
-    {
-        private readonly Task<T> task;
-
-        public TaskWrapper(Task<T> task)
-        {
-            this.task = task;
-        }
-
-        public Realizable<TResult> ContinueWith<TResult>(
-            Func<T, TResult> source, 
-            Func<Exception, TResult> exception, 
-            Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
-        {
-            return new Realizable<TResult>(
-                new Continuation<T, TResult>(
-                    new TaskData(this.task),
-                    source,
-                    exception,
-                    canceled));
-        }
-
-        private interface ITaskData<out TData>
-            where TData : allows ref struct
-        {
-            IAwaiter<TData> GetAwaiter();
-
-            Exception? Exception { get; }
-
-            bool IsCanceled { get; }
-        }
-
-        private sealed class TaskData : ITaskData<T>
-        {
-            private readonly Task<T> task;
-
-            public TaskData(Task<T> task)
-            {
-                this.task = task;
-            }
-
-            public Exception? Exception
-            {
-                get
-                {
-                    return this.task.Exception;
-                }
-            }
-
-            public bool IsCanceled
-            {
-                get
-                {
-                    return this.task.IsCanceled;
-                }
-            }
-
-            public IAwaiter<T> GetAwaiter()
-            {
-                return new TaskWrapper<T>.Awaiter(this.task.GetAwaiter());
-            }
-        }
-
-        private sealed class Continuation<TOld, TNew> : ITask<TNew>, ITaskData<TNew>
-            where TOld : allows ref struct
-            where TNew : allows ref struct
-        {
-            private readonly ITaskData<TOld> task;
-            private readonly Func<TOld, TNew> source;
-            private readonly Func<Exception, TNew> exception;
-            private readonly Func<OperationCanceledException, TNew> canceled;
-
-            public Continuation(
-                ITaskData<TOld> task, 
-                Func<TOld, TNew> source,
-                Func<Exception, TNew> exception,
-                Func<OperationCanceledException, TNew> canceled)
-            {
-                this.task = task;
-                this.source = source;
-                this.exception = exception;
-                this.canceled = canceled;
-            }
-
-            public Exception? Exception
-            {
-                get
-                {
-                    return this.task.Exception;
-                }
-            }
-
-            public bool IsCanceled
-            {
-                get
-                {
-                    return this.task.IsCanceled;
-                }
-            }
-
-            public Realizable<TResult> ContinueWith<TResult>(
-                Func<TNew, TResult> source, 
-                Func<Exception, TResult> exception, 
-                Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
-            {
-                return new Realizable<TResult>(
-                    new Continuation<TNew, TResult>(
-                        this,
-                        source,
-                        exception,
-                        canceled));
-            }
-
-            public IAwaiter<TNew> GetAwaiter()
-            {
-                return new Awaiter(
-                    this.task,
-                    this.source,
-                    this.exception,
-                    this.canceled);
-            }
-
-            private sealed class Awaiter : IAwaiter<TNew>
-            {
-                private readonly ITaskData<TOld> task;
-                private readonly IAwaiter<TOld> taskAwaiter;
-                private readonly Func<TOld, TNew> source;
-                private readonly Func<Exception, TNew> exception;
-                private readonly Func<OperationCanceledException, TNew> canceled;
-
-                public Awaiter(
-                    ITaskData<TOld> task,
-                    Func<TOld, TNew> source,
-                    Func<Exception, TNew> exception,
-                    Func<OperationCanceledException, TNew> canceled)
-                {
-                    this.task = task;
-                    this.source = source;
-                    this.exception = exception;
-                    this.canceled = canceled;
-
-                    this.taskAwaiter = this.task.GetAwaiter();
-                }
-
-                public bool IsCompleted
-                {
-                    get
-                    {
-                        return this.taskAwaiter.IsCompleted;
-                    }
-                }
-
-                public TNew GetResult()
-                {
-                    if (this.task.Exception != null)
-                    {
-                        return exception(this.task.Exception);
-                    }
-                    else if (this.task.IsCanceled)
-                    {
-                        return canceled(new OperationCanceledException("TODO"));
-                    }
-                    else
-                    {
-                        //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
-                        return this.source(this.taskAwaiter.GetResult());
-                    }
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
-        }
-
-        public IAwaiter<T> GetAwaiter()
-        {
-            return new Awaiter(this.task.GetAwaiter());
-        }
-
-        private sealed class Awaiter : IAwaiter<T>
-        {
-            private readonly TaskAwaiter<T> taskAwaiter;
-
-            public Awaiter(TaskAwaiter<T> taskAwaiter)
-            {
-                this.taskAwaiter = taskAwaiter;
-            }
-
-            public bool IsCompleted
-            {
-                get
-                {
-                    return this.taskAwaiter.IsCompleted;
-                }
-            }
-
-            public T GetResult()
-            {
-                return this.taskAwaiter.GetResult();
-            }
-
-            public void OnCompleted(Action continuation)
-            {
-                this.taskAwaiter.OnCompleted(continuation);
-            }
-
-            public void UnsafeOnCompleted(Action continuation)
-            {
-                this.taskAwaiter.UnsafeOnCompleted(continuation);
-            }
-        }
-    }
-
     public readonly struct BetterNullable<T>
     {
         private readonly bool hasValue;
@@ -792,4 +562,25 @@ namespace Fx
 
         public TSelf Self { get; }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //// TODO then split this into files
+    //// TODO implement a test with ref structs
+    //// TODO implement a test using actual async (like reading a file or something)
+    //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
+    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
+    //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
+    //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
+    //// TODO it seems like you have determine that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 }
