@@ -16,19 +16,6 @@ namespace Fx
         //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
 
 
-        public static Realizable<string> DoWork2(IEither<string, Exception> either)
-        {
-            var parsed = either.Select(
-                value => Parse(value),
-                error => new TaskWrapper<Exception>(Task.FromResult(error)));
-
-            return parsed.Apply(
-                actualParsing => actualParsing.Apply(
-                    actuallyParsed => actuallyParsed.ToString(),
-                    parseError => parseError.ToString()),
-                readError => readError.ToString());
-        }
-
 
         public static Realizable<IEither<TLeftResult, TRightResult>> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
@@ -86,48 +73,6 @@ namespace Fx
 
 
         private static bool Context = false;
-
-        public static TaskWrapper<IEither<int, Exception>> Parse(string value)
-        {
-            return new TaskWrapper<IEither<int, Exception>>(ParseImpl(value));
-        }
-
-        private static async Task<IEither<int, Exception>> ParseImpl(string value)
-        {
-            return await Task.FromResult(ParseInner(value)).ConfigureAwait(false);
-        }
-
-        private static IEither<int, Exception> ParseInner(string value)
-        {
-            try
-            {
-                return new Either<int, Exception>(int.Parse(value));
-            }
-            catch (Exception exception)
-            {
-                return new Either<int, Exception>(exception);
-            }
-        }
-
-        public static TaskWrapper<string> ToString(int value)
-        {
-            return new TaskWrapper<string>(ToStringImpl(value));
-        }
-
-        private static async Task<string> ToStringImpl(int value)
-        {
-            return await Task.FromResult(value.ToString()).ConfigureAwait(false);
-        }
-
-        public static TaskWrapper<string> ToString(Exception exception)
-        {
-            return new TaskWrapper<string>(ToStringImpl(exception));
-        }
-
-        private static async Task<string> ToStringImpl(Exception exception)
-        {
-            return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
-        }
 
         
     }
