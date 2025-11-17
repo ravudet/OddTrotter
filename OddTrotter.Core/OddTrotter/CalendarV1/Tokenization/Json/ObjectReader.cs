@@ -465,16 +465,152 @@
 
 
 
-    public readonly ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>>
+    public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>> //// TODO see which of these types you can make readonly, if any
         where TNextReader : allows ref struct
     {
-        private readonly Stream stream;
-        private readonly IArrayResizer arrayResizer;
+        public struct Awaiter //// TODO you can have a compiler conditional for this to be a ref struct to ensure that you aren't escaping to the stack (for cases where you don't await)
+        {
+            private readonly Stream stream;
+            private readonly IArrayResizer arrayResizer;
 
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
-        private readonly int validBytes;
-        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+            private byte[] buffer;
+            private readonly int startIndex;
+            private readonly int validBytes;
+            private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+            private int currentIndex;
+            private ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter awaiter;
+
+            public Awaiter(
+                Stream stream,
+                IArrayResizer arrayResizer,
+                byte[] buffer,
+                int startIndex,
+                int validBytes,
+                Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+            {
+                this.stream = stream;
+                this.arrayResizer = arrayResizer;
+                this.buffer = buffer;
+                this.readerFactory = readerFactory;
+                this.startIndex = startIndex;
+                this.validBytes = validBytes;
+
+                this.currentIndex = startIndex;
+            }
+
+            public bool IsCompleted
+            {
+                get
+                {
+                    if (this.currentIndex >= this.validBytes)
+                    {
+                        return false;
+                    }
+
+                    if (this.currentIndex == 0)
+                    {
+                        // we've tried just reading more into the buffer (or we are on the 0-length initial buffer), we now need to resize the buffer
+                        this.buffer = this.arrayResizer.Resize(this.buffer);
+                    }
+
+                    // copy the remaining bytes to the beginning of the buffer
+                    var copiedBuffer = this.validBytes - this.currentIndex;
+                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, copiedBuffer);
+
+                    // read more data into the now-freed buffer space
+                    this.awaiter = this.stream.ReadAsync(this.buffer, copiedBuffer, this.buffer.Length - copiedBuffer).ConfigureAwait(false).GetAwaiter();
+
+                    return this.awaiter.IsCompleted;
+                }
+            }
+
+            public ValueReaderToken<TNextReader> GetResult()
+            {
+                //// TODO actually leverage utf8
+                //// TODO you aren't allowing comments...
+                switch ((char)this.buffer[this.currentIndex])
+                {
+                    case '{':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.Object,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case '[':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.Array,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case '-':
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.Number,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case '"':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.String,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case 'f':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.False,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case 'n':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.Null,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                    case 't':
+                        return new ValueReaderToken<TNextReader>(
+                            ValueReaderToken<TNextReader>.TokenType.True,
+                            this.stream,
+                            this.arrayResizer,
+                            this.buffer,
+                            this.currentIndex,
+                            this.validBytes,
+                            this.readerFactory);
+                }
+
+                throw new Exception("TODO invalid JSON");
+            }
+        }
+
+        private Awaiter awaiter;
 
         public ValueReader(
             Stream stream, 
@@ -488,16 +624,17 @@
             Stream stream, 
             IArrayResizer arrayResizer, 
             byte[] buffer, 
-            int currentIndex,
+            int startIndex,
             int validBytes,
             Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
         {
-            this.stream = stream;
-            this.arrayResizer = arrayResizer;
-            this.buffer = buffer;
-            this.readerFactory = readerFactory;
-            this.currentIndex = currentIndex;
-            this.validBytes = validBytes;
+            this.awaiter = new Awaiter(
+                stream,
+                arrayResizer,
+                buffer,
+                startIndex,
+                validBytes,
+                readerFactory);
         }
 
         public RefTask<ValueReader<TNextReader>> Read2()
@@ -529,101 +666,14 @@
 
         public ValueReaderToken<TNextReader> TryMoveNext(out bool moved)
         {
-            if (this.currentIndex >= this.validBytes)
+            if (this.awaiter.IsCompleted)
             {
                 moved = false;
                 return default;
             }
 
-
-            //// TODO actually leverage utf8
-            //// TODO you aren't allowing comments...
-
-            switch ((char)this.buffer[this.currentIndex])
-            {
-                case '{':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.Object,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case '[':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.Array,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case '-':
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.Number,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case '"':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.String,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case 'f':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.False,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case 'n':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.Null,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-                case 't':
-                    moved = true;
-                    return new ValueReaderToken<TNextReader>(
-                        ValueReaderToken<TNextReader>.TokenType.True,
-                        this.stream,
-                        this.arrayResizer,
-                        this.buffer,
-                        this.currentIndex,
-                        this.validBytes,
-                        this.readerFactory);
-            }
-
-            throw new Exception("TODO invalid JSON");
+            moved = true;
+            return this.awaiter.GetResult();
         }
     }
 
