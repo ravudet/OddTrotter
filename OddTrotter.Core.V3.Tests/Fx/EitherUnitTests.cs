@@ -20,11 +20,11 @@
         [TestMethod]
         public async Task TestMethod1Dot2()
         {
-            var message = "the message";
-            var either = new Either<int, Exception>(new Exception(message));
+            var exception = new Exception("the message");
+            var either = new Either<int, Exception>(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual(message, result);
+            Assert.AreEqual(exception.ToString(), result);
         }
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
@@ -51,17 +51,17 @@
             var either = new Either<string, Exception>("not a number");
             var result = await TestMethod2Impl(either);
 
-            Assert.AreEqual("42", result);
+            Assert.IsTrue(result.Contains("FormatException"));
         }
 
         [TestMethod]
         public async Task TestMethod2Dot3()
         {
-            var message = "the message";
-            var either = new Either<string, Exception>(new Exception(message));
+            var exception = new Exception("the message");
+            var either = new Either<string, Exception>(exception);
             var result = await TestMethod2Impl(either);
 
-            Assert.AreEqual(message, result);
+            Assert.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
