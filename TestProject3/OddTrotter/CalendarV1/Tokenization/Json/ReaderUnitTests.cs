@@ -41,7 +41,7 @@
 """;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                await Helpers.ReadToEnd(() => Helpers.StartReading(stream, new ArrayResizer(stream.Length))).ConfigureAwait(false);
+                await Helpers.ReadToEnd(Helpers.StartReading(stream, new ArrayResizer(stream.Length))).ConfigureAwait(false);
             }
         }
 

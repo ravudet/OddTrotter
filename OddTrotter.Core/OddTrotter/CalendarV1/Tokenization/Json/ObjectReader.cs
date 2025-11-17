@@ -126,16 +126,10 @@
         }
 
 
-        public static async Task ReadToEnd(Func<ValueReader<NothingReader>> valueReaderFactory)
+        public static async Task ReadToEnd(ValueReader<NothingReader> valueReader)
         {
-            var valueReader = valueReaderFactory();
-            ValueReaderToken<NothingReader> valueReaderToken;
-            while (!valueReader.TryMoveNext2(out valueReaderToken))
-            {
-                valueReader = await valueReader.Read2();
-            }
+            ValueReaderToken<NothingReader> valueReaderToken = await valueReader;
             
-
             var nothingReader = valueReaderToken.ReadToEnd();
             nothingReader.ReadToEnd();
         }
@@ -287,9 +281,9 @@
             var reader = new ValueReader<TNextReader>();
 
             ValueReaderToken<TNextReader> valueReaderToken;
-            while (!reader.TryMoveNext2(out valueReaderToken))
+            if (!reader.TryMoveNext2(out valueReaderToken))
             {
-                reader = await reader.Read2();
+                valueReaderToken = await reader;
             }
         }
 
@@ -465,21 +459,21 @@
 
 
 
-    public ref struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>> //// TODO see which of these types you can make readonly, if any
+    public struct ValueReader<TNextReader> : IReader<ValueReaderToken<TNextReader>> //// TODO see which of these types you can make readonly, if any
         where TNextReader : allows ref struct
     {
-        public struct Awaiter //// TODO you can have a compiler conditional for this to be a ref struct to ensure that you aren't escaping to the stack (for cases where you don't await)
+        public struct Awaiter : ICriticalNotifyCompletion //// TODO you can have a compiler conditional for this to be a ref struct to ensure that you aren't escaping to the stack (for cases where you don't await)
         {
             private readonly Stream stream;
             private readonly IArrayResizer arrayResizer;
 
             private byte[] buffer;
             private readonly int startIndex;
-            private readonly int validBytes;
+            private int validBytes;
             private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
 
             private int currentIndex;
-            private ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter awaiter;
+            private ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter? awaiter;
 
             public Awaiter(
                 Stream stream,
@@ -503,25 +497,40 @@
             {
                 get
                 {
+                    if (this.awaiter.HasValue)
+                    {
+                        if (!this.awaiter.Value.IsCompleted)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            this.validBytes += this.awaiter.Value.GetResult();
+                        }
+                    }
+
+                    if (this.currentIndex >= this.validBytes)
+                    {
+                        if (this.currentIndex == 0)
+                        {
+                            // we've tried just reading more into the buffer (or we are on the 0-length initial buffer), we now need to resize the buffer
+                            this.buffer = this.arrayResizer.Resize(this.buffer);
+                        }
+
+                        // copy the remaining bytes to the beginning of the buffer
+                        var copiedBuffer = this.validBytes - this.currentIndex;
+                        Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, copiedBuffer);
+
+                        // read more data into the now-freed buffer space
+                        this.awaiter = this.stream.ReadAsync(this.buffer, copiedBuffer, this.buffer.Length - copiedBuffer).ConfigureAwait(false).GetAwaiter();
+                    }
+
                     if (this.currentIndex >= this.validBytes)
                     {
                         return false;
                     }
 
-                    if (this.currentIndex == 0)
-                    {
-                        // we've tried just reading more into the buffer (or we are on the 0-length initial buffer), we now need to resize the buffer
-                        this.buffer = this.arrayResizer.Resize(this.buffer);
-                    }
-
-                    // copy the remaining bytes to the beginning of the buffer
-                    var copiedBuffer = this.validBytes - this.currentIndex;
-                    Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, copiedBuffer);
-
-                    // read more data into the now-freed buffer space
-                    this.awaiter = this.stream.ReadAsync(this.buffer, copiedBuffer, this.buffer.Length - copiedBuffer).ConfigureAwait(false).GetAwaiter();
-
-                    return this.awaiter.IsCompleted;
+                    return true;
                 }
             }
 
@@ -608,6 +617,34 @@
 
                 throw new Exception("TODO invalid JSON");
             }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                var completed = this.IsCompleted;
+
+                if (this.awaiter.HasValue)
+                {
+                    this.awaiter.Value.UnsafeOnCompleted(continuation);
+                }
+                else
+                {
+                    ValueTask.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+                }
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                var completed = this.IsCompleted;
+
+                if (this.awaiter.HasValue)
+                {
+                    this.awaiter.Value.OnCompleted(continuation);
+                }
+                else
+                {
+                    ValueTask.CompletedTask.GetAwaiter().OnCompleted(continuation);
+                }
+            }
         }
 
         private Awaiter awaiter;
@@ -637,7 +674,7 @@
                 readerFactory);
         }
 
-        public RefTask<ValueReader<TNextReader>> Read2()
+        /*public RefTask<ValueReader<TNextReader>> Read2()
         {
             var readerFactory = this.readerFactory;
             return new RefTask<ValueReader<TNextReader>>(
@@ -656,6 +693,11 @@
                         validBytes, 
                         readerFactory //// TODO do you really want to create a closure here? maybe ref task could take a "reader context" or something //// TODO note that you follow this pattern in other readers too
                         ));
+        }*/
+
+        public Awaiter GetAwaiter()
+        {
+            return this.awaiter;
         }
 
         public ValueTask Read()
