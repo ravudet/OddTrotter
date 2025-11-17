@@ -550,7 +550,7 @@ namespace Fx
             {
                 var mixin = new DecomposeMixin<Realizable<T>, T, ITask<T>>(
                     this,
-                    (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right));
+                    (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose2(out left, out right));
                 casted = Unsafe.As<DecomposeMixin<Realizable<T>, T, ITask<T>>, TCasted>(ref mixin);
                 return true;
             }
@@ -559,9 +559,14 @@ namespace Fx
             return false;
         }
 
-        public bool Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
+        private bool Decompose2([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
         {
-            //// TODO can you make this an implicit interface implementation?
+            //// TODO is it possible to avoid this stub method while still having `decompose` be an implicit interface implemenation?
+            return this.Decompose(out left, out right);
+        }
+
+        bool IDecomposeMixin<Realizable<T>, T, ITask<T>>.Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
+        {
             return this.either.Decompose(out left, out right);
         }
     }
