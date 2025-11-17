@@ -105,13 +105,15 @@
                     return default;
                 }
 
-                if (this.currentIndex >= this.validBytes)
+                /*if (this.currentIndex >= this.validBytes)
                 {
                     moved = false;
                     return default;
-                }
+                }*/
 
-                throw new Exception("TODO invalid JSON; there was more data to be read when no tokens were expected");
+                moved = true;
+                return new Nothing();
+                ////throw new Exception("TODO invalid JSON; there was more data to be read when no tokens were expected");
             }
         }
 
