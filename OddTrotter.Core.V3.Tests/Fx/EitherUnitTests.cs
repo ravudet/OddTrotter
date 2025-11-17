@@ -3,6 +3,8 @@
     using System;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
