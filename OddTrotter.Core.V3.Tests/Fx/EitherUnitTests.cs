@@ -9,12 +9,22 @@
     public sealed class EitherUnitTests
     {
         [TestMethod]
-        public async Task TestMethod1()
+        public async Task TestMethod1Dot1()
         {
             var either = new Either<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual("42", result);
+        }
+
+        [TestMethod]
+        public async Task TestMethod1Dot2()
+        {
+            var message = "the message";
+            var either = new Either<int, Exception>(new Exception(message));
+            var result = await TestMethod1Impl(either).ConfigureAwait(false);
+
+            Assert.AreEqual(message, result);
         }
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
@@ -27,12 +37,31 @@
         }
 
         [TestMethod]
-        public async Task TestMethod2()
+        public async Task TestMethod2Dot1()
         {
             var either = new Either<string, Exception>("42");
             var result = await TestMethod2Impl(either);
 
             Assert.AreEqual("42", result);
+        }
+
+        [TestMethod]
+        public async Task TestMethod2Dot2()
+        {
+            var either = new Either<string, Exception>("not a number");
+            var result = await TestMethod2Impl(either);
+
+            Assert.AreEqual("42", result);
+        }
+
+        [TestMethod]
+        public async Task TestMethod2Dot3()
+        {
+            var message = "the message";
+            var either = new Either<string, Exception>(new Exception(message));
+            var result = await TestMethod2Impl(either);
+
+            Assert.AreEqual(message, result);
         }
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)

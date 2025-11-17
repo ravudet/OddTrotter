@@ -367,21 +367,40 @@ namespace Fx
         }
     }
 
+    public readonly struct BetterNullable<T>
+    {
+        private readonly bool hasValue;
+        private readonly T value;
+
+        public BetterNullable(T value)
+        {
+            this.value = value;
+
+            this.hasValue = true;
+        }
+
+        public bool TryGetValue([MaybeNullWhen(false)] out T value)
+        {
+            value = this.value;
+            return this.hasValue;
+        }
+    }
+
     public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
-        private readonly TLeft? left;
-        private readonly TRight? right;
+        private readonly BetterNullable<TLeft> left;
+        private readonly BetterNullable<TRight> right;
 
         public Either(TLeft left)
         {
-            this.left = left;
+            this.left = new BetterNullable<TLeft>(left);
 
             this.right = default;
         }
 
         public Either(TRight right)
         {
-            this.right = right;
+            this.right = new BetterNullable<TRight>(right);
 
             this.left = default;
         }
@@ -391,19 +410,19 @@ namespace Fx
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct
         {
-            if (this.left != null)
+            if (this.left.TryGetValue(out var left))
             {
                 return
-                    leftMap(this.left, ref context)
+                    leftMap(left, ref context)
                     .ContinueWith(
                         result => result,
                         exception => throw new LeftMapException(exception),
                         canceled => throw canceled);
             }
-            else if (this.right != null)
+            else if (this.right.TryGetValue(out var right))
             {
                 return
-                    rightMap(this.right, ref context)
+                    rightMap(right, ref context)
                     .ContinueWith(
                         result => result,
                         exception => throw new RightMapException(exception),
