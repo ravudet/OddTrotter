@@ -807,7 +807,7 @@
                 return default;
             }
 
-            if (this.buffer.AsSpan(this.currentIndex, bytes.Length) == bytes.AsSpan())
+            if (this.buffer.AsSpan(this.currentIndex, bytes.Length).SequenceEqual(bytes.AsSpan()))
             {
                 moved = true;
                 return new FalseToken();
@@ -893,7 +893,7 @@
                 return default;
             }
 
-            if (this.buffer.AsSpan(this.currentIndex, bytes.Length) == bytes.AsSpan())
+            if (this.buffer.AsSpan(this.currentIndex, bytes.Length).SequenceEqual(bytes.AsSpan()))
             {
                 moved = true;
                 return new NullToken();
@@ -1384,7 +1384,7 @@
                 return default;
             }
 
-            this.finalIndex = this.currentIndex + stringToken.Value.Length;
+            this.finalIndex = this.currentIndex + stringToken.Value.Length + 2;
             return new MemberNameToken(stringToken.Value);
         }
 
@@ -1417,7 +1417,7 @@
                 }
             }
 
-            if (this.buffer[currentIndex] != '=')
+            if (this.buffer[currentIndex] != ':')
             {
                 throw new Exception("TODO invalid JSON");
             }
@@ -2048,7 +2048,7 @@
             this.finalIndex = currentIndex + 1;
 
             moved = true;
-            return new StringToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex + 1));
+            return new StringToken(this.buffer.AsSpan(startIndex, currentIndex - startIndex));
         }
 
         public TNextReader TryMoveNext(out bool moved)
