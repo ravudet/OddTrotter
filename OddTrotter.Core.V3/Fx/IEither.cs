@@ -22,41 +22,6 @@ namespace Fx
         
 
 
-        public static TResult Apply<TLeft, TRight, TResult>(
-            this IEither<TLeft, TRight> either,
-            Func<TLeft, TResult> leftMap,
-            Func<TRight, TResult> rightMap)
-        {
-            var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
-                (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(leftMap(left))),
-                (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(rightMap(right))),
-                ref Context);
-
-            if (future.TypeHolder.Decompose(out var result, out var task))
-            {
-                return result;
-            }
-            else
-            {
-                return task.GetAwaiter().GetResult();
-            }
-        }
-
-
-        public static Realizable<TResult> Apply<TLeft, TRight, TResult>(
-            this Realizable<IEither<TLeft, TRight>> either,
-            Func<TLeft, TResult> leftMap,
-            Func<TRight, TResult> rightMap)
-        {
-            return either.ContinueWith(
-                result => result.Apply(leftMap, rightMap),
-                exception => throw exception,
-                canceled => throw canceled);
-        }
-
-
-        private static bool Context = false;
-
         
     }
 
