@@ -559,8 +559,9 @@ namespace Fx
             return false;
         }
 
-        bool IDecomposeMixin<Realizable<T>, T, ITask<T>>.Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
+        public bool Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
         {
+            //// TODO can you make this an implicit interface implementation?
             return this.either.Decompose(out left, out right);
         }
     }
