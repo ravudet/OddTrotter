@@ -6,11 +6,8 @@ namespace Fx
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    using OddTrotter.Core.V3;
-
     public static class Playground
     {
-        //// TODO write these two methods as tests (need to implement a class `ieither` implementation first)
         //// TODO then split this into files
         //// TODO implement a test with ref structs
         //// TODO implement a test using actual async (like reading a file or something)
