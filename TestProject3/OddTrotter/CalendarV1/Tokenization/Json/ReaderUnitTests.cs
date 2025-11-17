@@ -15,7 +15,29 @@
         {
             var data =
 """
-true
+{
+    "true": true,
+    "false": false,
+    "number": 1234,
+    "string": "asdf",
+    "null": null,
+    "object": {
+        "true": true,
+        "false": false,
+        "number": 1234,
+        "string": "asdf",
+        "null": null
+    },
+    "array": [
+        {
+            "true": true,
+            "false": false,
+            "number": 1234,
+            "string": "asdf",
+            "null": null
+        }
+    ]
+}
 """;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
