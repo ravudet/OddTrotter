@@ -169,6 +169,108 @@ namespace Fx
             Func<Exception, TResult> exception, 
             Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
+            return new Realizable<TResult>(
+                new Continuation<TResult>(
+                    this.task,
+                    source,
+                    exception,
+                    canceled));
+        }
+
+        private sealed class Continuation<TContinued> : ITask<TContinued>
+            where TContinued : allows ref struct
+        {
+            private readonly Task<T> task;
+            private readonly Func<T, TContinued> source;
+            private readonly Func<Exception, TContinued> exception;
+            private readonly Func<OperationCanceledException, TContinued> canceled;
+
+            public Continuation(
+                Task<T> task, 
+                Func<T, TContinued> source,
+                Func<Exception, TContinued> exception,
+                Func<OperationCanceledException, TContinued> canceled)
+            {
+                this.task = task;
+                this.source = source;
+                this.exception = exception;
+                this.canceled = canceled;
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(
+                Func<TContinued, TResult> source, 
+                Func<Exception, TResult> exception, 
+                Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+            {
+                throw new NotImplementedException();
+            }
+
+            public IAwaiter<TContinued> GetAwaiter()
+            {
+                return new Awaiter(
+                    this.task,
+                    this.source,
+                    this.exception,
+                    this.canceled);
+            }
+
+            private sealed class Awaiter : IAwaiter<TContinued>
+            {
+                private readonly Task<T> task;
+                private readonly TaskAwaiter<T> taskAwaiter;
+                private readonly Func<T, TContinued> source;
+                private readonly Func<Exception, TContinued> exception;
+                private readonly Func<OperationCanceledException, TContinued> canceled;
+
+                public Awaiter(
+                    Task<T> task,
+                    Func<T, TContinued> source,
+                    Func<Exception, TContinued> exception,
+                    Func<OperationCanceledException, TContinued> canceled)
+                {
+                    this.task = task;
+                    this.source = source;
+                    this.exception = exception;
+                    this.canceled = canceled;
+
+                    this.taskAwaiter = this.task.GetAwaiter();
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.taskAwaiter.IsCompleted;
+                    }
+                }
+
+                public TContinued GetResult()
+                {
+                    if (this.task.Exception != null)
+                    {
+                        return exception(this.task.Exception);
+                    }
+                    else if (this.task.IsCanceled)
+                    {
+                        return canceled(new OperationCanceledException("TODO"));
+                    }
+                    else
+                    {
+                        //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
+                        return this.source(this.task.Result);
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
         }
 
         public IAwaiter<T> GetAwaiter()
