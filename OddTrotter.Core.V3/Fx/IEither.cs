@@ -170,26 +170,68 @@ namespace Fx
             Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
             return new Realizable<TResult>(
-                new Continuation<TResult>(
-                    this.task,
+                new Continuation<T, TResult>(
+                    new TaskData(this.task),
                     source,
                     exception,
                     canceled));
         }
 
-        private sealed class Continuation<TContinued> : ITask<TContinued>
-            where TContinued : allows ref struct
+        private interface ITaskData<out TData>
+            where TData : allows ref struct
+        {
+            IAwaiter<TData> GetAwaiter();
+
+            Exception? Exception { get; }
+
+            bool IsCanceled { get; }
+        }
+
+        private sealed class TaskData : ITaskData<T>
         {
             private readonly Task<T> task;
-            private readonly Func<T, TContinued> source;
-            private readonly Func<Exception, TContinued> exception;
-            private readonly Func<OperationCanceledException, TContinued> canceled;
+
+            public TaskData(Task<T> task)
+            {
+                this.task = task;
+            }
+
+            public Exception? Exception
+            {
+                get
+                {
+                    return this.task.Exception;
+                }
+            }
+
+            public bool IsCanceled
+            {
+                get
+                {
+                    return this.task.IsCanceled;
+                }
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                return new TaskWrapper<T>.Awaiter(this.task.GetAwaiter());
+            }
+        }
+
+        private sealed class Continuation<TOld, TNew> : ITask<TNew>, ITaskData<TNew>
+            where TOld : allows ref struct
+            where TNew : allows ref struct
+        {
+            private readonly ITaskData<TOld> task;
+            private readonly Func<TOld, TNew> source;
+            private readonly Func<Exception, TNew> exception;
+            private readonly Func<OperationCanceledException, TNew> canceled;
 
             public Continuation(
-                Task<T> task, 
-                Func<T, TContinued> source,
-                Func<Exception, TContinued> exception,
-                Func<OperationCanceledException, TContinued> canceled)
+                ITaskData<TOld> task, 
+                Func<TOld, TNew> source,
+                Func<Exception, TNew> exception,
+                Func<OperationCanceledException, TNew> canceled)
             {
                 this.task = task;
                 this.source = source;
@@ -197,15 +239,36 @@ namespace Fx
                 this.canceled = canceled;
             }
 
+            public Exception? Exception
+            {
+                get
+                {
+                    return this.task.Exception;
+                }
+            }
+
+            public bool IsCanceled
+            {
+                get
+                {
+                    return this.task.IsCanceled;
+                }
+            }
+
             public Realizable<TResult> ContinueWith<TResult>(
-                Func<TContinued, TResult> source, 
+                Func<TNew, TResult> source, 
                 Func<Exception, TResult> exception, 
                 Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
-                throw new NotImplementedException();
+                return new Realizable<TResult>(
+                    new Continuation<TNew, TResult>(
+                        this,
+                        source,
+                        exception,
+                        canceled));
             }
 
-            public IAwaiter<TContinued> GetAwaiter()
+            public IAwaiter<TNew> GetAwaiter()
             {
                 return new Awaiter(
                     this.task,
@@ -214,19 +277,19 @@ namespace Fx
                     this.canceled);
             }
 
-            private sealed class Awaiter : IAwaiter<TContinued>
+            private sealed class Awaiter : IAwaiter<TNew>
             {
-                private readonly Task<T> task;
-                private readonly TaskAwaiter<T> taskAwaiter;
-                private readonly Func<T, TContinued> source;
-                private readonly Func<Exception, TContinued> exception;
-                private readonly Func<OperationCanceledException, TContinued> canceled;
+                private readonly ITaskData<TOld> task;
+                private readonly IAwaiter<TOld> taskAwaiter;
+                private readonly Func<TOld, TNew> source;
+                private readonly Func<Exception, TNew> exception;
+                private readonly Func<OperationCanceledException, TNew> canceled;
 
                 public Awaiter(
-                    Task<T> task,
-                    Func<T, TContinued> source,
-                    Func<Exception, TContinued> exception,
-                    Func<OperationCanceledException, TContinued> canceled)
+                    ITaskData<TOld> task,
+                    Func<TOld, TNew> source,
+                    Func<Exception, TNew> exception,
+                    Func<OperationCanceledException, TNew> canceled)
                 {
                     this.task = task;
                     this.source = source;
@@ -244,7 +307,7 @@ namespace Fx
                     }
                 }
 
-                public TContinued GetResult()
+                public TNew GetResult()
                 {
                     if (this.task.Exception != null)
                     {
@@ -257,7 +320,7 @@ namespace Fx
                     else
                     {
                         //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
-                        return this.source(this.task.Result);
+                        return this.source(this.taskAwaiter.GetResult());
                     }
                 }
 
@@ -275,7 +338,40 @@ namespace Fx
 
         public IAwaiter<T> GetAwaiter()
         {
-            throw new NotImplementedException();
+            return new Awaiter(this.task.GetAwaiter());
+        }
+
+        private sealed class Awaiter : IAwaiter<T>
+        {
+            private readonly TaskAwaiter<T> taskAwaiter;
+
+            public Awaiter(TaskAwaiter<T> taskAwaiter)
+            {
+                this.taskAwaiter = taskAwaiter;
+            }
+
+            public bool IsCompleted
+            {
+                get
+                {
+                    return this.taskAwaiter.IsCompleted;
+                }
+            }
+
+            public T GetResult()
+            {
+                return this.taskAwaiter.GetResult();
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                this.taskAwaiter.OnCompleted(continuation);
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                this.taskAwaiter.UnsafeOnCompleted(continuation);
+            }
         }
     }
 
