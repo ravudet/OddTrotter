@@ -15,15 +15,6 @@ namespace Fx
     //// TODO it seems like you have determine that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
 
-    public static class Throwaway
-    {
-        public static Task<TNewResult> ContinueWith2<TOldResult, TNewResult>(
-            this Task<TOldResult> task,
-            Func<Task<TOldResult>, TNewResult> func)
-        {
-            return task.ContinueWith(func);
-        }
-    }
 
     public sealed class TaskWrapper<T> : IContinuable<T>
     {
