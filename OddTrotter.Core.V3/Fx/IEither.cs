@@ -6,25 +6,6 @@ namespace Fx
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    public readonly struct BetterNullable<T>
-    {
-        private readonly bool hasValue;
-        private readonly T value;
-
-        public BetterNullable(T value)
-        {
-            this.value = value;
-
-            this.hasValue = true;
-        }
-
-        public bool TryGetValue([MaybeNullWhen(false)] out T value)
-        {
-            value = this.value;
-            return this.hasValue;
-        }
-    }
-
     public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
         private readonly BetterNullable<TLeft> left;
