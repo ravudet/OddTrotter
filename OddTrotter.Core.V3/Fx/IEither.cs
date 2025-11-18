@@ -6,55 +6,6 @@ namespace Fx
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
-    {
-        private readonly BetterNullable<TLeft> left;
-        private readonly BetterNullable<TRight> right;
-
-        public Either(TLeft left)
-        {
-            this.left = new BetterNullable<TLeft>(left);
-
-            this.right = default;
-        }
-
-        public Either(TRight right)
-        {
-            this.right = new BetterNullable<TRight>(right);
-
-            this.left = default;
-        }
-
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult>, allows ref struct
-        {
-            if (this.left.TryGetValue(out var left))
-            {
-                return
-                    leftMap(left, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new LeftMapException(exception),
-                        canceled => throw canceled);
-            }
-            else if (this.right.TryGetValue(out var right))
-            {
-                return
-                    rightMap(right, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new RightMapException(exception),
-                        canceled => throw canceled);
-            }
-            else
-            {
-                throw new Exception("TODO bug");
-            }
-        }
-    }
-
 
 
 
