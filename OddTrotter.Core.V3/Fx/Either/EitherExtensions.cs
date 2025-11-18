@@ -6,6 +6,7 @@ namespace Fx.Either
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using Fx.Either.Mixins;
     using Fx.Realizable;
 
     public static class EitherExtensions

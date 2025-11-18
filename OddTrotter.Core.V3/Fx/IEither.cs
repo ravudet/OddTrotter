@@ -1,7 +1,6 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx
 {
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -35,69 +34,6 @@ namespace Fx
         where TContext : allows ref struct
         where TContinuable : IContinuable<TResult>, allows ref struct
         where TResult : allows ref struct;
-
-
-
-
-
-
-
-    public interface IDecomposeMixin<out TEither, TLeft, TRight> //// TODO covariance
-        where TEither : IEither<TLeft, TRight>, allows ref struct
-        where TLeft : allows ref struct
-        where TRight : allows ref struct
-    {
-        bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right);
-    }
-
-    public delegate bool DecomposeDelegate<TEither, TLeft, TRight>(TEither either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
-        where TEither : IEither<TLeft, TRight>, allows ref struct
-        where TLeft : allows ref struct
-        where TRight : allows ref struct;
-
-    public readonly ref struct DecomposeMixin<TEither, TLeft, TRight> : IDecomposeMixin<TEither, TLeft, TRight>
-        where TEither : IEither<TLeft, TRight>, allows ref struct
-        where TLeft : allows ref struct
-        where TRight : allows ref struct
-    {
-        private readonly TEither either;
-        private readonly DecomposeDelegate<TEither, TLeft, TRight> @delegate;
-
-        public DecomposeMixin(TEither either, DecomposeDelegate<TEither, TLeft, TRight> @delegate)
-        {
-            this.either = either;
-            this.@delegate = @delegate;
-        }
-
-        public bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
-        {
-            return this.@delegate(this.either, out left, out right);
-        }
-    }
-
-
-
-
-
-
-
-    public interface ICastable
-    {
-        bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct; //// note: `tcasted` *must* be a struct for mixin purposes when ref structs are allowed because we can't actually return an interface that also encapsulates the thing being cast
-    }
-
-    public readonly ref struct TypeHolder<TSelf, T1, T2>
-        where TSelf : allows ref struct
-        where T1 : allows ref struct
-        where T2 : allows ref struct
-    {
-        public TypeHolder(TSelf self)
-        {
-            this.Self = self;
-        }
-
-        public TSelf Self { get; }
-    }
 
 
 

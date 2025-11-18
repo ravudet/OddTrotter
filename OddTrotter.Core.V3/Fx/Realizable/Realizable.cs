@@ -8,6 +8,7 @@ namespace Fx.Realizable
 
     using Fx;
     using Fx.Either;
+    using Fx.Either.Mixins;
 
     //// TODO better name
     public readonly ref struct Realizable<T> : IContinuable<T>, IEither<Realizable<T>, T, ITask<T>>, ICastable, IDecomposeMixin<Realizable<T>, T, ITask<T>>

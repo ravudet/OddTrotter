@@ -7,6 +7,7 @@ namespace Fx.Either
     using System.Threading.Tasks;
 
     using Fx;
+    using Fx.Either.Mixins;
     using Fx.Realizable;
 
     public readonly ref struct RefEither<TLeft, TRight> : IEither<RefEither<TLeft, TRight>, TLeft, TRight>, ICastable, IDecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>
