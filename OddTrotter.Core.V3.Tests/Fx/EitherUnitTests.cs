@@ -12,7 +12,19 @@
     public sealed class EitherUnitTests
     {
         [TestMethod]
-        public void LeftMapException()
+        public void SelectRightMapException()
+        {
+            var either = new Either<Exception, string>("asdf");
+            var leftMapException = Assert.ThrowsException<RightMapException>(() =>
+                either.Select(
+                    left => left,
+                    right => int.Parse(right)));
+
+            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+        }
+
+        [TestMethod]
+        public void SelectLeftMapException()
         {
             var either = new Either<string, Exception>("asdf");
             var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
