@@ -1,9 +1,9 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace Fx
+namespace Fx.Either
 {
     using System.Threading.Tasks;
 
-    using Fx.Either;
+    using Fx;
     using Fx.Realizable;
 
     public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>

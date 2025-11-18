@@ -3,6 +3,8 @@ namespace Fx.Either.Mixins
 {
     using System.Diagnostics.CodeAnalysis;
 
+    using Fx.Either;
+
     public interface IDecomposeMixin<out TEither, TLeft, TRight> //// TODO covariance
         where TEither : IEither<TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct

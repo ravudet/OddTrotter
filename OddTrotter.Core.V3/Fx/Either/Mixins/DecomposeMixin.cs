@@ -3,6 +3,8 @@ namespace Fx.Either.Mixins
 {
     using System.Diagnostics.CodeAnalysis;
 
+    using Fx.Either;
+
     public readonly ref struct DecomposeMixin<TEither, TLeft, TRight> : IDecomposeMixin<TEither, TLeft, TRight>
         where TEither : IEither<TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct
