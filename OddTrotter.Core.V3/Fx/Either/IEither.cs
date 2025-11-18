@@ -6,7 +6,6 @@ namespace Fx.Either
     using Fx;
     using Fx.Realizable;
 
-    //// TODO go through files and remove the comment block
     //// TODO implement a test with mapping exceptions being throw
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
