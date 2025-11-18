@@ -8,6 +8,7 @@
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Transactions;
 
     using OddTrotter.CalendarV1.Tokenization.Readers;
 
@@ -509,6 +510,7 @@
                         }
                         else
                         {
+                            //// TODO what if we are at the end of the stream?
                             this.validBytes += this.awaiter.Value.GetResult();
                         }
                     }
@@ -527,10 +529,7 @@
 
                         // read more data into the now-freed buffer space
                         this.awaiter = this.stream.ReadAsync(this.buffer, copiedBuffer, this.buffer.Length - copiedBuffer).ConfigureAwait(false).GetAwaiter();
-                    }
 
-                    if (this.currentIndex >= this.validBytes)
-                    {
                         return false;
                     }
 
@@ -848,17 +847,122 @@
         }
     }
 
-    public readonly ref struct FalseReader<TNextReader> : IReader<TNextReader, FalseToken>
+    public struct FalseReader<TNextReader> : IReader<TNextReader, FalseToken>
         where TNextReader : allows ref struct
     {
-        private static readonly byte[] bytes = [(byte)'f', (byte)'a', (byte)'l', (byte)'s', (byte)'e'];
-        
-        private readonly Stream stream;
-        private readonly IArrayResizer arrayResizer;
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
-        private readonly int validBytes;
-        private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+        public struct ValueAwaiter : ICriticalNotifyCompletion
+        {
+            private static readonly byte[] bytes = [(byte)'f', (byte)'a', (byte)'l', (byte)'s', (byte)'e'];
+
+            private readonly Stream stream;
+            private readonly IArrayResizer arrayResizer;
+            private byte[] buffer;
+            private readonly int currentIndex;
+            private readonly int validBytes;
+            private readonly Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory;
+
+            private int hasValue;
+            private ConfiguredTaskAwaitable<int>.ConfiguredTaskAwaiter? awaiter;
+
+            public ValueAwaiter(
+                Stream stream,
+                IArrayResizer arrayResizer,
+                byte[] buffer,
+                int currentIndex,
+                int validBytes,
+                Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
+            {
+                this.stream = stream;
+                this.arrayResizer = arrayResizer;
+                this.buffer = buffer;
+                this.currentIndex = currentIndex;
+                this.validBytes = validBytes;
+                this.readerFactory = readerFactory;
+
+                this.hasValue = 0;
+            }
+
+            public bool ValueIsCompleted
+            {
+                get
+                {
+                    //// TODO can you have a "valueawaiter" and a "moveawaiter"?
+
+                    if (this.hasValue != 0)
+                    {
+                        return true;
+                    }
+
+                    if (this.currentIndex + bytes.Length > this.validBytes)
+                    {
+                        if (this.currentIndex == 0)
+                        {
+                            // we've tried just reading more into the buffer (or we are on the 0-length initial buffer), we now need to resize the buffer
+                            this.buffer = this.arrayResizer.Resize(this.buffer);
+                        }
+
+                        // copy the remaining bytes to the beginning of the buffer
+                        var copiedBuffer = this.validBytes - this.currentIndex;
+                        Array.Copy(this.buffer, this.currentIndex, this.buffer, 0, copiedBuffer);
+
+                        // read more data into the now-freed buffer space
+                        this.awaiter = this.stream.ReadAsync(this.buffer, copiedBuffer, this.buffer.Length - copiedBuffer).ConfigureAwait(false).GetAwaiter();
+
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            public FalseToken ValueGetResult()
+            {
+                //// TODO can you have a "valueawaiter" and a "moveawaiter"?
+
+                if (this.hasValue == 1)
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+                else if (this.hasValue == 2)
+                {
+                    return new FalseToken();
+                }
+                else
+                {
+                    while (!this.ValueIsCompleted)
+                    {
+                        //// TODO don't just spin, not sure how this is supposed to be implemented
+                    }
+
+                    return this.ValueGetResult();
+                }
+            }
+
+            public bool IsCompleted
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public TNextReader GetResult()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private ValueAwaiter awaiter;
 
         public FalseReader(
             Stream stream,
@@ -868,15 +972,16 @@
             int validBytes,
             Func<Stream, IArrayResizer, byte[], int, int, TNextReader> readerFactory)
         {
-            this.stream = stream;
-            this.arrayResizer = arrayResizer;
-            this.buffer = buffer;
-            this.currentIndex = currentIndex;
-            this.validBytes = validBytes;
-            this.readerFactory = readerFactory;
+            this.awaiter = new ValueAwaiter(
+                stream,
+                arrayResizer,
+                buffer,
+                currentIndex,
+                validBytes,
+                readerFactory);
         }
 
-        public RefTask<FalseReader<TNextReader>> Read2()
+        /*public RefTask<FalseReader<TNextReader>> Read2()
         {
             var readerFactory = this.readerFactory;
             return new RefTask<FalseReader<TNextReader>>(
@@ -888,6 +993,11 @@
                 this.validBytes,
                 (stream, arrayResizer, buffer, currentIndex, validBytes) =>
                     new FalseReader<TNextReader>(stream, arrayResizer, buffer, currentIndex, validBytes, readerFactory));
+        }*/
+
+        public ValueAwaiter GetAwaiter()
+        {
+            return this.awaiter;
         }
 
         public ValueTask Read()
@@ -897,7 +1007,7 @@
 
         public FalseToken TryGetValue(out bool moved)
         {
-            if (this.currentIndex + bytes.Length - 1 >= this.validBytes)
+            /*if (this.currentIndex + bytes.Length - 1 >= this.validBytes)
             {
                 moved = false;
                 return default;
@@ -907,14 +1017,14 @@
             {
                 moved = true;
                 return new FalseToken();
-            }
+            }*/
 
             throw new Exception("TODO invalid JSON");
         }
 
         public TNextReader TryMoveNext(out bool moved)
         {
-            this.TryGetValue(out moved);
+            /*this.TryGetValue(out moved);
             if (!moved)
             {
                 return default!;
@@ -926,7 +1036,9 @@
                 this.arrayResizer,
                 this.buffer,
                 this.currentIndex + bytes.Length,
-                this.validBytes);
+                this.validBytes);*/
+
+            throw new Exception("TODO");
         }
     }
 
