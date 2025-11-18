@@ -6,7 +6,7 @@ namespace Fx.Either
     using Fx;
     using Fx.Realizable;
 
-    //// TODO implement a test with mapping exceptions being throw
+    //// TODO the test `applyrightmapexception` succeeds on its own, but fails when run with other tests...
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
