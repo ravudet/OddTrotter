@@ -4,6 +4,8 @@ namespace Fx.Realizable
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+
     public static class RealizableExtensions
     {
         public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
