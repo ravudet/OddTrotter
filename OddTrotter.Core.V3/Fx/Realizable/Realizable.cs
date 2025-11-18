@@ -22,6 +22,7 @@ namespace Fx.Realizable
         public Realizable(ITask<T> future)
         {
             //// TODO do you really want `future` to be `itask` specifically, or should this be a generic on `realizable`?
+            //// TODO you're asking this because `realizable` only needs `future` to be `icontinuable`, but `icontinuable` is pretty useless for the caller since it has no way to actually get the value; so, a generic would let us receive what we require (icontinuable) without the caller needing to implement `getawaiter` if they have some other way to get the value
             either = new RefEither<T, ITask<T>>(future);
         }
 
