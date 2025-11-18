@@ -4,6 +4,7 @@ namespace Fx
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.Realizable;
@@ -29,26 +30,6 @@ namespace Fx
             where TResult : allows ref struct
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct;
-    }
-
-    public interface IContinuableSource<out TSource>
-        where TSource : allows ref struct
-    {
-        TResult Apply<TResult>(
-            Func<TSource, TResult> source,
-            Func<Exception, TResult> exception,
-            Func<OperationCanceledException, TResult> canceled)
-            where TResult : allows ref struct;
-    }
-
-    public interface IContinuable<out TSource>
-        where TSource : allows ref struct
-    {
-        Realizable<TResult> ContinueWith<TResult>(
-            Func<TSource, TResult> source,
-            Func<Exception, TResult> exception,
-            Func<OperationCanceledException, TResult> canceled)
-            where TResult : allows ref struct;
     }
 
     public delegate TContinuable AsyncRefContextualizedContinuableMap<in TValue, TContext, out TContinuable, out TResult>(TValue value, ref TContext context) //// TODO you also need AsyncRefContextualizedTaskMap, AsyncRefContextualizedValueTaskMap, AsyncRefContextualizedITaskMap, AsyncRefContextualizedRealizableMap
@@ -375,6 +356,7 @@ namespace Fx
 
 
     //// TODO then split this into files
+    //// TODO go through files and remove the comment block
     //// TODO implement a test with mapping exceptions being throw
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
