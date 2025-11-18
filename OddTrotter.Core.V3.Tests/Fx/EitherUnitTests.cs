@@ -1,6 +1,7 @@
 ﻿namespace Fx
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -12,26 +13,39 @@
     public sealed class EitherUnitTests
     {
         [TestMethod]
+        public void ApplyRightMapException()
+        {
+            var either = new Either<Exception, string>("asdf");
+            var rightMapException = Assert.ThrowsException<RightMapException>(() =>
+                either.Apply(
+                    left => left.ToString().Length,
+                    right => int.Parse(right)));
+
+            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
+        }
+
+        [TestMethod]
         public void ApplyLeftMapException()
         {
             var either = new Either<string, Exception>("asdf");
-            bool context = false;
-            var result = either.Apply(
-                (string left, ref bool context) => int.Parse(left),
-                (Exception right, ref bool context) => right.ToString(),
-                ref context);
+            var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
+                either.Apply(
+                    left => int.Parse(left),
+                    right => right.ToString().Length));
+
+            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
         public void SelectRightMapException()
         {
             var either = new Either<Exception, string>("asdf");
-            var leftMapException = Assert.ThrowsException<RightMapException>(() =>
+            var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Select(
                     left => left,
                     right => int.Parse(right)));
 
-            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]

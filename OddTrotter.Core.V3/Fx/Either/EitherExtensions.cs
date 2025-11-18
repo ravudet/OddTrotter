@@ -57,8 +57,8 @@ namespace Fx.Either
             Func<TRight, TResult> rightMap)
         {
             var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
-                (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(leftMap(left))),
-                (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.FromResult(rightMap(right))),
+                (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.Run(() => leftMap(left))),
+                (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.Run(() => rightMap(right))),
                 ref Context);
 
             if (future.TypeHolder.Decompose(out var result, out var task))
