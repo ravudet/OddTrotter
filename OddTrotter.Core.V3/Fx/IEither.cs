@@ -31,20 +31,6 @@ namespace Fx
             where TContinuable : IContinuable<TResult>, allows ref struct;
     }
 
-    public interface ITask<out T> : IContinuable<T> //// TODO call this awaitable //// TODO probably have a configure await on that; if it's not directly on iawaitable, there should be a configurableawaitable or something //// TODO iawaitable should have two generics, one for the return value and another for the awaiter type
-        where T : allows ref struct
-    {
-        IAwaiter<T> GetAwaiter();
-    }
-
-    public interface IAwaiter<out T> : ICriticalNotifyCompletion
-        where T : allows ref struct
-    {
-        bool IsCompleted { get; }
-
-        T GetResult();
-    }
-
     public interface IContinuableSource<out TSource>
         where TSource : allows ref struct
     {

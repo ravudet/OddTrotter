@@ -1,23 +1,12 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace Fx.Realizable
+namespace System.Runtime.CompilerServices
 {
-    using System.Runtime.CompilerServices;
-    using System.Threading.Tasks;
-
-    public static class RealizableExtensions
+    public interface IAwaiter<out T> : ICriticalNotifyCompletion
+        where T : allows ref struct
     {
-        public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
-        {
-            //// TODO implement a configure await
-            if (realizable.TypeHolder.Decompose(out var left, out var right))
-            {
-                return new TaskWrapper<T>(Task.FromResult(left)).GetAwaiter();
-            }
-            else
-            {
-                return right.GetAwaiter();
-            }
-        }
+        bool IsCompleted { get; }
+
+        T GetResult();
     }
 
 
@@ -33,6 +22,7 @@ namespace Fx.Realizable
 
 
     //// TODO then split this into files
+    //// TODO implement a test with mapping exceptions being throw
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
