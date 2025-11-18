@@ -11,7 +11,26 @@ namespace Fx.Either
 
     public static class EitherExtensions
     {
-        public static Realizable<IEither<TLeftResult, TRightResult>> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap,
+            Func<TRightSource, TRightResult> rightMap)
+        {
+            var realizable = either.SelectAsync(
+                left => (IContinuable<TLeftResult>)new TaskWrapper<TLeftResult>(Task.FromResult(leftMap(left))),
+                right => (IContinuable<TRightResult>)new TaskWrapper<TRightResult>(Task.FromResult(rightMap(right))));
+
+            if (realizable.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.GetAwaiter().GetResult();
+            }
+        }
+
+        public static Realizable<IEither<TLeftResult, TRightResult>> SelectAsync<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
             Func<TRightSource, IContinuable<TRightResult>> rightMap)

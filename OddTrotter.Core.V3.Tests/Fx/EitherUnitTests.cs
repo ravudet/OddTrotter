@@ -12,6 +12,18 @@
     public sealed class EitherUnitTests
     {
         [TestMethod]
+        public void LeftMapException()
+        {
+            var either = new Either<string, Exception>("asdf");
+            var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
+                either.Select(
+                    left => int.Parse(left),
+                    right => right));
+
+            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+        }
+
+        [TestMethod]
         public async Task TestMethod1Dot1()
         {
             var either = new Either<int, Exception>(42);
@@ -69,7 +81,7 @@
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
         {
-            var parsed = either.Select(
+            var parsed = either.SelectAsync(
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
