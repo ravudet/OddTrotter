@@ -17,8 +17,8 @@ namespace Fx.Either
             Func<TRightSource, TRightResult> rightMap)
         {
             var realizable = either.SelectAsync(
-                left => (IContinuable<TLeftResult>)new TaskWrapper<TLeftResult>(Task.Run(() => leftMap(left))),
-                right => (IContinuable<TRightResult>)new TaskWrapper<TRightResult>(Task.Run(() => rightMap(right))));
+                left => new TaskWrapper<TLeftResult>(Task.Run(() => leftMap(left))), //// TODO every non-async variant needs to not use task.fromresult, but task.run instead
+                right => new TaskWrapper<TRightResult>(Task.Run(() => rightMap(right))));
 
             if (realizable.Decompose(out var result, out var task))
             {

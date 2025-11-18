@@ -12,6 +12,17 @@
     public sealed class EitherUnitTests
     {
         [TestMethod]
+        public void ApplyLeftMapException()
+        {
+            var either = new Either<string, Exception>("asdf");
+            bool context = false;
+            var result = either.Apply(
+                (string left, ref bool context) => int.Parse(left),
+                (Exception right, ref bool context) => right.ToString(),
+                ref context);
+        }
+
+        [TestMethod]
         public void SelectRightMapException()
         {
             var either = new Either<Exception, string>("asdf");
