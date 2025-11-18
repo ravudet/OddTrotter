@@ -17,8 +17,8 @@ namespace Fx.Either
             Func<TRightSource, TRightResult> rightMap)
         {
             var realizable = either.SelectAsync(
-                left => (IContinuable<TLeftResult>)new TaskWrapper<TLeftResult>(Task.FromResult(leftMap(left))),
-                right => (IContinuable<TRightResult>)new TaskWrapper<TRightResult>(Task.FromResult(rightMap(right))));
+                left => (IContinuable<TLeftResult>)new TaskWrapper<TLeftResult>(Task.Run(() => leftMap(left))),
+                right => (IContinuable<TRightResult>)new TaskWrapper<TRightResult>(Task.Run(() => rightMap(right))));
 
             if (realizable.Decompose(out var result, out var task))
             {

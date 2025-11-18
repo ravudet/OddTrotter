@@ -147,7 +147,7 @@ namespace System.Threading.Tasks
                     this.exception = exception;
                     this.canceled = canceled;
 
-                    taskAwaiter = this.task.GetAwaiter();
+                    this.taskAwaiter = this.task.GetAwaiter();
                 }
 
                 public bool IsCompleted
@@ -160,29 +160,35 @@ namespace System.Threading.Tasks
 
                 public TNew GetResult()
                 {
-                    if (task.Exception != null)
+                    if (this.task.Exception != null)
                     {
-                        return exception(task.Exception);
+                        var exception = this.task.Exception;
+                        if (exception is AggregateException aggregateException && aggregateException.InnerExceptions.Count == 1)
+                        {
+                            exception = aggregateException.InnerExceptions[0];
+                        }
+
+                        return this.exception(exception);
                     }
-                    else if (task.IsCanceled)
+                    else if (this.task.IsCanceled)
                     {
-                        return canceled(new OperationCanceledException("TODO"));
+                        return this.canceled(new OperationCanceledException("TODO"));
                     }
                     else
                     {
                         //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
-                        return source(taskAwaiter.GetResult());
+                        return this.source(this.taskAwaiter.GetResult());
                     }
                 }
 
                 public void OnCompleted(Action continuation)
                 {
-                    taskAwaiter.OnCompleted(continuation);
+                    this.taskAwaiter.OnCompleted(continuation);
                 }
 
                 public void UnsafeOnCompleted(Action continuation)
                 {
-                    taskAwaiter.UnsafeOnCompleted(continuation);
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
                 }
             }
         }
