@@ -4,41 +4,9 @@ namespace Fx
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
-    using System.Threading.Tasks;
 
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    public static class RealizableExtensions
-    {
-        public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
-        {
-            //// TODO implement a configure await
-            if (realizable.TypeHolder.Decompose(out var left, out var right))
-            {
-                return new TaskWrapper<T>(Task.FromResult(left)).GetAwaiter();
-            }
-            else
-            {
-                return right.GetAwaiter();
-            }
-        }
-    }
-
+    using Fx.Either;
+    using Fx.Realizable;
 
     public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>
         where TEither : IEither<TLeft, TRight>, allows ref struct
@@ -61,93 +29,6 @@ namespace Fx
             where TResult : allows ref struct
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct;
-    }
-
-    public sealed class LeftMapException : Exception
-    {
-        public LeftMapException(Exception exception)
-            : base(null, exception)
-        {
-        }
-    }
-
-    public sealed class RightMapException : Exception
-    {
-        public RightMapException(Exception exception)
-            : base(null, exception)
-        {
-        }
-    }
-
-    //// TODO better name
-    public readonly ref struct Realizable<T> : IContinuable<T>, IEither<Realizable<T>, T, ITask<T>>, ICastable, IDecomposeMixin<Realizable<T>, T, ITask<T>>
-        where T : allows ref struct
-    {
-        private readonly RefEither<T, ITask<T>> either;
-
-        public Realizable(T value)
-        {
-            this.either = new RefEither<T, ITask<T>>(value);
-        }
-
-        public Realizable(ITask<T> future)
-        {
-            //// TODO do you really want `future` to be `itask` specifically, or should this be a generic on `realizable`?
-            this.either = new RefEither<T, ITask<T>>(future);
-        }
-
-        public TypeHolder<Realizable<T>, T, ITask<T>> TypeHolder
-        {
-            get
-            {
-                return new TypeHolder<Realizable<T>, T, ITask<T>>(this);
-            }
-        }
-
-        public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
-        {
-            if (either.TypeHolder.Decompose(out var value, out var future))
-            {
-                return new Realizable<TResult>(source(value));
-            }
-            else
-            {
-                return future.ContinueWith(
-                    source,
-                    exception,
-                    canceled);
-            }
-        }
-
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TResult> rightMap, ref TContext context)
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-            where TContinuable : IContinuable<TResult>, allows ref struct
-        {
-            return this.either.Apply(leftMap, rightMap, ref context);
-        }
-
-        public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
-        {
-            //// TODO can you put this code into a single place? you've duplicated it a few times
-            if (typeof(TCasted) == typeof(DecomposeMixin<Realizable<T>, T, ITask<T>>))
-            {
-                var mixin = new DecomposeMixin<Realizable<T>, T, ITask<T>>(
-                    this,
-                    (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right));
-                casted = Unsafe.As<DecomposeMixin<Realizable<T>, T, ITask<T>>, TCasted>(ref mixin);
-                return true;
-            }
-
-            casted = default;
-            return false;
-        }
-
-        public bool Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
-        {
-            //// TODO can you make this an implicit interface implementation?
-            return this.either.Decompose(out left, out right);
-        }
     }
 
     public interface ITask<out T> : IContinuable<T> //// TODO call this awaitable //// TODO probably have a configure await on that; if it's not directly on iawaitable, there should be a configurableawaitable or something //// TODO iawaitable should have two generics, one for the return value and another for the awaiter type
@@ -508,6 +389,7 @@ namespace Fx
 
 
     //// TODO then split this into files
+    //// TODO implement a test with mapping exceptions being throw
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go

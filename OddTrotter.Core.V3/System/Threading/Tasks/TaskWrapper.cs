@@ -5,6 +5,7 @@ namespace System.Threading.Tasks
     using System.Runtime.CompilerServices;
 
     using Fx;
+    using Fx.Realizable;
 
     public sealed class TaskWrapper<T> : IContinuable<T>
     {

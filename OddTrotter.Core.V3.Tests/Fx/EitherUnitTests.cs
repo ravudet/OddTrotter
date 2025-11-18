@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Realizable;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

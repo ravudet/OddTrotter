@@ -3,6 +3,8 @@ namespace Fx.Either
 {
     using System;
 
+    using Fx.Realizable;
+
     public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
         private readonly BetterNullable<TLeft> left;

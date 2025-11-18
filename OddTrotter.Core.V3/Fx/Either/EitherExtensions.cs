@@ -4,6 +4,8 @@ namespace Fx.Either
     using System;
     using System.Threading.Tasks;
 
+    using Fx.Realizable;
+
     public static class EitherExtensions
     {
         public static Realizable<IEither<TLeftResult, TRightResult>> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
