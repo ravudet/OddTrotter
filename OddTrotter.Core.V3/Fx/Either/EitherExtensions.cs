@@ -11,14 +11,34 @@ namespace Fx.Either
 
     public static class EitherExtensions
     {
+        private static TaskWrapper<T> ToTaskWrapper<T>(Func<T> func)
+        {
+            return new TaskWrapper<T>(ToTask(func));
+        }
+
+        private static Task<T> ToTask<T>(Func<T> func)
+        {
+            T value;
+            try
+            {
+                value = func();
+            }
+            catch (Exception exception)
+            {
+                return Task.FromException<T>(exception);
+            }
+
+            return Task.FromResult(value);
+        }
+
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
         {
             var realizable = either.SelectAsync(
-                left => new TaskWrapper<TLeftResult>(Task.Run(() => leftMap(left))), //// TODO every non-async variant needs to not use task.fromresult, but task.run instead
-                right => new TaskWrapper<TRightResult>(Task.Run(() => rightMap(right))));
+                left => ToTaskWrapper(() => leftMap(left)), //// TODO every non-async variant needs to use this adapter
+                right => ToTaskWrapper(() => rightMap(right)));
 
             if (realizable.Decompose(out var result, out var task))
             {
@@ -57,8 +77,8 @@ namespace Fx.Either
             Func<TRight, TResult> rightMap)
         {
             var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
-                (TLeft left, ref bool context) => new TaskWrapper<TResult>(Task.Run(() => leftMap(left))),
-                (TRight right, ref bool context) => new TaskWrapper<TResult>(Task.Run(() => rightMap(right))),
+                (TLeft left, ref bool context) => ToTaskWrapper(() => leftMap(left)),
+                (TRight right, ref bool context) => ToTaskWrapper(() => rightMap(right)),
                 ref Context);
 
             if (future.TypeHolder.Decompose(out var result, out var task))
