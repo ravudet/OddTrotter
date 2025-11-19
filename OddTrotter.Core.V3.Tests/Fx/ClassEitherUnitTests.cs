@@ -242,9 +242,9 @@
         [TestMethod]
         public void ApplyLeftMapException()
         {
-            var either = new Either<string, Exception>("asdf");
-            var leftMapException = Assert.ThrowsException<LeftMapException>(() =>
-                either.Apply(
+            var either = new RefEither<string, Exception>("asdf");
+            var leftMapException = Assert.That.ThrowsException(either).Commit<LeftMapException>(
+                either => either.TypeHolder.Apply(
                     left => int.Parse(left),
                     right => right.ToString().Length));
 
@@ -254,6 +254,7 @@
         [TestMethod]
         public void SelectRightMapException()
         {
+            //// TODO you are here
             var either = new Either<Exception, string>("asdf");
             var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Select(
