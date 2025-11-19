@@ -255,9 +255,9 @@
         public void SelectRightMapException()
         {
             //// TODO you are here
-            var either = new Either<Exception, string>("asdf");
-            var rightMapException = Assert.ThrowsException<RightMapException>(() =>
-                either.Select(
+            var either = new RefEither<Exception, string>("asdf");
+            var rightMapException = Assert.That.ThrowsException(either).Commit<RightMapException>(
+                either => either.TypeHolder.Select(
                     left => left,
                     right => int.Parse(right)));
 

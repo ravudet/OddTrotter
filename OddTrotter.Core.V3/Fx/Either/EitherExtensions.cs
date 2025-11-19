@@ -53,9 +53,48 @@ namespace Fx.Either
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
         {
+            //// TODO update this to use the generic overload
             var realizable = either.SelectAsync(
                 left => ToTaskWrapper(left, leftMap), //// TODO every non-async variant needs to use this adapter
                 right => ToTaskWrapper(right, rightMap));
+
+            if (realizable.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.GetAwaiter().GetResult();
+            }
+        }
+
+        public static IEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this TypeHolder<TEither, TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap,
+            Func<TRightSource, TRightResult> rightMap)
+            where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            return either.Self.Select(leftMap, rightMap);
+        }
+
+        public static IEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this TEither either,
+            Func<TLeftSource, TLeftResult> leftMap,
+            Func<TRightSource, TRightResult> rightMap)
+            where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            var realizable = SelectAsync(
+                either,
+                left => ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
+                right => ToRealizable(right, rightMap));
 
             if (realizable.Decompose(out var result, out var task))
             {
@@ -72,6 +111,7 @@ namespace Fx.Either
             Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
             Func<TRightSource, IContinuable<TRightResult>> rightMap)
         {
+            //// TODO update this to use the generic overload
             return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
                 (TLeftSource left, ref bool context) =>
                     leftMap(left)
@@ -83,6 +123,32 @@ namespace Fx.Either
                     rightMap(right)
                     .ContinueWith(
                         result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                        exception => throw exception,
+                        canceled => throw canceled),
+                ref Context);
+        }
+
+        public static Realizable<RefEither<TLeftResult, TRightResult>> SelectAsync<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this TEither either,
+            Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
+            Func<TRightSource, IContinuable<TRightResult>> rightMap)
+            where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
+                (TLeftSource left, ref bool context) =>
+                    leftMap(left)
+                    .ContinueWith(
+                        result => new RefEither<TLeftResult, TRightResult>(result),
+                        exception => throw exception,
+                        canceled => throw canceled),
+                (TRightSource right, ref bool context) =>
+                    rightMap(right)
+                    .ContinueWith(
+                        result => new RefEither<TLeftResult, TRightResult>(result),
                         exception => throw exception,
                         canceled => throw canceled),
                 ref Context);
