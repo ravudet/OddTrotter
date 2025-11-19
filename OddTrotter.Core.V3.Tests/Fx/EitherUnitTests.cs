@@ -9,7 +9,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    //// TODO the test `applyrightmapexception` succeeds on its own, but fails when run with other tests... //// TODO this is because the task hasn't completed yet, so the check to in taskwrapper.awaiter.getresult for the exception is null; first of all, you need `getresult` to ensure that the task is completed before continuing; second, you should probably have no use task.run actually, and instead have an adapter method to uses task.fromresult, task.fromfault, task.fromcanceled
     //// TODO implement a test with ref structs
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
