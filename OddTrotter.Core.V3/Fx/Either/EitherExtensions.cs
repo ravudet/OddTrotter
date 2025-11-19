@@ -11,21 +11,38 @@ namespace Fx.Either
 
     public static class EitherExtensions
     {
-        private static TaskWrapper<T> ToTaskWrapper<T>(Func<T> func)
+        private static Realizable<TResult> ToRealizable<TState, TResult>(TState state, Func<TState, TResult> func)
+            where TState : allows ref struct
+            where TResult : allows ref struct
         {
-            return new TaskWrapper<T>(ToTask(func));
-        }
-
-        private static Task<T> ToTask<T>(Func<T> func)
-        {
-            T value;
+            TResult value;
             try
             {
-                value = func();
+                value = func(state);
             }
             catch (Exception exception)
             {
-                return Task.FromException<T>(exception);
+                return Realizable.FromException<TResult>(exception);
+            }
+
+            return Realizable.FromResult(value);
+        }
+
+        private static TaskWrapper<TResult> ToTaskWrapper<TState, TResult>(TState state, Func<TState, TResult> func)
+        {
+            return new TaskWrapper<TResult>(ToTask(state, func));
+        }
+
+        private static Task<TResult> ToTask<TState, TResult>(TState state, Func<TState, TResult> func)
+        {
+            TResult value;
+            try
+            {
+                value = func(state);
+            }
+            catch (Exception exception)
+            {
+                return Task.FromException<TResult>(exception);
             }
 
             return Task.FromResult(value);
@@ -37,8 +54,8 @@ namespace Fx.Either
             Func<TRightSource, TRightResult> rightMap)
         {
             var realizable = either.SelectAsync(
-                left => ToTaskWrapper(() => leftMap(left)), //// TODO every non-async variant needs to use this adapter
-                right => ToTaskWrapper(() => rightMap(right)));
+                left => ToTaskWrapper(left, leftMap), //// TODO every non-async variant needs to use this adapter
+                right => ToTaskWrapper(right, rightMap));
 
             if (realizable.Decompose(out var result, out var task))
             {
@@ -76,9 +93,46 @@ namespace Fx.Either
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
         {
+            //// TODO update this to use the generic overload
             var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
-                (TLeft left, ref bool context) => ToTaskWrapper(() => leftMap(left)),
-                (TRight right, ref bool context) => ToTaskWrapper(() => rightMap(right)),
+                (TLeft left, ref bool context) => ToTaskWrapper(left, leftMap),
+                (TRight right, ref bool context) => ToTaskWrapper(right, rightMap),
+                ref Context);
+
+            if (future.TypeHolder.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.GetAwaiter().GetResult();
+            }
+        }
+
+        public static TResult Apply<TEither, TLeft, TRight, TResult>(
+            this TypeHolder<TEither, TLeft, TRight> either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, TResult> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Self.Apply(leftMap, rightMap);
+        }
+
+        public static TResult Apply<TEither, TLeft, TRight, TResult>(
+            this TEither either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, TResult> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            var future = either.Apply<TResult, bool, Realizable<TResult>>(
+                (TLeft left, ref bool context) => ToRealizable(left, leftMap),
+                (TRight right, ref bool context) => ToRealizable(right, rightMap),
                 ref Context);
 
             if (future.TypeHolder.Decompose(out var result, out var task))
