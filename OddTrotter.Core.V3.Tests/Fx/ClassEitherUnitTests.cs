@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -319,7 +320,7 @@
         [TestMethod]
         public async Task TestMethod2Dot2()
         {
-            var either = new Either<string, Exception>("not a number");
+            var either = new RefEither<string, Exception>("not a number");
             var result = await TestMethod2Impl(either);
 
             Assert.IsTrue(result.Contains("FormatException"));
@@ -329,7 +330,7 @@
         public async Task TestMethod2Dot3()
         {
             var exception = new Exception("the message");
-            var either = new Either<string, Exception>(exception);
+            var either = new RefEither<string, Exception>(exception);
             var result = await TestMethod2Impl(either);
 
             Assert.AreEqual(exception.ToString(), result);
@@ -337,15 +338,18 @@
 
         private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
         {
-            var parsed = either.TypeHolder.SelectAsync(
+            var parsed = either.SelectAsync<RefEither<string, Exception>, string, Exception, TaskWrapper<IEither<int, Exception>>, IEither<int, Exception>, TaskWrapper<Exception>, Exception>(
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
-            return parsed.Apply(
-                actualParsing => actualParsing.Apply(
+            var result = parsed.TypeHolder.Apply(
+                actualParsing => actualParsing.TypeHolder.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
-                    parseError => parseError.ToString()),
-                readError => readError.ToString());
+                    parseError => parseError.ToString())!,
+                readError => readError.ToString()!);
+
+            //// TODO this should be an async method, but you're only ever returning a concrete result
+            return new Realizable<string>(result);
         }
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
