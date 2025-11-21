@@ -281,7 +281,7 @@
         public async Task TestMethod1Dot1()
         {
             //// TODO you are here
-            var either = new Either<int, Exception>(42);
+            var either = new RefEither<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual("42", result);
@@ -297,10 +297,10 @@
             Assert.AreEqual(exception.ToString(), result);
         }
 
-        private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
+        private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
             bool context = false;
-            return await either.Apply<string, bool, TaskWrapper<string>>(
+            return either.Apply<string, bool, TaskWrapper<string>>(
                 (int value, ref bool context) => ToString(value),
                 (Exception exception, ref bool context) => ToString(exception),
                 ref context);
