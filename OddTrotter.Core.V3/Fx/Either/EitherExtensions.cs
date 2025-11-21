@@ -68,7 +68,7 @@ namespace Fx.Either
             }
         }
 
-        public static IEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static RefEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this TypeHolder<TEither, TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
@@ -78,10 +78,11 @@ namespace Fx.Either
             where TLeftResult : allows ref struct
             where TRightResult : allows ref struct
         {
+            //// TODO are you happy with this return type? can you do better?
             return either.Self.Select(leftMap, rightMap);
         }
 
-        public static IEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static RefEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this TEither either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
@@ -91,7 +92,8 @@ namespace Fx.Either
             where TLeftResult : allows ref struct
             where TRightResult : allows ref struct
         {
-            var realizable = SelectAsync(
+            //// TODO are you happy with this return type? can you do better?
+            var realizable = SelectAsync<TEither, TLeftSource, TRightSource, Realizable<TLeftResult>, TLeftResult, Realizable<TRightResult>, TRightResult>(
                 either,
                 left => ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
                 right => ToRealizable(right, rightMap));
@@ -128,14 +130,16 @@ namespace Fx.Either
                 ref Context);
         }
 
-        public static Realizable<RefEither<TLeftResult, TRightResult>> SelectAsync<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static Realizable<RefEither<TLeftResult, TRightResult>> SelectAsync<TEither, TLeftSource, TRightSource, TLeftContinuable, TLeftResult, TRightContinuable, TRightResult>(
             this TEither either,
-            Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
-            Func<TRightSource, IContinuable<TRightResult>> rightMap)
+            Func<TLeftSource, TLeftContinuable> leftMap,
+            Func<TRightSource, TRightContinuable> rightMap)
             where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
             where TLeftSource : allows ref struct
             where TRightSource : allows ref struct
+            where TLeftContinuable : IContinuable<TLeftResult>, allows ref struct
             where TLeftResult : allows ref struct
+            where TRightContinuable : IContinuable<TRightResult>, allows ref struct
             where TRightResult : allows ref struct
         {
             return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
