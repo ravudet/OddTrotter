@@ -32,7 +32,17 @@
 
             public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
-                return Realizable.FromResult(exception(this.exception));
+                TResult result;
+                try
+                {
+                    result = exception(this.exception);
+                }
+                catch (Exception resultException)
+                {
+                    return Realizable.FromException<TResult>(resultException);
+                }
+
+                return Realizable.FromResult(result);
             }
 
             public IAwaiter<T> GetAwaiter()

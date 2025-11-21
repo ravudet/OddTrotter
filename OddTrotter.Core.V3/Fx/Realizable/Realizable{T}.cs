@@ -38,9 +38,21 @@ namespace Fx.Realizable
 
         public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
+            //// TODO rename the parameters so they are actually descriptive; too many naming conflicts with local variables
+            
             if (either.TypeHolder.Decompose(out var value, out var future))
             {
-                return new Realizable<TResult>(source(value));
+                TResult result;
+                try
+                {
+                    result = source(value);
+                }
+                catch (Exception sourceException)
+                {
+                    return Realizable.FromException<TResult>(sourceException);
+                }
+
+                return new Realizable<TResult>(result);
             }
             else
             {

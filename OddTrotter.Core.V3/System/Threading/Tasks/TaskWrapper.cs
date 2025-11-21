@@ -160,6 +160,8 @@ namespace System.Threading.Tasks
 
                 public TNew GetResult()
                 {
+                    //// TODO in the `continuewith` methods of `realizable{T}` and `realizable.fromexceptiontask{T}`, you had to do some exception handling logic; do you need anything like that in this type?
+                    
                     if (this.task.Exception != null)
                     {
                         var exception = this.task.Exception;
