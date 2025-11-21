@@ -6,7 +6,7 @@ namespace System.Threading.Tasks
 
     using Fx.Realizable;
 
-    public sealed class TaskWrapper<T> : IContinuable<T>
+    public sealed class TaskWrapper<T> : ITask<T>
     {
         private readonly Task<T> task;
 

@@ -299,11 +299,10 @@
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
-            bool context = false;
-            return either.Apply<string, bool, TaskWrapper<string>>(
+            return either.Apply<string, bool, Realizable<string>>(
                 (int value, ref bool context) => ToString(value),
                 (Exception exception, ref bool context) => ToString(exception),
-                ref context);
+                ref Context);
         }
 
         [TestMethod]
@@ -369,9 +368,9 @@
             }
         }
 
-        public static TaskWrapper<string> ToString(int value)
+        public static Realizable<string> ToString(int value)
         {
-            return new TaskWrapper<string>(ToStringImpl(value));
+            return new Realizable<string>(new TaskWrapper<string>(ToStringImpl(value)));
         }
 
         private static async Task<string> ToStringImpl(int value)
@@ -379,14 +378,16 @@
             return await Task.FromResult(value.ToString()).ConfigureAwait(false);
         }
 
-        public static TaskWrapper<string> ToString(Exception exception)
+        public static Realizable<string> ToString(Exception exception)
         {
-            return new TaskWrapper<string>(ToStringImpl(exception));
+            return new Realizable<string>(new TaskWrapper<string>(ToStringImpl(exception)));
         }
 
         private static async Task<string> ToStringImpl(Exception exception)
         {
             return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
         }
+
+        private static bool Context = false;
     }
 }
