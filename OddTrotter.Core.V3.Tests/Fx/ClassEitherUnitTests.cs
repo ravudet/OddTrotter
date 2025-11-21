@@ -280,7 +280,6 @@
         [TestMethod]
         public async Task TestMethod1Dot1()
         {
-            //// TODO you are here
             var either = new RefEither<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
@@ -308,6 +307,7 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
+            //// TODO you are here
             var either = new Either<string, Exception>("42");
             var result = await TestMethod2Impl(either);
 
