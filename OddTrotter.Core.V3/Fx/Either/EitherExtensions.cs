@@ -142,7 +142,7 @@ namespace Fx.Either
             where TRightContinuable : IContinuable<TRightResult>, allows ref struct
             where TRightResult : allows ref struct
         {
-            return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
+            return either.Apply<RefEither<TLeftResult, TRightResult>, bool, Realizable<RefEither<TLeftResult, TRightResult>>>(
                 (TLeftSource left, ref bool context) =>
                     leftMap(left)
                     .ContinueWith(
