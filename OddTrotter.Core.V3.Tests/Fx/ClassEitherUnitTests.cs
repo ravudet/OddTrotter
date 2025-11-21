@@ -291,7 +291,7 @@
         public async Task TestMethod1Dot2()
         {
             var exception = new Exception("the message");
-            var either = new Either<int, Exception>(exception);
+            var either = new RefEither<int, Exception>(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual(exception.ToString(), result);
