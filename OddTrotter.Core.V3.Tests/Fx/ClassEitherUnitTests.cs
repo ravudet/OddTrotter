@@ -13,7 +13,9 @@
     //// TODO implement a test with ref structs values
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
-    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC
+    //// TODO implement any TODOs
+    //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
+    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
     //// TODO implement assert extensions so you can always use assert.that
@@ -308,7 +310,7 @@
         public async Task TestMethod2Dot1()
         {
             //// TODO you are here
-            var either = new Either<string, Exception>("42");
+            var either = new RefEither<string, Exception>("42");
             var result = await TestMethod2Impl(either);
 
             Assert.AreEqual("42", result);
@@ -333,9 +335,9 @@
             Assert.AreEqual(exception.ToString(), result);
         }
 
-        private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
+        private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
         {
-            var parsed = either.SelectAsync(
+            var parsed = either.TypeHolder.SelectAsync(
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
