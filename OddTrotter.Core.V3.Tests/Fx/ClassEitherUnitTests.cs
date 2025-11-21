@@ -254,7 +254,6 @@
         [TestMethod]
         public void SelectRightMapException()
         {
-            //// TODO you are here
             var either = new RefEither<Exception, string>("asdf");
             var rightMapException = Assert.That.ThrowsException(either).Commit<RightMapException>(
                 either => either.TypeHolder.Select(
@@ -267,9 +266,11 @@
         [TestMethod]
         public void SelectLeftMapException()
         {
-            var either = new Either<string, Exception>("asdf");
-            var leftMapException = Assert.ThrowsException<LeftMapException>(() =>
-                either.Select(
+            //// TODO use `Assert.That` everywhere
+
+            var either = new RefEither<string, Exception>("asdf");
+            var leftMapException = Assert.That.ThrowsException(either).Commit<LeftMapException>(
+                either => either.TypeHolder.Select(
                     left => int.Parse(left),
                     right => right));
 
@@ -279,6 +280,7 @@
         [TestMethod]
         public async Task TestMethod1Dot1()
         {
+            //// TODO you are here
             var either = new Either<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
