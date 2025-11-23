@@ -342,15 +342,14 @@
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
-            var result = parsed.TypeHolder.Apply(
-                actualParsing => actualParsing.TypeHolder.Apply(
+            //// TODO use `typeholder` here (or some other way to address the type inference issue)
+            return parsed.Apply<RefEither<IEither<int, Exception>, Exception>, IEither<int, Exception>, Exception, string>(
+                actualParsing => actualParsing.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
                     parseError => parseError.ToString())!,
                 readError => readError.ToString()!);
-
-            //// TODO this should be an async method, but you're only ever returning a concrete result
-            return new Realizable<string>(result);
         }
+
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
         {
