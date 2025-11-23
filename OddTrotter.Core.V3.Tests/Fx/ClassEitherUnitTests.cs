@@ -421,11 +421,11 @@
         public void RefRight()
         {
             var value = 42;
-            var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
+            var either = new RefEither<Exception, SomeRef>(new SomeRef(value));
 
             var result = either.TypeHolder.Apply(
-                left => left.Value,
-                right => right.ToString().Length);
+                left => left.ToString().Length,
+                right => right.Value);
 
             Assert.AreEqual(value, result);
         }
