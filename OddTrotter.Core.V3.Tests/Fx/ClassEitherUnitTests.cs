@@ -429,5 +429,10 @@
 
             Assert.AreEqual(value, result);
         }
+
+        [TestMethod]
+        public void AsyncRefLeft()
+        {
+        }
     }
 }
