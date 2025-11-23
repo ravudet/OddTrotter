@@ -10,7 +10,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    //// TODO implement tests using the ref struct either implementation
     //// TODO implement a test with ref structs values
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
@@ -310,7 +309,6 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
-            //// TODO you are here
             var either = new RefEither<string, Exception>("42");
             var result = await TestMethod2Impl(either);
 
