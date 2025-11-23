@@ -17,8 +17,8 @@
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
-    //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
     //// TODO implement assert extensions so you can always use assert.that
+    //// TODO you need to implement "everything" (all of the extension variations and overloads); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
     //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
@@ -393,5 +393,41 @@
         }
 
         private static bool Context = false;
+
+        [TestMethod]
+        public void RefLeft()
+        {
+            var value = 42;
+            var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
+
+            var result = either.TypeHolder.Apply(
+                left => left.Value,
+                right => right.ToString().Length);
+
+            Assert.AreEqual(value, result);
+        }
+
+        private readonly ref struct SomeRef
+        {
+            public SomeRef(int value)
+            {
+                Value = value;
+            }
+
+            public int Value { get; }
+        }
+
+        [TestMethod]
+        public void RefRight()
+        {
+            var value = 42;
+            var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
+
+            var result = either.TypeHolder.Apply(
+                left => left.Value,
+                right => right.ToString().Length);
+
+            Assert.AreEqual(value, result);
+        }
     }
 }
