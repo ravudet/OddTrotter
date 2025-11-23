@@ -19,6 +19,7 @@
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO then, implement everything, ensuring that the oddtrotter POC still compiles
     //// TODO implement assert extensions so you can always use assert.that
+    //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
     [TestClass]
