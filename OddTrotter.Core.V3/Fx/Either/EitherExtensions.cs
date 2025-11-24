@@ -326,11 +326,13 @@ namespace Fx.Either
                 (TLeft left, ref DecomposeContext<TLeft, TRight> context) =>
                 {
                     context.Left = left;
+                    context.IsLeft = true;
                     return new Realizable<bool>(true);
                 },
                 (TRight right, ref DecomposeContext<TLeft, TRight> context) =>
                 {
                     context.Right = right;
+                    context.IsLeft = false;
                     return new Realizable<bool>(true);
                 },
                 ref context);
