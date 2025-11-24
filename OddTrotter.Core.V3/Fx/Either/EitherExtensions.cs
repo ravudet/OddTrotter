@@ -52,6 +52,7 @@ namespace Fx.Either
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
+            //// TODO can you have a variant that allows `tleftresult` and `trightresult` to be `ref struct`s and the method returns `refeither`?
         {
             //// TODO update this to use the generic overload
             var realizable = either.SelectAsync(

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
 
@@ -392,7 +393,7 @@
             return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
         }
 
-        private static bool Context = false;
+        private static bool Context = false; //// TODO any test code that leverages this (or the one in the other test class) should actually leverage some "production" extension instead
 
         [TestMethod]
         public void RefLeft()
@@ -431,9 +432,83 @@
         }
 
         [TestMethod]
-        public void AsyncRefLeft()
+        public async Task AsyncRefLeft()
         {
-            //// TODO you are here
+            var value = "42";
+            var either = await AsyncRefWork(value);
+
+            Assert.IsTrue(either.Decompose(out var result, out _));
+            Assert.AreEqual(42, result.Value);
+        }
+
+        private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
+        {
+            return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
+                Parse(value),
+                potentiallyParsed => potentiallyParsed
+                    .Apply<IEither<int, Exception>, int, Exception, RefEither<SomeRef, Exception>>(
+                        value => new RefEither<SomeRef, Exception>(new SomeRef(value)),
+                        exception => new RefEither<SomeRef, Exception>(exception)));
+        }
+
+        private sealed class RefTask<TContext, TValue> : ITask<TValue>
+            where TValue : allows ref struct
+        {
+            private readonly TaskWrapper<TContext> task;
+            private readonly Func<TContext, TValue> operation;
+
+            public RefTask(TaskWrapper<TContext> task, Func<TContext, TValue> operation)
+            {
+                //// TODO can this be `icontinuable` or `iawaitable` or something?
+                this.task = task;
+                this.operation = operation;
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+            {
+                var self = this;
+                return this.task.ContinueWith(context => source(self.operation(context)), exception, canceled);
+            }
+
+            public IAwaiter<TValue> GetAwaiter()
+            {
+                return new Awaiter(this.task.GetAwaiter(), this.operation);
+            }
+
+            private sealed class Awaiter : IAwaiter<TValue>
+            {
+                private readonly IAwaiter<TContext> taskAwaiter;
+                private readonly Func<TContext, TValue> operation;
+
+                public Awaiter(IAwaiter<TContext> taskAwaiter, Func<TContext, TValue> operation)
+                {
+                    this.taskAwaiter = taskAwaiter;
+                    this.operation = operation;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.taskAwaiter.IsCompleted;
+                    }
+                }
+
+                public TValue GetResult()
+                {
+                    return this.operation(this.taskAwaiter.GetResult());
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
         }
     }
 }
