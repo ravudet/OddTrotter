@@ -11,7 +11,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    //// TODO implement a test with ref structs values
     //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
     //// TODO implement any TODOs
