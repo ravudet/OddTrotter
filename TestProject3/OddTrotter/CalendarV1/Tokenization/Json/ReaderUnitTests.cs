@@ -76,25 +76,51 @@
     {
         public static async ValueTask DoWork()
         {
-            var someReader = new SomeReader();
+            var members = new Members();
+            var someReader = new SomeReader(ref members);
             await someReader.ReadToEnd();
         }
 
-        public static ReadToEndTask ReadToEnd(this SomeReader someReader)
+        public static async Task ReadToEnd(this SomeReader someReader)
         {
             var someReaderTask = someReader.MoveNext();
-            if (someReaderTask.TryGetValue(out var nextReader))
+            if (!someReaderTask.TryGetValue(out var nextReader))
             {
-                nextReader.MoveNext();
+                nextReader = await someReaderTask;
             }
-            else
-            {
 
+            await nextReader.ReadToEnd();
+        }
+
+        public static async Task ReadToEnd(this NextReader nextReader)
+        {
+            var nextReaderTask = nextReader.MoveNext();
+            if (nextReaderTask.TryGetValue(out var thatReader))
+            {
+                thatReader = await nextReaderTask;
+            }
+
+            await thatReader.ReadToEnd();
+        }
+
+        public static ReadToEndTask1 ReadToEnd(this ThatReader thatReader)
+        {
+            var thatReaderTask = thatReader.MoveNext();
+            if (thatReaderTask.TryGetValue(out var nothing))
+            {
+                nothing = await Task.FromResult(new Nothing());
             }
         }
 
-        public ref struct ReadToEndTask
+        public ref struct ReadToEndTask1
         {
+            private readonly ReadToEndTask<ThatReader, Nothing> readerTask;
+
+            public ReadToEndTask1(ReadToEndTask<ThatReader, Nothing> readerTask)
+            {
+                this.readerTask = readerTask;
+            }
+
             public struct Awaiter : ICriticalNotifyCompletion
             {
                 public bool IsCompleted
@@ -127,6 +153,30 @@
             }
         }
 
+        public static ReadToEndTask<ThatReader, Nothing> MoveNext(this ThatReader reader)
+        {
+            if (reader.TryMoveNext(out var nothing))
+            {
+                return new ReadToEndTask<ThatReader, Nothing>(nothing);
+            }
+            else
+            {
+                return new ReadToEndTask<ThatReader, Nothing>(reader.Read(), old => old.TryMoveNext(out var next) ? next : throw new Exception("TODO in this iteration, this is a bug, because read should always give us enough information to do a proper move in the subsequent call"));
+            }
+        }
+
+        public static ReadToEndTask<NextReader, ThatReader> MoveNext(this NextReader reader)
+        {
+            if (reader.TryMoveNext(out var that))
+            {
+                return new ReadToEndTask<NextReader, ThatReader>(that);
+            }
+            else
+            {
+                return new ReadToEndTask<NextReader, ThatReader>(reader.Read(), old => old.TryMoveNext(out var next) ? next : throw new Exception("TODO in this iteration, this is a bug, because read should always give us enough information to do a proper move in the subsequent call"));
+            }
+        }
+
         public static ReadToEndTask<SomeReader, NextReader> MoveNext(this SomeReader reader)
         {
             if (reader.TryMoveNext(out var next))
@@ -137,6 +187,13 @@
             {
                 return new ReadToEndTask<SomeReader, NextReader>(reader.Read(), old => old.TryMoveNext(out var next) ? next : throw new Exception("TODO in this iteration, this is a bug, because read should always give us enough information to do a proper move in the subsequent call"));
             }
+        }
+
+        public interface ITaskAwaiter : ICriticalNotifyCompletion
+        {
+            bool IsCompleted { get; }
+
+            void GetResult();
         }
 
         public ref struct ReadToEndTask<TOld, TNew>
@@ -181,7 +238,7 @@
                 return new Awaiter(this.task, this.adapter);
             }
 
-            public struct Awaiter : ICriticalNotifyCompletion
+            public struct Awaiter : ICriticalNotifyCompletion, ITaskAwaiter
             {
                 private ReaderTask<TOld>.Awaiter readerTask;
 
@@ -215,55 +272,67 @@
                 {
                     this.readerTask.UnsafeOnCompleted(continuation);
                 }
+
+                void ITaskAwaiter.GetResult()
+                {
+                    this.GetResult();
+                }
             }
 
         }
     }
 
-    public ref struct ReaderTask<T>
-        where T : allows ref struct
+    public readonly struct Members
     {
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
-        private readonly Func<Stream, byte[], int, T> factory;
-        private readonly bool doNothing;
-
-        public ReaderTask(
+        public Members(
             Stream stream,
             byte[] buffer,
-            int currentIndex,
-            Func<Stream, byte[], int, T> factory,
-            bool doNothing)
+            int currentIndex)
         {
             this.stream = stream;
             this.buffer = buffer;
             this.currentIndex = currentIndex;
+        }
+
+        //// TODO fix the casing on these property names
+        public Stream stream { get; }
+        public byte[] buffer { get; }
+        public int currentIndex { get; }
+    }
+
+    public ref struct ReaderTask<T>
+        where T : allows ref struct
+    {
+        private readonly Members members;
+        private readonly Func<Members, T> factory;
+        private readonly bool doNothing;
+
+        public ReaderTask(
+            Members members,
+            Func<Members, T> factory,
+            bool doNothing)
+        {
+            //// TODO use `ref members` instead
+            this.members = members;
             this.factory = factory;
             this.doNothing = doNothing;
         }
 
         public struct Awaiter : ICriticalNotifyCompletion
         {
-            private readonly Stream stream;
-            private readonly byte[] buffer;
-            private readonly int currentIndex;
-            private readonly Func<Stream, byte[], int, T> factory;
+            private Members members;
+            private readonly Func<Members, T> factory;
 
             private TaskAwaiter<int> taskAwaiter;
 
             public Awaiter(
-                Stream stream,
-                byte[] buffer,
-                int currentIndex,
-                Func<Stream, byte[], int, T> factory)
+                Members members,
+                Func<Members, T> factory)
             {
-                this.stream = stream;
-                this.buffer = buffer;
-                this.currentIndex = currentIndex;
+                this.members = members;
                 this.factory = factory;
 
-                this.taskAwaiter = this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).GetAwaiter();
+                this.taskAwaiter = this.members.stream.ReadAsync(this.members.buffer, 0, this.members.buffer.Length).GetAwaiter();
             }
 
             public bool IsCompleted
@@ -276,7 +345,7 @@
 
             public T GetResult()
             {
-                return this.factory(this.stream, this.buffer, 0);
+                return this.factory(this.members);
             }
 
             public void OnCompleted(Action continuation)
@@ -293,9 +362,7 @@
         public Awaiter GetAwaiter()
         {
             return new Awaiter(
-                this.stream,
-                this.buffer,
-                this.currentIndex,
+                this.members,
                 this.factory);
         }
     }
@@ -304,44 +371,35 @@
     {
         private static readonly byte[] someBytes = [(byte)'s', (byte)'o', (byte)'m', (byte)'e'];
 
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
+        public readonly Members members;
 
-        public SomeReader(
-            Stream stream, 
-            byte[] buffer, 
-            int currentIndex)
+        public SomeReader(Members members)
         {
-            this.stream = stream;
-            this.buffer = buffer;
-            this.currentIndex = currentIndex;
+            this.members = members;
         }
 
         public ReaderTask<SomeReader> Read()
         {
             return new ReaderTask<SomeReader>(
-                this.stream,
-                this.buffer,
-                this.currentIndex,
-                (stream, buffer, currentIndex) => new SomeReader(stream, buffer, currentIndex),
+                this.members,
+                members => new SomeReader(members),
                 false);
         }
 
         public bool TryMoveNext(out NextReader nextReader)
         {
-            if (this.currentIndex + someBytes.Length > this.buffer.Length)
+            if (this.members.currentIndex + someBytes.Length > this.members.buffer.Length)
             {
                 nextReader = default;
                 return false;
             }
 
-            if (!this.buffer.AsSpan(this.currentIndex, someBytes.Length).SequenceEqual(someBytes))
+            if (!this.members.buffer.AsSpan(this.members.currentIndex, someBytes.Length).SequenceEqual(someBytes))
             {
                 throw new Exception("TODO invalid payload");
             }
 
-            nextReader = new NextReader(this.stream, this.buffer, this.currentIndex + someBytes.Length);
+            nextReader = new NextReader(new Members(this.members.stream, this.members.buffer, this.members.currentIndex + someBytes.Length)); //// TODO can you have a `members` constructor that takes a `ref Members` parameter and the new index?
             return true;
         }
     }
@@ -350,44 +408,35 @@
     {
         private static readonly byte[] nextBytes = [(byte)'n', (byte)'e', (byte)'x', (byte)'t'];
 
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
+        public readonly Members members;
 
-        public NextReader(
-            Stream stream,
-            byte[] buffer,
-            int currentIndex)
+        public NextReader(Members members)
         {
-            this.stream = stream;
-            this.buffer = buffer;
-            this.currentIndex = currentIndex;
+            this.members = members;
         }
 
         public ReaderTask<NextReader> Read()
         {
             return new ReaderTask<NextReader>(
-                this.stream,
-                this.buffer,
-                this.currentIndex,
-                (stream, buffer, currentIndex) => new NextReader(stream, buffer, currentIndex),
+                this.members,
+                members => new NextReader(members),
                 false);
         }
 
         public bool TryMoveNext(out ThatReader nextReader)
         {
-            if (this.currentIndex + nextBytes.Length > this.buffer.Length)
+            if (this.members.currentIndex + nextBytes.Length > this.members.buffer.Length)
             {
                 nextReader = default;
                 return false;
             }
 
-            if (!this.buffer.AsSpan(this.currentIndex, nextBytes.Length).SequenceEqual(nextBytes))
+            if (!this.members.buffer.AsSpan(this.members.currentIndex, nextBytes.Length).SequenceEqual(nextBytes))
             {
                 throw new Exception("TODO invalid payload");
             }
 
-            nextReader = new ThatReader(this.stream, this.buffer, this.currentIndex + nextBytes.Length);
+            nextReader = new ThatReader(this.members);
             return true;
         }
     }
@@ -396,39 +445,30 @@
     {
         private static readonly byte[] thatBytes = [(byte)'t', (byte)'h', (byte)'a', (byte)'t'];
 
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private readonly int currentIndex;
+        public readonly Members members;
 
-        public ThatReader(
-            Stream stream,
-            byte[] buffer,
-            int currentIndex)
+        public ThatReader(Members members)
         {
-            this.stream = stream;
-            this.buffer = buffer;
-            this.currentIndex = currentIndex;
+            this.members = members;
         }
 
         public ReaderTask<ThatReader> Read()
         {
             return new ReaderTask<ThatReader>(
-                this.stream,
-                this.buffer,
-                this.currentIndex,
-                (stream, buffer, currentIndex) => new ThatReader(stream, buffer, currentIndex),
+                this.members,
+                members => new ThatReader(members),
                 false);
         }
 
         public bool TryMoveNext(out Nothing nextReader)
         {
-            if (this.currentIndex + thatBytes.Length > this.buffer.Length)
+            if (this.members.currentIndex + thatBytes.Length > this.members.buffer.Length)
             {
                 nextReader = default;
                 return false;
             }
 
-            if (!this.buffer.AsSpan(this.currentIndex, thatBytes.Length).SequenceEqual(thatBytes))
+            if (!this.members.buffer.AsSpan(this.members.currentIndex, thatBytes.Length).SequenceEqual(thatBytes))
             {
                 throw new Exception("TODO invalid payload");
             }
