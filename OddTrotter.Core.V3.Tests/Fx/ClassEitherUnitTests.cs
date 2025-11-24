@@ -1,6 +1,7 @@
 ﻿namespace Fx
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Security.Cryptography.X509Certificates;
@@ -25,6 +26,8 @@
     [TestClass]
     public sealed class ClassEitherUnitTests
     {
+        public required TestContext TestContext { get; set; }
+
         [TestMethod]
         public void ApplyRightMapException()
         {
@@ -182,6 +185,47 @@
         private static async Task<string> ToStringImpl(Exception exception)
         {
             return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ReadFromFile()
+        {
+            var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
+            var filePath = Path.Combine(workingDirectory, "somedata.txt");
+            await WriteToFile(filePath, "42").ConfigureAwait(false);
+
+            var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
+            Assert.IsTrue(potentiallyParsed.Decompose(out var result, out _));
+            Assert.AreEqual(42, result);
+        }
+
+        private static async Task<IEither<int, Exception>> ParseFromFile(string filePath)
+        {
+            var text = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+
+            return await ParseImpl(text).ConfigureAwait(false);
+        }
+
+        private static async Task WriteToFile(string filePath, string contents)
+        {
+            var parentDirectory = Path.GetDirectoryName(filePath);
+            if (parentDirectory == null)
+            {
+                throw new Exception("TODO");
+            }
+
+            while (true)
+            {
+                try
+                {
+                    await File.WriteAllTextAsync(filePath, contents).ConfigureAwait(false);
+                    return;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Directory.CreateDirectory(parentDirectory);
+                }
+            }
         }
     }
 
