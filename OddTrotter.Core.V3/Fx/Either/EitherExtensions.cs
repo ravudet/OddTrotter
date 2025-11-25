@@ -48,11 +48,23 @@ namespace Fx.Either
             return Task.FromResult(value);
         }
 
+        //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
+        public static RefEither<TLeftResult, TRightResult> SelectRef<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap,
+            Func<TRightSource, TRightResult> rightMap)
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            return either.Apply<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, RefEither<TLeftResult, TRightResult>>(
+                left => new RefEither<TLeftResult, TRightResult>(leftMap(left)),
+                right => new RefEither<TLeftResult, TRightResult>(rightMap(right)));
+        }
+
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
-            //// TODO can you have a variant that allows `tleftresult` and `trightresult` to be `ref struct`s and the method returns `refeither`?
         {
             //// TODO update this to use the generic overload
             var realizable = either.SelectAsync(

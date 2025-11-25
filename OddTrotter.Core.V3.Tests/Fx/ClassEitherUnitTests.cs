@@ -9,7 +9,7 @@
     using Fx.Realizable;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+    
     //// TODO implement any TODOs
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
