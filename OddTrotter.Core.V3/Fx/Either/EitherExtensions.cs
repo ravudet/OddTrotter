@@ -119,13 +119,13 @@ namespace Fx.Either
                 (TLeftSource left, ref bool context) =>
                     leftMap(left)
                     .ContinueWith(
-                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>.Left(result),
                         exception => throw exception,
                         canceled => throw canceled),
                 (TRightSource right, ref bool context) =>
                     rightMap(right)
                     .ContinueWith(
-                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>(result),
+                        result => (IEither<TLeftResult, TRightResult>)new Either<TLeftResult, TRightResult>.Right(result),
                         exception => throw exception,
                         canceled => throw canceled),
                 ref Context);

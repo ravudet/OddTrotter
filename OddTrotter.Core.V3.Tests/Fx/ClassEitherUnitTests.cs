@@ -27,7 +27,7 @@
         [TestMethod]
         public void ApplyRightMapException()
         {
-            var either = new Either<Exception, string>("asdf");
+            var either = new Either<Exception, string>.Right("asdf");
             var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Apply(
                     left => left.ToString().Length,
@@ -39,7 +39,7 @@
         [TestMethod]
         public void ApplyLeftMapException()
         {
-            var either = new Either<string, Exception>("asdf");
+            var either = new Either<string, Exception>.Left("asdf");
             var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
                 either.Apply(
                     left => int.Parse(left),
@@ -51,7 +51,7 @@
         [TestMethod]
         public void SelectRightMapException()
         {
-            var either = new Either<Exception, string>("asdf");
+            var either = new Either<Exception, string>.Right("asdf");
             var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Select(
                     left => left,
@@ -63,7 +63,7 @@
         [TestMethod]
         public void SelectLeftMapException()
         {
-            var either = new Either<string, Exception>("asdf");
+            var either = new Either<string, Exception>.Left("asdf");
             var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
                 either.Select(
                     left => int.Parse(left),
@@ -75,7 +75,7 @@
         [TestMethod]
         public async Task TestMethod1Dot1()
         {
-            var either = new Either<int, Exception>(42);
+            var either = new Either<int, Exception>.Left(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual("42", result);
@@ -85,7 +85,7 @@
         public async Task TestMethod1Dot2()
         {
             var exception = new Exception("the message");
-            var either = new Either<int, Exception>(exception);
+            var either = new Either<int, Exception>.Right(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual(exception.ToString(), result);
@@ -103,7 +103,7 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
-            var either = new Either<string, Exception>("42");
+            var either = new Either<string, Exception>.Left("42");
             var result = await TestMethod2Impl(either);
 
             Assert.AreEqual("42", result);
@@ -112,7 +112,7 @@
         [TestMethod]
         public async Task TestMethod2Dot2()
         {
-            var either = new Either<string, Exception>("not a number");
+            var either = new Either<string, Exception>.Left("not a number");
             var result = await TestMethod2Impl(either);
 
             Assert.IsTrue(result.Contains("FormatException"));
@@ -122,7 +122,7 @@
         public async Task TestMethod2Dot3()
         {
             var exception = new Exception("the message");
-            var either = new Either<string, Exception>(exception);
+            var either = new Either<string, Exception>.Right(exception);
             var result = await TestMethod2Impl(either);
 
             Assert.AreEqual(exception.ToString(), result);
@@ -155,11 +155,11 @@
         {
             try
             {
-                return new Either<int, Exception>(int.Parse(value));
+                return new Either<int, Exception>.Left(int.Parse(value));
             }
             catch (Exception exception)
             {
-                return new Either<int, Exception>(exception);
+                return new Either<int, Exception>.Right(exception);
             }
         }
 

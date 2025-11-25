@@ -150,11 +150,11 @@
         {
             try
             {
-                return new Either<int, Exception>(int.Parse(value));
+                return new Either<int, Exception>.Left(int.Parse(value));
             }
             catch (Exception exception)
             {
-                return new Either<int, Exception>(exception);
+                return new Either<int, Exception>.Right(exception);
             }
         }
 
