@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public static class AsyncEnumerableExtensions
@@ -62,7 +63,7 @@
         {
             var validBytes = 1;
             return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
-                this.stream,
+                new PeekableStream(this.stream),
                 new byte[validBytes],
                 validBytes,
                 (stream, buffer, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
@@ -79,16 +80,16 @@
 
     public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
     {
-        private readonly Stream stream;
+        private readonly PeekableStream stream;
         private readonly byte[] buffer;
         private readonly int validBytes;
-        private readonly Func<Stream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         public WhitespaceReader(
-            Stream stream,
+            PeekableStream stream,
             byte[] buffer,
             int validBytes,
-            Func<Stream, byte[], int, TNextReader> nextReaderFactory)
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
@@ -103,6 +104,8 @@
 
         private async IAsyncEnumerable<WhitespaceToken> GetValueImpl()
         {
+            //// TODO you are here
+            //// TODO implement this with peek, then update the other implementations to assume that the buffer is empty
             while (true)
             {
                 var read = await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
@@ -152,16 +155,16 @@
 
     public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
     {
-        private readonly Stream stream;
+        private readonly PeekableStream stream;
         private readonly byte[] buffer;
         private readonly int validBytes;
-        private readonly Func<Stream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         public ValueReader(
-            Stream stream,
+            PeekableStream stream,
             byte[] buffer,
             int validBytes,
-            Func<Stream, byte[], int, TNextReader> nextReaderFactory)
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
@@ -187,10 +190,18 @@
                             this.nextReaderFactory));
                 case 'n':
                     return new ValueToken<TNextReader>.Null(
-                        new NullReader<TNextReader>());
+                        new NullReader<TNextReader>(
+                            this.stream,
+                            this.buffer,
+                            this.validBytes,
+                            this.nextReaderFactory));
                 case 't':
                     return new ValueToken<TNextReader>.True(
-                        new TrueReader<TNextReader>());
+                        new TrueReader<TNextReader>(
+                            this.stream,
+                            this.buffer,
+                            this.validBytes,
+                            this.nextReaderFactory));
                 case '{':
                     return new ValueToken<TNextReader>.Object(
                         new ObjectReader<TNextReader>());
@@ -298,16 +309,16 @@
 
     public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
     {
-        private readonly Stream stream;
+        private readonly PeekableStream stream;
         private readonly byte[] buffer;
         private readonly int validBytes;
-        private readonly Func<Stream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         public FalseReader(
-            Stream stream,
+            PeekableStream stream,
             byte[] buffer,
             int validBytes,
-            Func<Stream, byte[], int, TNextReader> nextReaderFactory)
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
@@ -347,16 +358,16 @@
 
     public sealed class NullReader<TNextReader> : IReader<NullToken, TNextReader>
     {
-        private readonly Stream stream;
+        private readonly PeekableStream stream;
         private readonly byte[] buffer;
         private readonly int validBytes;
-        private readonly Func<Stream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         public NullReader(
-            Stream stream,
+            PeekableStream stream,
             byte[] buffer,
             int validBytes,
-            Func<Stream, byte[], int, TNextReader> nextReaderFactory)
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
@@ -395,16 +406,16 @@
 
     public sealed class TrueReader<TNextReader> : IReader<TrueToken, TNextReader>
     {
-        private readonly Stream stream;
+        private readonly PeekableStream stream;
         private readonly byte[] buffer;
         private readonly int validBytes;
-        private readonly Func<Stream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         public TrueReader(
-            Stream stream,
+            PeekableStream stream,
             byte[] buffer,
             int validBytes,
-            Func<Stream, byte[], int, TNextReader> nextReaderFactory)
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
@@ -441,7 +452,36 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
-    public sealed class ObjectReader<TNextReader>
+    public sealed class ObjectReader<TNextReader> : IReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<TNextReader>>>>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public ObjectReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public ITask<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<TNextReader>>>>> Move()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public sealed class MemberReader<TNextReader>
+    {
+    }
+
+    public sealed class SubsequentMemberReader<TNextReader>
     {
     }
 
@@ -466,6 +506,94 @@
             {
                 throw new Exception("TODO invalid JSON");
             }
+        }
+    }
+
+    public sealed class PeekableStream : Stream
+    {
+        private readonly Stream stream;
+
+        private readonly byte[] peekedByte;
+        private bool hasPeeked;
+
+        public PeekableStream(Stream stream)
+        {
+            if (!stream.CanRead)
+            {
+                throw new Exception("TODO");
+            }
+
+            this.stream = stream;
+
+            this.peekedByte = new byte[1];
+            this.hasPeeked = false;
+        }
+
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException("TODO");
+
+        public override long Position { get => throw new NotSupportedException("TODO"); set => throw new NotSupportedException("TODO"); }
+
+        public override void Flush()
+        {
+            throw new NotSupportedException("TODO");
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (this.hasPeeked)
+            {
+                buffer[offset] = this.peekedByte[0];
+                this.hasPeeked = false;
+                return 1;
+            }
+
+            return stream.Read(buffer, offset, count);
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (this.hasPeeked)
+            {
+                buffer[offset] = peekedByte[0];
+                this.hasPeeked = false;
+                return 1;
+            }
+
+            this.hasPeeked = false;
+            return await stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<int> PeekAsync()
+        {
+            var read = await this.ReadAsync(this.peekedByte).ConfigureAwait(false);
+            if (read == 0)
+            {
+                return -1;
+            }
+
+            this.hasPeeked = true;
+            return this.peekedByte[0];
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException("TODO");
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("TODO");
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("TODO");
         }
     }
 }
