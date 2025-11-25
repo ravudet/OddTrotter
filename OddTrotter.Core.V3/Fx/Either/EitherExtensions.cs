@@ -56,9 +56,7 @@ namespace Fx.Either
             where TLeftResult : allows ref struct
             where TRightResult : allows ref struct
         {
-            return either.Apply<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, RefEither<TLeftResult, TRightResult>>(
-                left => new RefEither<TLeftResult, TRightResult>(leftMap(left)),
-                right => new RefEither<TLeftResult, TRightResult>(rightMap(right)));
+            return new TypeHolder<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource>(either).Select(leftMap, rightMap);
         }
 
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
