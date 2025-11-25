@@ -15,7 +15,7 @@
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO implement assert extensions so you can always use assert.that
-    //// TODO you need to implement "everything" (all of the extension variations and overloads); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
+    //// TODO you need to implement "everything" (all of the extension variations and overloads; any renames that need to happen; implementing visitors and such; full code quality); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
     //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
