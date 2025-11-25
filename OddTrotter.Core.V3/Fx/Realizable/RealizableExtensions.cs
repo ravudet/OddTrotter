@@ -48,5 +48,18 @@ namespace Fx.Realizable
                 return right.GetAwaiter();
             }
         }
+
+        public static Realizable<TResult> Select<TSource, TResult>(this Realizable<TSource> realizable, Func<TSource, TResult> selector)
+            where TSource : allows ref struct
+            where TResult : allows ref struct
+        {
+            //// TODO you are here
+            return realizable.Apply(
+                value => new Realizable<TResult>(selector(value)),
+                future => future.ContinueWith(
+                    selector,
+                    _ => _,
+                    _ => _));
+        }
     }
 }

@@ -119,6 +119,11 @@ namespace Fx.Either
             Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
             Func<TRightSource, IContinuable<TRightResult>> rightMap)
         {
+            return either
+                .SelectAsync<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, IContinuable<TLeftResult>, TLeftResult, IContinuable<TRightResult>, TRightResult>(leftMap, rightMap)
+                .Select(
+                    refEither => refEither.ToEither()); //// TODO you are here, implementing the realizable select
+
             //// TODO update this to use the generic overload
             return either.Apply<IEither<TLeftResult, TRightResult>, bool, Realizable<IEither<TLeftResult, TRightResult>>>(
                 (TLeftSource left, ref bool context) =>
