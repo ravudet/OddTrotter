@@ -3,7 +3,6 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -11,7 +10,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
     //// TODO implement any TODOs
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
