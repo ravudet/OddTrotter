@@ -6,8 +6,60 @@ namespace Fx.Either
 
     using Fx.Realizable;
 
-    public sealed class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
+        private Either()
+        {
+        }
+
+        protected abstract Realizable<TResult> Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct;
+
+        public abstract class Visitor<TResult, TContext>
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            public Realizable<TResult> Visit(Either<TLeft, TRight> node, ref TContext context)
+            {
+                return node.Dispatch(this, ref context);
+            }
+
+            protected internal abstract Realizable<TResult> Accept(Either<TLeft, TRight>.Left node, ref TContext context);
+
+            protected internal abstract Realizable<TResult> Accept(Either<TLeft, TRight>.Right node, ref TContext context);
+        }
+
+        public sealed class Left : Either<TLeft, TRight>
+        {
+            public Left(TLeft value)
+            {
+                Value = value;
+            }
+
+            public TLeft Value { get; }
+
+            protected override Realizable<TResult> Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, ref TContext context)
+            {
+                return visitor.Accept(this, ref context);
+            }
+        }
+
+        public sealed class Right : Either<TLeft, TRight>
+        {
+            public Right(TRight value)
+            {
+                Value = value;
+            }
+
+            public TRight Value { get; }
+
+            protected override Realizable<TResult> Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, ref TContext context)
+            {
+                return visitor.Accept(this, ref context);
+            }
+        }
+
         private readonly BetterNullable<TLeft> left;
         private readonly BetterNullable<TRight> right;
 
@@ -30,27 +82,43 @@ namespace Fx.Either
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct
         {
-            if (this.left.TryGetValue(out var left))
+            return new DelegateVisitor<TResult, TContext, TContinuable>(leftMap, rightMap).Visit(this, ref context);
+        }
+
+        private sealed class DelegateVisitor<TResult, TContext, TContinuable> : Visitor<TResult, TContext>
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
+        {
+            private readonly AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap;
+            private readonly AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap;
+
+            public DelegateVisitor(
+                AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
+                AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap)
+            {
+                this.leftMap = leftMap;
+                this.rightMap = rightMap;
+            }
+
+            protected internal override Realizable<TResult> Accept(Left node, ref TContext context)
             {
                 return
-                    leftMap(left, ref context)
+                    this.leftMap(node.Value, ref context)
                     .ContinueWith(
                         result => result,
                         exception => throw new LeftMapException(exception),
                         canceled => throw canceled);
             }
-            else if (this.right.TryGetValue(out var right))
+
+            protected internal override Realizable<TResult> Accept(Right node, ref TContext context)
             {
                 return
-                    rightMap(right, ref context)
+                    this.rightMap(node.Value, ref context)
                     .ContinueWith(
                         result => result,
                         exception => throw new RightMapException(exception),
                         canceled => throw canceled);
-            }
-            else
-            {
-                throw new Exception("TODO bug");
             }
         }
     }
