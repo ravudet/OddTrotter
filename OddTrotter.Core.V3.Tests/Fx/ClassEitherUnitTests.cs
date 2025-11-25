@@ -12,7 +12,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    //// TODO implement a test using actual async (like reading a file or something)
     //// TODO implement any unimplemented methods in these files, probably adding a test or two as you go
     //// TODO implement any TODOs
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
@@ -190,8 +189,6 @@
         [TestMethod]
         public async Task ReadFromFile()
         {
-            //// TODO you are here
-            //// TODO implement this for ref structs
             var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
             await WriteToFile(filePath, "42").ConfigureAwait(false);
@@ -276,6 +273,8 @@
     [TestClass]
     public sealed class RefEitherUnitTests
     {
+        public required TestContext TestContext { get; set; }
+
         [TestMethod]
         public void ApplyRightMapException()
         {
@@ -552,6 +551,62 @@
                 public void UnsafeOnCompleted(Action continuation)
                 {
                     this.taskAwaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task ReadFromFile()
+        {
+            var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
+            var filePath = Path.Combine(workingDirectory, "somedata.txt");
+            await WriteToFile(filePath, "42").ConfigureAwait(false);
+
+            var potentiallyParsed = await ParseFromFile(filePath);
+            Assert.IsTrue(potentiallyParsed.Decompose(out var result, out _));
+            Assert.AreEqual(42, result);
+        }
+
+        private static RefTask<string, RefEither<int, Exception>> ParseFromFile(string filePath)
+        {
+            return new RefTask<string, RefEither<int, Exception>>(
+                new TaskWrapper<string>(File.ReadAllTextAsync(filePath)),
+                text => ParseToRef(text));
+        }
+
+        private static RefEither<int, Exception> ParseToRef(string text)
+        {
+            int value;
+            try
+            {
+                value = int.Parse(text);
+            }
+            catch (Exception exception)
+            {
+                return new RefEither<int, Exception>(exception);
+            }
+
+            return new RefEither<int, Exception>(value);
+        }
+
+        private static async Task WriteToFile(string filePath, string contents)
+        {
+            var parentDirectory = Path.GetDirectoryName(filePath);
+            if (parentDirectory == null)
+            {
+                throw new Exception("TODO");
+            }
+
+            while (true)
+            {
+                try
+                {
+                    await File.WriteAllTextAsync(filePath, contents).ConfigureAwait(false);
+                    return;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Directory.CreateDirectory(parentDirectory);
                 }
             }
         }
