@@ -48,6 +48,13 @@ namespace Fx.Either
             return Task.FromResult(value);
         }
 
+        private static IEither<TLeft, TRight> ToEither<TLeft, TRight>(this RefEither<TLeft, TRight> either)
+        {
+            return either.Apply<RefEither<TLeft, TRight>, TLeft, TRight, Either<TLeft, TRight>>(
+                left => new Either<TLeft, TRight>.Left(left),
+                right => new Either<TLeft, TRight>.Right(right));
+        }
+
         //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
         public static RefEither<TLeftResult, TRightResult> SelectRef<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
@@ -64,19 +71,7 @@ namespace Fx.Either
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
         {
-            //// TODO update this to use the generic overload
-            var realizable = either.SelectAsync(
-                left => ToTaskWrapper(left, leftMap), //// TODO every non-async variant needs to use this adapter
-                right => ToTaskWrapper(right, rightMap));
-
-            if (realizable.Decompose(out var result, out var task))
-            {
-                return result;
-            }
-            else
-            {
-                return task.GetAwaiter().GetResult();
-            }
+            return either.Select<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, TLeftResult, TRightResult>(leftMap, rightMap).ToEither();
         }
 
         public static RefEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
