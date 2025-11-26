@@ -73,13 +73,24 @@ namespace Fx.Realizable
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
         {
+            //// TODO you are here
+            //// TODO you are testing DecomposeCastable, it doesn't seem to actually enter the correct branch in `trycast`
+
             //// TODO can you put this code into a single place? you've duplicated it a few times
-            if (typeof(TCasted) == typeof(DecomposeMixin<Realizable<T>, T, ITask<T>>))
+            /*if (typeof(TCasted) == typeof(DecomposeMixin<Realizable<T>, T, ITask<T>>))
             {
                 var mixin = new DecomposeMixin<Realizable<T>, T, ITask<T>>(
                     this,
                     (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right));
                 casted = Unsafe.As<DecomposeMixin<Realizable<T>, T, ITask<T>>, TCasted>(ref mixin);
+                return true;
+            }*/
+
+            if (TryDecompose(
+                this,
+                (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right),
+                out casted))
+            {
                 return true;
             }
 
@@ -91,6 +102,25 @@ namespace Fx.Realizable
         {
             //// TODO can you make this an implicit interface implementation?
             return either.Decompose(out left, out right);
+        }
+
+        public static bool TryDecompose<TCasted, TEither, TLeft, TRight>(TEither either, DecomposeDelegate<TEither, TLeft, TRight> decomposeDelegate, out TCasted casted)
+            where TCasted : struct, allows ref struct
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            if (typeof(TCasted) == typeof(DecomposeMixin<TEither, TLeft, TRight>))
+            {
+                var mixin = new DecomposeMixin<TEither, TLeft, TRight>(
+                    either,
+                    decomposeDelegate);
+                casted = Unsafe.As<DecomposeMixin<TEither, TLeft, TRight>, TCasted>(ref mixin);
+                return true;
+            }
+
+            casted = default;
+            return false;
         }
     }
 }
