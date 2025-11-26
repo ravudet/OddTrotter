@@ -70,7 +70,7 @@
                 public T GetResult()
                 {
                     this.taskAwaiter.GetResult();
-                    throw new Exception("TODO");
+                    return default!; //// TODO not great, but this is what .NET does...
                 }
 
                 public void OnCompleted(Action continuation)
