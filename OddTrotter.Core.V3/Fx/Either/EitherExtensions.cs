@@ -158,20 +158,7 @@ namespace Fx.Either
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
         {
-            //// TODO update this to use the generic overload
-            var future = either.Apply<TResult, bool, TaskWrapper<TResult>>(
-                (TLeft left, ref bool context) => ToTaskWrapper(left, leftMap),
-                (TRight right, ref bool context) => ToTaskWrapper(right, rightMap),
-                ref Context);
-
-            if (future.TypeHolder.Decompose(out var result, out var task))
-            {
-                return result;
-            }
-            else
-            {
-                return task.GetAwaiter().GetResult();
-            }
+            return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either).Apply(leftMap, rightMap);
         }
 
         public static TResult Apply<TEither, TLeft, TRight, TResult>(
