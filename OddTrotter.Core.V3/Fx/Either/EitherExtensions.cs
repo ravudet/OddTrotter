@@ -33,21 +33,6 @@ namespace Fx.Either
             return Realizable.FromResult(value);
         }
 
-        private static Task<TResult> ToTask<TState, TResult>(TState state, Func<TState, TResult> func)
-        {
-            TResult value;
-            try
-            {
-                value = func(state);
-            }
-            catch (Exception exception)
-            {
-                return Task.FromException<TResult>(exception);
-            }
-
-            return Task.FromResult(value);
-        }
-
         private static IEither<TLeft, TRight> ToEither<TLeft, TRight>(this RefEither<TLeft, TRight> either)
         {
             return either.Apply<RefEither<TLeft, TRight>, TLeft, TRight, Either<TLeft, TRight>>(
