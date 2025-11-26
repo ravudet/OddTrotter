@@ -260,7 +260,8 @@ namespace Fx.Either
             public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
                 where TCasted : struct, allows ref struct
             {
-                if (typeof(TCasted) == typeof(DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
+                //// TODO should it be `decomposemixin<decomposecastable...>`? is your test actually even supposed to enter the branch?
+                if (typeof(TCasted) == typeof(DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
                 {
                     var decomposeMixin = new DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>(
                         this.either,
