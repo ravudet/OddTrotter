@@ -60,7 +60,5 @@ namespace Fx.Realizable
                     _ => throw _,
                     _ => throw _));
         }
-
-        private static bool Context = false;
     }
 }
