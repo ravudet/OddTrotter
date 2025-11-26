@@ -53,13 +53,14 @@ namespace Fx.Realizable
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
-            //// TODO you are here
-            return realizable.Apply(
+            return realizable.TypeHolder.Apply(
                 value => new Realizable<TResult>(selector(value)),
                 future => future.ContinueWith(
                     selector,
-                    _ => _,
-                    _ => _));
+                    _ => throw _,
+                    _ => throw _));
         }
+
+        private static bool Context = false;
     }
 }
