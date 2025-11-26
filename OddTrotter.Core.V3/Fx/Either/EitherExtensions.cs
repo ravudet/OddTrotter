@@ -11,6 +11,11 @@ namespace Fx.Either
 
     public static class EitherExtensions
     {
+        private static TypeHolder<IEither<TLeft, TRight>, TLeft, TRight> TypeHolder<TLeft, TRight>(this IEither<TLeft, TRight> either)
+        {
+            return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either);
+        }
+
         private static Realizable<TResult> ToRealizable<TState, TResult>(TState state, Func<TState, TResult> func)
             where TState : allows ref struct
             where TResult : allows ref struct
@@ -26,11 +31,6 @@ namespace Fx.Either
             }
 
             return Realizable.FromResult(value);
-        }
-
-        private static TaskWrapper<TResult> ToTaskWrapper<TState, TResult>(TState state, Func<TState, TResult> func)
-        {
-            return new TaskWrapper<TResult>(ToTask(state, func));
         }
 
         private static Task<TResult> ToTask<TState, TResult>(TState state, Func<TState, TResult> func)
@@ -63,7 +63,7 @@ namespace Fx.Either
             where TLeftResult : allows ref struct
             where TRightResult : allows ref struct
         {
-            return new TypeHolder<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource>(either).Select(leftMap, rightMap);
+            return either.TypeHolder().Select(leftMap, rightMap);
         }
 
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
@@ -158,7 +158,7 @@ namespace Fx.Either
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
         {
-            return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either).Apply(leftMap, rightMap);
+            return either.TypeHolder().Apply(leftMap, rightMap);
         }
 
         public static TResult Apply<TEither, TLeft, TRight, TResult>(
