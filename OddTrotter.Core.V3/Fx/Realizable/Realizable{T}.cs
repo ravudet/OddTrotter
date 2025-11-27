@@ -100,6 +100,7 @@ namespace Fx.Realizable
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            //// TODO make this `decomposemixin.trycreate`?
             if (typeof(TCasted) == typeof(DecomposeMixin<TEither, TLeft, TRight>))
             {
                 var mixin = new DecomposeMixin<TEither, TLeft, TRight>(
