@@ -74,18 +74,8 @@ namespace Fx.Realizable
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
         {
             //// TODO you are here
-            //// TODO you are testing DecomposeCastable, it doesn't seem to actually enter the correct branch in `trycast`
-
             //// TODO can you put this code into a single place? you've duplicated it a few times
-            /*if (typeof(TCasted) == typeof(DecomposeMixin<Realizable<T>, T, ITask<T>>))
-            {
-                var mixin = new DecomposeMixin<Realizable<T>, T, ITask<T>>(
-                    this,
-                    (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right));
-                casted = Unsafe.As<DecomposeMixin<Realizable<T>, T, ITask<T>>, TCasted>(ref mixin);
-                return true;
-            }*/
-
+            
             if (TryDecompose(
                 this,
                 (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right),

@@ -271,15 +271,6 @@ namespace Fx.Either
                     }
                 }
 
-                /*if (typeof(TCasted) == typeof(DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
-                {
-                    var decomposeMixin = new DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>(
-                        this,
-                        (DecomposeCastable<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => ((IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)either.either).Decompose(out left, out right));
-                    casted = Unsafe.As<DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>, TCasted>(ref decomposeMixin);
-                    return true;
-                }*/
-
                 casted = default;
                 return false;
             }
