@@ -260,13 +260,12 @@ namespace Fx.Either
             public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
                 where TCasted : struct, allows ref struct
             {
-                //// TODO should it be `decomposemixin<decomposecastable...>`? is your test actually even supposed to enter the branch?
-                if (typeof(TCasted) == typeof(DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
+                if (typeof(TCasted) == typeof(DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>) && this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight> mixin)
                 {
-                    var decomposeMixin = new DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>(
-                        this.either,
-                        (IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => ((IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)either).Decompose(out left, out right));
-                    casted = Unsafe.As<DecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>, TCasted>(ref decomposeMixin);
+                    var decomposeMixin = new DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>(
+                        this,
+                        (DecomposeCastable<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => ((IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)either.either).Decompose(out left, out right));
+                    casted = Unsafe.As<DecomposeMixin<DecomposeCastable<TLeft, TRight>, TLeft, TRight>, TCasted>(ref decomposeMixin);
                     return true;
                 }
 

@@ -2,8 +2,10 @@
 namespace Fx.Either
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
+    using Fx.Either.Mixins;
     using Fx.Realizable;
 
     public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
@@ -30,7 +32,7 @@ namespace Fx.Either
             protected internal abstract Realizable<TResult> Accept(Either<TLeft, TRight>.Right node, ref TContext context);
         }
 
-        public sealed class Left : Either<TLeft, TRight>
+        public sealed class Left : Either<TLeft, TRight>, IDecomposeMixin<Either<TLeft, TRight>.Left, TLeft, TRight>
         {
             public Left(TLeft value)
             {
@@ -39,13 +41,20 @@ namespace Fx.Either
 
             public TLeft Value { get; }
 
+            public bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+            {
+                left = this.Value;
+                right = default;
+                return true;
+            }
+
             protected override Realizable<TResult> Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, ref TContext context)
             {
                 return visitor.Accept(this, ref context);
             }
         }
 
-        public sealed class Right : Either<TLeft, TRight>
+        public sealed class Right : Either<TLeft, TRight>, IDecomposeMixin<Either<TLeft, TRight>.Right, TLeft, TRight>
         {
             public Right(TRight value)
             {
@@ -53,6 +62,13 @@ namespace Fx.Either
             }
 
             public TRight Value { get; }
+
+            public bool Decompose([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right)
+            {
+                left = default;
+                right = this.Value;
+                return false;
+            }
 
             protected override Realizable<TResult> Dispatch<TResult, TContext>(Visitor<TResult, TContext> visitor, ref TContext context)
             {
