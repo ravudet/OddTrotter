@@ -104,24 +104,26 @@
 
         private async IAsyncEnumerable<WhitespaceToken> GetValueImpl()
         {
-            //// TODO you are here
-            //// TODO implement this with peek, then update the other implementations to assume that the buffer is empty
             while (true)
             {
-                var read = await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
-                if (read == 0)
+                var peeked = await stream.PeekAsync().ConfigureAwait(false);
+                if (peeked == null)
                 {
                     yield break;
                 }
 
+                WhitespaceToken whitespace;
                 try
                 {
-                    var whitespace = new WhitespaceToken(this.buffer[0]);
+                    whitespace = new WhitespaceToken(peeked.Value);
                 }
                 catch (Exception)
                 {
                     break;
                 }
+
+                await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                yield return whitespace;
             }
         }
 
@@ -174,12 +176,13 @@
 
         public async ITask<ValueToken<TNextReader>> Move()
         {
-            return await Task.FromResult(this.MoveImpl()).ConfigureAwait(false);
-        }
+            var peeked = await stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
 
-        private ValueToken<TNextReader> MoveImpl()
-        {
-            switch ((char)buffer[0])
+            switch ((char)peeked)
             {
                 case 'f':
                     return new ValueToken<TNextReader>.False(
@@ -332,15 +335,11 @@
 
         public async ITask<FalseToken> GetValue()
         {
-            if (this.buffer[0] != 'f')
+            foreach (var @char in "false")
             {
-                throw new Exception("TODO invalid JSON");
+                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char).ConfigureAwait(false);
             }
 
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'a').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'l').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 's').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'e').ConfigureAwait(false);
             return FalseToken.Instance;
         }
 
@@ -381,14 +380,11 @@
 
         public async ITask<NullToken> GetValue()
         {
-            if (this.buffer[0] != 'n')
+            foreach (var @char in "null")
             {
-                throw new Exception("TODO invalid JSON");
+                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char).ConfigureAwait(false);
             }
 
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'u').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'l').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'l').ConfigureAwait(false);
             return NullToken.Instance;
         }
 
@@ -429,14 +425,11 @@
 
         public async ITask<TrueToken> GetValue()
         {
-            if (this.buffer[0] != 't')
+            foreach (var @char in "true")
             {
-                throw new Exception("TODO invalid JSON");
+                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char).ConfigureAwait(false);
             }
 
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'r').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'u').ConfigureAwait(false);
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, 'e').ConfigureAwait(false);
             return TrueToken.Instance;
         }
 
@@ -477,6 +470,8 @@
 
         public ITask<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<TNextReader>>>>> Move()
         {
+            //// TODO you are here
+            
             throw new NotImplementedException();
         }
     }
@@ -573,12 +568,12 @@
             return await stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<int> PeekAsync()
+        public async Task<byte?> PeekAsync()
         {
             var read = await this.ReadAsync(this.peekedByte).ConfigureAwait(false);
             if (read == 0)
             {
-                return -1;
+                return null;
             }
 
             this.hasPeeked = true;

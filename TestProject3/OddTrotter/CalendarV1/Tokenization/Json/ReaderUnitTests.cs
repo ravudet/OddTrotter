@@ -3,17 +3,69 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using OddTrotter.CalendarV1.Tokenization.Readers;
-
     [TestClass]
     public sealed class ReaderUnitTests
     {
+        [TestMethod]
+        public async Task V2Broad()
+        {
+            var data =
+"""
+{
+    "true": true,
+    "false": false,
+    "number": 1234,
+    "string": "asdf",
+    "null": null,
+    "object": {
+        "true": true,
+        "false": false,
+        "number": 1234,
+        "string": "asdf",
+        "null": null
+    },
+    "array": [
+        {
+            "true": true,
+            "false": false,
+            "number": 1234,
+            "string": "asdf",
+            "null": null
+        }
+    ]
+}
+""";
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var reader = new Json2.JsonReader(stream);
+                await ReadToEnd(reader);
+            }
+        }
+
+        private static async Task ReadToEnd(Json2.JsonReader reader)
+        {
+            var whitespaceReader = await reader.Move();
+            await ReadToEnd(whitespaceReader, async valueReader => await ReadToEnd(valueReader));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.WhitespaceReader<TNextReader> whitespaceReader, Func<TNextReader, Task> readToEnd)
+        {
+            var nextReader = await whitespaceReader.Move();
+            await readToEnd(nextReader);
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ValueReader<TNextReader> valueReader)
+        {
+            var valueToken = await valueReader.Move();
+        }
+
         [TestMethod]
         public async Task Broad()
         {
