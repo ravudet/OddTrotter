@@ -89,7 +89,7 @@ namespace Fx.Either
                 left => ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
                 right => ToRealizable(right, rightMap));
 
-            if (realizable.Decompose(out var result, out var task))
+            if (realizable.TypeHolder.Decompose(out var result, out var task))
             {
                 return result;
             }
