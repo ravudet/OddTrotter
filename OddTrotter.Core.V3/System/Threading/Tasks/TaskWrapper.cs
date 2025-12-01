@@ -74,20 +74,20 @@ namespace System.Threading.Tasks
             where TNew : allows ref struct
         {
             private readonly ITaskData<TOld> task;
-            private readonly Func<TOld, TNew> source;
-            private readonly Func<Exception, TNew> exception;
-            private readonly Func<OperationCanceledException, TNew> canceled;
+            private readonly Func<TOld, TNew> sourceContinuation;
+            private readonly Func<Exception, TNew> exceptionContinuation;
+            private readonly Func<OperationCanceledException, TNew> canceledContinuation;
 
             public Continuation(
                 ITaskData<TOld> task, 
-                Func<TOld, TNew> source,
-                Func<Exception, TNew> exception,
-                Func<OperationCanceledException, TNew> canceled)
+                Func<TOld, TNew> sourceContinuation,
+                Func<Exception, TNew> exceptionContinuation,
+                Func<OperationCanceledException, TNew> canceledContinuation)
             {
                 this.task = task;
-                this.source = source;
-                this.exception = exception;
-                this.canceled = canceled;
+                this.sourceContinuation = sourceContinuation;
+                this.exceptionContinuation = exceptionContinuation;
+                this.canceledContinuation = canceledContinuation;
             }
 
             public Exception? Exception
@@ -123,29 +123,29 @@ namespace System.Threading.Tasks
             {
                 return new Awaiter(
                     task,
-                    source,
-                    exception,
-                    canceled);
+                    this.sourceContinuation,
+                    this.exceptionContinuation,
+                    this.canceledContinuation);
             }
 
             private sealed class Awaiter : IAwaiter<TNew>
             {
                 private readonly ITaskData<TOld> task;
                 private readonly IAwaiter<TOld> taskAwaiter;
-                private readonly Func<TOld, TNew> source;
-                private readonly Func<Exception, TNew> exception;
-                private readonly Func<OperationCanceledException, TNew> canceled;
+                private readonly Func<TOld, TNew> sourceContinuation;
+                private readonly Func<Exception, TNew> exceptionContinuation;
+                private readonly Func<OperationCanceledException, TNew> canceledContinuation;
 
                 public Awaiter(
                     ITaskData<TOld> task,
-                    Func<TOld, TNew> source,
-                    Func<Exception, TNew> exception,
-                    Func<OperationCanceledException, TNew> canceled)
+                    Func<TOld, TNew> sourceContinuation,
+                    Func<Exception, TNew> exceptionContinuation,
+                    Func<OperationCanceledException, TNew> canceledContinuation)
                 {
                     this.task = task;
-                    this.source = source;
-                    this.exception = exception;
-                    this.canceled = canceled;
+                    this.sourceContinuation = sourceContinuation;
+                    this.exceptionContinuation = exceptionContinuation;
+                    this.canceledContinuation = canceledContinuation;
 
                     this.taskAwaiter = this.task.GetAwaiter();
                 }
@@ -170,16 +170,16 @@ namespace System.Threading.Tasks
                             exception = aggregateException.InnerExceptions[0];
                         }
 
-                        return this.exception(exception);
+                        return this.exceptionContinuation(exception);
                     }
                     else if (this.task.IsCanceled)
                     {
-                        return this.canceled(new OperationCanceledException("TODO"));
+                        return this.canceledContinuation(new OperationCanceledException("TODO"));
                     }
                     else
                     {
                         //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
-                        return this.source(this.taskAwaiter.GetResult());
+                        return this.sourceContinuation(this.taskAwaiter.GetResult());
                     }
                 }
 
