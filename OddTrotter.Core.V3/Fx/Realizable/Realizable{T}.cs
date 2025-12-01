@@ -84,7 +84,8 @@ namespace Fx.Realizable
 
         bool IDecomposeMixin<Realizable<T>, T, ITask<T>>.Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
         {
-            //// TODO can you make this an implicit interface implementation?
+            //// TODO can you make `EtierhExtensions.DecomposeCastable` use the `decomposemixin.trycreate` overload that doens't pass a delegate?
+
             return either.Decompose(out left, out right);
         }
     }
