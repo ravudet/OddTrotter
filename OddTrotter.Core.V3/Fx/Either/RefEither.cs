@@ -72,7 +72,7 @@ namespace Fx.Either
             }
         }
 
-        public bool Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
+        bool IDecomposeMixin<RefEither<TLeft, TRight>, TLeft, TRight>.Decompose([MaybeNullWhen(false)] out TLeft value, [MaybeNullWhen(true)] out TRight future)
         {
             if (left.TryGetValue(out value))
             {
@@ -93,9 +93,8 @@ namespace Fx.Either
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
             where TCasted : struct, allows ref struct
         {
-            if (DecomposeMixin.TryCreate(
+            if (DecomposeMixin.TryCreate<TCasted, RefEither<TLeft, TRight>, TLeft, TRight>(
                 this,
-                (RefEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => either.Decompose(out left, out right),
                 out casted))
             {
                 return true;

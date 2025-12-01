@@ -222,7 +222,7 @@
             var value = "42";
             var either = await AsyncRefWork(value);
 
-            Assert.IsTrue(either.Decompose(out var result, out _));
+            Assert.IsTrue(either.TypeHolder.Decompose(out var result, out _));
             Assert.AreEqual(42, result.Value);
         }
 
@@ -304,7 +304,7 @@
             await WriteToFile(filePath, "42").ConfigureAwait(false);
 
             var potentiallyParsed = await ParseFromFile(filePath);
-            Assert.IsTrue(potentiallyParsed.Decompose(out var result, out _));
+            Assert.IsTrue(potentiallyParsed.TypeHolder.Decompose(out var result, out _));
             Assert.AreEqual(42, result);
         }
 
