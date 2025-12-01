@@ -204,7 +204,11 @@
                             this.nextReaderFactory));
                 case '{':
                     return new ValueToken<TNextReader>.Object(
-                        new ObjectReader<TNextReader>());
+                        new ObjectReader<TNextReader>(
+                            this.stream,
+                            this.buffer,
+                            this.validBytes,
+                            this.nextReaderFactory));
                 case '[':
                     return new ValueToken<TNextReader>.Array(
                         new ArrayReader<TNextReader>());

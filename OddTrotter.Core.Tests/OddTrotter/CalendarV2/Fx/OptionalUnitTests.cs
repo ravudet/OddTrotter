@@ -1,6 +1,10 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+using global::OddTrotter.CalendarV1.Tokenization.Json2;
+
 namespace Fx
 {
+    using System.Threading.Tasks;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -40,6 +44,33 @@ namespace Fx
 
             Assert.IsTrue(optional.TryGetValue(out var value));
             Assert.AreEqual(providedValue, value);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task Await()
+        {
+            var foo = await DoWork();
+
+            Assert.AreEqual(42, foo.Value);
+        }
+
+        public readonly ref struct Foo
+        {
+            public Foo(int value)
+            {
+                Value = value;
+            }
+
+            public int Value { get; }
+        }
+
+        private static async AsyncableAwaitable<Foo> DoWork()
+        {
+            AsyncableAwaitable<Foo>.ValueFactory = () => new Foo(42);
+
+            await Task.Delay(100);
+
+            return new Foo(61);
         }
     }
 }
