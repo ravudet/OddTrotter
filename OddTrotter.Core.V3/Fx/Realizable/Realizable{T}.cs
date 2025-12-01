@@ -71,9 +71,8 @@ namespace Fx.Realizable
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
         {
-            if (DecomposeMixin.TryCreate(
+            if (DecomposeMixin.TryCreate<TCasted, Realizable<T>, T, ITask<T>>(
                 this,
-                (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right),
                 out casted))
             {
                 return true;
@@ -83,7 +82,7 @@ namespace Fx.Realizable
             return false;
         }
 
-        public bool Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
+        bool IDecomposeMixin<Realizable<T>, T, ITask<T>>.Decompose([MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right)
         {
             //// TODO can you make this an implicit interface implementation?
             return either.Decompose(out left, out right);
