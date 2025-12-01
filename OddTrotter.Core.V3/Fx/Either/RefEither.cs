@@ -93,7 +93,7 @@ namespace Fx.Either
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
             where TCasted : struct, allows ref struct
         {
-            if (Realizable<int>.TryDecompose(
+            if (DecomposeMixin.TryCreate(
                 this,
                 (RefEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => either.Decompose(out left, out right),
                 out casted))

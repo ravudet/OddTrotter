@@ -262,7 +262,7 @@ namespace Fx.Either
             {
                 if (this.either is IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)
                 {
-                    if (Realizable<int>.TryDecompose(
+                    if (DecomposeMixin.TryCreate(
                         this,
                         (DecomposeCastable<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right) => ((IDecomposeMixin<IEither<TLeft, TRight>, TLeft, TRight>)either.either).Decompose(out left, out right),
                         out casted))

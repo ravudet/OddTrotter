@@ -73,10 +73,7 @@ namespace Fx.Realizable
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct
         {
-            //// TODO you are here
-            //// TODO can you put this code into a single place? you've duplicated it a few times
-            
-            if (TryDecompose(
+            if (DecomposeMixin.TryCreate(
                 this,
                 (Realizable<T> either, [MaybeNullWhen(false)] out T left, [MaybeNullWhen(true)] out ITask<T> right) => either.Decompose(out left, out right),
                 out casted))
@@ -92,26 +89,6 @@ namespace Fx.Realizable
         {
             //// TODO can you make this an implicit interface implementation?
             return either.Decompose(out left, out right);
-        }
-
-        public static bool TryDecompose<TCasted, TEither, TLeft, TRight>(TEither either, DecomposeDelegate<TEither, TLeft, TRight> decomposeDelegate, out TCasted casted)
-            where TCasted : struct, allows ref struct
-            where TEither : IEither<TLeft, TRight>, allows ref struct
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-        {
-            //// TODO make this `decomposemixin.trycreate`?
-            if (typeof(TCasted) == typeof(DecomposeMixin<TEither, TLeft, TRight>))
-            {
-                var mixin = new DecomposeMixin<TEither, TLeft, TRight>(
-                    either,
-                    decomposeDelegate);
-                casted = Unsafe.As<DecomposeMixin<TEither, TLeft, TRight>, TCasted>(ref mixin);
-                return true;
-            }
-
-            casted = default;
-            return false;
         }
     }
 }
