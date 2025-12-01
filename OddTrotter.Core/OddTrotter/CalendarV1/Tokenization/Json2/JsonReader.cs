@@ -449,7 +449,7 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
-    public sealed class ObjectReader<TNextReader> : IReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<TNextReader>>>>>
+    public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>>
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
@@ -468,20 +468,190 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public ITask<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<TNextReader>>>>> Move()
+        public ITask<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>> Move()
+        {
+            return Task.FromResult(
+                new ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (stream, buffer, validBytes) => 
+                        new WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
+                            stream,
+                            buffer,
+                            validBytes,
+                            (stream, buffer, validBytes) => new MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
+        }
+    }
+
+    public sealed class ObjectStartReader<TNextReader> : IReader<ObjectStartToken, TNextReader>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public ObjectStartReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<ObjectStartToken> GetValue()
+        {
+            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '{').ConfigureAwait(false);
+            return ObjectStartToken.Instance;
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
+    }
+
+    public sealed class ObjectStartToken
+    {
+        private ObjectStartToken()
+        {
+        }
+
+        public static ObjectStartToken Instance { get; } = new ObjectStartToken();
+    }
+
+    public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+    {
+        public ITask<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>> Move()
         {
             //// TODO you are here
-            
             throw new NotImplementedException();
         }
     }
 
-    public sealed class MemberReader<TNextReader>
+    public sealed class ColonReader<TNextReader>
     {
     }
 
-    public sealed class SubsequentMemberReader<TNextReader>
+    public sealed class SubsequentMemberReader<TNextReader> : IReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
     {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public SubsequentMemberReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public ITask<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>> Move()
+        {
+            return Task.FromResult(
+                new CommaReader<WhitespaceReader<MemberReader<TNextReader>>>(
+                    this.stream, 
+                    this.buffer, 
+                    this.validBytes,
+                    (stream, buffer, validBytes) => new WhitespaceReader<MemberReader<TNextReader>>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        ))
+        }
+    }
+
+    public sealed class CommaReader<TNextReader> : IReader<CommaToken, TNextReader>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public CommaReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<CommaToken> GetValue()
+        {
+            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ',').ConfigureAwait(false);
+            return CommaToken.Instance;
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
+    }
+
+    public sealed class CommaToken
+    {
+        private CommaToken()
+        {
+        }
+
+        public static CommaToken Instance { get; } = new CommaToken();
+    }
+
+    public sealed class ObjectEndReader<TNextReader> : IReader<ObjectEndToken, TNextReader>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public ObjectEndReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<ObjectEndToken> GetValue()
+        {
+            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '}').ConfigureAwait(false);
+            return ObjectEndToken.Instance;
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
+    }
+
+    public sealed class ObjectEndToken
+    {
+        private ObjectEndToken()
+        {
+        }
+
+        public static ObjectEndToken Instance { get; } = new ObjectEndToken();
     }
 
     public sealed class ArrayReader<TNextReader>
