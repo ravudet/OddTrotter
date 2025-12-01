@@ -38,8 +38,6 @@ namespace Fx.Realizable
 
         public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
         {
-            //// TODO rename the parameters so they are actually descriptive; too many naming conflicts with local variables
-            
             if (either.TypeHolder.Decompose(out var value, out var future))
             {
                 TResult result;
