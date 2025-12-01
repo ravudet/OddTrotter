@@ -16,15 +16,15 @@ namespace System.Threading.Tasks
         }
 
         public Realizable<TResult> ContinueWith<TResult>(
-            Func<T, TResult> source, 
-            Func<Exception, TResult> exception, 
+            Func<T, TResult> sourceContinuation, 
+            Func<Exception, TResult> exceptionContinuation, 
             Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
         {
             return new Realizable<TResult>(
                 new Continuation<T, TResult>(
                     new TaskData(task),
-                    source,
-                    exception,
+                    sourceContinuation,
+                    exceptionContinuation,
                     canceled));
         }
 
@@ -107,15 +107,15 @@ namespace System.Threading.Tasks
             }
 
             public Realizable<TResult> ContinueWith<TResult>(
-                Func<TNew, TResult> source, 
-                Func<Exception, TResult> exception, 
+                Func<TNew, TResult> sourceContinuation, 
+                Func<Exception, TResult> exceptionContinuation, 
                 Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
                 return new Realizable<TResult>(
                     new Continuation<TNew, TResult>(
                         this,
-                        source,
-                        exception,
+                        sourceContinuation,
+                        exceptionContinuation,
                         canceled));
             }
 

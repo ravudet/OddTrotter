@@ -249,10 +249,10 @@
                 this.operation = operation;
             }
 
-            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
                 var self = this;
-                return this.task.ContinueWith(context => source(self.operation(context)), exception, canceled);
+                return this.task.ContinueWith(context => sourceContinuation(self.operation(context)), exceptionContinuation, canceled);
             }
 
             public IAwaiter<TValue> GetAwaiter()

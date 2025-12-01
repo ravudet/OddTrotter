@@ -9,9 +9,9 @@ namespace System.Threading.Tasks
         where TSource : allows ref struct
     {
         Realizable<TResult> ContinueWith<TResult>(
-            Func<TSource, TResult> source,
-            Func<Exception, TResult> exception,
-            Func<OperationCanceledException, TResult> canceled)
+            Func<TSource, TResult> sourceContinuation,
+            Func<Exception, TResult> exceptionContinuation,
+            Func<OperationCanceledException, TResult> canceledContinuation)
             where TResult : allows ref struct;
     }
 }

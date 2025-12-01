@@ -30,12 +30,12 @@
                 this.exception = exception;
             }
 
-            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> source, Func<Exception, TResult> exception, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
+            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceled) where TResult : allows ref struct
             {
                 TResult result;
                 try
                 {
-                    result = exception(this.exception);
+                    result = exceptionContinuation(this.exception);
                 }
                 catch (Exception resultException)
                 {
