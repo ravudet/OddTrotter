@@ -7,5 +7,7 @@ namespace System.Threading.Tasks
         where T : allows ref struct
     {
         IAwaiter<T> GetAwaiter();
+
+        IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext);
     }
 }

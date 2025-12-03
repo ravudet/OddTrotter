@@ -200,13 +200,36 @@ namespace System.Threading.Tasks
             return new Awaiter(task.GetAwaiter());
         }
 
+        public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+        {
+            private readonly Task<T> task;
+            private readonly bool continueOnCapturedContext;
+
+            public ConfiguredAwaitable(Task<T> task, bool continueOnCapturedContext)
+            {
+                this.task = task;
+                this.continueOnCapturedContext = continueOnCapturedContext;
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+            }
+        }
+
         private sealed class Awaiter : IAwaiter<T>
         {
             private readonly TaskAwaiter<T> taskAwaiter;
+            private readonly bool? continueOnCapturedContext;
 
-            public Awaiter(TaskAwaiter<T> taskAwaiter)
+            public Awaiter(TaskAwaiter<T> taskAwaiter, bool? continueOnCapturedContext)
             {
                 this.taskAwaiter = taskAwaiter;
+                this.continueOnCapturedContext = continueOnCapturedContext; //// TODO write the code to leverage this
             }
 
             public bool IsCompleted
