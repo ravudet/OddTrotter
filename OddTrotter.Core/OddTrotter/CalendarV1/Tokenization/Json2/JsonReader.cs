@@ -468,19 +468,35 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public ITask<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>> Move()
+        public async ITask<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>> Move()
         {
-            return Task.FromResult(
+            return await Task.FromResult(
                 new ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>(
                     this.stream,
                     this.buffer,
                     this.validBytes,
-                    (stream, buffer, validBytes) => 
+                    (stream, buffer, validBytes) =>
                         new WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
                             stream,
                             buffer,
                             validBytes,
                             (stream, buffer, validBytes) => new MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
+                                stream,
+                                buffer,
+                                validBytes,
+                                (strema, buffer, validBytes) => new SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
+                                    stream,
+                                    buffer,
+                                    validBytes,
+                                    (stream, buffer, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
+                                        stream,
+                                        buffer,
+                                        validBytes,
+                                        (stream, buffer, validBytes) => new ObjectEndReader<TNextReader>(
+                                            stream,
+                                            buffer,
+                                            validBytes,
+                                            this.nextReaderFactory))))))).ConfigureAwait(false);
         }
     }
 
@@ -551,7 +567,8 @@
                     this.stream,
                     this.buffer,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(stream,
+                    (stream, buffer, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(
+                        stream,
                         buffer,
                         validBytes,
                         (stream, buffer, validBytes) => new ColonReader<WhitespaceReader<ValueReader<TNextReader>>>(
