@@ -230,7 +230,11 @@
                         new NumberReader<TNextReader>());
                 case '"':
                     return new ValueToken<TNextReader>.String(
-                        new StringReader<TNextReader>());
+                        new StringReader<TNextReader>(
+                            this.stream,
+                            this.buffer,
+                            this.validBytes,
+                            this.nextReaderFactory));
                 default:
                     throw new Exception("tODO invalid JSON");
             }
