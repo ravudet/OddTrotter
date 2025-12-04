@@ -106,6 +106,18 @@ namespace System.Threading.Tasks
                 }
             }
 
+            public IConfiguredAwaitable<TNew> ConfigureAwait(bool continueOnCapturedContext)
+            {
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TNew>
+            {
+                public IAwaiter<TNew> GetAwaiter()
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public Realizable<TResult> ContinueWith<TResult>(
                 Func<TNew, TResult> sourceContinuation, 
                 Func<Exception, TResult> exceptionContinuation, 
@@ -202,23 +214,21 @@ namespace System.Threading.Tasks
 
         public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
         {
-            return new ConfiguredAwaitable(this.task, continueOnCapturedContext);
+            return new ConfiguredAwaitable(this.task.ConfigureAwait(continueOnCapturedContext));
         }
 
         private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
         {
-            private readonly Task<T> task;
-            private readonly bool continueOnCapturedContext;
+            private readonly ConfiguredTaskAwaitable<T> task;
 
-            public ConfiguredAwaitable(Task<T> task, bool continueOnCapturedContext)
+            public ConfiguredAwaitable(ConfiguredTaskAwaitable<T> task)
             {
                 this.task = task;
-                this.continueOnCapturedContext = continueOnCapturedContext;
             }
 
             public IAwaiter<T> GetAwaiter()
             {
-                return new ConfiguredAwaiter(this.task.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
+                return new ConfiguredAwaiter(this.task.GetAwaiter());
             }
         }
 
