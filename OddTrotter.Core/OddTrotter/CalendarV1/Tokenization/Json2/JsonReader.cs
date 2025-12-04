@@ -545,6 +545,7 @@
         public static ObjectStartToken Instance { get; } = new ObjectStartToken();
     }
 
+    //// TODO you got this wrong, there might not be any members
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
         private readonly PeekableStream stream;
@@ -752,7 +753,27 @@
         public static ObjectEndToken Instance { get; } = new ObjectEndToken();
     }
 
-    public sealed class ArrayReader<TNextReader>
+    //// TODO you got this wrong, there might not be any array elements
+    public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>>
+    {
+        public ITask<ArrayStartReader<WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>> Move()
+        {
+        }
+    }
+
+    public sealed class ArrayStartReader<TNextReader>
+    {
+    }
+
+    public sealed class ArrayElementReader<TNextReader>
+    {
+    }
+
+    public sealed class SubsequentArrayElementReader<TNextReader>
+    {
+    }
+
+    public sealed class ArrayEndReader<TNextReader>
     {
     }
 
