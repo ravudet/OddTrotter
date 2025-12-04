@@ -1,6 +1,7 @@
 ﻿namespace Fx.Realizable
 {
     using System;
+    using System.Reflection.Metadata.Ecma335;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -28,6 +29,63 @@
             public FromExceptionTask(Exception exception)
             {
                 this.exception = exception;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly Exception exception;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(Exception exception, bool continueOnCapturedContext)
+                {
+                    this.exception = exception;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public IAwaiter<T> GetAwaiter()
+                { 
+                    //// TODO may the task should be instantiated in the constructor of `fromexceptiontask` so that the "logic" can be shared between a configured awaitable and a non-configured one
+                    return new ConfiguredAwaiter(Task.FromException(this.exception).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
+                }
+
+                private sealed class ConfiguredAwaiter : IAwaiter<T>
+                {
+                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter;
+
+                    public ConfiguredAwaiter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter taskAwaiter)
+                    {
+                        this.taskAwaiter = taskAwaiter;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return taskAwaiter.IsCompleted;
+                        }
+                    }
+
+                    public T GetResult()
+                    {
+                        this.taskAwaiter.GetResult();
+                        return default!; //// TODO not great, but this is what .NET does...
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        taskAwaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        taskAwaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
             }
 
             public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct

@@ -202,7 +202,7 @@ namespace System.Threading.Tasks
 
         public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
         {
-            throw new NotImplementedException();
+            return new ConfiguredAwaitable(this.task, continueOnCapturedContext);
         }
 
         private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
@@ -218,18 +218,50 @@ namespace System.Threading.Tasks
 
             public IAwaiter<T> GetAwaiter()
             {
+                return new ConfiguredAwaiter(this.task.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
             }
         }
 
         private sealed class Awaiter : IAwaiter<T>
         {
             private readonly TaskAwaiter<T> taskAwaiter;
-            private readonly bool? continueOnCapturedContext;
 
-            public Awaiter(TaskAwaiter<T> taskAwaiter, bool? continueOnCapturedContext)
+            public Awaiter(TaskAwaiter<T> taskAwaiter)
             {
                 this.taskAwaiter = taskAwaiter;
-                this.continueOnCapturedContext = continueOnCapturedContext; //// TODO write the code to leverage this
+            }
+
+            public bool IsCompleted
+            {
+                get
+                {
+                    return taskAwaiter.IsCompleted;
+                }
+            }
+
+            public T GetResult()
+            {
+                return taskAwaiter.GetResult();
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                taskAwaiter.OnCompleted(continuation);
+            }
+
+            public void UnsafeOnCompleted(Action continuation)
+            {
+                taskAwaiter.UnsafeOnCompleted(continuation);
+            }
+        }
+
+        private sealed class ConfiguredAwaiter : IAwaiter<T>
+        {
+            private readonly ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter taskAwaiter;
+
+            public ConfiguredAwaiter(ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter taskAwaiter)
+            {
+                this.taskAwaiter = taskAwaiter;
             }
 
             public bool IsCompleted

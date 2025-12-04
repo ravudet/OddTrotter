@@ -41,15 +41,26 @@ namespace Fx.Realizable
             //// TODO you are here
 
             //// TODO actually use `continueoncapturedcontext`
-            
+
             //// TODO make sure you have a `configureawait` on all of your awaitables
+
+            ITask<T> task;
             if (realizable.TypeHolder.Decompose(out var left, out var right))
             {
-                return new TaskWrapper<T>(Task.FromResult(left)).GetAwaiter();
+                task = new TaskWrapper<T>(Task.FromResult(left));
             }
             else
             {
-                return right.GetAwaiter();
+                task = right;
+            }
+
+            if (continueOnCapturedContext != null)
+            {
+                return task.ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter();
+            }
+            else
+            {
+                return task.GetAwaiter();
             }
         }
 
