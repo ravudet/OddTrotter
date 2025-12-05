@@ -22,7 +22,7 @@ namespace System.Threading.Tasks
         {
             return new Realizable<TResult>(
                 new Continuation<T, TResult>(
-                    new TaskData(task),
+                    new TaskData(task, null),
                     sourceContinuation,
                     exceptionContinuation,
                     canceledContinuation));
@@ -36,15 +36,19 @@ namespace System.Threading.Tasks
             Exception? Exception { get; }
 
             bool IsCanceled { get; }
+
+            ITaskData<TData> ConfigureAwait(bool continueOnCapturedContext);
         }
 
         private sealed class TaskData : ITaskData<T>
         {
             private readonly Task<T> task;
+            private readonly bool? continueOnCapturedContext;
 
-            public TaskData(Task<T> task)
+            public TaskData(Task<T> task, bool? continueOnCapturedContext)
             {
                 this.task = task;
+                this.continueOnCapturedContext = continueOnCapturedContext;
             }
 
             public Exception? Exception
@@ -63,9 +67,21 @@ namespace System.Threading.Tasks
                 }
             }
 
+            public ITaskData<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new TaskData(this.task, continueOnCapturedContext);
+            }
+
             public IAwaiter<T> GetAwaiter()
             {
-                return new TaskWrapper<T>.Awaiter(task.GetAwaiter());
+                if (this.continueOnCapturedContext == null)
+                {
+                    return new TaskWrapper<T>.Awaiter(task.GetAwaiter());
+                }
+                else
+                {
+                    return new TaskWrapper<T>.ConfiguredAwaiter(task.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter());
+                }
             }
         }
 
@@ -108,13 +124,26 @@ namespace System.Threading.Tasks
 
             public IConfiguredAwaitable<TNew> ConfigureAwait(bool continueOnCapturedContext)
             {
+                return new ConfiguredAwaitable(
+                    new Continuation<TOld, TNew>.Awaiter(
+                        this.task.ConfigureAwait(continueOnCapturedContext),
+                        this.sourceContinuation,
+                        this.exceptionContinuation,
+                        this.canceledContinuation));
             }
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TNew>
             {
+                private readonly Continuation<TOld, TNew>.Awaiter awaiter;
+
+                public ConfiguredAwaitable(Continuation<TOld, TNew>.Awaiter awaiter)
+                {
+                    this.awaiter = awaiter;
+                }
+
                 public IAwaiter<TNew> GetAwaiter()
                 {
-                    throw new NotImplementedException();
+                    return this.awaiter;
                 }
             }
 
@@ -135,6 +164,15 @@ namespace System.Threading.Tasks
             {
                 return new Awaiter(
                     task,
+                    this.sourceContinuation,
+                    this.exceptionContinuation,
+                    this.canceledContinuation);
+            }
+
+            ITaskData<TNew> ITaskData<TNew>.ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new Continuation<TOld, TNew>(
+                    this.task.ConfigureAwait(continueOnCapturedContext),
                     this.sourceContinuation,
                     this.exceptionContinuation,
                     this.canceledContinuation);

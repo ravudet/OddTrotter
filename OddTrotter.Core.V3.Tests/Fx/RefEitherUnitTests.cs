@@ -249,6 +249,29 @@
                 this.operation = operation;
             }
 
+            public IConfiguredAwaitable<TValue> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(
+                    new RefTask<TContext, TValue>.Awaiter(
+                        this.task.ConfigureAwait(continueOnCapturedContext).GetAwaiter(),
+                        this.operation));
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TValue>
+            {
+                private readonly Awaiter awaiter;
+
+                public ConfiguredAwaitable(RefTask<TContext, TValue>.Awaiter awaiter)
+                {
+                    this.awaiter = awaiter;
+                }
+
+                public IAwaiter<TValue> GetAwaiter()
+                {
+                    return this.awaiter;
+                }
+            }
+
             public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
             {
                 var self = this;
