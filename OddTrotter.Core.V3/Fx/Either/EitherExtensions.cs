@@ -95,7 +95,7 @@ namespace Fx.Either
             }
             else
             {
-                return task.GetAwaiter().GetResult();
+                return task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 
@@ -193,7 +193,7 @@ namespace Fx.Either
             }
             else
             {
-                return task.GetAwaiter().GetResult();
+                return task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 

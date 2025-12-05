@@ -76,23 +76,6 @@ namespace Fx.Either
             }
         }
 
-        private readonly BetterNullable<TLeft> left;
-        private readonly BetterNullable<TRight> right;
-
-        public Either(TLeft left)
-        {
-            this.left = new BetterNullable<TLeft>(left);
-
-            right = default;
-        }
-
-        public Either(TRight right)
-        {
-            this.right = new BetterNullable<TRight>(right);
-
-            left = default;
-        }
-
         public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
