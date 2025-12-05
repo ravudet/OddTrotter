@@ -40,9 +40,8 @@ namespace Fx.Realizable
         {
             //// TODO you are here
 
-            //// TODO actually use `continueoncapturedcontext`
-
-            //// TODO make sure you have a `configureawait` on all of your awaitables
+            
+            //// TODO make sure you call  `configureawait` on all of your awaitables
 
             ITask<T> task;
             if (realizable.TypeHolder.Decompose(out var left, out var right))
