@@ -38,11 +38,6 @@ namespace Fx.Realizable
 
         private static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable, bool? continueOnCapturedContext)
         {
-            //// TODO you are here
-
-            
-            //// TODO make sure you call  `configureawait` on all of your awaitables
-
             ITask<T> task;
             if (realizable.TypeHolder.Decompose(out var left, out var right))
             {
