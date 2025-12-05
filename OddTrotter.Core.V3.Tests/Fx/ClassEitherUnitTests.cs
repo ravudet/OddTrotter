@@ -94,17 +94,19 @@
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
         {
             bool context = false;
-            return await either.Apply<string, bool, TaskWrapper<string>>(
-                (int value, ref bool context) => ToString(value),
-                (Exception exception, ref bool context) => ToString(exception),
-                ref context);
+            return await either
+                .Apply<string, bool, TaskWrapper<string>>(
+                    (int value, ref bool context) => ToString(value),
+                    (Exception exception, ref bool context) => ToString(exception),
+                    ref context)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
             var either = new Either<string, Exception>.Left("42");
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual("42", result);
         }
@@ -113,7 +115,7 @@
         public async Task TestMethod2Dot2()
         {
             var either = new Either<string, Exception>.Left("not a number");
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.IsTrue(result.Contains("FormatException"));
         }
@@ -123,7 +125,7 @@
         {
             var exception = new Exception("the message");
             var either = new Either<string, Exception>.Right(exception);
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual(exception.ToString(), result);
         }
