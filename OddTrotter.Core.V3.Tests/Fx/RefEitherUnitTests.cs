@@ -97,7 +97,7 @@
         public async Task TestMethod2Dot1()
         {
             var either = new RefEither<string, Exception>("42");
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual("42", result);
         }
@@ -106,7 +106,7 @@
         public async Task TestMethod2Dot2()
         {
             var either = new RefEither<string, Exception>("not a number");
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.IsTrue(result.Contains("FormatException"));
         }
@@ -116,7 +116,7 @@
         {
             var exception = new Exception("the message");
             var either = new RefEither<string, Exception>(exception);
-            var result = await TestMethod2Impl(either);
+            var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.AreEqual(exception.ToString(), result);
         }
@@ -220,7 +220,7 @@
         public async Task AsyncRefLeft()
         {
             var value = "42";
-            var either = await AsyncRefWork(value);
+            var either = await AsyncRefWork(value).ConfigureAwait(false);
 
             Assert.IsTrue(either.TypeHolder.Decompose(out var result, out _));
             Assert.AreEqual(42, result.Value);
@@ -326,7 +326,7 @@
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
             await WriteToFile(filePath, "42").ConfigureAwait(false);
 
-            var potentiallyParsed = await ParseFromFile(filePath);
+            var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
             Assert.IsTrue(potentiallyParsed.TypeHolder.Decompose(out var result, out _));
             Assert.AreEqual(42, result);
         }
