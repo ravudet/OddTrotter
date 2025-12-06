@@ -210,10 +210,6 @@ namespace System.Threading.Tasks
 
                 public TNew GetResult()
                 {
-                    //// TODO you are here
-
-                    //// TODO in the `continuewith` methods of `realizable{T}` and `realizable.fromexceptiontask{T}`, you had to do some exception handling logic; do you need anything like that in this type?
-                    
                     if (this.task.Exception != null)
                     {
                         var exception = this.task.Exception;
@@ -230,6 +226,10 @@ namespace System.Threading.Tasks
                     }
                     else
                     {
+
+                        //// TODO you are here
+
+
                         //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
                         return this.sourceContinuation(this.taskAwaiter.GetResult());
                     }

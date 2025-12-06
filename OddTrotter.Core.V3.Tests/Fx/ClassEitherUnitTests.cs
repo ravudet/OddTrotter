@@ -25,6 +25,53 @@
         public required TestContext TestContext { get; set; }
 
         [TestMethod]
+        public async Task TaskWrapperContinueWithSourceContinuationThrows()
+        {
+            var exception = new Exception("blah");
+
+            var continued = Parse("42").ContinueWith(
+                either => throw exception,
+                _ => "hello",
+                _ => "hello");
+
+            try
+            {
+                await continued.ConfigureAwait(false);
+            }
+            catch (Exception thrownException)
+            {
+                Assert.AreEqual(exception.Message, thrownException.Message);
+            }
+
+            //// TODO figure out how to write this
+            ////var thrownException = Assert.ThrowsExceptionAsync<Exception>(async () => await continued.ConfigureAwait(false));
+        }
+
+        [TestMethod]
+        public async Task TaskWrapperContinueWithExceptionContinuationThrows()
+        {
+            var exception = new Exception("blah");
+
+            var taskWrapper = new TaskWrapper<string>(Task.FromException<string>(new Exception()));
+            var continued = taskWrapper.ContinueWith(
+                _ => "hello",
+                _ => throw exception,
+                _ => "hello");
+
+            try
+            {
+                await continued.ConfigureAwait(false);
+            }
+            catch (Exception thrownException)
+            {
+                Assert.AreEqual(exception.Message, thrownException.Message);
+            }
+
+            //// TODO figure out how to write this
+            ////var thrownException = Assert.ThrowsExceptionAsync<Exception>(async () => await continued.ConfigureAwait(false));
+        }
+
+        [TestMethod]
         public void ApplyRightMapException()
         {
             var either = new Either<Exception, string>.Right("asdf");
