@@ -204,6 +204,11 @@ namespace System.Threading.Tasks
                 {
                     get
                     {
+                        if (!taskAwaiter.IsCompleted)
+                        {
+                            return false;
+                        }
+
                         return taskAwaiter.IsCompleted;
                     }
                 }
