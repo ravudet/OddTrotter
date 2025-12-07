@@ -226,10 +226,6 @@ namespace System.Threading.Tasks
                     }
                     else
                     {
-
-                        //// TODO you are here
-
-
                         //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all?
                         return this.sourceContinuation(this.taskAwaiter.GetResult());
                     }
