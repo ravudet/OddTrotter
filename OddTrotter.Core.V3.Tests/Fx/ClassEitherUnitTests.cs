@@ -34,17 +34,9 @@
                 _ => "hello",
                 _ => "hello");
 
-            try
-            {
-                await continued.ConfigureAwait(false);
-            }
-            catch (Exception thrownException)
-            {
-                Assert.AreEqual(exception.Message, thrownException.Message);
-            }
-
             //// TODO figure out how to write this
-            ////var thrownException = Assert.ThrowsExceptionAsync<Exception>(async () => await continued.ConfigureAwait(false));
+            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
+            Assert.AreEqual(exception, thrownException);
         }
 
         [TestMethod]
