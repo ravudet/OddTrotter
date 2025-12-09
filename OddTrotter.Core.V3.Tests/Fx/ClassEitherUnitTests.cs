@@ -35,7 +35,7 @@
                 _ => "hello");
 
             //// TODO figure out how to write this
-            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
+            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>(state => { }).ConfigureAwait(false);
             Assert.AreEqual(exception, thrownException);
         }
 

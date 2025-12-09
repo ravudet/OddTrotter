@@ -1,6 +1,7 @@
 ﻿namespace Fx
 {
     using System;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using Fx.Realizable;
@@ -59,30 +60,50 @@
                 this.awaitable = awaitable;
             }
 
-            public async Task<TException> Commit<TException>()
+            public Task<TException> Commit<TException>()
                 where TException : Exception
             {
-                return await Commit<TException>(state => { }).ConfigureAwait(false);
+                return this.Commit<TException>(state => { });
             }
 
-            public async Task<TException> Commit<TException>(Action<TState> action)
+            public Task<TException> Commit<TException>(Action<TState> action)
                 where TException : Exception
             {
+                /*var assert = this.assert;
                 try
                 {
                     var state = await this.awaitable.ConfigureAwait(false);
                     action(state);
-                    return this.assert.ThrowsException<TException>(() => { });
+                    return assert.ThrowsException<TException>(() => { });
                 }
                 catch (Exception exception)
                 {
-                    return this.assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
+                    return assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
+                }*/
+
+                return CommitImpl<TException>(this.assert, this.awaitable.GetAwaiter(), action);
+            }
+
+            private static async Task<TException> CommitImpl<TException>(Assert assert, IAwaiter<TState> awaitable, Action<TState> action)
+                where TException : Exception
+            {
+                try
+                {
+                    var state = await awaitable;
+                    action(state);
+                    return assert.ThrowsException<TException>(() => { });
+                }
+                catch (Exception exception)
+                {
+                    return assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
                 }
             }
 
-            public async Task<TException> CommitAsync<TException>(Func<TState, Task> action)
+            /*public async Task<TException> CommitAsync<TException>(Func<TState, Task> action)
                 where TException : Exception
             {
+                //// TODO implement this
+
                 try
                 {
                     var state = await this.awaitable.ConfigureAwait(false);
@@ -93,12 +114,20 @@
                 {
                     return this.assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
                 }
-            }
+            }*/
         }
 
         public static ThrowsExceptionAsyncBuilder<TState> ThrowsExceptionAsync<TState>(this Assert assert, Realizable<TState> state)
         {
             return new ThrowsExceptionAsyncBuilder<TState>(assert, state);
+        }
+    }
+
+    public static class SomeExtensions //// TODO separate this into a file
+    {
+        public static IAwaiter<T> GetAwaiter<T>(this IAwaiter<T> awaiter)
+        {
+            return awaiter;
         }
     }
 }
