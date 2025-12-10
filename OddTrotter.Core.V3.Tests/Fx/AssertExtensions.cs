@@ -69,18 +69,6 @@
             public Task<TException> Commit<TException>(Action<TState> action)
                 where TException : Exception
             {
-                /*var assert = this.assert;
-                try
-                {
-                    var state = await this.awaitable.ConfigureAwait(false);
-                    action(state);
-                    return assert.ThrowsException<TException>(() => { });
-                }
-                catch (Exception exception)
-                {
-                    return assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
-                }*/
-
                 return CommitImpl<TException>(this.assert, this.awaitable.GetAwaiter(), action);
             }
 
