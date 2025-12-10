@@ -110,12 +110,4 @@
             return new ThrowsExceptionAsyncBuilder<TState>(assert, state);
         }
     }
-
-    public static class SomeExtensions //// TODO separate this into a file
-    {
-        public static IAwaiter<T> GetAwaiter<T>(this IAwaiter<T> awaiter)
-        {
-            return awaiter;
-        }
-    }
 }
