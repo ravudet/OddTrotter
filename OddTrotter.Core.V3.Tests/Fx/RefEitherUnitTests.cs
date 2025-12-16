@@ -125,6 +125,8 @@
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
+            TypeHolder2(parsed.TypeHolder);
+
             //// TODO use `typeholder` here (or some other way to address the type inference issue)
             return parsed.Apply<RefEither<IEither<int, Exception>, Exception>, IEither<int, Exception>, Exception, string>(
                 actualParsing => actualParsing.Apply(
@@ -133,6 +135,13 @@
                 readError => readError.ToString()!);
         }
 
+
+
+        public static TypeHolder<Realizable<TEither>, TEither, TLeft, TRight> TypeHolder2<TEither, TLeft, TRight>(TypeHolder<Realizable<TEither>, TEither, ITask<TEither>> realizable)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+        {
+            return new TypeHolder<Realizable<TEither>, TEither, TLeft, TRight>(realizable.Self);
+        }
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
         {
