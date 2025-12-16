@@ -55,8 +55,6 @@
         [TestMethod]
         public void SelectLeftMapException()
         {
-            //// TODO use `Assert.That` everywhere
-
             var either = new RefEither<string, Exception>("asdf");
             var leftMapException = Assert.That.ThrowsException(either).Commit<LeftMapException>(
                 either => either.TypeHolder.Select(
