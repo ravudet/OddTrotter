@@ -10,6 +10,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using OddTrotter.CalendarV1.Tokenization.Json2;
+
     [TestClass]
     public sealed class ReaderUnitTests
     {
@@ -64,6 +66,14 @@
         private static async Task ReadToEnd<TNextReader>(Json2.ValueReader<TNextReader> valueReader)
         {
             var valueToken = await valueReader.Move();
+            if (valueToken is ValueToken<TNextReader>.Array array)
+            {
+
+            }
+            else
+            {
+                throw new Exception("TODO you should have an `apply` method or something on `valuetoken<T>`");
+            }
         }
 
         [TestMethod]
