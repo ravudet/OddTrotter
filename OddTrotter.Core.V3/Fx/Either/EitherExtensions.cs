@@ -167,6 +167,23 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
+            return realizable.FromTypeHolder().Apply(leftMap, rightMap);
+        }
+
+        private static Realizable<TEither> FromTypeHolder<TEither, TLeft, TRight>(
+            this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return realizable
+                .TypeHolder
+                .Apply(
+                    realized => new Realizable<TEither>(realized.Self),
+                    future => future.ContinueWith(
+                        either => either.Self,
+                        exception => throw exception,
+                        canceled => throw canceled));
         }
 
         public static Realizable<TResult> Apply<TEither, TLeft, TRight, TResult>(
