@@ -250,10 +250,10 @@
         private sealed class RefTask<TContext, TValue> : ITask<TValue>
             where TValue : allows ref struct
         {
-            private readonly TaskWrapper<TContext> task;
+            private readonly ITask<TContext> task;
             private readonly Func<TContext, TValue> operation;
 
-            public RefTask(TaskWrapper<TContext> task, Func<TContext, TValue> operation)
+            public RefTask(ITask<TContext> task, Func<TContext, TValue> operation)
             {
                 //// TODO can this be `icontinuable` or `iawaitable` or something?
                 this.task = task;
