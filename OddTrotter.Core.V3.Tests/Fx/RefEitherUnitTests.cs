@@ -85,10 +85,9 @@
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
-            return either.Apply<string, bool, Realizable<string>>(
-                (int value, ref bool context) => ToString(value),
-                (Exception exception, ref bool context) => ToString(exception),
-                ref Context);
+            return either.TypeHolder.Apply(
+                (int value) => ToString(value),
+                (Exception exception) => ToString(exception));
         }
 
         [TestMethod]
@@ -191,8 +190,6 @@
         {
             return await Task.FromResult(exception.ToString()).ConfigureAwait(false);
         }
-
-        private static bool Context = false; //// TODO any test code that leverages this (or the one in the other test class) should actually leverage some "production" extension instead
 
         [TestMethod]
         public void RefLeft()
