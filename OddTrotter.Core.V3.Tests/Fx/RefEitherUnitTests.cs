@@ -255,7 +255,6 @@
 
             public RefTask(ITask<TContext> task, Func<TContext, TValue> operation)
             {
-                //// TODO can this be `icontinuable` or `iawaitable` or something?
                 this.task = task;
                 this.operation = operation;
             }
