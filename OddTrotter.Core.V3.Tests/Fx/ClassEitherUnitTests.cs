@@ -35,7 +35,7 @@
                 _ => "hello");
 
             var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>(state => { }).ConfigureAwait(false);
-            Assert.AreEqual(exception, thrownException);
+            Assert.That.AreEqual(exception, thrownException);
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@
                 _ => "hello");
 
             var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>(state => { }).ConfigureAwait(false);
-            Assert.AreEqual(exception, thrownException);
+            Assert.That.AreEqual(exception, thrownException);
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@
                     left => left.ToString().Length,
                     right => int.Parse(right)));
 
-            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@
                     left => int.Parse(left),
                     right => right.ToString().Length));
 
-            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@
                     left => left,
                     right => int.Parse(right)));
 
-            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -98,7 +98,7 @@
                     left => int.Parse(left),
                     right => right));
 
-            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@
             var either = new Either<int, Exception>.Left(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual("42", result);
+            Assert.That.AreEqual("42", result);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@
             var either = new Either<int, Exception>.Right(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual(exception.ToString(), result);
+            Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
@@ -137,7 +137,7 @@
             var either = new Either<string, Exception>.Left("42");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual("42", result);
+            Assert.That.AreEqual("42", result);
         }
 
         [TestMethod]
@@ -146,7 +146,7 @@
             var either = new Either<string, Exception>.Left("not a number");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.IsTrue(result.Contains("FormatException"));
+            Assert.That.IsTrue(result.Contains("FormatException"));
         }
 
         [TestMethod]
@@ -156,7 +156,7 @@
             var either = new Either<string, Exception>.Right(exception);
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual(exception.ToString(), result);
+            Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
@@ -222,8 +222,8 @@
             await WriteToFile(filePath, "42").ConfigureAwait(false);
 
             var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
-            Assert.IsTrue(potentiallyParsed.Decompose(out var result, out _));
-            Assert.AreEqual(42, result);
+            Assert.That.IsTrue(potentiallyParsed.Decompose(out var result, out _));
+            Assert.That.AreEqual(42, result);
         }
 
         private static async Task<IEither<int, Exception>> ParseFromFile(string filePath)
