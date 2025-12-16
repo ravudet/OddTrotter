@@ -1261,7 +1261,11 @@
                         stream,
                         buffer,
                         validBytes,
-                        (stream, buffer, validBytes) => new DigitsReader<TNextReader>()
+                        (stream, buffer, validBytes) => new DigitsReader<TNextReader>(
+                            stream,
+                            buffer,
+                            validBytes,
+                            this.nextReaderFactory))))
                 .ConfigureAwait(false);
         }
     }
@@ -1397,8 +1401,65 @@
         }
     }
 
-    public sealed class DigitsReader<TNextReader> //// TODO reuse digits reader
+    public sealed class DigitsReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
+        //// TODO reuse digits reader
     {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public DigitsReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<IEnumerable<DigitToken>> GetValue()
+        {
+            return await this.GetValueImpl().ToTask().ConfigureAwait(false);
+        }
+
+        private async IAsyncEnumerable<DigitToken> GetValueImpl()
+        {
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            while (true)
+            {
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(peeked.Value);
+                }
+                catch (Exception) //// TODO use correct exception type
+                {
+                    yield break;
+                }
+
+                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+                if (peeked == null)
+                {
+                    yield break;
+                }
+            }
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
     }
 
     public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
