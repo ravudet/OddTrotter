@@ -25,7 +25,7 @@
                     left => left.ToString().Length,
                     right => int.Parse(right)));
 
-            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@
                     left => int.Parse(left),
                     right => right.ToString().Length));
 
-            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@
                     left => left,
                     right => int.Parse(right)));
 
-            Assert.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -63,7 +63,7 @@
                     left => int.Parse(left),
                     right => right));
 
-            Assert.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
+            Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@
             var either = new RefEither<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual("42", result);
+            Assert.That.AreEqual("42", result);
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@
             var either = new RefEither<int, Exception>(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual(exception.ToString(), result);
+            Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
@@ -99,7 +99,7 @@
             var either = new RefEither<string, Exception>("42");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual("42", result);
+            Assert.That.AreEqual("42", result);
         }
 
         [TestMethod]
@@ -108,7 +108,7 @@
             var either = new RefEither<string, Exception>("not a number");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.IsTrue(result.Contains("FormatException"));
+            Assert.That.IsTrue(result.Contains("FormatException"));
         }
 
         [TestMethod]
@@ -118,7 +118,7 @@
             var either = new RefEither<string, Exception>(exception);
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
-            Assert.AreEqual(exception.ToString(), result);
+            Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
@@ -190,7 +190,7 @@
                 left => left.Value,
                 right => right.ToString().Length);
 
-            Assert.AreEqual(value, result);
+            Assert.That.AreEqual(value, result);
         }
 
         private readonly ref struct SomeRef
@@ -213,7 +213,7 @@
                 left => left.ToString().Length,
                 right => right.Value);
 
-            Assert.AreEqual(value, result);
+            Assert.That.AreEqual(value, result);
         }
 
         [TestMethod]
@@ -222,8 +222,8 @@
             var value = "42";
             var either = await AsyncRefWork(value).ConfigureAwait(false);
 
-            Assert.IsTrue(either.TypeHolder.Decompose(out var result, out _));
-            Assert.AreEqual(42, result.Value);
+            Assert.That.IsTrue(either.TypeHolder.Decompose(out var result, out _));
+            Assert.That.AreEqual(42, result.Value);
         }
 
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
@@ -327,8 +327,8 @@
             await WriteToFile(filePath, "42").ConfigureAwait(false);
 
             var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
-            Assert.IsTrue(potentiallyParsed.TypeHolder.Decompose(out var result, out _));
-            Assert.AreEqual(42, result);
+            Assert.That.IsTrue(potentiallyParsed.TypeHolder.Decompose(out var result, out _));
+            Assert.That.AreEqual(42, result);
         }
 
         private static RefTask<string, RefEither<int, Exception>> ParseFromFile(string filePath)

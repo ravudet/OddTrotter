@@ -1,6 +1,7 @@
 ﻿namespace Fx
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -10,6 +11,21 @@
 
     public static class AssertExtensions
     {
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition)
+        {
+            Assert.IsTrue(condition);
+        }
+
+        public static void AreEqual<T>(this Assert assert, T expected, T actual)
+        {
+            Assert.AreEqual(expected, actual);
+        }
+
+        public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
+        {
+            Assert.IsInstanceOfType(value, expectedType);
+        }
+
         public static T ThrowsException<T>(this Assert assert, Action action)
             where T : Exception
         {
