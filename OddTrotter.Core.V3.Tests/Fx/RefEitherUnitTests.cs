@@ -125,13 +125,13 @@
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
-            return TypeHolder2(parsed).Apply4(
+            return 
+                TypeHolder2(parsed)
+                .Apply(
                 actualParsing => actualParsing.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
                     parseError => parseError.ToString())!,
                 readError => readError.ToString()!);
-            
-            //// TODO use `typeholder` here (or some other way to address the type inference issue)
         }
 
         public static Realizable<TResult> Select<TSource, TResult>(Realizable<TSource> realizable, Func<TSource, TResult> selector)

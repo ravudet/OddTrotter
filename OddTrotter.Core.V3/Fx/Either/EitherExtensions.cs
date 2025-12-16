@@ -158,7 +158,7 @@ namespace Fx.Either
             return either.Self.Apply(leftMap, rightMap);
         }
 
-        public static Realizable<TResult> Apply4<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> Apply<TEither, TLeft, TRight, TResult>(
             this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
