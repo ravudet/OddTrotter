@@ -125,8 +125,12 @@
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
-            TypeHolder2(parsed.TypeHolder);
-
+            return TypeHolder2(parsed).Apply4(
+                actualParsing => actualParsing.Apply(
+                    actuallyParsed => actuallyParsed.ToString(),
+                    parseError => parseError.ToString())!,
+                readError => readError.ToString()!);
+            
             //// TODO use `typeholder` here (or some other way to address the type inference issue)
             return parsed.Apply<RefEither<IEither<int, Exception>, Exception>, IEither<int, Exception>, Exception, string>(
                 actualParsing => actualParsing.Apply(
@@ -135,12 +139,20 @@
                 readError => readError.ToString()!);
         }
 
-
-
-        public static TypeHolder<Realizable<TEither>, TEither, TLeft, TRight> TypeHolder2<TEither, TLeft, TRight>(TypeHolder<Realizable<TEither>, TEither, ITask<TEither>> realizable)
-            where TEither : IEither<TLeft, TRight>, allows ref struct
+        public static Realizable<TResult> Select<TSource, TResult>(Realizable<TSource> realizable, Func<TSource, TResult> selector)
+            where TSource : allows ref struct
+            where TResult : allows ref struct
         {
-            return new TypeHolder<Realizable<TEither>, TEither, TLeft, TRight>(realizable.Self);
+            return realizable.TypeHolder.Apply(
+                realized => new Realizable<TResult>(selector(realized)),
+                future => future.ContinueWith(selector, _ => throw _, _ => throw _));
+        }
+
+        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> TypeHolder2<TLeft, TRight>(Realizable<RefEither<TLeft, TRight>> realizable)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return Select(realizable, either => either.TypeHolder);
         }
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)

@@ -159,7 +159,7 @@ namespace Fx.Either
         }
 
         public static Realizable<TResult> Apply4<TEither, TLeft, TRight, TResult>(
-            this TypeHolder<Realizable<TEither>, TLeft, TRight> realizable,
+            this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
             where TEither : IEither<TLeft, TRight>, allows ref struct
