@@ -994,7 +994,11 @@
                             stream,
                             buffer,
                             validBytes,
-                            (stream, buffer, validBytes) => new ExpReader<TNextReader>()))
+                            (stream, buffer, validBytes) => new ExpReader<TNextReader>(
+                                stream,
+                                buffer,
+                                validBytes,
+                                this.nextReaderFactory)))))
                 .ConfigureAwait(false);
         }
     }
@@ -1227,7 +1231,7 @@
         }
     }
 
-    public sealed class ExpReader<TNextReader>
+    public sealed class ExpReader<TNextReader> : IReader<EReader<ExpSignReader<DigitsReader<TNextReader>>>>
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
@@ -1246,6 +1250,155 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
+        public async ITask<EReader<ExpSignReader<DigitsReader<TNextReader>>>> Move()
+        {
+            return await Task.FromResult(
+                new EReader<ExpSignReader<DigitsReader<TNextReader>>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (stream, buffer, validBytes) => new ExpSignReader<DigitsReader<TNextReader>>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        (stream, buffer, validBytes) => new DigitsReader<TNextReader>()
+                .ConfigureAwait(false);
+        }
+    }
+
+    public sealed class EReader<TNextReader> : IReader<EToken, TNextReader>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public EReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<EToken> GetValue()
+        {
+            var read = await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+            if (read == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            return new EToken(this.buffer[0]);
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
+    }
+
+    public sealed class EToken
+    {
+        public EToken(byte e)
+        {
+            if (e != 'e' && e != 'E')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            E = e;
+        }
+
+        public byte E { get; }
+    }
+
+    public sealed class ExpSignReader<TNextReader> : IReader<ExpSignToken, TNextReader>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public ExpSignReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<ExpSignToken> GetValue()
+        {
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == '+')
+            {
+                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                return ExpSignToken.Positive.Instance;
+            }
+            else if (peeked == '-')
+            {
+                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                return ExpSignToken.Negative.Instance;
+            }
+            else
+            {
+                return ExpSignToken.Absent.Instance;
+            }
+        }
+
+        public async ITask<TNextReader> Move()
+        {
+            await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+        }
+    }
+
+    public abstract class ExpSignToken
+    {
+        private ExpSignToken()
+        {
+        }
+
+        public sealed class Absent : ExpSignToken
+        {
+            private Absent()
+            {
+            }
+
+            public static Absent Instance { get; } = new Absent();
+        }
+
+        public sealed class Positive : ExpSignToken
+        {
+            private Positive()
+            {
+            }
+
+            public static Positive Instance { get; } = new Positive();
+        }
+
+        public sealed class Negative : ExpSignToken
+        {
+            private Negative()
+            {
+            }
+
+            public static Negative Instance { get; } = new Negative();
+        }
+    }
+
+    public sealed class DigitsReader<TNextReader> //// TODO reuse digits reader
+    {
     }
 
     public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
