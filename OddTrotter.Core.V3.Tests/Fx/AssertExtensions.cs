@@ -125,5 +125,9 @@
         {
             return new ThrowsExceptionAsyncBuilder<TState>(assert, state);
         }
+
+        public static async Task<T> ThrowsExceptionAsync<T>(Func<Task> action) where T : Exception
+        {
+        }
     }
 }

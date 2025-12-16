@@ -11,6 +11,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
+    //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable`
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO implement assert extensions so you can always use assert.that
@@ -33,6 +34,7 @@
                 _ => "hello",
                 _ => "hello");
 
+            await Assert.ThrowsExceptionAsync<Exception>(async () => await Task.FromResult(1));
             var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
             Assert.That.AreEqual(exception, thrownException);
         }
