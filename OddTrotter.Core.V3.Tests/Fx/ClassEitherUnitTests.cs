@@ -33,7 +33,7 @@
                 _ => "hello",
                 _ => "hello");
 
-            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>(state => { }).ConfigureAwait(false);
+            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
             Assert.That.AreEqual(exception, thrownException);
         }
 
@@ -48,7 +48,7 @@
                 _ => throw exception,
                 _ => "hello");
 
-            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>(state => { }).ConfigureAwait(false);
+            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
             Assert.That.AreEqual(exception, thrownException);
         }
 
