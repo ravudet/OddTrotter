@@ -11,7 +11,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
-    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference
+    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO implement assert extensions so you can always use assert.that
     //// TODO you need to implement "everything" (all of the extension variations and overloads; any renames that need to happen; implementing visitors and such; full code quality); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
