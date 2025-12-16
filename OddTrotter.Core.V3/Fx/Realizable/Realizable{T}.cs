@@ -28,6 +28,11 @@ namespace Fx.Realizable
             either = new RefEither<T, ITask<T>>(future);
         }
 
+        public TypeHolder<Realizable<T>, T> AsContinuable()
+        {
+            return new TypeHolder<Realizable<T>, T>(this);
+        }
+
         public TypeHolder<Realizable<T>, T, ITask<T>> TypeHolder
         {
             get

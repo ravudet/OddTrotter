@@ -126,8 +126,9 @@
             return new ThrowsExceptionAsyncBuilder<TState>(assert, state);
         }
 
-        public static async Task<T> ThrowsExceptionAsync<T>(Func<Task> action) where T : Exception
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) where T : Exception
         {
+            return await Assert.ThrowsExceptionAsync<T>(action).ConfigureAwait(false);
         }
     }
 }

@@ -34,7 +34,8 @@
                 _ => "hello",
                 _ => "hello");
 
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await Task.FromResult(1));
+            //// await Assert.ThrowsExceptionAsync<Exception>(async () => await Task.FromResult(1));
+            //// TODO you are here, seeing if you can like the ref struct api for throwsexceptionasync
             var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
             Assert.That.AreEqual(exception, thrownException);
         }
