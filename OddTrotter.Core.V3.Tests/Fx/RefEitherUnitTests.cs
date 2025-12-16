@@ -86,8 +86,8 @@
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
             return either.TypeHolder.Apply(
-                (int value) => ToString(value),
-                (Exception exception) => ToString(exception));
+                value => ToString(value),
+                exception => ToString(exception));
         }
 
         [TestMethod]

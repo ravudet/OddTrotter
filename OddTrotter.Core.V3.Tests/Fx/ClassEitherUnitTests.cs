@@ -123,12 +123,10 @@
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
         {
-            bool context = false;
             return await either
-                .Apply<string, bool, TaskWrapper<string>>(
-                    (int value, ref bool context) => ToString(value),
-                    (Exception exception, ref bool context) => ToString(exception),
-                    ref context)
+                .Apply(
+                    value => ToString(value),
+                    exception => ToString(exception))
                 .ConfigureAwait(false);
         }
 
