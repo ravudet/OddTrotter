@@ -231,7 +231,11 @@
                 case '8':
                 case '9':
                     return new ValueToken<TNextReader>.Number(
-                        new NumberReader<TNextReader>());
+                        new NumberReader<TNextReader>(
+                            this.stream,
+                            this.buffer,
+                            this.validBytes,
+                            this.nextReaderFactory));
                 case '"':
                     return new ValueToken<TNextReader>.String(
                         new StringReader<TNextReader>(
