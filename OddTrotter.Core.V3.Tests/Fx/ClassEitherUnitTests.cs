@@ -27,26 +27,19 @@
         [TestMethod]
         public async Task TaskWrapperContinueWithSourceContinuationThrows()
         {
-            var exceptionToThrow = new Exception("blah");
+            var exceptionToThrow = new InvalidOperationException("blah");
 
-            var continued = Parse("42")
-                .ContinueWith(either => either
-                    .Select(
-                        value => value > 40 ? throw exceptionToThrow : value,
-                        exception => exception));
-
-            /*var continued = Parse("42").ContinueWith(
+            var continued = Parse("42").ContinueWith(
                 either => throw exceptionToThrow,
                 _ => "hello",
-                _ => "hello");*/
+                _ => "hello");
 
             //// await Assert.ThrowsExceptionAsync<Exception>(async () => await Task.FromResult(1));
             //// TODO you are here, seeing if you can like the ref struct api for throwsexceptionasync
 
-            var leftMapException = await Assert.That.RefStructAwaitable(continued).Throws<LeftMapException>(_ => { }).ConfigureAwait(false);
+            var thrownException = await Assert.That.RefStructAwaitable(continued).Throws<InvalidOperationException>(_ => { }).ConfigureAwait(false);
             ////var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
 
-            var thrownException = leftMapException.InnerException;
             Assert.That.AreEqual(exceptionToThrow, thrownException);
         }
 
