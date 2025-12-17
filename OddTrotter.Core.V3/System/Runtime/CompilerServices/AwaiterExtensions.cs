@@ -5,6 +5,7 @@
     public static class AwaiterExtensions
     {
         public static IAwaiter<T> GetAwaiter<T>(this IAwaiter<T> awaiter)
+            where T : allows ref struct
         {
             return awaiter;
         }

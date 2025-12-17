@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -9,8 +10,129 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using static Fx.AssertExtensions;
+
     public static class AssertExtensions
     {
+        public readonly ref struct ContinuableAwaitable<TContinuable, TValue> : ITask<ContinuableAwaitable<TContinuable, TValue>.ConfiguredAwaitable, IAwaiter<TValue>, TValue>
+            where TContinuable : IContinuable<TValue>, allows ref struct
+        {
+            private readonly TContinuable continuable;
+
+            public ContinuableAwaitable(TContinuable continuable)
+            {
+                this.continuable = continuable;
+            }
+
+            public TypeHolder<ContinuableAwaitable<TContinuable, TValue>, ContinuableAwaitable<TContinuable, TValue>.ConfiguredAwaitable, IAwaiter<TValue>, TValue> AsAwaitable()
+            {
+                return new TypeHolder<ContinuableAwaitable<TContinuable, TValue>, ContinuableAwaitable<TContinuable, TValue>.ConfiguredAwaitable, IAwaiter<TValue>, TValue>(this);
+            }
+
+            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.continuable, continueOnCapturedContext);
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
+            {
+                return this.continuable.ContinueWith(sourceContinuation, exceptionContinuation, canceledContinuation);
+            }
+
+            public IAwaiter<TValue> GetAwaiter()
+            {
+                return this.continuable.ContinueWith(_ => _, _ => throw _, _ => throw _).GetAwaiter();
+            }
+
+            public readonly ref struct ConfiguredAwaitable : IConfiguredAwaitable<TValue>
+            {
+                private readonly TContinuable continuable;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(TContinuable continuable, bool continueOnCapturedContext)
+                {
+                    this.continuable = continuable;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public IAwaiter<TValue> GetAwaiter()
+                {
+                    return this.continuable.ContinueWith(_ => _, _ => throw _, _ => throw _).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                }
+            }
+        }
+
+        public readonly ref struct RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>
+            where TAwaitable : ITask<TConfiguredAwaitable, TAwaiter, TValue>, allows ref struct
+            where TConfiguredAwaitable : IConfiguredAwaitable<TAwaiter, TValue>, allows ref struct
+            where TAwaiter : IAwaiter<TValue>
+            where TValue : allows ref struct
+        {
+            private readonly TAwaitable awaitable;
+
+            public RefStructAwaitablePlaceholder(TAwaitable awaitable)
+            {
+                this.awaitable = awaitable;
+            }
+
+            public Task<TException> Throws<TException>(Action<TValue> action)
+                where TException : Exception
+            {
+                return CommitImpl<TException>(Assert.That, this.awaitable.ConfigureAwait(false).GetAwaiter(), action);
+            }
+
+            private static async Task<TException> CommitImpl<TException>(Assert assert, TAwaiter awaitable, Action<TValue> action)
+                where TException : Exception
+            {
+                try
+                {
+                    var state = await awaitable;
+                    action(state);
+                    return assert.ThrowsException<TException>(() => { });
+                }
+                catch (Exception exception)
+                {
+                    return assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
+                }
+            }
+
+        }
+
+        public static RefStructAwaitablePlaceholder<ContinuableAwaitable<Realizable<T>, T>, ContinuableAwaitable<Realizable<T>, T>.ConfiguredAwaitable, IAwaiter<T>, T> RefStructAwaitable<T>(this Assert assert, Realizable<T> realizable)
+        {
+            return assert.RefStructAwaitable(realizable.AsContinuable());
+        }
+
+        public static RefStructAwaitablePlaceholder<ContinuableAwaitable<TContinuable, TValue>, ContinuableAwaitable<TContinuable, TValue>.ConfiguredAwaitable, IAwaiter<TValue>, TValue> RefStructAwaitable<TContinuable, TValue>(this Assert assert, TypeHolder<TContinuable, TValue> typeHolder)
+            where TContinuable : IContinuable<TValue>, allows ref struct
+        {
+            return assert.RefStructAwaitable<TContinuable, TValue>(typeHolder.Self);
+        }
+
+        public static RefStructAwaitablePlaceholder<ContinuableAwaitable<TContinuable, TValue>, ContinuableAwaitable<TContinuable, TValue>.ConfiguredAwaitable, IAwaiter<TValue>, TValue> RefStructAwaitable<TContinuable, TValue>(this Assert assert, TContinuable continuable)
+            where TContinuable : IContinuable<TValue>, allows ref struct
+        {
+            return assert.RefStructAwaitable(new ContinuableAwaitable<TContinuable, TValue>(continuable).AsAwaitable());
+        }
+
+        public static RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue> RefStructAwaitable<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>(this Assert assert, TypeHolder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue> typeHolder)
+            where TAwaitable : ITask<TConfiguredAwaitable, TAwaiter, TValue>, allows ref struct
+            where TConfiguredAwaitable : IConfiguredAwaitable<TAwaiter, TValue>, allows ref struct
+            where TAwaiter : IAwaiter<TValue>
+            where TValue : allows ref struct
+        {
+            return assert.RefStructAwaitable<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>(typeHolder.Self);
+        }
+
+        public static RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue> RefStructAwaitable<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>(this Assert assert, TAwaitable awaitable)
+            where TAwaitable : ITask<TConfiguredAwaitable, TAwaiter, TValue>, allows ref struct
+            where TConfiguredAwaitable : IConfiguredAwaitable<TAwaiter, TValue>, allows ref struct
+            where TAwaiter : IAwaiter<TValue>
+            where TValue : allows ref struct
+        {
+            return new RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>(awaitable);
+        }
+
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition)
         {
             Assert.IsTrue(condition);
