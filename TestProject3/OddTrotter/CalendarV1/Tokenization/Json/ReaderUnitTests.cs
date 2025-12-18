@@ -11,6 +11,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using OddTrotter.CalendarV1.Tokenization.Json2;
+    using OddTrotter.CalendarV1.Tokenization.Readers;
 
     [TestClass]
     public sealed class ReaderUnitTests
@@ -127,22 +128,26 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ExpReader<TNextReader> expReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await expReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.FracReader<TNextReader> fracReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await fracReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.IntReader<TNextReader> intReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await intReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.SignReader<TNextReader> signReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await signReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.NullReader<TNextReader> nullReader, Func<TNextReader, Task> readToEnd)
