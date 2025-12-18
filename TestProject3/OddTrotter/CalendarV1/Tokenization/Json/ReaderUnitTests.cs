@@ -112,17 +112,49 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.NumberReader<TNextReader> numberReader, Func<TNextReader, Task> readToEnd)
         {
+            var signReader = await numberReader.Move().ConfigureAwait(false);
+            await ReadToEnd(
+                signReader,
+                async intReader => await ReadToEnd(
+                    intReader,
+                    async fracReader => await ReadToEnd(
+                        fracReader,
+                        async expReader => await ReadToEnd(
+                            expReader,
+                            async nextReader => await readToEnd(
+                                nextReader)))));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ExpReader<TNextReader> expReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.FracReader<TNextReader> fracReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.IntReader<TNextReader> intReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.SignReader<TNextReader> signReader, Func<TNextReader, Task> readToEnd)
+        {
 
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.NullReader<TNextReader> nullReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await nullReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.FalseReader<TNextReader> falseReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await falseReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayReader<TNextReader> arrayReader, Func<TNextReader, Task> readToEnd)
