@@ -57,7 +57,13 @@
 
                 public IAwaiter<TValue> GetAwaiter()
                 {
-                    return this.continuable.ContinueWith(_ => _, _ => throw _, _ => throw _).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+
+                    var continuedAgain = this.continuable.ContinueWith(_ => _, _ => throw _, _ => throw _);
+                    var configured = continuedAgain.ConfigureAwait(this.continueOnCapturedContext);
+                    var awaiter = configured.GetAwaiter();
+                    return awaiter;
+
+                    ////return this.continuable.ContinueWith(_ => _, _ => throw _, _ => throw _).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                 }
             }
         }
