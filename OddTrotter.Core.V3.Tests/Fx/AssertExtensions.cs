@@ -75,6 +75,12 @@
                 this.awaitable = awaitable;
             }
 
+            public Task<TException> Throws<TException>()
+                where TException : Exception
+            {
+                return this.Throws<TException>(_ => { });
+            }
+
             public Task<TException> Throws<TException>(Action<TValue> action)
                 where TException : Exception
             {

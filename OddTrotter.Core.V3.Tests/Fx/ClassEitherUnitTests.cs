@@ -42,7 +42,7 @@
                 await Assert
                     .That
                     .RefStructAwaitable(continued)
-                    .Throws<InvalidOperationException>(_ => { })
+                    .Throws<InvalidOperationException>()
                 .ConfigureAwait(false);
             Assert.That.AreEqual(exceptionToThrow, thrownException);
         }
@@ -50,16 +50,28 @@
         [TestMethod]
         public async Task TaskWrapperContinueWithExceptionContinuationThrows()
         {
-            var exception = new Exception("blah");
+            var originalException = new Exception("the original");
+            var taskWrapper = Task.FromException<string>(originalException).ToTaskWrapper();
 
-            var taskWrapper = new TaskWrapper<string>(Task.FromException<string>(new Exception()));
+            InvalidOperationException? wrappingException = null;
             var continued = taskWrapper.ContinueWith(
                 _ => "hello",
-                _ => throw exception,
+                _ =>
+                {
+                    wrappingException = new InvalidOperationException("some message", _);
+                    throw wrappingException;
+                },
                 _ => "hello");
 
-            var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
-            Assert.That.AreEqual(exception, thrownException);
+            var thrownException =
+                await Assert
+                    .That
+                    .RefStructAwaitable(continued)
+                    .Throws<InvalidOperationException>()
+                .ConfigureAwait(false);
+            Assert.IsNotNull(wrappingException);
+            Assert.That.AreEqual(wrappingException, thrownException);
+            Assert.That.AreEqual(originalException, thrownException.InnerException);
         }
 
         [TestMethod]
