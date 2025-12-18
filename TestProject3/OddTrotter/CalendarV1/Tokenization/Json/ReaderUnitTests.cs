@@ -146,12 +146,26 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayEndReader<TNextReader> arrayEndReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await arrayEndReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.SubsequentArrayElementReader<TNextReader> subsequentArrayElementReader, Func<TNextReader, Task> readToEnd)
         {
+            var commaReader = await subsequentArrayElementReader.Move().ConfigureAwait(false);
+            await ReadToEnd(
+                commaReader,
+                async whitespaceReader => await ReadToEnd(
+                    whitespaceReader,
+                    async arrayElementReader => await ReadToEnd(
+                        arrayElementReader,
+                        async nextReader => await readToEnd(nextReader))));
+        }
 
+        private static async Task ReadToEnd<TNextReader>(Json2.CommaReader<TNextReader> commaReader, Func<TNextReader, Task> readToEnd)
+        {
+            var nextReader = await commaReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayElementReader<TNextReader> arrayElementReader, Func<TNextReader, Task> readToEnd)
