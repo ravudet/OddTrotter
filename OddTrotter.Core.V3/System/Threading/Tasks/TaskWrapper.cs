@@ -218,7 +218,32 @@ namespace System.Threading.Tasks
                             exception = aggregateException.InnerExceptions[0];
                         }
 
-                        return this.exceptionContinuation(exception);
+                        return this.exceptionContinuation(exception); //// TODO you need to implement some way for `exceptioncontinuation` to rethrow without losing the stack trace; .NET rebuilds the stack trace with something called `restoredispatchstate`: https://source.dot.net/#System.Private.CoreLib/src/System/Exception.CoreCLR.cs,50a6552033907120,references; so maybe way you could do is have `exceptionContinuation == null` indicate to rethrow; it would be something like:
+                        // TOld old;
+                        // try
+                        // {
+                        //   old = this.taskAwaiter.GetResult();
+                        // }
+                        // catch (OperationCanceledException operationCanceledException) when (this.task.IsCanceled) // needed so that you can differentiate the task being canceled from the underlying delegate happening to throw an unrelated `operationcanceledexception`
+                        // {
+                        //   if (this.canceledContinuation == null)
+                        //   {
+                        //     throw;
+                        //   }
+                        // 
+                        //   return this.canceledContinuation(operationCanceledException);
+                        // }
+                        // catch (Exception exception)
+                        // {
+                        //   if (this.exceptionContinuation == null)
+                        //   {
+                        //     throw;
+                        //   }
+                        // 
+                        //   return this.exceptionContinuation(exception);
+                        // }
+                        // 
+                        // return this.sourceContinuation(old);
                     }
                     else if (this.task.IsCanceled)
                     {
