@@ -29,17 +29,19 @@
         {
             var exceptionToThrow = new InvalidOperationException("blah");
 
-            var continued = Parse("42").ContinueWith(
-                either => throw exceptionToThrow,
-                _ => "hello",
-                _ => "hello");
+            var continued = ClassEitherUnitTests
+                .Parse("42")
+                .ContinueWith(
+                    either => throw exceptionToThrow,
+                    _ => "hello",
+                    _ => "hello");
 
-            //// await Assert.ThrowsExceptionAsync<Exception>(async () => await Task.FromResult(1));
-            //// TODO you are here, seeing if you can like the ref struct api for throwsexceptionasync
-
-            var thrownException = await Assert.That.RefStructAwaitable(continued).Throws<InvalidOperationException>(_ => { }).ConfigureAwait(false);
-            ////var thrownException = await Assert.That.ThrowsExceptionAsync(continued).Commit<Exception>().ConfigureAwait(false);
-
+            var thrownException = 
+                await Assert
+                    .That
+                    .RefStructAwaitable(continued)
+                    .Throws<InvalidOperationException>(_ => { })
+                .ConfigureAwait(false);
             Assert.That.AreEqual(exceptionToThrow, thrownException);
         }
 
