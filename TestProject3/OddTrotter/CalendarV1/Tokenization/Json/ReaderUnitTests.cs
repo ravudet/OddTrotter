@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq.V2;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -24,8 +25,15 @@
             var data =
 """
 {
-    
-    "emptyArray": []
+    "array": [
+    {
+        "true": true,
+        "false": false,
+        "number": 1234,
+        "string": "asdf",
+        "null": null
+    }
+]
 }
 """;
 /*
@@ -42,7 +50,7 @@
         "null": null
     },
     "emptyObject": {},
-
+    "emptyArray": [],
 
 
 
@@ -381,16 +389,58 @@
                 arrayStartReader,
                 async whitespaceReader => await ReadToEnd(
                     whitespaceReader,
-                    async arrayElementReader => await ReadToEnd(
-                        arrayElementReader,
-                        async subsequenetArrayElementReader => await ReadToEnd(
-                            subsequenetArrayElementReader,
-                            async whitespaceReader => await ReadToEnd(
-                                whitespaceReader,
-                                async arrayEndReader => await ReadToEnd(
-                                    arrayEndReader,
-                                    async nextReader => await readToEnd(
-                                        nextReader)))))));
+                    async arrayElementsReader => await ReadToEnd(
+                        arrayElementsReader,
+                        async whitespaceReader => await ReadToEnd(
+                            whitespaceReader,
+                            async arrayEndReader => await ReadToEnd(
+                                arrayEndReader,
+                                async nextReader => await readToEnd(
+                                    nextReader))))));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ArrayElementsReader<TNextReader> arrayElementsReader, Func<TNextReader, Task> readToEnd)
+        {
+            var arrayElementsToken = await arrayElementsReader.Move().ConfigureAwait(false);
+            if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
+            {
+                await readToEnd(none.Reader).ConfigureAwait(false);
+            }
+            else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
+            {
+                await ReadToEnd(
+                    some.Reader,
+                    async subsequentArrayElementsReader => await ReadToEnd(
+                        subsequentArrayElementsReader,
+                        async nextReader => await readToEnd(
+                            nextReader)));
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.SubsequentArrayElementsReader<TNextReader> subsequentArrayElementsReader, Func<TNextReader, Task> readToEnd)
+        {
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
+            if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
+            {
+                await readToEnd(none.Reader);
+            }
+            else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
+            {
+                await ReadToEnd(
+                    more.Reader,
+                    async subsequentArrayElementsReader => await ReadToEnd(
+                        subsequentArrayElementsReader,
+                        async nextReader => await readToEnd(
+                            nextReader)));
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayEndReader<TNextReader> arrayEndReader, Func<TNextReader, Task> readToEnd)
