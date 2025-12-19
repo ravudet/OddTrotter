@@ -111,7 +111,38 @@
             var objectStartReader = await objectReader.Move().ConfigureAwait(false);
             await ReadToEnd(
                 objectStartReader,
-                )
+                async whitespaceReader => await ReadToEnd(
+                    whitespaceReader,
+                    async memberReader => await ReadToEnd(
+                        memberReader,
+                        async subsequentMemberReader => await ReadToEnd(
+                            subsequentMemberReader,
+                            async whitespaceReader => await ReadToEnd(
+                                whitespaceReader,
+                                async objectEndReader => await ReadToEnd(
+                                    objectEndReader,
+                                    async nextReader => await readToEnd(
+                                        nextReader)))))));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ObjectEndReader<TNextReader> objectEndReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.SubsequentMemberReader<TNextReader> subsequentMemberReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.MemberReader<TNextReader> memberReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ObjectStartReader<TNextReader> objectStartReader, Func<TNextReader, Task> readToEnd)
+        {
+
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.NumberReader<TNextReader> numberReader, Func<TNextReader, Task> readToEnd)
