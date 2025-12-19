@@ -19,6 +19,8 @@
         [TestMethod]
         public async Task V2Broad()
         {
+            //// TODO all of your `move` implementations when a `getvalue` is present will read the value a second time if it's already been read once
+
             var data =
 """
 {
