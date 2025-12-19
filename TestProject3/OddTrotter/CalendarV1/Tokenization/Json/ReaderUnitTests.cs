@@ -24,7 +24,12 @@
             var data =
 """
 {
-    "true": true,
+    
+    "emptyArray": []
+}
+""";
+/*
+"true": true,
     "false": false,
     "number": 1234,
     "string": "asdf",
@@ -37,11 +42,12 @@
         "null": null
     },
     "emptyObject": {},
-    "emptyArray": []
-}
-""";
-/*
-    
+
+
+
+
+
+
     "array": [
         {
             "true": true,

@@ -71,8 +71,8 @@
                     buffer,
                     validBytes,
                     (nestedStream, nestedBuffer, nestedValidBytes) => new WhitespaceReader<Nothing>(
-                        nestedStream, 
-                        nestedBuffer, 
+                        nestedStream,
+                        nestedBuffer,
                         nestedValidBytes,
                         (_, _, _) => new Nothing())));
         }
@@ -580,8 +580,8 @@
             {
                 return new MembersToken<TNextReader>.None(
                     this.nextReaderFactory(
-                        this.stream, 
-                        this.buffer, 
+                        this.stream,
+                        this.buffer,
                         this.validBytes));
             }
 
@@ -939,7 +939,7 @@
     }
 
     //// TODO you got this wrong, there might not be any array elements
-    public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>>
+    public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
@@ -958,34 +958,30 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ArrayStartReader<WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>> Move()
+        public async ITask<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>> Move()
         {
             return await Task.FromResult(
-                new ArrayStartReader<WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>(
+                new ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>(
                     this.stream,
                     this.buffer,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new WhitespaceReader<ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>(
+                    (stream, buffer, validBytes) => new WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>(
                         stream,
                         buffer,
                         validBytes,
-                        (stream, buffer, validBytes) => new ArrayElementReader<SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>(
+                        (stream, buffer, validBytes) => new ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>(
                             stream,
                             buffer,
                             validBytes,
-                            (stream, buffer, validBytes) => new SubsequentArrayElementReader<WhitespaceReader<ArrayEndReader<TNextReader>>>(
+                            (stream, buffer, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
                                 stream,
                                 buffer,
                                 validBytes,
-                                (stream, buffer, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
+                                (stream, buffer, validBytes) => new ArrayEndReader<TNextReader>(
                                     stream,
                                     buffer,
                                     validBytes,
-                                    (stream, buffer, validBytes) => new ArrayEndReader<TNextReader>(
-                                        stream,
-                                        buffer,
-                                        validBytes,
-                                        this.nextReaderFactory)))))))
+                                    this.nextReaderFactory))))))
                 .ConfigureAwait(false);
         }
     }
@@ -1031,6 +1027,82 @@
         public static ArrayStartToken Instance { get; } = new ArrayStartToken();
     }
 
+    public sealed class ArrayElementsReader<TNextReader> : IReader<ArrayElementsToken<TNextReader>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public ArrayElementsReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<ArrayElementsToken<TNextReader>> Move()
+        {
+            var peeked = await this.stream.PeekAsync();
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (peeked == ']')
+            {
+                return new ArrayElementsToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream, 
+                        this.buffer, 
+                        this.validBytes));
+            }
+
+            return new ArrayElementsToken<TNextReader>.Some(
+                new ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (strema, buffer, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        this.nextReaderFactory)));
+        }
+    }
+
+    public abstract class ArrayElementsToken<TNextReader>
+    {
+        private ArrayElementsToken()
+        {
+        }
+
+        public sealed class None : ArrayElementsToken<TNextReader>
+        {
+            public None(TNextReader reader)
+            {
+                Reader = reader;
+            }
+
+            public TNextReader Reader { get; }
+        }
+
+        public sealed class Some : ArrayElementsToken<TNextReader>
+        {
+            public Some(ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
+            {
+                Reader = reader;
+            }
+
+            public ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> Reader { get; }
+        }
+    }
+
     public sealed class ArrayElementReader<TNextReader> : IReader<ValueReader<TNextReader>>
     {
         private readonly PeekableStream stream;
@@ -1054,10 +1126,86 @@
         {
             return await Task.FromResult(
                 new ValueReader<TNextReader>(
-                    this.stream, 
-                    this.buffer, 
-                    this.validBytes, 
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
                     this.nextReaderFactory)).ConfigureAwait(false);
+        }
+    }
+
+    public sealed class SubsequentArrayElementsReader<TNextReader> : IReader<SubsequentArrayElementsToken<TNextReader>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public SubsequentArrayElementsReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<SubsequentArrayElementsToken<TNextReader>> Move()
+        {
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (peeked != ',')
+            {
+                return new SubsequentArrayElementsToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.validBytes));
+            }
+
+            return new SubsequentArrayElementsToken<TNextReader>.More(
+                new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (stream, buffer, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        this.nextReaderFactory)));
+        }
+    }
+
+    public abstract class SubsequentArrayElementsToken<TNextReader>
+    {
+        private SubsequentArrayElementsToken()
+        {
+        }
+
+        public sealed class None : SubsequentArrayElementsToken<TNextReader>
+        {
+            public None(TNextReader reader)
+            {
+                Reader = reader;
+            }
+
+            public TNextReader Reader { get; }
+        }
+
+        public sealed class More : SubsequentArrayElementsToken<TNextReader>
+        {
+            public More(SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
+            {
+                Reader = reader;
+            }
+
+            public SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> Reader { get; }
         }
     }
 
