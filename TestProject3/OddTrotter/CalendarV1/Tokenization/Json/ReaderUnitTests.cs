@@ -26,12 +26,12 @@
 {
     "true": true,
     "false": false,
-    "number": 1234
+    "number": 1234,
+    "string": "asdf",
+    "null": null
 }
 """;
 /*
-    "string": "asdf",
-    "null": null,
     "object": {
         "true": true,
         "false": false,
