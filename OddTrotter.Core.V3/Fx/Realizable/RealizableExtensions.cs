@@ -9,6 +9,42 @@ namespace Fx.Realizable
 
     public static class RealizableExtensions
     {
+        public readonly ref struct RealizableAwaitable<T> : ITask<ConfiguredAwaiter<T>, IAwaiter<T>, T>
+        {
+            private readonly Realizable<T> realizable;
+
+            public RealizableAwaitable(Realizable<T> realizable)
+            {
+                this.realizable = realizable;
+            }
+
+            public TypeHolder<RealizableAwaitable<T>, ConfiguredAwaiter<T>, IAwaiter<T>, T> AsAwaitable()
+            {
+                return new TypeHolder<RealizableAwaitable<T>, ConfiguredAwaiter<T>, IAwaiter<T>, T>(this);
+            }
+
+            public ConfiguredAwaiter<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return this.realizable.ConfigureAwait(continueOnCapturedContext);
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
+            {
+                return this.realizable.ContinueWith(sourceContinuation, exceptionContinuation, canceledContinuation);
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                return this.realizable.GetAwaiter();
+            }
+        }
+
+        public static RealizableAwaitable<T> ToAwaitable<T>(this Realizable<T> realizable)
+        {
+            //// TODO you should be able to convert *any* continuable into an awaitable
+            return new RealizableAwaitable<T>(realizable);
+        }
+
         public static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable)
         {
             return realizable.GetAwaiter(null);
@@ -19,7 +55,7 @@ namespace Fx.Realizable
             return new ConfiguredAwaiter<T>(realizable, continueOnCapturedContext);
         }
 
-        public readonly ref struct ConfiguredAwaiter<T>
+        public readonly ref struct ConfiguredAwaiter<T> : IConfiguredAwaitable<T>
         {
             private readonly Realizable<T> realizable;
             private readonly bool continueOnCapturedContext;

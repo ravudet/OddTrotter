@@ -41,7 +41,7 @@
             var thrownException = 
                 await Assert
                     .That
-                    .RefStructAwaitable(continued)
+                    .RefStructAwaitable(continued.ToAwaitable().AsAwaitable())
                     .Throws<InvalidOperationException>()
                 .ConfigureAwait(false);
             Assert.That.AreEqual(exceptionToThrow, thrownException);
@@ -68,7 +68,7 @@
             var thrownException =
                 await Assert
                     .That
-                    .RefStructAwaitable(continued)
+                    .RefStructAwaitable(continued.ToAwaitable().AsAwaitable())
                     .Throws<InvalidOperationException>()
                 .ConfigureAwait(false);
             Assert.IsNotNull(wrappingException);
