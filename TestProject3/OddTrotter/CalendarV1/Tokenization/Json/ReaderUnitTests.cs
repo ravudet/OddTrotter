@@ -28,17 +28,18 @@
     "false": false,
     "number": 1234,
     "string": "asdf",
-    "null": null
-}
-""";
-/*
+    "null": null,
     "object": {
         "true": true,
         "false": false,
         "number": 1234,
         "string": "asdf",
         "null": null
-    },
+    }
+}
+""";
+/*
+    
     "array": [
         {
             "true": true,
