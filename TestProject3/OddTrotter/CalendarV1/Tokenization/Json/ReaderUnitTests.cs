@@ -139,16 +139,14 @@
                 objectStartReader,
                 async whitespaceReader => await ReadToEnd(
                     whitespaceReader,
-                    async memberReader => await ReadToEnd(
-                        memberReader,
-                        async subsequentMemberReader => await ReadToEnd(
-                            subsequentMemberReader,
-                            async whitespaceReader => await ReadToEnd(
-                                whitespaceReader,
-                                async objectEndReader => await ReadToEnd(
-                                    objectEndReader,
-                                    async nextReader => await readToEnd(
-                                        nextReader)))))));
+                    async membersReader => await ReadToEnd(
+                        membersReader,
+                        async whitespaceReader => await ReadToEnd(
+                            whitespaceReader,
+                            async objectEndReader => await ReadToEnd(
+                                objectEndReader,
+                                async nextReader => await readToEnd(
+                                    nextReader))))));
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ObjectEndReader<TNextReader> objectEndReader, Func<TNextReader, Task> readToEnd)
@@ -217,6 +215,61 @@
         {
             var nextReader = await colonReader.Move().ConfigureAwait(false);
             await readToEnd(nextReader).ConfigureAwait(false);
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.MembersReader<TNextReader> membersReader, Func<TNextReader, Task> readToEnd)
+        {
+            var membersToken = await membersReader.Move().ConfigureAwait(false);
+            if (membersToken is MembersToken<TNextReader>.None none)
+            {
+                await readToEnd(none.Reader);
+            }
+            else if (membersToken is MembersToken<TNextReader>.Some some)
+            {
+                await ReadToEnd(
+                    some.Reader,
+                    async nextReader => await readToEnd(
+                        nextReader));
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.FirstMemberReader<TNextReader> firstMemberReader, Func<TNextReader, Task> readToEnd)
+        {
+            var memberReader = await firstMemberReader.Move().ConfigureAwait(false);
+            await ReadToEnd(
+                memberReader,
+                async subsequentMembersReader => await ReadToEnd(
+                    subsequentMembersReader,
+                    async nextReader => await readToEnd(
+                        nextReader)));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.SubsequentMembersReader<TNextReader> subsequentMembersReader, Func<TNextReader, Task> readToEnd)
+        {
+            var subsequentMembersToken = await subsequentMembersReader.Move().ConfigureAwait(false);
+            if (subsequentMembersToken is SubsequentMembersToken<TNextReader>.None none)
+            {
+                await readToEnd(none.Reader);
+            }
+            else if (subsequentMembersToken is SubsequentMembersToken<TNextReader>.More more)
+            {
+                await ReadToEnd(
+                    more.Reader,
+                    async subsequentMemberReader => await ReadToEnd(
+                        subsequentMemberReader,
+                        async subsequentMembersReader => await ReadToEnd(
+                            subsequentMemberReader,
+                            async nextReader => await readToEnd(
+                                nextReader))));
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ObjectStartReader<TNextReader> objectStartReader, Func<TNextReader, Task> readToEnd)
