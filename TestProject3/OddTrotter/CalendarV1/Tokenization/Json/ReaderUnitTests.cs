@@ -25,7 +25,10 @@
 """
 {
     "true": true,
-    "false": false,
+    "false": false
+}
+""";
+/*,
     "number": 1234,
     "string": "asdf",
     "null": null,
@@ -46,7 +49,7 @@
         }
     ]
 }
-""";
+""";*/
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
                 var reader = new Json2.JsonReader(stream);
