@@ -1,7 +1,7 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx.Either
 {
-    //// TODO which of these 3 options do you want to use?
+    //// TODO which of these options do you want to use?
 
     public static class Either
     {
@@ -41,6 +41,8 @@ namespace Fx.Either
 
     public static class Either2
     {
+        //// TODO you could also go the other direction and always do "full" first
+
         public readonly ref struct EmptyLeft<TLeft>
         {
             public Either<TLeft, TRight> Right<TRight>(TRight value)
