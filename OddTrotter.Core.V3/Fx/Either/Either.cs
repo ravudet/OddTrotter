@@ -3,7 +3,15 @@ namespace Fx.Either
 {
     //// TODO which of these options do you want to use?
 
-    public static class Either
+    public static class Play
+    {
+        public static void DoWork()
+        {
+            var either = Either1.Left<int>().Right("asdf");
+        }
+    }
+
+    public static class Either1
     {
         public readonly ref struct Empty<TLeft>
         {
