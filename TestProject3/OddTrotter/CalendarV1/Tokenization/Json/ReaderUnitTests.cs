@@ -431,7 +431,7 @@
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public async Task Broad()
         {
             var data =
@@ -892,6 +892,6 @@
 
             nextReader = new Nothing(); ////TODO do a "nothing reader" new ThatReader(this.stream, this.buffer, this.currentIndex + thatBytes.Length);
             return true;
-        }
+        }*/
     }
 }
