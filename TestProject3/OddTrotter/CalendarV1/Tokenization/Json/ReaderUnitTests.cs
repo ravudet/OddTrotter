@@ -35,6 +35,8 @@
         "number": 1234,
         "string": "asdf",
         "null": null
+    },
+    "emptyObject": {
     }
 }
 """;
