@@ -128,8 +128,30 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ExpReader<TNextReader> expReader, Func<TNextReader, Task> readToEnd)
         {
-            var nextReader = await expReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
+            var eReader = await expReader.Move().ConfigureAwait(false);
+            await ReadToEnd(
+                eReader,
+                async expSignReader => await ReadToEnd(
+                    expSignReader,
+                    async digitsReader => await ReadToEnd(
+                        digitsReader,
+                        async nextReader => await readToEnd(
+                            nextReader))));
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.DigitsReader<TNextReader> DigitsReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.ExpSignReader<TNextReader> expSignReader, Func<TNextReader, Task> readToEnd)
+        {
+
+        }
+
+        private static async Task ReadToEnd<TNextReader>(Json2.EReader<TNextReader> eReader, Func<TNextReader, Task> readToEnd)
+        {
+
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.FracReader<TNextReader> fracReader, Func<TNextReader, Task> readToEnd)
