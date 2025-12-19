@@ -461,7 +461,7 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
-    public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>>
+    public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
@@ -480,27 +480,23 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>> Move()
+        public async ITask<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>> Move()
         {
             return await Task.FromResult(
-                new ObjectStartReader<WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>(
+                new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
                     this.stream,
                     this.buffer,
                     this.validBytes,
                     (stream, buffer, validBytes) =>
-                        new WhitespaceReader<MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
+                        new WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
                             stream,
                             buffer,
                             validBytes,
-                            (stream, buffer, validBytes) => new MemberReader<SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
+                            (stream, buffer, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
                                 stream,
                                 buffer,
                                 validBytes,
-                                (strema, buffer, validBytes) => new SubsequentMemberReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
-                                    stream,
-                                    buffer,
-                                    validBytes,
-                                    (stream, buffer, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
+                                (strema, buffer, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
                                         stream,
                                         buffer,
                                         validBytes,
@@ -508,7 +504,7 @@
                                             stream,
                                             buffer,
                                             validBytes,
-                                            this.nextReaderFactory))))))).ConfigureAwait(false);
+                                            this.nextReaderFactory)))))).ConfigureAwait(false);
         }
     }
 
@@ -553,7 +549,188 @@
         public static ObjectStartToken Instance { get; } = new ObjectStartToken();
     }
 
-    //// TODO you got this wrong, there might not be any members
+    public sealed class MembersReader<TNextReader> : IReader<MembersToken<TNextReader>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public MembersReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<MembersToken<TNextReader>> Move()
+        {
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (peeked != '"')
+            {
+                return new MembersToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream, 
+                        this.buffer, 
+                        this.validBytes));
+            }
+
+            return new MembersToken<TNextReader>.Some(
+                new FirstMemberReader<TNextReader>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    this.nextReaderFactory));
+        }
+    }
+
+    public abstract class MembersToken<TNextReader>
+    {
+        private MembersToken()
+        {
+        }
+
+        public sealed class None : MembersToken<TNextReader>
+        {
+            public None(TNextReader reader)
+            {
+                Reader = reader;
+            }
+
+            public TNextReader Reader { get; }
+        }
+
+        public sealed class Some : MembersToken<TNextReader>
+        {
+            public Some(FirstMemberReader<TNextReader> reader)
+            {
+                Reader = reader;
+            }
+
+            public FirstMemberReader<TNextReader> Reader { get; }
+        }
+    }
+
+    public sealed class FirstMemberReader<TNextReader> : IReader<MemberReader<SubsequentMembersReader<TNextReader>>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public FirstMemberReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<MemberReader<SubsequentMembersReader<TNextReader>>> Move()
+        {
+            return await Task.FromResult(
+                new MemberReader<SubsequentMembersReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (stream, buffer, validBytes) => new SubsequentMembersReader<TNextReader>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        this.nextReaderFactory))).ConfigureAwait(false);
+        }
+    }
+
+    public sealed class SubsequentMembersReader<TNextReader> : IReader<SubsequentMembersToken<TNextReader>>
+    {
+        private readonly PeekableStream stream;
+        private readonly byte[] buffer;
+        private readonly int validBytes;
+        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+
+        public SubsequentMembersReader(
+            PeekableStream stream,
+            byte[] buffer,
+            int validBytes,
+            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+        {
+            this.stream = stream;
+            this.buffer = buffer;
+            this.validBytes = validBytes;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public async ITask<SubsequentMembersToken<TNextReader>> Move()
+        {
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (peeked != ',')
+            {
+                return new SubsequentMembersToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.validBytes));
+            }
+
+            return new SubsequentMembersToken<TNextReader>.More(
+                new SubsequentMemberReader<SubsequentMembersReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.validBytes,
+                    (stream, buffer, validBytes) => new SubsequentMembersReader<TNextReader>(
+                        stream,
+                        buffer,
+                        validBytes,
+                        this.nextReaderFactory)));
+        }
+    }
+
+    public abstract class SubsequentMembersToken<TNextReader>
+    {
+        private SubsequentMembersToken()
+        {
+        }
+
+        public sealed class None : SubsequentMembersToken<TNextReader>
+        {
+            public None(TNextReader reader)
+            {
+                Reader = reader;
+            }
+
+            public TNextReader Reader { get; }
+        }
+
+        public sealed class More : SubsequentMembersToken<TNextReader>
+        {
+            public More(SubsequentMemberReader<SubsequentMembersReader<TNextReader>> reader)
+            {
+                Reader = reader;
+            }
+
+            public SubsequentMemberReader<SubsequentMembersReader<TNextReader>> Reader { get; }
+        }
+    }
+
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
         private readonly PeekableStream stream;
