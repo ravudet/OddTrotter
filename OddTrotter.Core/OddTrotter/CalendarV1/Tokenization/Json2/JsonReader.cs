@@ -1350,7 +1350,13 @@
 
         public async ITask<FracToken> GetValue()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '.').ConfigureAwait(false);
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null || peeked.Value != '.')
+            {
+                return FracToken.Absent.Instance;
+            }
+
+            await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
             return new FracToken.Frac(await this.GetValueImpl().ToTask().ConfigureAwait(false));
         }
 
@@ -1412,7 +1418,7 @@
         }
     }
 
-    public sealed class ExpReader<TNextReader> : IReader<EReader<ExpSignReader<DigitsReader<TNextReader>>>>
+    public sealed class ExpReader<TNextReader> : IReader<ExpToken<TNextReader>>
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
@@ -1431,9 +1437,19 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<EReader<ExpSignReader<DigitsReader<TNextReader>>>> Move()
+        public async ITask<ExpToken<TNextReader>> Move()
         {
-            return await Task.FromResult(
+            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
+            if (peeked == null || (peeked != 'e' && peeked != 'E'))
+            {
+                return new ExpToken<TNextReader>.Absent(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.validBytes));
+            }
+
+            return new ExpToken<TNextReader>.Present(
                 new EReader<ExpSignReader<DigitsReader<TNextReader>>>(
                     this.stream,
                     this.buffer,
@@ -1446,8 +1462,34 @@
                             stream,
                             buffer,
                             validBytes,
-                            this.nextReaderFactory))))
-                .ConfigureAwait(false);
+                            this.nextReaderFactory))));
+        }
+    }
+
+    public abstract class ExpToken<TNextReader>
+    {
+        private ExpToken()
+        {
+        }
+
+        public sealed class Absent : ExpToken<TNextReader>
+        {
+            public Absent(TNextReader reader)
+            {
+                Reader = reader;
+            }
+
+            public TNextReader Reader { get; }
+        }
+
+        public sealed class Present : ExpToken<TNextReader>
+        {
+            public Present(EReader<ExpSignReader<DigitsReader<TNextReader>>> reader)
+            {
+                Reader = reader;
+            }
+
+            public EReader<ExpSignReader<DigitsReader<TNextReader>>> Reader { get; }
         }
     }
 

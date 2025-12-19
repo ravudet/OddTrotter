@@ -26,7 +26,7 @@
 {
     "true": true,
     "false": false,
-    "number": 1234,
+    "number": 1234
 }
 """;
 /*
@@ -295,15 +295,26 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ExpReader<TNextReader> expReader, Func<TNextReader, Task> readToEnd)
         {
-            var eReader = await expReader.Move().ConfigureAwait(false);
-            await ReadToEnd(
-                eReader,
-                async expSignReader => await ReadToEnd(
-                    expSignReader,
-                    async digitsReader => await ReadToEnd(
-                        digitsReader,
-                        async nextReader => await readToEnd(
-                            nextReader))));
+            var expToken = await expReader.Move().ConfigureAwait(false);
+            if (expToken is ExpToken<TNextReader>.Absent absent)
+            {
+                await readToEnd(absent.Reader);
+            }
+            else if (expToken is ExpToken<TNextReader>.Present present)
+            {
+                await ReadToEnd(
+                    present.Reader,
+                    async expSignReader => await ReadToEnd(
+                        expSignReader,
+                        async digitsReader => await ReadToEnd(
+                            digitsReader,
+                            async nextReader => await readToEnd(
+                                nextReader))));
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.DigitsReader<TNextReader> digitsReader, Func<TNextReader, Task> readToEnd)
