@@ -36,8 +36,8 @@
         "string": "asdf",
         "null": null
     },
-    "emptyObject": {
-    }
+    "emptyObject": {},
+    "emptyArray": []
 }
 """;
 /*
