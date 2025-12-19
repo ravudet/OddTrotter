@@ -116,12 +116,14 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.CharsReader<TNextReader> charsReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await charsReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.StringDelimiterReader<TNextReader> stringDelimiterReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await stringDelimiterReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ObjectReader<TNextReader> objectReader, Func<TNextReader, Task> readToEnd)
