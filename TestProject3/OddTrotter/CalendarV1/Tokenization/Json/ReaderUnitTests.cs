@@ -20,6 +20,7 @@
         [TestMethod]
         public async Task V2Broad()
         {
+            //// TODO consolidate the `readtoend` implementations
             //// TODO all of your `move` implementations when a `getvalue` is present will read the value a second time if it's already been read once
 
             var data =
@@ -50,32 +51,6 @@
     ]
 }
 """;
-/*
-"true": true,
-    "false": false,
-    "number": 1234,
-    "string": "asdf",
-    "null": null,
-    "object": {
-        "true": true,
-        "false": false,
-        "number": 1234,
-        "string": "asdf",
-        "null": null
-    },
-    "emptyObject": {},
-    "emptyArray": [],
-    "array": [
-        {
-            "true": true,
-            "false": false,
-            "number": 1234,
-            "string": "asdf",
-            "null": null
-        }
-    ]
-}
-""";*/
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
                 var reader = new Json2.JsonReader(stream);
