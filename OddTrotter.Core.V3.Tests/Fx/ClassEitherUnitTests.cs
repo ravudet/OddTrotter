@@ -19,6 +19,7 @@
     //// TODO for the current "bare minimum", make everything look really nice and complete; you don't need every overload and variation, but the ones that you do have should be complete
     //// TODO you need to implement "everything" (all of the extension variations and overloads; any renames that need to happen; implementing visitors and such; full code quality); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
     //// TODO add `assert.that` to code quality
+    //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality
     //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
@@ -26,6 +27,26 @@
     public sealed class ClassEitherUnitTests
     {
         public required TestContext TestContext { get; set; }
+
+        public readonly ref struct Foo
+        {
+            public Foo()
+            {
+                throw new Exception("tODO");
+            }
+        }
+
+        [TestMethod]
+        public void Strcut()
+        {
+            Foo foo = default;
+            DoThing(foo);
+
+        }
+
+        private static void DoThing(Foo foo)
+        {
+        }
 
         [TestMethod]
         public async Task TaskWrapperContinueWithSourceContinuationThrows()
