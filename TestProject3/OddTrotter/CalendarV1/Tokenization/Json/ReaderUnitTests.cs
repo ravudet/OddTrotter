@@ -139,19 +139,22 @@
                             nextReader))));
         }
 
-        private static async Task ReadToEnd<TNextReader>(Json2.DigitsReader<TNextReader> DigitsReader, Func<TNextReader, Task> readToEnd)
+        private static async Task ReadToEnd<TNextReader>(Json2.DigitsReader<TNextReader> digitsReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await digitsReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ExpSignReader<TNextReader> expSignReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await expSignReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.EReader<TNextReader> eReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await eReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.FracReader<TNextReader> fracReader, Func<TNextReader, Task> readToEnd)
