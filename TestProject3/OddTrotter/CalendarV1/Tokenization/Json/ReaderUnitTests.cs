@@ -133,8 +133,15 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.SubsequentMemberReader<TNextReader> subsequentMemberReader, Func<TNextReader, Task> readToEnd)
         {
-            var nextReader = await subsequentMemberReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
+            var commaReader = await subsequentMemberReader.Move().ConfigureAwait(false);
+            await ReadToEnd(
+                commaReader,
+                async whitespaceReader => await ReadToEnd(
+                    whitespaceReader,
+                    async memberReader => await ReadToEnd(
+                        memberReader,
+                        async nextReader => await readToEnd(
+                            nextReader))));
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.MemberReader<TNextReader> memberReader, Func<TNextReader, Task> readToEnd)
@@ -182,7 +189,8 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ColonReader<TNextReader> colonReader, Func<TNextReader, Task> readToEnd)
         {
-
+            var nextReader = await colonReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ObjectStartReader<TNextReader> objectStartReader, Func<TNextReader, Task> readToEnd)
