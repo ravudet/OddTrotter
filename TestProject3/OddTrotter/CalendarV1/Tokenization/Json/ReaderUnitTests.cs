@@ -127,7 +127,7 @@
 
         private static async Task ReadToEnd<TNextReader>(Json2.ObjectEndReader<TNextReader> objectEndReader, Func<TNextReader, Task> readToEnd)
         {
-            var nextReader = await objectStartReader.Move().ConfigureAwait(false);
+            var nextReader = await objectEndReader.Move().ConfigureAwait(false);
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
