@@ -97,7 +97,9 @@ namespace Fx.Either
     /// Either.Right("asdf").Left<int>();
     /// ```
     /// 
+    /// This avoids the both the runtime and development overhead of option 1. However, the "rule" for which factory the caller writes first is more abstract, which could lead to usability issues.
     /// 
+    /// ### Option 3: 
     /// </remarks>
     public static class Either
     {
