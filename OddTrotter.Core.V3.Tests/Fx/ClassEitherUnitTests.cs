@@ -1,11 +1,10 @@
-﻿namespace Fx
+﻿namespace Fx.Either
 {
     using System;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
-    using Fx.Either;
     using Fx.Realizable;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -99,8 +98,8 @@
         [TestMethod]
         public void ApplyRightMapException()
         {
+            var either = Either.Left<Exception>().Right("asdf");
             //// TODO you are here
-            var either = new Either<Exception, string>.Right("asdf");
             //// TODO use assert.that
             var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Apply(

@@ -10,8 +10,6 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using static Fx.AssertExtensions;
-
     public static class AssertExtensions
     {
         public readonly ref struct RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>
@@ -128,70 +126,5 @@
             return new ThrowsExceptionBuilder<TState>(assert, state);
         }
 
-        public readonly ref struct ThrowsExceptionAsyncBuilder<TState>
-        {
-            private readonly Assert assert;
-            private readonly Realizable<TState> awaitable;
-
-            public ThrowsExceptionAsyncBuilder(Assert assert, Realizable<TState> awaitable)
-            {
-                this.assert = assert;
-                this.awaitable = awaitable;
-            }
-
-            public Task<TException> Commit<TException>()
-                where TException : Exception
-            {
-                return this.Commit<TException>(state => { });
-            }
-
-            public Task<TException> Commit<TException>(Action<TState> action)
-                where TException : Exception
-            {
-                return CommitImpl<TException>(this.assert, this.awaitable.GetAwaiter(), action);
-            }
-
-            private static async Task<TException> CommitImpl<TException>(Assert assert, IAwaiter<TState> awaitable, Action<TState> action)
-                where TException : Exception
-            {
-                try
-                {
-                    var state = await awaitable;
-                    action(state);
-                    return assert.ThrowsException<TException>(() => { });
-                }
-                catch (Exception exception)
-                {
-                    return assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
-                }
-            }
-
-            /*public async Task<TException> CommitAsync<TException>(Func<TState, Task> action)
-                where TException : Exception
-            {
-                //// TODO implement this
-
-                try
-                {
-                    var state = await this.awaitable.ConfigureAwait(false);
-                    await action(state).ConfigureAwait(false);
-                    return this.assert.ThrowsException<TException>(() => { });
-                }
-                catch (Exception exception)
-                {
-                    return this.assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
-                }
-            }*/
-        }
-
-        public static ThrowsExceptionAsyncBuilder<TState> ThrowsExceptionAsync<TState>(this Assert assert, Realizable<TState> state)
-        {
-            return new ThrowsExceptionAsyncBuilder<TState>(assert, state);
-        }
-
-        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) where T : Exception
-        {
-            return await Assert.ThrowsExceptionAsync<T>(action).ConfigureAwait(false);
-        }
     }
 }
