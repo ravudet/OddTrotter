@@ -34,6 +34,7 @@
             public Task<TException> Throws<TException>(Action<TValue> action)
                 where TException : Exception
             {
+                //// TODO use the caller's `assert` instance
                 return CommitImpl<TException>(Assert.That, this.awaitable.ConfigureAwait(false).GetAwaiter(), action);
             }
 
@@ -93,38 +94,35 @@
             return Assert.ThrowsException<T>(action);
         }
 
-        public readonly ref struct ThrowsExceptionBuilder<TState>
-            where TState : allows ref struct
+        public readonly ref struct RefStructPlaceHolder<TValue>
+            where TValue : allows ref struct
         {
-            private readonly Assert assert;
-            private readonly TState state;
+            private readonly TValue value;
 
-            public ThrowsExceptionBuilder(Assert assert, TState state)
+            public RefStructPlaceHolder(TValue value)
             {
-                this.assert = assert;
-                this.state = state;
+                this.value = value;
             }
 
-            public TException Commit<TException>(Action<TState> action)
-                where TException : Exception
+            public TException ThrowsException<TException>(Action<TValue> action)
             {
                 try
                 {
-                    action(this.state);
-                    return this.assert.ThrowsException<TException>(() => { });
+                    action(this.value);
+                    //// TODO use the caller's `assert` instance
+                    return Assert.That.ThrowsException<TException>(() => { });
                 }
                 catch (Exception exception)
                 {
-                    return this.assert.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
+                    return Assert.That.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
                 }
             }
         }
 
-        public static ThrowsExceptionBuilder<TState> ThrowsException<TState>(this Assert assert, TState state)
-            where TState : allows ref struct
+        public static RefStructPlaceHolder<TValue> RefStruct<TValue>(this Assert assert, TValue value)
+            where TValue : allows ref struct
         {
-            return new ThrowsExceptionBuilder<TState>(assert, state);
+            return new RefStructPlaceHolder<TValue>(value);
         }
-
     }
 }
