@@ -110,7 +110,11 @@ namespace Fx.Either
     /// Either.Right("asdf").Left<int>();
     /// ```
     /// 
-    /// The approach for the implementation is similar to option 1 and has the same issues presented there about runtime and development overhead. However, there is increased discoverability with option 3 and there is also increased usability. 
+    /// The approach for the implementation is similar to option 1 and has the same issues presented there about runtime and development overhead. However, there is increased discoverability with option 3 and there is also increased usability. These are negated by there being no preference for ordering to use. This quickly devolves into a "curly braces on the same line or on a new line" stylistic argument. Because of the additional overhead and the fact that each individual developer will likely need to choose for themselves what convention they will follow, option 1 at least is certainly the better option.
+    /// 
+    /// ### Conclusion
+    /// 
+    /// We have decided on option 2. The compiler will guide callers who are confused by the more abstract "rule" such that those callers can only do the "right" thing anyway. This mitigates the only downside of option 2, while preserving the upsides of no additional runtime overhead and no additional development overhead in needing to check the semantics of the potentially thrown (in theory but almost never in practice) exception during a `Full.Right` call.
     /// </remarks>
     public static class Either
     {
