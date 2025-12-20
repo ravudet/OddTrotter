@@ -101,6 +101,7 @@
         {
             //// TODO you are here
             var either = new Either<Exception, string>.Right("asdf");
+            //// TODO use assert.that
             var rightMapException = Assert.ThrowsException<RightMapException>(() =>
                 either.Apply(
                     left => left.ToString().Length,
