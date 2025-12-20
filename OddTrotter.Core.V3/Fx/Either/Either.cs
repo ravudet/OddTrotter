@@ -99,7 +99,18 @@ namespace Fx.Either
     /// 
     /// This avoids the both the runtime and development overhead of option 1. However, the "rule" for which factory the caller writes first is more abstract, which could lead to usability issues.
     /// 
-    /// ### Option 3: 
+    /// ### Option 3: "any" comes first
+    /// 
+    /// With this option, the caller can write whichever factory they want first. 
+    /// 
+    /// ```
+    /// Either.Left<int>().Right("asdf");
+    /// Either.Right<string>().Left(42);
+    /// Either.Left(42).Right<string>();
+    /// Either.Right("asdf").Left<int>();
+    /// ```
+    /// 
+    /// The approach for the implementation is similar to option 1 and has the same issues presented there about runtime and development overhead. However, there is increased discoverability with option 3 and there is also increased usability. 
     /// </remarks>
     public static class Either
     {
