@@ -185,6 +185,27 @@
         }
 
         [TestMethod]
+        public async Task TestMethod3()
+        {
+            var exception = new Exception("the message");
+            var either = Either.Left<int>().Right(exception);
+            var result = await ClassEitherUnitTests.TestMethod3Impl(either).ConfigureAwait(false);
+
+            Assert.That.AreEqual(exception.ToString(), result);
+        }
+
+        private static async Task<string> TestMethod3Impl(IEither<int, Exception> either)
+        {
+            //// TODO you are here
+            //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior
+            return await either
+                .Apply(
+                    value => ToString(value),
+                    exception => throw exception)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task TestMethod2Dot1()
         {
             var either = new Either<string, Exception>.Left("42");
