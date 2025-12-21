@@ -77,14 +77,15 @@
             var taskWrapper = Task.FromException<string>(originalException).ToTaskWrapper();
 
             InvalidOperationException? wrappingException = null;
-            var continued = taskWrapper.ContinueWith(
-                _ => "hello",
-                _ =>
-                {
-                    wrappingException = new InvalidOperationException("some message", _);
-                    throw wrappingException;
-                },
-                _ => "hello");
+            var continued = taskWrapper
+                .ContinueWith(
+                    _ => "hello",
+                    _ =>
+                    {
+                        wrappingException = new InvalidOperationException("some message", _);
+                        throw wrappingException;
+                    },
+                    _ => "hello");
 
             var thrownException =
                 await Assert
@@ -101,12 +102,12 @@
         public void ApplyRightMapException()
         {
             var either = Either.Left<Exception>().Right("asdf");
-            //// TODO you are here
-            //// TODO use assert.that
-            var rightMapException = Assert.ThrowsException<RightMapException>(() =>
-                either.Apply(
-                    left => left.ToString().Length,
-                    right => int.Parse(right)));
+            var rightMapException = Assert
+                .That
+                .ThrowsException<RightMapException>(() =>
+                    either.Apply(
+                        left => left.ToString().Length,
+                        right => int.Parse(right)));
 
             Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
@@ -114,11 +115,13 @@
         [TestMethod]
         public void ApplyLeftMapException()
         {
-            var either = new Either<string, Exception>.Left("asdf");
-            var leftMapException = Assert.ThrowsException<LeftMapException>(() => 
-                either.Apply(
-                    left => int.Parse(left),
-                    right => right.ToString().Length));
+            var either = Either.Right<Exception>().Left("asdf");
+            var leftMapException = Assert
+                .That
+                .ThrowsException<LeftMapException>(() => 
+                    either.Apply(
+                        left => int.Parse(left),
+                        right => right.ToString().Length));
 
             Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }

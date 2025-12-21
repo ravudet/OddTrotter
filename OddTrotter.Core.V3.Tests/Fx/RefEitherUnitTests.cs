@@ -20,7 +20,7 @@
         public void ApplyRightMapException()
         {
             var either = new RefEither<Exception, string>("asdf");
-            var rightMapException = Assert.That.ThrowsException(either).Commit<RightMapException>(
+            var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
                 either => either.TypeHolder.Apply(
                     left => left.ToString().Length,
                     right => int.Parse(right)));
@@ -32,7 +32,7 @@
         public void ApplyLeftMapException()
         {
             var either = new RefEither<string, Exception>("asdf");
-            var leftMapException = Assert.That.ThrowsException(either).Commit<LeftMapException>(
+            var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
                 either => either.TypeHolder.Apply(
                     left => int.Parse(left),
                     right => right.ToString().Length));
@@ -44,7 +44,7 @@
         public void SelectRightMapException()
         {
             var either = new RefEither<Exception, string>("asdf");
-            var rightMapException = Assert.That.ThrowsException(either).Commit<RightMapException>(
+            var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
                 either => either.TypeHolder.Select(
                     left => left,
                     right => int.Parse(right)));
@@ -56,7 +56,7 @@
         public void SelectLeftMapException()
         {
             var either = new RefEither<string, Exception>("asdf");
-            var leftMapException = Assert.That.ThrowsException(either).Commit<LeftMapException>(
+            var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
                 either => either.TypeHolder.Select(
                     left => int.Parse(left),
                     right => right));

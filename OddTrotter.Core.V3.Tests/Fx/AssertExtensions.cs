@@ -105,6 +105,7 @@
             }
 
             public TException ThrowsException<TException>(Action<TValue> action)
+                where TException : Exception
             {
                 try
                 {
