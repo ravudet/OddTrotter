@@ -176,6 +176,7 @@
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
         {
             //// TODO you are here
+            //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior
             return await either
                 .Apply(
                     value => ToString(value),
