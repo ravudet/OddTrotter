@@ -158,10 +158,7 @@
         public async Task TestMethod1Dot1()
         {
             var either = Either.Right<Exception>().Left(42);
-            var result = 
-                await ClassEitherUnitTests
-                    .TestMethod1Impl(either)
-                .ConfigureAwait(false);
+            var result = await ClassEitherUnitTests.TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual("42", result);
         }
@@ -169,16 +166,16 @@
         [TestMethod]
         public async Task TestMethod1Dot2()
         {
-            //// TODO you are here
             var exception = new Exception("the message");
-            var either = new Either<int, Exception>.Right(exception);
-            var result = await TestMethod1Impl(either).ConfigureAwait(false);
+            var either = Either.Left<int>().Right(exception);
+            var result = await ClassEitherUnitTests.TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
         {
+            //// TODO you are here
             return await either
                 .Apply(
                     value => ToString(value),
