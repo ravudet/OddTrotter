@@ -195,8 +195,7 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
-            //// TODO you are here
-            var either = new Either<string, Exception>.Left("42");
+            var either = Either.Right<Exception>().Left("42");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual("42", result);
@@ -205,7 +204,7 @@
         [TestMethod]
         public async Task TestMethod2Dot2()
         {
-            var either = new Either<string, Exception>.Left("not a number");
+            var either = Either.Right<Exception>().Left("not a number");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.IsTrue(result.Contains("FormatException"));
@@ -215,7 +214,7 @@
         public async Task TestMethod2Dot3()
         {
             var exception = new Exception("the message");
-            var either = new Either<string, Exception>.Right(exception);
+            var either = Either.Left<string>().Right(exception);
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual(exception.ToString(), result);
@@ -223,6 +222,7 @@
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
         {
+            //// TODO you are here
             var parsed = either.SelectAsync(
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
