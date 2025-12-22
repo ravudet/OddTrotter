@@ -223,7 +223,7 @@
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
         {
             //// TODO you are here
-            var parsed = either.SelectAsync(
+            var parsed = either.SelectAsync( ///// TODO don't call this "async"?
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
