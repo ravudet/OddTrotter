@@ -190,19 +190,17 @@
             var exception = new Exception("the message");
             var either = Either.Left<int>().Right(exception);
 
-            var leftMapException =
+            var rightMapException =
                 await Assert
                     .That
-                    .ThrowsExceptionAsync<LeftMapException>(
+                    .ThrowsExceptionAsync<RightMapException>(
                         async () =>
                             await ClassEitherUnitTests
                                 .TestMethod3Impl(either)
                             .ConfigureAwait(false))
                     .ConfigureAwait(false);
 
-            var result = ;
-
-            Assert.That.AreEqual(exception.ToString(), result);
+            Assert.That.AreEqual(exception, rightMapException.InnerException);
         }
 
         private static async Task<string> TestMethod3Impl(IEither<int, Exception> either)
