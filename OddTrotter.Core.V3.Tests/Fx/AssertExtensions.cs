@@ -94,6 +94,12 @@
             return Assert.ThrowsException<T>(action);
         }
 
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) 
+            where T : Exception
+        {
+            return await Assert.ThrowsExceptionAsync<T>(action);
+        }
+
         public readonly ref struct RefStructPlaceHolder<TValue>
             where TValue : allows ref struct
         {

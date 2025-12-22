@@ -175,8 +175,7 @@
 
         private static async Task<string> TestMethod1Impl(IEither<int, Exception> either)
         {
-            //// TODO you are here
-            //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior
+            //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior //// TODO look at `testmethod3impl` and you will see that this is not true; i'm not clear why
             return await either
                 .Apply(
                     value => ToString(value),
@@ -187,17 +186,27 @@
         [TestMethod]
         public async Task TestMethod3()
         {
+            //// TODO you are here
             var exception = new Exception("the message");
             var either = Either.Left<int>().Right(exception);
-            var result = await ClassEitherUnitTests.TestMethod3Impl(either).ConfigureAwait(false);
+
+            var leftMapException =
+                await Assert
+                    .That
+                    .ThrowsExceptionAsync<LeftMapException>(
+                        async () =>
+                            await ClassEitherUnitTests
+                                .TestMethod3Impl(either)
+                            .ConfigureAwait(false))
+                    .ConfigureAwait(false);
+
+            var result = ;
 
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static async Task<string> TestMethod3Impl(IEither<int, Exception> either)
         {
-            //// TODO you are here
-            //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior
             return await either
                 .Apply(
                     value => ToString(value),
