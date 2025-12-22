@@ -11,6 +11,7 @@
 
     //// TODO the "bare minimum" should be for that top-level "production" code; you will then do this recursively later for other files
     //// TODO implement the bare minimum needed for these tests; here, the bare minimum includes anything required for type inference
+    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces)
     //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable`
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well
@@ -28,26 +29,6 @@
     public sealed class ClassEitherUnitTests
     {
         public required TestContext TestContext { get; set; }
-
-        public readonly ref struct Foo
-        {
-            public Foo()
-            {
-                throw new Exception("tODO");
-            }
-        }
-
-        [TestMethod]
-        public void Strcut()
-        {
-            Foo foo = default;
-            DoThing(foo);
-
-        }
-
-        private static void DoThing(Foo foo)
-        {
-        }
 
         [TestMethod]
         public async Task TaskWrapperContinueWithSourceContinuationThrows()
@@ -186,7 +167,6 @@
         [TestMethod]
         public async Task TestMethod3()
         {
-            //// TODO you are here
             var exception = new Exception("the message");
             var either = Either.Left<int>().Right(exception);
 
@@ -215,6 +195,7 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
+            //// TODO you are here
             var either = new Either<string, Exception>.Left("42");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
