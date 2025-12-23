@@ -252,12 +252,6 @@
             }
         }
 
-        private static async Task ReadToEnd<TNextReader>(Json2.ObjectStartReader<TNextReader> objectStartReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await objectStartReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
         private static async Task ReadToEnd<TNextReader>(Json2.NumberReader<TNextReader> numberReader, Func<TNextReader, Task> readToEnd)
         {
             var signReader = await numberReader.Move().ConfigureAwait(false);
@@ -295,54 +289,6 @@
             {
                 throw new Exception("TODO visitor");
             }
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.DigitsReader<TNextReader> digitsReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await digitsReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.ExpSignReader<TNextReader> expSignReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await expSignReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.EReader<TNextReader> eReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await eReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.FracReader<TNextReader> fracReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await fracReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.IntReader<TNextReader> intReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await intReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.SignReader<TNextReader> signReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await signReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.NullReader<TNextReader> nullReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await nullReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.FalseReader<TNextReader> falseReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await falseReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayReader<TNextReader> arrayReader, Func<TNextReader, Task> readToEnd)
@@ -406,12 +352,6 @@
             }
         }
 
-        private static async Task ReadToEnd<TNextReader>(Json2.ArrayEndReader<TNextReader> arrayEndReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await arrayEndReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
         private static async Task ReadToEnd<TNextReader>(Json2.SubsequentArrayElementReader<TNextReader> subsequentArrayElementReader, Func<TNextReader, Task> readToEnd)
         {
             var commaReader = await subsequentArrayElementReader.Move().ConfigureAwait(false);
@@ -422,12 +362,6 @@
                     async arrayElementReader => await ReadToEnd(
                         arrayElementReader,
                         async nextReader => await readToEnd(nextReader))));
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.CommaReader<TNextReader> commaReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await commaReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         private static async Task ReadToEnd<TNextReader>(Json2.ArrayElementReader<TNextReader> arrayElementReader, Func<TNextReader, Task> readToEnd)
