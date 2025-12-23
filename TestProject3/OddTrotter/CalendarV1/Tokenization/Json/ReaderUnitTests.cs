@@ -399,12 +399,6 @@
                         nextReader)));
         }
 
-        private static async Task ReadToEnd<TNextReader>(Json2.ArrayStartReader<TNextReader> arrayStartReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await arrayStartReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-
         private static async Task ReadToEnd<TNextReader>(
             Json2.ValueReader<TNextReader> valueReader,
             Func<Json2.ArrayReader<TNextReader>, Task> arrayReadToEnd,
@@ -448,12 +442,6 @@
             {
                 throw new Exception("TODO you should have an `apply` method or something on `valuetoken<T>`");
             }
-        }
-
-        private static async Task ReadToEnd<TNextReader>(Json2.WhitespaceReader<TNextReader> whitespaceReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await whitespaceReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
         }
 
         /*[TestMethod]
