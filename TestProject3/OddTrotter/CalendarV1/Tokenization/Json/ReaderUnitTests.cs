@@ -105,9 +105,15 @@
                             nothing => Task.CompletedTask))));
         }
 
-        private static async Task ReadToEnd<TNextReader>(Json2.TrueReader<TNextReader> trueReader, Func<TNextReader, Task> readToEnd)
+        /*private static async Task ReadToEnd<TNextReader>(Json2.TrueReader<TNextReader> trueReader, Func<TNextReader, Task> readToEnd)
         {
             var nextReader = await trueReader.Move().ConfigureAwait(false);
+            await readToEnd(nextReader).ConfigureAwait(false);
+        }*/
+
+        private static async Task ReadToEnd<TNextReader>(Json2.IReader<TNextReader> currentReader, Func<TNextReader, Task> readToEnd)
+        {
+            var nextReader = await currentReader.Move().ConfigureAwait(false);
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
