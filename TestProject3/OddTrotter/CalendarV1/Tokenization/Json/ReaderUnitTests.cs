@@ -22,6 +22,9 @@
         {
             //// TODO consolidate the `readtoend` implementations
             //// TODO all of your `move` implementations when a `getvalue` is present will read the value a second time if it's already been read once
+            //// TODO implement buffers for readers
+            //// TODO change reader interface so that async is only used when the buffer is expended
+            //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
 
             var data =
 """
