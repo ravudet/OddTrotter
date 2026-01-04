@@ -25,7 +25,7 @@ namespace Fx.Either
             right = new RefNullable<TRight>();
         }
 
-        public TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight> TypeHolder
+        public TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight> AsEither
         {
             get
             {

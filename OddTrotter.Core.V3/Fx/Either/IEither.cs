@@ -11,7 +11,7 @@ namespace Fx.Either
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
-        TypeHolder<TEither, TLeft, TRight> TypeHolder { get; }
+        TypeHolder<TEither, TLeft, TRight> AsEither { get; }
     }
 
     public interface IEither<out TLeft, out TRight>

@@ -75,7 +75,7 @@ namespace Fx.Realizable
         private static IAwaiter<T> GetAwaiter<T>(this Realizable<T> realizable, bool? continueOnCapturedContext)
         {
             ITask<T> task;
-            if (realizable.TypeHolder.Decompose(out var left, out var right))
+            if (realizable.AsEither.Decompose(out var left, out var right))
             {
                 task = new TaskWrapper<T>(Task.FromResult(left));
             }
@@ -98,7 +98,7 @@ namespace Fx.Realizable
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
-            return realizable.TypeHolder.Apply(
+            return realizable.AsEither.Apply(
                 value => new Realizable<TResult>(selector(value)),
                 future => future.ContinueWith(
                     selector,

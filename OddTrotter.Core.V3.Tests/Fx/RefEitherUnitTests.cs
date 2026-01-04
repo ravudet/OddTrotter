@@ -21,7 +21,7 @@
         {
             var either = new RefEither<Exception, string>("asdf");
             var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
-                either => either.TypeHolder.Apply(
+                either => either.AsEither.Apply(
                     left => left.ToString().Length,
                     right => int.Parse(right)));
 
@@ -33,7 +33,7 @@
         {
             var either = new RefEither<string, Exception>("asdf");
             var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
-                either => either.TypeHolder.Apply(
+                either => either.AsEither.Apply(
                     left => int.Parse(left),
                     right => right.ToString().Length));
 
@@ -45,7 +45,7 @@
         {
             var either = new RefEither<Exception, string>("asdf");
             var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
-                either => either.TypeHolder.Select(
+                either => either.AsEither.Select(
                     left => left,
                     right => int.Parse(right)));
 
@@ -57,7 +57,7 @@
         {
             var either = new RefEither<string, Exception>("asdf");
             var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
-                either => either.TypeHolder.Select(
+                either => either.AsEither.Select(
                     left => int.Parse(left),
                     right => right));
 
@@ -85,7 +85,7 @@
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
-            return either.TypeHolder.Apply(
+            return either.AsEither.Apply(
                 value => ToString(value),
                 exception => ToString(exception));
         }
@@ -137,7 +137,7 @@
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
-            return realizable.TypeHolder.Apply(
+            return realizable.AsEither.Apply(
                 realized => new Realizable<TResult>(selector(realized)),
                 future => future.ContinueWith(selector, _ => throw _, _ => throw _));
         }
@@ -146,7 +146,7 @@
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            return Select(realizable, either => either.TypeHolder);
+            return Select(realizable, either => either.AsEither);
         }
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
@@ -197,7 +197,7 @@
             var value = 42;
             var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
 
-            var result = either.TypeHolder.Apply(
+            var result = either.AsEither.Apply(
                 left => left.Value,
                 right => right.ToString().Length);
 
@@ -220,7 +220,7 @@
             var value = 42;
             var either = new RefEither<Exception, SomeRef>(new SomeRef(value));
 
-            var result = either.TypeHolder.Apply(
+            var result = either.AsEither.Apply(
                 left => left.ToString().Length,
                 right => right.Value);
 
@@ -233,7 +233,7 @@
             var value = "42";
             var either = await AsyncRefWork(value).ConfigureAwait(false);
 
-            Assert.That.IsTrue(either.TypeHolder.Decompose(out var result, out _));
+            Assert.That.IsTrue(either.AsEither.Decompose(out var result, out _));
             Assert.That.AreEqual(42, result.Value);
         }
 
@@ -337,7 +337,7 @@
             await WriteToFile(filePath, "42").ConfigureAwait(false);
 
             var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
-            Assert.That.IsTrue(potentiallyParsed.TypeHolder.Decompose(out var result, out _));
+            Assert.That.IsTrue(potentiallyParsed.AsEither.Decompose(out var result, out _));
             Assert.That.AreEqual(42, result);
         }
 

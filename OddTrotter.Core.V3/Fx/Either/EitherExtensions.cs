@@ -44,7 +44,7 @@ namespace Fx.Either
 
         //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
         //// TODO can you call this `frameselect` or `scopedselect`
-        public static RefEither<TLeftResult, TRightResult> SelectRef<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        public static RefEither<TLeftResult, TRightResult> ScopedSelect<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
@@ -54,6 +54,14 @@ namespace Fx.Either
             where TRightResult : allows ref struct
         {
             return either.TypeHolder().Select(leftMap, rightMap);
+        }
+
+        //// TODO better name; allocselect?
+        public static IEither<TLeftResult, TRightResult> ClassSelect<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this RefEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap,
+            Func<TRightSource, TRightResult> rightMap)
+        {
         }
 
         private sealed class DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult> : IEither<TLeftResult, TRightResult>
@@ -119,23 +127,36 @@ namespace Fx.Either
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TLeftSource"></typeparam>
+        /// <typeparam name="TRightSource"></typeparam>
+        /// <typeparam name="TLeftResult"></typeparam>
+        /// <typeparam name="TRightResult"></typeparam>
+        /// <param name="either"></param>
+        /// <param name="leftMap"></param>
+        /// <param name="rightMap"></param>
+        /// <returns></returns>
+        /// <exception cref="LeftMapException"></exception>
+        /// <exception cref="RightMapException"></exception>
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
             where TLeftSource : allows ref struct
             where TRightSource : allows ref struct
-            where TLeftResult : allows ref struct
-            where TRightResult : allows ref struct
+            /*where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct*/
         {
-            //// TODO add tests for this have source and result types being ref structs
+            /*//// TODO add tests for this have source and result types being ref structs
             var deferredEither = new DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult>(either, leftMap, rightMap);
 
             deferredEither.Decompose(out var left, out var right); //// TODO are you happy with this?
 
-            return deferredEither;
+            return deferredEither;*/
 
-            ////return either.Select<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, TLeftResult, TRightResult>(leftMap, rightMap).ToEither();
+            return either.Select<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, TLeftResult, TRightResult>(leftMap, rightMap).ToEither();
         }
 
         public static RefEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
@@ -168,7 +189,7 @@ namespace Fx.Either
                 left => ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
                 right => ToRealizable(right, rightMap));
 
-            if (realizable.TypeHolder.Decompose(out var result, out var task))
+            if (realizable.AsEither.Decompose(out var result, out var task))
             {
                 return result;
             }
@@ -256,7 +277,7 @@ namespace Fx.Either
             where TRight : allows ref struct
         {
             return realizable
-                .TypeHolder
+                .AsEither
                 .Apply(
                     realized => new Realizable<TEither>(realized.Self),
                     future => future.ContinueWith(
@@ -294,7 +315,7 @@ namespace Fx.Either
                 (TRight right, ref bool context) => ToRealizable(right, rightMap),
                 ref Context);
 
-            if (future.TypeHolder.Decompose(out var result, out var task))
+            if (future.AsEither.Decompose(out var result, out var task))
             {
                 return result;
             }
@@ -334,7 +355,7 @@ namespace Fx.Either
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
-            return new DecomposeCastable<TLeft, TRight>(either).TypeHolder.Decompose(out left, out right);
+            return new DecomposeCastable<TLeft, TRight>(either).AsEither.Decompose(out left, out right);
         }
 
         private readonly ref struct DecomposeCastable<TLeft, TRight> : IEither<DecomposeCastable<TLeft, TRight>, TLeft, TRight>, ICastable
@@ -348,7 +369,7 @@ namespace Fx.Either
                 this.either = either;
             }
 
-            public TypeHolder<DecomposeCastable<TLeft, TRight>, TLeft, TRight> TypeHolder
+            public TypeHolder<DecomposeCastable<TLeft, TRight>, TLeft, TRight> AsEither
             {
                 get
                 {

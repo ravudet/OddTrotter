@@ -33,7 +33,7 @@ namespace Fx.Realizable
             return new TypeHolder<Realizable<T>, T>(this);
         }
 
-        public TypeHolder<Realizable<T>, T, ITask<T>> TypeHolder
+        public TypeHolder<Realizable<T>, T, ITask<T>> AsEither
         {
             get
             {
@@ -43,7 +43,7 @@ namespace Fx.Realizable
 
         public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
         {
-            if (either.TypeHolder.Decompose(out var value, out var future))
+            if (either.AsEither.Decompose(out var value, out var future))
             {
                 TResult result;
                 try
