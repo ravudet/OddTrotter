@@ -14,7 +14,7 @@
     //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces)
     //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable`
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
-    //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well
+    //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither`
     //// TODO `iawaitable` should be *only* what is needed for `await` to work
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO implement assert extensions so you can always use assert.that

@@ -41,6 +41,7 @@ namespace Fx.Either
         }
 
         //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
+        //// TODO can you call this `frameselect` or `scopedselect`
         public static RefEither<TLeftResult, TRightResult> SelectRef<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
