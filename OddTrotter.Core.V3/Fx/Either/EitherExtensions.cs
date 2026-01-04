@@ -12,6 +12,8 @@ namespace Fx.Either
     public static class EitherExtensions
     {
         private static TypeHolder<IEither<TLeft, TRight>, TLeft, TRight> TypeHolder<TLeft, TRight>(this IEither<TLeft, TRight> either)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
         {
             return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either);
         }
@@ -46,18 +48,94 @@ namespace Fx.Either
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
             where TLeftResult : allows ref struct
             where TRightResult : allows ref struct
         {
             return either.TypeHolder().Select(leftMap, rightMap);
         }
 
+        private sealed class DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult> : IEither<TLeftResult, TRightResult>
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            private readonly IEither<TLeftSource, TRightSource> either;
+            private readonly Func<TLeftSource, TLeftResult> leftMap;
+            private readonly Func<TRightSource, TRightResult> rightMap;
+
+            //// TODO needs a more appropriate name
+            public DeferredEither(
+                IEither<TLeftSource, TRightSource> either,
+                Func<TLeftSource, TLeftResult> leftMap,
+                Func<TRightSource, TRightResult> rightMap)
+            {
+                this.either = either;
+                this.leftMap = leftMap;
+                this.rightMap = rightMap;
+            }
+
+            public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeftResult, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRightResult, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+                where TContinuable : IContinuable<TResult>, allows ref struct
+            {
+                return Helper(leftMap, rightMap, ref context)
+                    .ContinueWith(
+                        source => source,
+                        exception => throw exception,
+                        cancelation => throw cancelation);
+            }
+
+            private TContinuable Helper<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeftResult, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRightResult, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                where TResult : allows ref struct
+                where TContext : allows ref struct
+                where TContinuable : IContinuable<TResult>, allows ref struct
+            {
+                if (either.Decompose(out var left, out var right))
+                {
+                    try
+                    {
+                        return leftMap(this.leftMap(left), ref context);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new LeftMapException(exception);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        return rightMap(this.rightMap(right), ref context);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new RightMapException(exception);
+                    }
+                }
+            }
+        }
+
         public static IEither<TLeftResult, TRightResult> Select<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
         {
-            return either.Select<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, TLeftResult, TRightResult>(leftMap, rightMap).ToEither();
+            //// TODO add tests for this have source and result types being ref structs
+            var deferredEither = new DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult>(either, leftMap, rightMap);
+
+            deferredEither.Decompose(out var left, out var right); //// TODO are you happy with this?
+
+            return deferredEither;
+
+            ////return either.Select<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, TLeftResult, TRightResult>(leftMap, rightMap).ToEither();
         }
 
         public static RefEither<TLeftResult, TRightResult> Select<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
