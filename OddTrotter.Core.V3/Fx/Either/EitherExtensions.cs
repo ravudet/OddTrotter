@@ -42,7 +42,7 @@ namespace Fx.Either
                 right => new Either<TLeft, TRight>.Right(right));
         }
 
-        //// TODO instead of having all of these additional overloads, i think it ultimately makes more sense to let have the caller convert their `ieither` into a `refeither` and *then* they can call `select` (or convert their refeither into ieither etc); then you don't have to re-implement all of the variants, but with the "scoped" or "class" prefix
+        //// TODO instead of having all of these additional overloads, i think it ultimately makes more sense to let have the caller convert their `ieither` into a `refeither` and *then* they can call `select` (or convert their refeither into ieither etc); then you don't have to re-implement all of the variants, but with the "scoped" or "class" prefix //// TODo this *does* slightly reduce discoverability; for example, take the case where the caller has an `ieither` and wants delegates that return `ref struct`s; they need to be able to look at that compiler error and say "oh, my return type needs to be able to hold the `ref struct`s for the map, so my return type needs to be a `refeither`; and the `select` methods give me back what i started with, so i need to start with a `refeither` instead of an `ieither`; let me call `toref`
 
         //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
         //// TODO can you call this `frameselect` or `scopedselect`
