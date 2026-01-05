@@ -25,13 +25,13 @@
                 this.awaitable = awaitable;
             }
 
-            public Task<TException> Throws<TException>()
+            public Task<TException> ThrowsException<TException>()
                 where TException : Exception
             {
-                return this.Throws<TException>(_ => { });
+                return this.ThrowsException<TException>(_ => { });
             }
 
-            public Task<TException> Throws<TException>(Action<TValue> action)
+            public Task<TException> ThrowsException<TException>(Action<TValue> action)
                 where TException : Exception
             {
                 //// TODO use the caller's `assert` instance

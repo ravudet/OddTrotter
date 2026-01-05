@@ -46,7 +46,7 @@
                 await Assert
                     .That
                     .RefStructAwaitable(continued.ToAwaitable().AsAwaitable())
-                    .Throws<InvalidOperationException>()
+                    .ThrowsException<InvalidOperationException>()
                 .ConfigureAwait(false);
             Assert.That.AreEqual(exceptionToThrow, thrownException);
         }
@@ -68,25 +68,11 @@
                     },
                     _ => "hello");
 
-            ////var foo = await continued;
-
-            string value;
-            if (continued.AsEither.Decompose(out var left, out var right))
-            {
-                value = left;
-            }
-            else
-            {
-                value = await right;
-            }
-
-            ////var asdf = continued.TypeHolder.Select(foo => foo, bar => bar);
-
             var thrownException =
                     await Assert
                         .That
                         .RefStructAwaitable(continued.ToAwaitable().AsAwaitable())
-                        .Throws<InvalidOperationException>() //// TODO `throwsexception` //// TODO call it `async`
+                        .ThrowsException<InvalidOperationException>()
                     .ConfigureAwait(false);
             Assert.IsNotNull(wrappingException);
             Assert.That.AreEqual(wrappingException, thrownException);

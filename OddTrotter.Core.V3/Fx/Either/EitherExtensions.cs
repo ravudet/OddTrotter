@@ -57,12 +57,12 @@ namespace Fx.Either
         }
 
         //// TODO better name; allocselect?
-        public static IEither<TLeftResult, TRightResult> ClassSelect<TLeftSource, TRightSource, TLeftResult, TRightResult>(
+        /*public static IEither<TLeftResult, TRightResult> ClassSelect<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this RefEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, TLeftResult> leftMap,
             Func<TRightSource, TRightResult> rightMap)
         {
-        }
+        }*/
 
         private sealed class DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult> : IEither<TLeftResult, TRightResult>
             where TLeftSource : allows ref struct
