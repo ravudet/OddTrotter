@@ -42,6 +42,8 @@ namespace Fx.Either
                 right => new Either<TLeft, TRight>.Right(right));
         }
 
+        //// TODO instead of having all of these additional overloads, i think it ultimately makes more sense to let have the caller convert their `ieither` into a `refeither` and *then* they can call `select` (or convert their refeither into ieither etc); then you don't have to re-implement all of the variants, but with the "scoped" or "class" prefix
+
         //// TODO not a huge fan of this naming, or the fact that you needed to name the async variants "async"
         //// TODO can you call this `frameselect` or `scopedselect`
         public static RefEither<TLeftResult, TRightResult> ScopedSelect<TLeftSource, TRightSource, TLeftResult, TRightResult>(
