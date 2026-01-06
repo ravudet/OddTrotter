@@ -225,7 +225,10 @@
             //// TODO you are here
             var parsed = either.SelectAsync( ///// TODO don't call this "async"?
                 value => Parse(value),
-                error => new TaskWrapper<Exception>(Task.FromResult(error)));
+                error => (IContinuable<Exception>)new TaskWrapper<Exception>(Task.FromResult(error)));
+
+            var foo = either.SelectTest( ///// TODO don't call this "async"?
+                async value => await Parse(value));
 
             return parsed.Apply(
                 actualParsing => actualParsing.Apply(
