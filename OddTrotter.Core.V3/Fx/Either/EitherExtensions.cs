@@ -201,30 +201,6 @@ namespace Fx.Either
             }
         }
 
-        public static Realizable<int> SelectTest<TLeftSource, TRightSource, TLeftResult>(
-            this IEither<TLeftSource, TRightSource> either,
-            Func<TLeftSource, TLeftResult> leftMap)
-            where TLeftSource : allows ref struct
-            where TRightSource : allows ref struct
-        {
-        }
-
-        public static Realizable<int> SelectTest<TLeftSource, TRightSource, TLeftResult>(
-            this IEither<TLeftSource, TRightSource> either,
-            Func<TLeftSource, IContinuable<TLeftResult>> leftMap)
-            where TLeftSource : allows ref struct
-            where TRightSource : allows ref struct
-        {
-        }
-
-        public static Realizable<int> SelectTest<TLeftSource, TRightSource, TLeftResult>(
-            this IEither<TLeftSource, TRightSource> either,
-            Func<TLeftSource, Task<TLeftResult>> leftMap)
-            where TLeftSource : allows ref struct
-            where TRightSource : allows ref struct
-        {
-        }
-
         public static Realizable<IEither<TLeftResult, TRightResult>> SelectAsync<TLeftSource, TRightSource, TLeftResult, TRightResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, IContinuable<TLeftResult>> leftMap,

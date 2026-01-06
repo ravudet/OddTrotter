@@ -222,19 +222,18 @@
 
         private static Realizable<string> TestMethod2Impl(IEither<string, Exception> either)
         {
-            //// TODO you are here
-            var parsed = either.SelectAsync( ///// TODO don't call this "async"?
-                value => Parse(value),
-                error => (IContinuable<Exception>)new TaskWrapper<Exception>(Task.FromResult(error)));
+            var parsed = either
+                .SelectAsync(
+                    value => Parse(value),
+                    error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
-            var foo = either.SelectTest( ///// TODO don't call this "async"?
-                async value => await Parse(value));
-
-            return parsed.Apply(
-                actualParsing => actualParsing.Apply(
-                    actuallyParsed => actuallyParsed.ToString(),
-                    parseError => parseError.ToString()),
-                readError => readError.ToString());
+            return parsed
+                .Apply(
+                    actualParsing => actualParsing
+                        .Apply(
+                            actuallyParsed => actuallyParsed.ToString(),
+                            parseError => parseError.ToString()),
+                    readError => readError.ToString());
         }
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
@@ -249,13 +248,14 @@
 
         private static IEither<int, Exception> ParseInner(string value)
         {
+            //// TODO you are here
             try
             {
-                return new Either<int, Exception>.Left(int.Parse(value));
+                return Either.Right<Exception>().Left(int.Parse(value));
             }
             catch (Exception exception)
             {
-                return new Either<int, Exception>.Right(exception);
+                return Either.Left<int>().Right(exception);
             }
         }
 
