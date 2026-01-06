@@ -19,6 +19,7 @@
         [TestMethod]
         public void ApplyRightMapException()
         {
+            //// TODO you are here
             var either = new RefEither<Exception, string>("asdf");
             var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
                 either => either.AsEither.Apply(
