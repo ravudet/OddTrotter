@@ -232,6 +232,8 @@ namespace Fx.Either
             where TLeftSource : allows ref struct
             where TRightSource : allows ref struct
         {
+            //// TODO make this note somewhere: this has to be called "async"; since the return type of the maps is an *interface*, then the caller's use of any concrete types will require an implicit conversion to find this overload over the normal `select` overload; because of this, the caller will not receive back a future<either> but instead will receive back and either<future>; this worked in *previous* implementations because the return type of the maps was `task` and not `itask`; while this will likely work for a large number of cases, it will destroy the naming convention if we want to support a caller who has implemented their own continuables; *their* callers would be able to use `select` for anything that is implemented with `task`, but would need to call `selectasync` (or lose type inference) when leveraging anything from the special continuable implementation
+
             return either
                 .SelectAsync<IEither<TLeftSource, TRightSource>, TLeftSource, TRightSource, IContinuable<TLeftResult>, TLeftResult, IContinuable<TRightResult>, TRightResult>(leftMap, rightMap)
                 .Select(
