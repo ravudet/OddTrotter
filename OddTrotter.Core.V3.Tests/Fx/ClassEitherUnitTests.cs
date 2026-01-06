@@ -248,7 +248,6 @@
 
         private static IEither<int, Exception> ParseInner(string value)
         {
-            //// TODO you are here
             try
             {
                 return Either.Right<Exception>().Left(int.Parse(value));
@@ -282,6 +281,7 @@
         [TestMethod]
         public async Task ReadFromFile()
         {
+            //// TODO you are here
             var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
             await WriteToFile(filePath, "42").ConfigureAwait(false);
