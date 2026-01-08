@@ -20,7 +20,7 @@
         public void ApplyRightMapException()
         {
             //// TODO you are here
-            var either = new RefEither<Exception, string>("asdf");
+            var either = RefEither.Left<Exception>().Right("asdf");
             var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
                 either => either.AsEither.Apply(
                     left => left.ToString().Length,
