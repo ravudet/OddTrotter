@@ -79,9 +79,8 @@
         [TestMethod]
         public async Task TestMethod1Dot1()
         {
-            //// TODO you are here
-            var either = new RefEither<int, Exception>(42);
-            var result = await TestMethod1Impl(either).ConfigureAwait(false);
+            var either = RefEither.Right<Exception>().Left(42);
+            var result = await RefEitherUnitTests.TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual("42", result);
         }
@@ -89,6 +88,7 @@
         [TestMethod]
         public async Task TestMethod1Dot2()
         {
+            //// TODO you are here
             var exception = new Exception("the message");
             var either = new RefEither<int, Exception>(exception);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
