@@ -49,12 +49,14 @@
         [TestMethod]
         public void SelectRightMapException()
         {
-            //// TODO you are here
-            var either = new RefEither<Exception, string>("asdf");
-            var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
-                either => either.AsEither.Select(
-                    left => left,
-                    right => int.Parse(right)));
+            var either = RefEither.Left<Exception>().Right("asdf");
+            var rightMapException = Assert
+                .That
+                .RefStruct(either)
+                .ThrowsException<RightMapException>(
+                    either => either.AsEither.Select(
+                        left => left,
+                        right => int.Parse(right)));
 
             Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
@@ -62,11 +64,14 @@
         [TestMethod]
         public void SelectLeftMapException()
         {
-            var either = new RefEither<string, Exception>("asdf");
-            var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
-                either => either.AsEither.Select(
-                    left => int.Parse(left),
-                    right => right));
+            var either = RefEither.Right<Exception>().Left("asdf");
+            var leftMapException = Assert
+                .That
+                .RefStruct(either)
+                .ThrowsException<LeftMapException>(
+                    either => either.AsEither.Select(
+                        left => int.Parse(left),
+                        right => right));
 
             Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
@@ -74,6 +79,7 @@
         [TestMethod]
         public async Task TestMethod1Dot1()
         {
+            //// TODO you are here
             var either = new RefEither<int, Exception>(42);
             var result = await TestMethod1Impl(either).ConfigureAwait(false);
 
