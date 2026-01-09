@@ -88,16 +88,17 @@
         [TestMethod]
         public async Task TestMethod1Dot2()
         {
-            //// TODO you are here
             var exception = new Exception("the message");
-            var either = new RefEither<int, Exception>(exception);
-            var result = await TestMethod1Impl(either).ConfigureAwait(false);
+            var either = RefEither.Left<int>().Right(exception);
+            var result = await RefEitherUnitTests.TestMethod1Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
+            //// TODO you are here
+            //// TODO update this to use an `applyasync`; also update the other test class to do the same
             return either.AsEither.Apply(
                 value => ToString(value),
                 exception => ToString(exception));
