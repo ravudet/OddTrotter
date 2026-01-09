@@ -16,11 +16,12 @@
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
     //// TODO `iawaitable` should be *only* what is needed for `await` to work
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
+    //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
     //// TODO implement assert extensions so you can always use assert.that
     //// TODO for the current "bare minimum", make everything look really nice and complete; you don't need every overload and variation, but the ones that you do have should be complete
     //// TODO you need to implement "everything" (all of the extension variations and overloads; any renames that need to happen; implementing visitors and such; full code quality); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now
     //// TODO add `assert.that` to code quality
-    //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality
+    //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality //// TODO but i think you already use object.referenceequal for this though?
     //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
 
