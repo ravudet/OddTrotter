@@ -19,12 +19,14 @@
         [TestMethod]
         public void ApplyRightMapException()
         {
-            //// TODO you are here
             var either = RefEither.Left<Exception>().Right("asdf");
-            var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
-                either => either.AsEither.Apply(
-                    left => left.ToString().Length,
-                    right => int.Parse(right)));
+            var rightMapException = Assert
+                .That
+                .RefStruct(either)
+                .ThrowsException<RightMapException>(
+                    either => either.AsEither.Apply(
+                        left => left.ToString().Length,
+                        right => int.Parse(right)));
 
             Assert.That.IsInstanceOfType(rightMapException.InnerException, typeof(FormatException));
         }
@@ -32,11 +34,14 @@
         [TestMethod]
         public void ApplyLeftMapException()
         {
-            var either = new RefEither<string, Exception>("asdf");
-            var leftMapException = Assert.That.RefStruct(either).ThrowsException<LeftMapException>(
-                either => either.AsEither.Apply(
-                    left => int.Parse(left),
-                    right => right.ToString().Length));
+            var either = RefEither.Right<Exception>().Left("asdf");
+            var leftMapException = Assert
+                .That
+                .RefStruct(either)
+                .ThrowsException<LeftMapException>(
+                    either => either.AsEither.Apply(
+                        left => int.Parse(left),
+                        right => right.ToString().Length));
 
             Assert.That.IsInstanceOfType(leftMapException.InnerException, typeof(FormatException));
         }
@@ -44,6 +49,7 @@
         [TestMethod]
         public void SelectRightMapException()
         {
+            //// TODO you are here
             var either = new RefEither<Exception, string>("asdf");
             var rightMapException = Assert.That.RefStruct(either).ThrowsException<RightMapException>(
                 either => either.AsEither.Select(
