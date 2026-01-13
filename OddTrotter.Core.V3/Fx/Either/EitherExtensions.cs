@@ -322,10 +322,12 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return realizable.ContinueWith(
+            realizable.AsEither.Apply<(
                 either => either.ApplyAsync(leftMap, rightMap),
-                exception => throw exception,
-                canceled => throw canceled);
+                future => future.ContinueWith(
+                    either => either.ApplyAsync(leftMap, rightMap),
+                    exception => throw exception,
+                    canceled => throw canceled));
         }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
