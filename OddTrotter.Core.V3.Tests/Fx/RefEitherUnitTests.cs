@@ -99,7 +99,7 @@
         {
             //// TODO you are here
             //// TODO update this to use an `applyasync`; also update the other test class to do the same`
-            return either.AsEither.Apply(
+            return either.AsEither.ApplyAsync(
                 value => ToString(value),
                 exception => ToString(exception));
         }
@@ -140,7 +140,7 @@
 
             return 
                 TypeHolder2(parsed)
-                .ApplyAsync(
+                .Apply(
                 actualParsing => actualParsing.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
                     parseError => parseError.ToString())!,
