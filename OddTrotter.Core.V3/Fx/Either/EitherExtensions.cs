@@ -264,7 +264,7 @@ namespace Fx.Either
             return either.Self.Apply(leftMap, rightMap);
         }
 
-        public static Realizable<TResult> Apply<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
@@ -282,6 +282,8 @@ namespace Fx.Either
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            //// TODO should this be called "async"?
+
             return realizable
                 .AsEither
                 .Apply(

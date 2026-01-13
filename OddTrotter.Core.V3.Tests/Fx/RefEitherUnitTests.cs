@@ -140,7 +140,7 @@
 
             return 
                 TypeHolder2(parsed)
-                .Apply(
+                .ApplyAsync(
                 actualParsing => actualParsing.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
                     parseError => parseError.ToString())!,
