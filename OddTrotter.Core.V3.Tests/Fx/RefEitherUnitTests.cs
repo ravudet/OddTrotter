@@ -99,7 +99,7 @@
         {
             //// TODO you are here
             //// TODO update this to use an `applyasync`; also update the other test class to do the same`
-            return either.AsEither.ApplyAsync(
+            return either.AsEither.Apply(
                 value => ToString(value),
                 exception => ToString(exception));
         }
