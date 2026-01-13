@@ -40,7 +40,7 @@ namespace Fx.Either
             left = new RefNullable<TLeft>();
         }
 
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(
+        public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(
             AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
             AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, 
             ref TContext context)

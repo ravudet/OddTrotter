@@ -20,7 +20,7 @@ namespace Fx.Either
     {
         /// <exception cref="LeftMapException"></exception>
         /// <exception cref="RightMapException"></exception>
-        Realizable<TResult> Apply<TResult, TContext, TContinuable>(
+        Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(
             AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
             AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap,
             ref TContext context)

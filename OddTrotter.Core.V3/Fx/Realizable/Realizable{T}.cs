@@ -66,12 +66,12 @@ namespace Fx.Realizable
             }
         }
 
-        public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+        public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<T, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<ITask<T>, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct
         {
-            return either.Apply(leftMap, rightMap, ref context);
+            return either.ApplyAsync(leftMap, rightMap, ref context);
         }
 
         public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted) where TCasted : struct, allows ref struct

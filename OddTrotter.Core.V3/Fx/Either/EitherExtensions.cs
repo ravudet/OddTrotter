@@ -87,7 +87,7 @@ namespace Fx.Either
                 this.rightMap = rightMap;
             }
 
-            public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeftResult, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRightResult, TContext, TContinuable, TResult> rightMap, ref TContext context)
+            public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeftResult, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRightResult, TContext, TContinuable, TResult> rightMap, ref TContext context)
                 where TResult : allows ref struct
                 where TContext : allows ref struct
                 where TContinuable : IContinuable<TResult>, allows ref struct
@@ -228,7 +228,7 @@ namespace Fx.Either
             where TRightContinuable : IContinuable<TRightResult>, allows ref struct
             where TRightResult : allows ref struct
         {
-            return either.Apply<RefEither<TLeftResult, TRightResult>, bool, Realizable<RefEither<TLeftResult, TRightResult>>>(
+            return either.ApplyAsync<RefEither<TLeftResult, TRightResult>, bool, Realizable<RefEither<TLeftResult, TRightResult>>>(
                 (TLeftSource left, ref bool context) =>
                     leftMap(left)
                     .ContinueWith(
@@ -316,7 +316,7 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            var future = either.Apply<TResult, bool, Realizable<TResult>>(
+            var future = either.ApplyAsync<TResult, bool, Realizable<TResult>>(
                 (TLeft left, ref bool context) => ToRealizable(left, leftMap),
                 (TRight right, ref bool context) => ToRealizable(right, rightMap),
                 ref Context);
@@ -383,12 +383,12 @@ namespace Fx.Either
                 }
             }
 
-            public Realizable<TResult> Apply<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
+            public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
                 where TResult : allows ref struct
                 where TContext : allows ref struct
                 where TContinuable : IContinuable<TResult>, allows ref struct
             {
-                return this.either.Apply(leftMap, rightMap, ref context);
+                return this.either.ApplyAsync(leftMap, rightMap, ref context);
             }
 
             public bool TryCast<TCasted>([MaybeNullWhen(false)] out TCasted casted)
@@ -424,7 +424,7 @@ namespace Fx.Either
             }
 
             var context = new DecomposeContext<TLeft, TRight>();
-            var result = either.Apply<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>>(
+            var result = either.ApplyAsync<bool, DecomposeContext<TLeft, TRight>, Realizable<bool>>(
                 (TLeft left, ref DecomposeContext<TLeft, TRight> context) =>
                 {
                     context.Left = left;
