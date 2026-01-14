@@ -313,7 +313,7 @@ namespace Fx.Either
                         canceled => throw canceled));
         }*/
 
-        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
             this Realizable<TEither> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -332,7 +332,7 @@ namespace Fx.Either
                     _ => throw _)
                 .Unwrap();
 
-            //// TODO you are here
+            /*//// TODO you are here
             //// TODO look at the realizable constructor
             realizable.ContinueWith(
                 either =>
@@ -347,7 +347,7 @@ namespace Fx.Either
             else
             {
 
-            }
+            }*/
         }
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(

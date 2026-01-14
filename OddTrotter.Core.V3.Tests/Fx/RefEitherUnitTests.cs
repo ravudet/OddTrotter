@@ -4,6 +4,7 @@
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices.Marshalling;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -95,6 +96,15 @@
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
+        [TestMethod]
+        public async Task Bar()
+        {
+            var @string = await Foo().ApplyAsync2<RefEither<int, Exception>, int, Exception, string>(
+                value => Foo1(value).ToTaskWrapper(),
+                exception => Foo2(exception).ToTaskWrapper());
+            Assert.That.AreEqual("42", @string);
+        }
+
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
             //// TODO you are here
@@ -102,6 +112,21 @@
             return either.AsEither.Apply(
                 value => ToString(value),
                 exception => ToString(exception));
+        }
+
+        private static async Task<string> Foo2(Exception exception)
+        {
+            return await ToString(exception);
+        }
+
+        private static async Task<string> Foo1(int value)
+        {
+            return await ToString(value);
+        }
+
+        private static Realizable<RefEither<int, Exception>> Foo()
+        {
+            return new Realizable<RefEither<int, Exception>>(RefEither.Right<Exception>().Left(42));
         }
 
         [TestMethod]
