@@ -30,6 +30,9 @@ namespace Fx.Realizable
 
         public Realizable(Realizable<Realizable<T>> realizable)
         {
+            //// TODO create an apply overload that is synchronous, but takes a ref parameter; use that ref parameter to store the underlying value or future, as the case may be
+            //// TODO can this actually be implemented as the `unwrap` extension? https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskextensions.unwrap?view=net-10.0&redirectedfrom=MSDN#System_Threading_Tasks_TaskExtensions_Unwrap_System_Threading_Tasks_Task_System_Threading_Tasks_Task__
+
             realizable.ContinueWith<Realizable<T>>(
                 inner =>
                 {
