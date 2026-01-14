@@ -313,7 +313,7 @@ namespace Fx.Either
                         canceled => throw canceled));
         }*/
 
-        /*public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TEither> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -322,6 +322,16 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
+            return realizable
+                .ContinueWith(
+                    either => either
+                        .ApplyAsync(
+                            leftMap,
+                            rightMap),
+                    _ => throw _,
+                    _ => throw _)
+                .Unwrap();
+
             //// TODO you are here
             //// TODO look at the realizable constructor
             realizable.ContinueWith(
@@ -338,7 +348,7 @@ namespace Fx.Either
             {
 
             }
-        }*/
+        }
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
