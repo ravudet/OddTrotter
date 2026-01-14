@@ -313,7 +313,7 @@ namespace Fx.Either
                         canceled => throw canceled));
         }*/
 
-        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+        /*public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TEither> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -338,7 +338,7 @@ namespace Fx.Either
             {
 
             }
-        }
+        }*/
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
@@ -403,7 +403,18 @@ namespace Fx.Either
 
 
 
-
+        public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
+            where T : allows ref struct
+        {
+            if (realizable.AsEither.Decompose(out var inner, out var future))
+            {
+                return inner;
+            }
+            else
+            {
+                return new Realizable<T>(new Tasker<T>(future));
+            }
+        }
 
 
 
