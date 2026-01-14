@@ -28,6 +28,26 @@ namespace Fx.Realizable
             either = new RefEither<T, ITask<T>>(future);
         }
 
+        public Realizable(Realizable<Realizable<T>> realizable)
+        {
+            realizable.ContinueWith<Realizable<T>>(
+                inner =>
+                {
+                    var thing = inner.ContinueWith(
+                       source => source,
+                       _ => throw _,
+                       _ => throw _);
+                    if (thing.AsEither.Decompose(out var value, out var future))
+                    {
+
+                    }
+
+                    return thing;
+                }, 
+                _ => throw _, 
+                _ => throw _);
+        }
+
         public TypeHolder<Realizable<T>, T> AsContinuable()
         {
             return new TypeHolder<Realizable<T>, T>(this);
