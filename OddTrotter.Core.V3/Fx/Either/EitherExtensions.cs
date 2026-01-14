@@ -338,7 +338,7 @@ namespace Fx.Either
             }
         }*/
 
-        /*public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -352,7 +352,7 @@ namespace Fx.Either
                 (TLeft left, ref bool context) => leftMap(left),
                 (TRight right, ref bool context) => rightMap(right),
                 ref Context);
-        }*/
+        }
 
         /*public static Realizable<T> Collapse<T>(Realizable<Realizable<T>> expanded)
         {
