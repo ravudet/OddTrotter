@@ -275,6 +275,31 @@ namespace Fx.Either
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TypeHolder<TEither, TLeft, TRight> either,
+            Func<TLeft, Realizable<TResult>> leftMap,
+            Func<TRight, Realizable<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.ApplyAsync<TEither, TLeft, TRight, Realizable<TResult>, TResult>(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TContinuable, TResult>(
+            this TypeHolder<TEither, TLeft, TRight> either,
+            Func<TLeft, TContinuable> leftMap,
+            Func<TRight, TContinuable> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.Self.ApplyAsync(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+            this TypeHolder<TEither, TLeft, TRight> either,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
             where TEither : IEither<TLeft, TRight>, allows ref struct
@@ -324,7 +349,7 @@ namespace Fx.Either
                     _ => throw _)
                 .Unwrap();
         }
-
+        
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TEither either,
             Func<TLeft, IContinuable<TResult>> leftMap,
@@ -336,7 +361,22 @@ namespace Fx.Either
         {
             //// TODO should this use a `tcontinuable`?
 
-            return either.ApplyAsync<TResult, bool, IContinuable<TResult>>(
+            return either.ApplyAsync<TEither, TLeft, TRight, IContinuable<TResult>, TResult>(
+                leftMap,
+                rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TContinuable, TResult>(
+            this TEither either,
+            Func<TLeft, TContinuable> leftMap,
+            Func<TRight, TContinuable> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.ApplyAsync<TResult, bool, TContinuable>(
                 (TLeft left, ref bool context) => leftMap(left),
                 (TRight right, ref bool context) => rightMap(right),
                 ref Context);
