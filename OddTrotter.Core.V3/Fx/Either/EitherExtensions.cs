@@ -268,22 +268,23 @@ namespace Fx.Either
             Func<TLeft, TResult> leftMap,
             Func<TRight, TResult> rightMap)
         {
+            //// TODO you are here
             return either.TypeHolder().Apply(leftMap, rightMap);
         }*/
 
-        /*public static TResult Apply<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TypeHolder<TEither, TLeft, TRight> either,
-            Func<TLeft, TResult> leftMap,
-            Func<TRight, TResult> rightMap)
+            Func<TLeft, IContinuable<TResult>> leftMap,
+            Func<TRight, IContinuable<TResult>> rightMap)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
+            //// TODO should this use a `tcontinuable`?
 
-            //// TODO you are here
-            return either.Self.Apply(leftMap, rightMap);
-        }*/
+            return either.Self.ApplyAsync(leftMap, rightMap);
+        }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
