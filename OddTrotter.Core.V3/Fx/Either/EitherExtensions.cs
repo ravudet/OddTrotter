@@ -263,14 +263,15 @@ namespace Fx.Either
 
 
 
-        /*public static TResult Apply<TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
-            Func<TLeft, TResult> leftMap,
-            Func<TRight, TResult> rightMap)
+            Func<TLeft, IContinuable<TResult>> leftMap,
+            Func<TRight, IContinuable<TResult>> rightMap)
         {
-            //// TODO you are here
-            return either.TypeHolder().Apply(leftMap, rightMap);
-        }*/
+            //// TODO should this use a `tcontinuable`?
+            
+            return either.TypeHolder().ApplyAsync(leftMap, rightMap);
+        }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TypeHolder<TEither, TLeft, TRight> either,
