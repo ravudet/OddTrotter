@@ -313,7 +313,7 @@ namespace Fx.Either
                         canceled => throw canceled));
         }*/
 
-        public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -323,11 +323,11 @@ namespace Fx.Either
             where TResult : allows ref struct
         {
             return FromTypeHolder(realizable)
-                .ApplyAsync2(
+                .ApplyAsync(
                     leftMap, rightMap);
         }
 
-        public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this Realizable<TEither> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)

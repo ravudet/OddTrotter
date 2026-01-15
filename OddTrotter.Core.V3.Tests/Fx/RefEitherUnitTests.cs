@@ -99,7 +99,7 @@
         [TestMethod]
         public async Task Bar()
         {
-            var @string = await TypeHolder2(Foo()).ApplyAsync2(
+            var @string = await TypeHolder2(Foo()).ApplyAsync(
                 value => Foo1(value).ToTaskWrapper(),
                 exception => Foo2(exception).ToTaskWrapper());
             Assert.That.AreEqual("42", @string);
