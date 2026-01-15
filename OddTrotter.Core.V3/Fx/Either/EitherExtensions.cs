@@ -366,24 +366,6 @@ namespace Fx.Either
                 ref Context);
         }
 
-        /*public static Realizable<T> Collapse<T>(Realizable<Realizable<T>> expanded)
-        {
-            if (expanded.AsEither.Decompose(out var inner, out var futureInner))
-            {
-                return inner;
-            }
-            else
-            {
-
-            }
-        }
-
-        public static Realizable<T> Get<T>(this ITask<Realizable<T>> task)
-            where T : allows ref struct
-        {
-            
-        }*/
-
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TEither either,
             Func<TLeft, IContinuable<TResult>> leftMap,
@@ -413,18 +395,7 @@ namespace Fx.Either
 
 
 
-        public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
-            where T : allows ref struct
-        {
-            if (realizable.AsEither.Decompose(out var inner, out var future))
-            {
-                return inner;
-            }
-            else
-            {
-                return new Realizable<T>(new Tasker<T>(future));
-            }
-        }
+        
 
 
 

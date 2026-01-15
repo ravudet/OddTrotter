@@ -9,6 +9,19 @@ namespace Fx.Realizable
 
     public static class RealizableExtensions
     {
+        public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
+            where T : allows ref struct
+        {
+            if (realizable.AsEither.Decompose(out var inner, out var future))
+            {
+                return inner;
+            }
+            else
+            {
+                return new Realizable<T>(new Tasker<T>(future));
+            }
+        }
+
         public readonly ref struct RealizableAwaitable<T> : ITask<ConfiguredAwaiter<T>, IAwaiter<T>, T>
         {
             private readonly Realizable<T> realizable;
