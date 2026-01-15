@@ -41,6 +41,25 @@ namespace Fx.Realizable
                 throw new NotImplementedException();
             }
 
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
+            {
+                private readonly ITask<TSource> task;
+                private readonly Func<TSource, TResult> sourceContinuation;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(ITask<TSource> task, Func<TSource, TResult> sourceContinuation, bool continueOnCapturedContext)
+                {
+                    this.task = task;
+                    this.sourceContinuation = sourceContinuation;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public IAwaiter<TResult> GetAwaiter()
+                {
+                    return new Awaiter(this.task.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter(), this.sourceContinuation);
+                }
+            }
+
             public Realizable<TResult1> ContinueWith<TResult1>(Func<TResult, TResult1> sourceContinuation, Func<Exception, TResult1> exceptionContinuation, Func<OperationCanceledException, TResult1> canceledContinuation) where TResult1 : allows ref struct
             {
                 return new Realizable<TResult1>(new Continuation<TResult, TResult1>(this, sourceContinuation));
