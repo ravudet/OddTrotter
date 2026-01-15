@@ -23,7 +23,7 @@ namespace Fx.Realizable
             }
         }
 
-        public sealed class Continuation<TSource, TResult> : ITask<TResult> //// TODO better name
+        public sealed class Continuation<TSource, TResult> : ITask<TResult> //// TODO better name //// TODO somehow consolidate this with taskwrapper.continuation
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
