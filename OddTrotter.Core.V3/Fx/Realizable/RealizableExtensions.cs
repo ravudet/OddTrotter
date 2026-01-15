@@ -12,6 +12,8 @@ namespace Fx.Realizable
         public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
             where T : allows ref struct
         {
+            //// TODO i think `realizable` could implement `itask<T>` (even though `await` can't actually be used with it), and then this method could actually work for all nested awaitables; for `await` to still work for `realizable`s without `ref struct` type parameters, i think you will need to implement `itask` *explicitly` so that the `getawaiter` extension is found, and not the "native" implementation on `realizable`
+
             if (realizable.AsEither.Decompose(out var inner, out var future))
             {
                 return inner;
