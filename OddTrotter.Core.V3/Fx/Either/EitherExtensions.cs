@@ -347,7 +347,6 @@ namespace Fx.Either
                 .Unwrap();
 
             //// TODO you are here
-            //// TODO finish implementations in realizableextensions.cs
         }
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
