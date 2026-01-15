@@ -325,22 +325,6 @@ namespace Fx.Either
                 .Unwrap();
         }
 
-        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
-            this IEither<TLeft, TRight> either,
-            Func<TLeft, IContinuable<TResult>> leftMap,
-            Func<TRight, IContinuable<TResult>> rightMap)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-            where TResult : allows ref struct
-        {
-            //// TODO should this use a `tcontinuable`?
-
-            return either.ApplyAsync<TResult, bool, IContinuable<TResult>>(
-                (TLeft left, ref bool context) => leftMap(left),
-                (TRight right, ref bool context) => rightMap(right),
-                ref Context);
-        }
-
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
             this TEither either,
             Func<TLeft, IContinuable<TResult>> leftMap,
@@ -358,6 +342,18 @@ namespace Fx.Either
                 ref Context);
         }
 
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
+            this Realizable<IEither<TLeft, TRight>> either,
+            Func<TLeft, IContinuable<TResult>> leftMap,
+            Func<TRight, IContinuable<TResult>> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            //// TODO should this use a `tcontinuable`?
+
+            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
+        }
 
 
 
@@ -370,7 +366,8 @@ namespace Fx.Either
 
 
 
-        
+
+
 
 
 
@@ -505,10 +502,7 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.ContinueWith(
-                result => result.Apply(leftMap, rightMap),
-                exception => throw exception,
-                canceled => throw canceled);
+            return either.Apply<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
         }
 
 
