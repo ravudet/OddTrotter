@@ -38,7 +38,7 @@ namespace Fx.Realizable
 
             public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
             {
-                throw new NotImplementedException();
+                return new ConfiguredAwaitable(this.task, this.sourceContinuation, continueOnCapturedContext);
             }
 
             private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
