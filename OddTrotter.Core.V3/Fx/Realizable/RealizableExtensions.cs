@@ -12,6 +12,7 @@ namespace Fx.Realizable
         public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
             where T : allows ref struct
         {
+            //// TODO you are here
             if (realizable.AsEither.Decompose(out var inner, out var future))
             {
                 return inner;
