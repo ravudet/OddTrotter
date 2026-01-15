@@ -314,6 +314,20 @@ namespace Fx.Either
         }*/
 
         public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
+            this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
+            Func<TLeft, IContinuable<TResult>> leftMap,
+            Func<TRight, IContinuable<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return FromTypeHolder(realizable)
+                .ApplyAsync2(
+                    leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
             this Realizable<TEither> realizable,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -332,22 +346,8 @@ namespace Fx.Either
                     _ => throw _)
                 .Unwrap();
 
-            /*//// TODO you are here
-            //// TODO look at the realizable constructor
-            realizable.ContinueWith(
-                either =>
-                {
-
-                })
-
-            if (realizable.AsEither.Decompose(out var either, out var future))
-            {
-                return either.ApplyAsync(leftMap, rightMap);
-            }
-            else
-            {
-
-            }*/
+            //// TODO you are here
+            //// TODO finish implementations in realizable{T}.cs
         }
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
