@@ -106,36 +106,36 @@ namespace Fx.Realizable
             }
         }
 
-        private sealed class Tasker<T> : ITask<T> //// TODO better name
-            where T : allows ref struct
+        private sealed class Tasker<TValue> : ITask<TValue> //// TODO better name
+            where TValue : allows ref struct
         {
-            private readonly ITask<Realizable<T>> task;
+            private readonly ITask<Realizable<TValue>> task;
 
-            public Tasker(ITask<Realizable<T>> task)
+            public Tasker(ITask<Realizable<TValue>> task)
             {
                 this.task = task;
             }
 
-            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            public IConfiguredAwaitable<TValue> ConfigureAwait(bool continueOnCapturedContext)
             {
                 throw new NotImplementedException();
             }
 
-            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
+            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
             {
-                return new Realizable<TResult>(new Continuation<T, TResult>(this, sourceContinuation));
+                return new Realizable<TResult>(new Continuation<TValue, TResult>(this, sourceContinuation));
             }
 
-            public IAwaiter<T> GetAwaiter()
+            public IAwaiter<TValue> GetAwaiter()
             {
                 return new Awaiter(this.task.GetAwaiter());
             }
 
-            private sealed class Awaiter : IAwaiter<T>
+            private sealed class Awaiter : IAwaiter<TValue>
             {
-                private readonly IAwaiter<Realizable<T>> awaiter;
+                private readonly IAwaiter<Realizable<TValue>> awaiter;
 
-                public Awaiter(IAwaiter<Realizable<T>> awaiter)
+                public Awaiter(IAwaiter<Realizable<TValue>> awaiter)
                 {
                     this.awaiter = awaiter;
                 }
@@ -160,7 +160,7 @@ namespace Fx.Realizable
                     }
                 }
 
-                public T GetResult()
+                public TValue GetResult()
                 {
                     if (this.awaiter.GetResult().AsEither.Decompose(out var value, out var future))
                     {
