@@ -23,7 +23,7 @@ namespace Fx.Realizable
             }
         }
 
-        private sealed class Continuation<TSource, TResult> : ITask<TResult>
+        private sealed class Continuation<TSource, TResult> : ITask<TResult> //// TODO better name
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
