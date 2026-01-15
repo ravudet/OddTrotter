@@ -23,9 +23,9 @@ namespace Fx.Realizable
             }
         }
 
-        public sealed class Continuation<TSource, TResult> : ITask<TResult>
-        where TSource : allows ref struct
-        where TResult : allows ref struct
+        private sealed class Continuation<TSource, TResult> : ITask<TResult>
+            where TSource : allows ref struct
+            where TResult : allows ref struct
         {
             private readonly ITask<TSource> task;
             private readonly Func<TSource, TResult> sourceContinuation;
@@ -87,7 +87,7 @@ namespace Fx.Realizable
             }
         }
 
-        public sealed class Tasker<T> : ITask<T>
+        private sealed class Tasker<T> : ITask<T> //// TODO better name
             where T : allows ref struct
         {
             private readonly ITask<Realizable<T>> task;
