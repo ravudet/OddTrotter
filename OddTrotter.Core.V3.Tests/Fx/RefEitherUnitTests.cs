@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using System.Linq;
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices.Marshalling;
     using System.Threading.Tasks;
@@ -116,17 +117,139 @@
 
         private static async Task<string> Foo2(Exception exception)
         {
+            await Task.Delay(100);
             return await ToString(exception);
         }
 
         private static async Task<string> Foo1(int value)
         {
+            await Task.Delay(100);
             return await ToString(value);
         }
 
         private static Realizable<RefEither<int, Exception>> Foo()
         {
-            return new Realizable<RefEither<int, Exception>>(RefEither.Right<Exception>().Left(42));
+            return new Realizable<RefEither<int, Exception>>(
+                new FutureTask<RefEither<int, Exception>>(
+                    Task.Delay(100),
+                    () => RefEither.Right<Exception>().Left(42)));
+        }
+
+        private sealed class FutureTask<T> : ITask<T>
+            where T : allows ref struct
+        {
+            private readonly Task initial;
+            private readonly Func<T> final;
+
+            public FutureTask(Task initial, Func<T> final)
+            {
+                this.initial = initial;
+                this.final = final;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.initial, this.final, continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>
+            {
+                private readonly Task initial;
+                private readonly Func<T> final;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(Task initial, Func<T> final, bool continueOnCapturedContext)
+                {
+                    this.initial = initial;
+                    this.final = final;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public IAwaiter<T> GetAwaiter()
+                {
+                    return new Awaiter(this.initial.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter(), this.final);
+                }
+
+                private sealed class Awaiter : IAwaiter<T>
+                {
+                    private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter;
+                    private readonly Func<T> final;
+
+                    public Awaiter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter, Func<T> final)
+                    {
+                        this.awaiter = awaiter;
+                        this.final = final;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return this.awaiter.IsCompleted;
+                        }
+                    }
+
+                    public T GetResult()
+                    {
+                        return this.final();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.awaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.awaiter.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
+            {
+                return new Realizable<TResult>(new RealizableExtensions.Continuation<T, TResult>(this, sourceContinuation));
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                return new Awaiter(this.initial.GetAwaiter(), this.final);
+            }
+
+            private sealed class Awaiter : IAwaiter<T>
+            {
+                private readonly TaskAwaiter awaiter;
+                private readonly Func<T> final;
+
+                public Awaiter(TaskAwaiter awaiter, Func<T> final)
+                {
+                    this.awaiter = awaiter;
+                    this.final = final;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.awaiter.IsCompleted;
+                    }
+                }
+
+                public T GetResult()
+                {
+                    return this.final();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.awaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.awaiter.UnsafeOnCompleted(continuation);
+                }
+            }
         }
 
         [TestMethod]
