@@ -96,15 +96,6 @@
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
-        [TestMethod]
-        public async Task Bar()
-        {
-            var @string = await TypeHolder2(Foo()).ApplyAsync(
-                value => Foo1(value).ToTaskWrapper(),
-                exception => Foo2(exception).ToTaskWrapper());
-            Assert.That.AreEqual("42", @string);
-        }
-
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
             //// TODO you are here
@@ -112,6 +103,15 @@
             return either.AsEither.Apply(
                 value => ToString(value),
                 exception => ToString(exception));
+        }
+
+        [TestMethod]
+        public async Task Bar()
+        {
+            var @string = await TypeHolder2(Foo()).ApplyAsync(
+                value => Foo1(value).ToTaskWrapper(),
+                exception => Foo2(exception).ToTaskWrapper());
+            Assert.That.AreEqual("42", @string);
         }
 
         private static async Task<string> Foo2(Exception exception)

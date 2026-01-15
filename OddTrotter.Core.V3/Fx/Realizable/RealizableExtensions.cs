@@ -22,6 +22,161 @@ namespace Fx.Realizable
             }
         }
 
+        public sealed class Continuation<TSource, TResult> : ITask<TResult>
+        where TSource : allows ref struct
+        where TResult : allows ref struct
+        {
+            private readonly ITask<TSource> task;
+            private readonly Func<TSource, TResult> sourceContinuation;
+
+            public Continuation(ITask<TSource> task, Func<TSource, TResult> sourceContinuation)
+            {
+                this.task = task;
+                this.sourceContinuation = sourceContinuation;
+            }
+
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Realizable<TResult1> ContinueWith<TResult1>(Func<TResult, TResult1> sourceContinuation, Func<Exception, TResult1> exceptionContinuation, Func<OperationCanceledException, TResult1> canceledContinuation) where TResult1 : allows ref struct
+            {
+                return new Realizable<TResult1>(new Continuation<TResult, TResult1>(this, sourceContinuation));
+            }
+
+            public IAwaiter<TResult> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+
+            private sealed class Awaiter : IAwaiter<TResult>
+            {
+                private readonly IAwaiter<TSource> awaiter;
+                private readonly Func<TSource, TResult> sourceContinuation;
+
+                public Awaiter(IAwaiter<TSource> awaiter, Func<TSource, TResult> sourceContinuation)
+                {
+                    this.awaiter = awaiter;
+                    this.sourceContinuation = sourceContinuation;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.awaiter.IsCompleted;
+                    }
+                }
+
+                public TResult GetResult()
+                {
+                    return this.sourceContinuation(this.awaiter.GetResult());
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.awaiter.OnCompleted(continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.awaiter.UnsafeOnCompleted(continuation);
+                }
+            }
+        }
+
+        public sealed class Tasker<T> : ITask<T>
+            where T : allows ref struct
+        {
+            private readonly ITask<Realizable<T>> task;
+
+            public Tasker(ITask<Realizable<T>> task)
+            {
+                this.task = task;
+            }
+
+            public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
+            {
+                return new Realizable<TResult>(new Continuation<T, TResult>(this, sourceContinuation));
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                return new Awaiter(this.task.GetAwaiter());
+            }
+
+            private sealed class Awaiter : IAwaiter<T>
+            {
+                private readonly IAwaiter<Realizable<T>> awaiter;
+
+                public Awaiter(IAwaiter<Realizable<T>> awaiter)
+                {
+                    this.awaiter = awaiter;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        if (this.awaiter.IsCompleted)
+                        {
+                            if (this.awaiter.GetResult().AsEither.Decompose(out var value, out var future))
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return future.GetAwaiter().IsCompleted;
+                            }
+                        }
+
+                        return false;
+                    }
+                }
+
+                public T GetResult()
+                {
+                    if (this.awaiter.GetResult().AsEither.Decompose(out var value, out var future))
+                    {
+                        return value;
+                    }
+                    else
+                    {
+                        return future.GetAwaiter().GetResult();
+                    }
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    this.awaiter.OnCompleted(continuation); //// TODO this actually needs to be called on the awaiter of the realizable
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    this.awaiter.UnsafeOnCompleted(continuation); //// TODO this actually needs to be called on the awaiter of the realizable
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public readonly ref struct RealizableAwaitable<T> : ITask<ConfiguredAwaiter<T>, IAwaiter<T>, T>
         {
             private readonly Realizable<T> realizable;
