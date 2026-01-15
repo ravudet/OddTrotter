@@ -23,7 +23,7 @@ namespace Fx.Realizable
             }
         }
 
-        public sealed class Continuation<TSource, TResult> : ITask<TResult> //// TODO better name //// TODO somehow consolidate this with taskwrapper.continuation
+        public sealed class Continuation<TSource, TResult> : ITask<TResult> //// TODO better name //// TODO somehow consolidate this with taskwrapper.continuation //// TODO if this remains public, it should go outside of the extensions class and in its own file
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
@@ -200,19 +200,6 @@ namespace Fx.Realizable
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public readonly ref struct RealizableAwaitable<T> : ITask<ConfiguredAwaiter<T>, IAwaiter<T>, T>
         {
