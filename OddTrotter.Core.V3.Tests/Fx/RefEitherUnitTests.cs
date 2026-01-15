@@ -109,6 +109,7 @@
         [TestMethod]
         public async Task Bar()
         {
+            //// TODO add a test that has realized values
             var @string = await TypeHolder2(Foo()).ApplyAsync(
                 value => Foo1(value).ToTaskWrapper(),
                 exception => Foo2(exception).ToTaskWrapper());
