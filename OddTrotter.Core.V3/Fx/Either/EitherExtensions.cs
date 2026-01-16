@@ -264,6 +264,19 @@ namespace Fx.Either
 
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
+            this Realizable<IEither<TLeft, TRight>> either,
+            Func<TLeft, IContinuable<TResult>> leftMap,
+            Func<TRight, IContinuable<TResult>> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            //// TODO should this use a `tcontinuable`?
+
+            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this IEither<TLeft, TRight> either,
             Func<TLeft, IContinuable<TResult>> leftMap,
             Func<TRight, IContinuable<TResult>> rightMap)
@@ -383,19 +396,6 @@ namespace Fx.Either
                 (TLeft left, ref bool context) => leftMap(left),
                 (TRight right, ref bool context) => rightMap(right),
                 ref Context);
-        }
-
-        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
-            this Realizable<IEither<TLeft, TRight>> either,
-            Func<TLeft, IContinuable<TResult>> leftMap,
-            Func<TRight, IContinuable<TResult>> rightMap)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-            where TResult : allows ref struct
-        {
-            //// TODO should this use a `tcontinuable`?
-
-            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
         }
 
 
