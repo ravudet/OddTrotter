@@ -158,7 +158,7 @@
         {
             //// TODO it is not good that the `apply` overload being called here is "passing through" the awaitables from the map delegates; (i think) if exceptions were thrown, then this would actually result in incorrect behavior //// TODO look at `testmethod3impl` and you will see that this is not true; i'm not clear why
             return await either
-                .Apply(
+                .ApplyAsync(
                     value => ToString(value),
                     exception => ToString(exception))
                 .ConfigureAwait(false);
