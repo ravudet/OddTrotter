@@ -547,8 +547,28 @@ namespace Fx.Either
             where TResult : allows ref struct
         {
             return either.ApplyAsync<TResult, bool, TContinuable>(
-                (TLeft left, ref bool context) => leftMap(left),
-                (TRight right, ref bool context) => rightMap(right),
+                (TLeft left, ref bool context) =>
+                {
+                    try
+                    {
+                        return leftMap(left);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new LeftMapException(exception);
+                    }
+                },
+                (TRight right, ref bool context) =>
+                {
+                    try
+                    {
+                        return rightMap(right);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new RightMapException(exception);
+                    }
+                },
                 ref Context);
         }
 
