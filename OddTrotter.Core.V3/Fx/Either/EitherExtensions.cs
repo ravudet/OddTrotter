@@ -283,6 +283,7 @@ namespace Fx.Either
             where TResult : allows ref struct
         {
             //// TODO you should have a `realizable` variant for each `continuable` overload
+            //// TODO i like this use of "variant" and "overload"; "overload" changes the number of parameters, but "variant" fiddles with the shape of each parameter
 
             return either.ApplyAsync<TEither, TLeft, TRight, Realizable<TResult>, TResult>(leftMap, rightMap);
         }
