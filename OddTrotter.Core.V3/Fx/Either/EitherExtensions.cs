@@ -550,6 +550,7 @@ namespace Fx.Either
                 (TLeft left, ref bool context) =>
                 {
                     //// TODO you have the `torealizable` method above; you need something similar for the "async" overloads, like below; remmber, ultimately the mapping exceptions should be done *only* in the `ieither` implementation
+                    //// TODO i think your `ieither` implementations actually need to be updated to catch if `leftmap` or `rightmap` throws
 
                     try
                     {
