@@ -549,6 +549,8 @@ namespace Fx.Either
             return either.ApplyAsync<TResult, bool, TContinuable>(
                 (TLeft left, ref bool context) =>
                 {
+                    //// TODO you have the `torealizable` method above; you need something similar for the "async" overloads, like below
+
                     try
                     {
                         return leftMap(left);
