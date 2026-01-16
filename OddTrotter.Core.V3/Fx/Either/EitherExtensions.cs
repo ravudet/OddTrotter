@@ -424,29 +424,6 @@ namespace Fx.Either
         //// TODO and maybe also for `either` (because the caller might be getting an `ieither` from an async method, not just from our extensions
         //// TODO "overload" means a change in the number of parameters, but "variant" means fiddling with the shape of each parameter
 
-        public static Realizable<TResult> ApplyAsync2<TEither, TLeft, TRight, TResult>(
-            this TypeHolder<TEither, TLeft, TRight> either,
-            Func<TLeft, Realizable<TResult>> leftMap,
-            Func<TRight, Realizable<TResult>> rightMap)
-            where TEither : IEither<TLeft, TRight>, allows ref struct
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-            where TResult : allows ref struct
-        {
-            //// TODO you should have a `realizable` variant for each `continuable` overload
-            //// TODO i like this use of "variant" and "overload"; 
-
-            return either.ApplyAsync<TEither, TLeft, TRight, Realizable<TResult>, TResult>(leftMap, rightMap);
-        }
-
-
-
-
-
-
-
-
-
         public static Realizable<TResult> ApplyAsync2<TLeft, TRight, TResult>(
             this Realizable<IEither<TLeft, TRight>> either,
             Func<TLeft, Realizable<TResult>> leftMap,
