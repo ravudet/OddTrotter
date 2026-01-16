@@ -506,16 +506,6 @@ namespace Fx.Either
                 rightMap);
         }
 
-
-
-
-
-
-
-
-
-
-
         public static Realizable<TResult> ApplyAsync2<TLeft, TRight, TResult>(
             this Realizable<IEither<TLeft, TRight>> either,
             Func<TLeft, IContinuable<TResult>> leftMap,
