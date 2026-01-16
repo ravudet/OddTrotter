@@ -193,6 +193,34 @@
         }
 
         [TestMethod]
+        public async Task TestMethod4()
+        {
+            var exception = new Exception("the message");
+            var either = Either.Left<int>().Right(exception);
+
+            var rightMapException =
+                await Assert
+                    .That
+                    .ThrowsExceptionAsync<RightMapException>(
+                        async () =>
+                            await ClassEitherUnitTests
+                                .TestMethod4Impl(either)
+                            .ConfigureAwait(false))
+                    .ConfigureAwait(false);
+
+            Assert.That.AreEqual(exception, rightMapException.InnerException);
+        }
+
+        private static async Task<string> TestMethod4Impl(IEither<int, Exception> either)
+        {
+            return await either
+                .ApplyAsync(
+                    value => ToString(value),
+                    exception => throw exception)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task TestMethod2Dot1()
         {
             var either = Either.Right<Exception>().Left("42");
