@@ -278,7 +278,23 @@ namespace Fx.Either
 
 
 
-
+        //// TODO this maybe should be documented somewhere, but you have these variants:
+        //// {
+        //// teither
+        //// typeholder<teither>
+        //// ieither
+        //// +
+        //// realizable<teither>
+        //// realizable<typeholder<teither>>
+        //// realizable<ieither>
+        //// 
+        //// CROSS
+        //// 
+        //// tcontinuable
+        //// icontinuable
+        //// realizable
+        //// }
+        ////
         //// TODO should you have "task" variants for `leftmap` and `rightmap`?
         //// TODO and maybe also for `either` (because the caller might be getting an `ieither` from an async method, not just from our extensions
         //// TODO "overload" means a change in the number of parameters, but "variant" means fiddling with the shape of each parameter
