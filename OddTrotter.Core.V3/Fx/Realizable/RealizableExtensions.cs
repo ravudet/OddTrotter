@@ -141,6 +141,7 @@ namespace Fx.Realizable
 
             public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
             {
+                //// TODO `continuation` doesn't take exceptions and cancellations into account
                 return new Realizable<TResult>(new Continuation<T, TResult>(this, sourceContinuation));
             }
 
