@@ -282,6 +282,8 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
+            //// TODO you should have a `realizable` variant for each `continuable` overload
+
             return either.ApplyAsync<TEither, TLeft, TRight, Realizable<TResult>, TResult>(leftMap, rightMap);
         }
 
@@ -295,7 +297,7 @@ namespace Fx.Either
             where TContinuable : IContinuable<TResult>, allows ref struct
             where TResult : allows ref struct
         {
-            return either.Self.ApplyAsync(leftMap, rightMap);
+            return either.Self.ApplyAsync<TEither, TLeft, TRight, TContinuable, TResult>(leftMap, rightMap);
         }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
