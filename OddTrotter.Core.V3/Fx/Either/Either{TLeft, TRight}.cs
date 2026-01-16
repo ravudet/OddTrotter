@@ -102,22 +102,38 @@ namespace Fx.Either
 
             protected internal override Realizable<TResult> Accept(Left node, ref TContext context)
             {
-                return
-                    this.leftMap(node.Value, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new LeftMapException(exception),
-                        canceled => throw canceled);
+                try
+                {
+                    return
+                        this.leftMap(node.Value, ref context)
+                        .ContinueWith(
+                            result => result,
+                            exception => throw new LeftMapException(exception),
+                            canceled => throw canceled);
+                }
+                catch (Exception exception)
+                {
+                    return Realizable.FromException<TResult>(new LeftMapException(exception));
+                }
+
+                
             }
 
             protected internal override Realizable<TResult> Accept(Right node, ref TContext context)
             {
-                return
-                    this.rightMap(node.Value, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new RightMapException(exception),
-                        canceled => throw canceled);
+                try
+                {
+                    return
+                        this.rightMap(node.Value, ref context)
+                        .ContinueWith(
+                            result => result,
+                            exception => throw new RightMapException(exception),
+                            canceled => throw canceled);
+                }
+                catch (Exception exception)
+                {
+                    return Realizable.FromException<TResult>(new RightMapException(exception));
+                }
             }
         }
     }
