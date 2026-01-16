@@ -291,7 +291,7 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.ApplyAsync(leftMap, rightMap);
+            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
         }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
@@ -360,7 +360,7 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.ApplyAsync(
+            return either.ApplyAsync<TEither, TLeft, TRight, Realizable<TResult>, TResult>(
                 leftMap,
                 rightMap);
         }
@@ -373,7 +373,7 @@ namespace Fx.Either
             where TRight : allows ref struct
             where TResult : allows ref struct
         {
-            return either.ApplyAsync(leftMap, rightMap);
+            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
         }
 
         public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
