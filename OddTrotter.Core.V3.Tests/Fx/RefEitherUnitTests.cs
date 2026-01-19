@@ -111,7 +111,7 @@
         {
             //// TODO you are here
 
-            var @string = await AsRealizableEither(Foo()).ApplyAsync(
+            var @string = await Foo().AsEither().ApplyAsync(
                 value => Foo1(value).ToTaskWrapper(),
                 exception => Foo2(exception).ToTaskWrapper());
             Assert.That.AreEqual("42", @string);

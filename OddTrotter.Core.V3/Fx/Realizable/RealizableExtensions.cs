@@ -9,6 +9,24 @@ namespace Fx.Realizable
 
     public static class RealizableExtensions
     {
+
+
+
+        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsEither<TLeft, TRight>(
+            this Realizable<RefEither<TLeft, TRight>> realizable)
+        {
+            return realizable
+                .AsEither
+                .Apply( //// TODO should be `selectleft`
+                    either => new Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>>(either.AsEither),
+                    future => future.ContinueWith(either => either.AsEither, _ => throw _, _ => throw _));
+        }
+
+
+
+
+
+
         public static Realizable<T> Unwrap<T>(this Realizable<Realizable<T>> realizable)
             where T : allows ref struct
         {

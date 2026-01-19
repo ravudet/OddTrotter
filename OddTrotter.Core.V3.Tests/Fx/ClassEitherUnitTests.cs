@@ -11,7 +11,7 @@
     //// TODO the "bare minimum" should be for that top-level "production" code; you will then do this recursively later for other files
     //// TODO implement the bare minimum needed for refeitherunittests; here, the bare minimum includes anything required for type inference
     //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces)
-    //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable`
+    //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
     //// TODO `iawaitable` should be *only* what is needed for `await` to work

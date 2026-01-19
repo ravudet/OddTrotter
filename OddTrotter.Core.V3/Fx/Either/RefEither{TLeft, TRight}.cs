@@ -33,6 +33,8 @@ namespace Fx.Either
             }
         }
 
+        TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight> IAsAble<RefEither<TLeft, TRight>, TLeft, TRight>.As => AsEither;
+
         public RefEither(TRight right)
         {
             this.right = new RefNullable<TRight>(right);

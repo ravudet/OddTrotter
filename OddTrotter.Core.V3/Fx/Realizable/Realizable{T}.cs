@@ -42,6 +42,8 @@ namespace Fx.Realizable
             }
         }
 
+        TypeHolder<Realizable<T>, T, ITask<T>> IAsAble<Realizable<T>, T, ITask<T>>.As => AsEither;
+
         public Realizable<TResult> ContinueWith<TResult>(Func<T, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
         {
             if (either.AsEither.Decompose(out var value, out var future))
