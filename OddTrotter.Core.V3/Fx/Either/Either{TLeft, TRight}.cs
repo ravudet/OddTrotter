@@ -113,7 +113,7 @@ namespace Fx.Either
                 }
                 catch (Exception exception)
                 {
-                    return Realizable.FromException<TResult>(new LeftMapException(exception));
+                    return Realizable.FromException<TResult>(new LeftGenerationException(exception));
                 }
 
                 
@@ -132,7 +132,7 @@ namespace Fx.Either
                 }
                 catch (Exception exception)
                 {
-                    return Realizable.FromException<TResult>(new RightMapException(exception));
+                    return Realizable.FromException<TResult>(new RightGenerationException(exception));
                 }
             }
         }

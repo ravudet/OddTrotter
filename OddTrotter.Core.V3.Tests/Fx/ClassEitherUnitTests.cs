@@ -201,7 +201,7 @@
             var rightMapException =
                 await Assert
                     .That
-                    .ThrowsExceptionAsync<RightMapException>(
+                    .ThrowsExceptionAsync<RightGenerationException>(
                         async () =>
                             await ClassEitherUnitTests
                                 .TestMethod4Impl(either)

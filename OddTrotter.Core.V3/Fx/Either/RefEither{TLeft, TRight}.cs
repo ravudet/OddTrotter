@@ -50,21 +50,35 @@ namespace Fx.Either
         {
             if (this.left.TryGetValue(out var left))
             {
-                return
-                    leftMap(left, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new LeftMapException(exception),
-                        canceled => throw canceled);
+                try
+                {
+                    return
+                        leftMap(left, ref context)
+                        .ContinueWith(
+                            result => result,
+                            exception => throw new LeftMapException(exception),
+                            canceled => throw canceled);
+                }
+                catch (Exception exception)
+                {
+                    return Realizable.FromException<TResult>(new LeftGenerationException(exception));
+                }
             }
             else if (this.right.TryGetValue(out var right))
             {
-                return
-                    rightMap(right, ref context)
-                    .ContinueWith(
-                        result => result,
-                        exception => throw new RightMapException(exception),
-                        canceled => throw canceled);
+                try
+                {
+                    return
+                        rightMap(right, ref context)
+                        .ContinueWith(
+                            result => result,
+                            exception => throw new RightMapException(exception),
+                            canceled => throw canceled);
+                }
+                catch (Exception exception)
+                {
+                    return Realizable.FromException<TResult>(new RightGenerationException(exception));
+                }
             }
             else
             {

@@ -188,8 +188,26 @@ namespace Fx.Either
             //// TODO are you happy with this return type? can you do better?
             var realizable = SelectAsync<TEither, TLeftSource, TRightSource, Realizable<TLeftResult>, TLeftResult, Realizable<TRightResult>, TRightResult>(
                 either,
-                left => ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
-                right => ToRealizable(right, rightMap));
+                left => new Realizable<TLeftResult>(leftMap(left)), //// ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
+                right => new Realizable<TRightResult>(rightMap(right))); //// ToRealizable(right, rightMap));
+
+            realizable = realizable.ContinueWith(
+                _ => _,
+                exception =>
+                {
+                    if (exception is LeftGenerationException leftGenerationException)
+                    {
+                        throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
+                    }
+
+                    if (exception is RightGenerationException rightGenerationException)
+                    {
+                        throw new RightMapException(rightGenerationException.InnerException!); //// TODO
+                    }
+
+                    throw exception;
+                },
+                _ => throw _);
 
             if (realizable.AsEither.Decompose(out var result, out var task))
             {
@@ -546,34 +564,11 @@ namespace Fx.Either
             where TContinuable : IContinuable<TResult>, allows ref struct
             where TResult : allows ref struct
         {
+            //// TODO you have the `torealizable` method above; you need something similar for the "async" overloads, like below; remmber, ultimately the mapping exceptions should be done *only* in the `ieither` implementation
+            //// TODO i think your `ieither` implementations actually need to be updated to catch if `leftmap` or `rightmap` throws //// TODO this really demonstrates an issue with "async" methods; they can throw when generating the task that gets awaited, and they can also throw when they are awaited; think about how you want to document these two cases //// TODO the async exception thing basically comes down to letting the caller know when they need to catch exceptions; this will come into play if you update the `ieither` implementations because they will need to correctly document if there are any mapexceptions upon calling `applyasync`, or if the exceptions will only ever be thrown when awaiting the `realizable` //// TODO maybe use this as an example: https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.readasync?view=net-10.0#system-io-stream-readasync(system-byte()-system-int32-system-int32-system-threading-cancellationtoken)
             return either.ApplyAsync<TResult, bool, TContinuable>(
-                (TLeft left, ref bool context) =>
-                {
-                    //// TODO you have the `torealizable` method above; you need something similar for the "async" overloads, like below; remmber, ultimately the mapping exceptions should be done *only* in the `ieither` implementation
-                    //// TODO i think your `ieither` implementations actually need to be updated to catch if `leftmap` or `rightmap` throws //// TODO this really demonstrates an issue with "async" methods; they can throw when generating the task that gets awaited, and they can also throw when they are awaited; think about how you want to document these two cases //// TODO the async exception thing basically comes down to letting the caller know when they need to catch exceptions; this will come into play if you update the `ieither` implementations because they will need to correctly document if there are any mapexceptions upon calling `applyasync`, or if the exceptions will only ever be thrown when awaiting the `realizable` //// TODO maybe use this as an example: https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.readasync?view=net-10.0#system-io-stream-readasync(system-byte()-system-int32-system-int32-system-threading-cancellationtoken)
-
-                    try
-                    {
-                        return leftMap(left);
-                    }
-                    catch (Exception)
-                    {
-                        ////throw new LeftMapException(exception);
-                        throw;
-                    }
-                },
-                (TRight right, ref bool context) =>
-                {
-                    try
-                    {
-                        return rightMap(right);
-                    }
-                    catch (Exception)
-                    {
-                        ////throw new RightMapException(exception);
-                        throw;
-                    }
-                },
+                (TLeft left, ref bool context) => leftMap(left),
+                (TRight right, ref bool context) => rightMap(right),
                 ref Context);
         }
 
