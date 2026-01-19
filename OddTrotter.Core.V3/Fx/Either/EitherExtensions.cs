@@ -703,9 +703,27 @@ namespace Fx.Either
             where TResult : allows ref struct
         {
             var future = either.ApplyAsync<TResult, bool, Realizable<TResult>>(
-                (TLeft left, ref bool context) => ToRealizable(left, leftMap),
-                (TRight right, ref bool context) => ToRealizable(right, rightMap),
+                (TLeft left, ref bool context) => Realizable.FromResult(leftMap(left)),//// ToRealizable(left, leftMap),
+                (TRight right, ref bool context) => Realizable.FromResult(rightMap(right)), //// ToRealizable(right, rightMap),
                 ref Context);
+
+            future = future.ContinueWith(
+                _ => _,
+                exception =>
+                {
+                    if (exception is LeftGenerationException leftGenerationException)
+                    {
+                        throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
+                    }
+
+                    if (exception is RightGenerationException rightGenerationException)
+                    {
+                        throw new RightMapException(rightGenerationException.InnerException!); //// TODO
+                    }
+
+                    throw exception;
+                },
+                _ => throw _);
 
             if (future.AsEither.Decompose(out var result, out var task))
             {
