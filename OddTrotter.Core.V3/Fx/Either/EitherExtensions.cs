@@ -686,15 +686,15 @@ namespace Fx.Either
             where TResult : allows ref struct
         {
             var future = either.ApplyAsync<TResult, bool, Realizable<TResult>>(
-                (TLeft left, ref bool context) => Realizable.FromResult(leftMap(left)),//// ToRealizable(left, leftMap),
-                (TRight right, ref bool context) => Realizable.FromResult(rightMap(right)), //// ToRealizable(right, rightMap),
+                (TLeft left, ref bool context) => Realizable.FromResult(leftMap(left)),
+                (TRight right, ref bool context) => Realizable.FromResult(rightMap(right)),
                 ref Context);
 
             future = future.ContinueWith(
                 _ => _,
                 exception =>
                 {
-                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it...
+                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it... //// TODO alternatively, don't use the "generation" exceptions and instead use the "map" exceptions in your `ieither` implementations
 
                     if (exception is LeftGenerationException leftGenerationException)
                     {
