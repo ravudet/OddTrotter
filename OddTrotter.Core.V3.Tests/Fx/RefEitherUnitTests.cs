@@ -142,6 +142,7 @@
         [TestMethod]
         public async Task Bar2()
         {
+            //// TODO you are here
             var @string = await AsRealizableEither(Foo5()).ApplyAsync(
                 value => Foo3(value),
                 exception => Foo4(exception));
