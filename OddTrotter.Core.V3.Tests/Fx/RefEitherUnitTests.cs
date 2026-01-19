@@ -100,10 +100,11 @@
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
             //// TODO you are here
-            //// TODO update this to use an `applyasync`; also update the other test class to do the same`
-            return either.AsEither.ApplyAsync(
-                value => ToString(value),
-                exception => ToString(exception));
+            return either
+                .AsEither
+                .ApplyAsync(
+                    value => ToString(value),
+                    exception => ToString(exception));
         }
 
         [TestMethod]
