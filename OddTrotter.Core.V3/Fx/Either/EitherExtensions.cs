@@ -18,23 +18,6 @@ namespace Fx.Either
             return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either);
         }
 
-        private static Realizable<TResult> ToRealizable<TState, TResult>(TState state, Func<TState, TResult> func)
-            where TState : allows ref struct
-            where TResult : allows ref struct
-        {
-            TResult value;
-            try
-            {
-                value = func(state);
-            }
-            catch (Exception exception)
-            {
-                return Realizable.FromException<TResult>(exception);
-            }
-
-            return Realizable.FromResult(value);
-        }
-
         private static IEither<TLeft, TRight> ToEither<TLeft, TRight>(this RefEither<TLeft, TRight> either)
         {
             return either.Apply<RefEither<TLeft, TRight>, TLeft, TRight, Either<TLeft, TRight>>(
@@ -711,6 +694,8 @@ namespace Fx.Either
                 _ => _,
                 exception =>
                 {
+                    //// TODO share this exception logic? you used it in `select` above
+
                     if (exception is LeftGenerationException leftGenerationException)
                     {
                         throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
