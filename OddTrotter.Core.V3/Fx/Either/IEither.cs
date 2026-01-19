@@ -18,8 +18,10 @@ namespace Fx.Either
         where TLeft : allows ref struct
         where TRight : allows ref struct
     {
-        /// <exception cref="LeftMapException"></exception>
-        /// <exception cref="RightMapException"></exception>
+        /// <exception cref="LeftMapException" awaited="true">thrown if the <typeparamref name="TContinuable"/> returned by <paramref name="leftMap"/> throws an exception</exception>
+        /// <exception cref="RightMapException" awaited="true">thrown if the <typeparamref name="TContinuable"/> returned by <paramref name="rightMap"/> throws an exception</exception>
+        /// <exception cref="LeftGenerationException" awaited="true">thrown if <paramref name="leftMap"/> throws when generating the <typeparamref name="TContinuable"/></exception> //// TODO you are having the "generation" exceptions be awaited so that the caller doesn't have to catch when `apply` is called *and then again* when `await` is called
+        /// <exception cref="RightGenerationException" awaited="true">thrown if <paramref name="rightMap"/> throws when generating the <typeparamref name="TContinuable"/></exception> //// TODO you are having the "generation" exceptions be awaited so that the caller doesn't have to catch when `apply` is called *and then again* when `await` is called
         Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(
             AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap,
             AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap,
