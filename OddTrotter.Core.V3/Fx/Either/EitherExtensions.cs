@@ -295,11 +295,87 @@ namespace Fx.Either
         //// tcontinuable
         //// icontinuable
         //// realizable
+        //// task
         //// }
         ////
-        //// TODO should you have "task" variants for `leftmap` and `rightmap`?
         //// TODO and maybe also for `either` (because the caller might be getting an `ieither` from an async method, not just from our extensions
         //// TODO "overload" means a change in the number of parameters, but "variant" means fiddling with the shape of each parameter
+
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
+            this Realizable<IEither<TLeft, TRight>> either,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.ApplyAsync<IEither<TLeft, TRight>, TLeft, TRight, TResult>(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+            this Realizable<TypeHolder<TEither, TLeft, TRight>> realizable,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return FromTypeHolder(realizable)
+                .ApplyAsync(
+                    leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+            this Realizable<TEither> realizable,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return realizable
+                .ContinueWith(
+                    either => either
+                        .ApplyAsync(
+                            leftMap,
+                            rightMap),
+                    _ => throw _,
+                    _ => throw _)
+                .Unwrap();
+        }
+
+        public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.TypeHolder().ApplyAsync(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+            this TypeHolder<TEither, TLeft, TRight> either,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.Self.ApplyAsync(leftMap, rightMap);
+        }
+
+        public static Realizable<TResult> ApplyAsync<TEither, TLeft, TRight, TResult>(
+            this TEither either,
+            Func<TLeft, Task<TResult>> leftMap,
+            Func<TRight, Task<TResult>> rightMap)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.ApplyAsync<TEither, TLeft, TRight, TaskWrapper<TResult>, TResult>(
+                left => leftMap(left).ToTaskWrapper(), //// TODO are all exceptions here actually getting handled? (e.g. what if leftmap throws before we get to `totaskwrapper`?)
+                right => rightMap(right).ToTaskWrapper());
+        }
 
         public static Realizable<TResult> ApplyAsync<TLeft, TRight, TResult>(
             this Realizable<IEither<TLeft, TRight>> either,

@@ -115,8 +115,8 @@
                 .Foo()
                 .AsEither()
                 .ApplyAsync(
-                    value => Foo1(value).ToTaskWrapper(), //// TODO create the variants for `task`
-                    exception => Foo2(exception).ToTaskWrapper());
+                    value => Foo1(value),
+                    exception => Foo2(exception));
 
             Assert.That.AreEqual("42", @string);
         }
@@ -145,8 +145,8 @@
         public async Task Bar2()
         {
             var @string = await AsRealizableEither(Foo5()).ApplyAsync(
-                value => Foo3(value).ToTaskWrapper(),
-                exception => Foo4(exception).ToTaskWrapper());
+                value => Foo3(value),
+                exception => Foo4(exception));
             Assert.That.AreEqual("42", @string);
         }
 
