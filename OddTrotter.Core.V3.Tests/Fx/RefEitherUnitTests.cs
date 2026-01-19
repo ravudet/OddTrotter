@@ -99,7 +99,6 @@
 
         private static Realizable<string> TestMethod1Impl(RefEither<int, Exception> either)
         {
-            //// TODO you are here
             return either
                 .AsEither
                 .ApplyAsync(
@@ -110,6 +109,8 @@
         [TestMethod]
         public async Task Bar()
         {
+            //// TODO you are here
+
             //// TODO for all of your tests, because of the nature of `realizable`, you will need to have a test where the values are realized and a test where the values are not realized
             //// TODO add a test that has realized values
             var @string = await TypeHolder2(Foo()).ApplyAsync(
