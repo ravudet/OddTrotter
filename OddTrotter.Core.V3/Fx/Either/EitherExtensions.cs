@@ -172,8 +172,8 @@ namespace Fx.Either
             //// TODO are you happy with this return type? can you do better?
             var realizable = SelectAsync<TEither, TLeftSource, TRightSource, Realizable<TLeftResult>, TLeftResult, Realizable<TRightResult>, TRightResult>(
                 either,
-                left => new Realizable<TLeftResult>(leftMap(left)), //// ToRealizable(left, leftMap), //// TODO every non-async variant needs to use this adapter
-                right => new Realizable<TRightResult>(rightMap(right))); //// ToRealizable(right, rightMap));
+                left => new Realizable<TLeftResult>(leftMap(left)),
+                right => new Realizable<TRightResult>(rightMap(right)));
 
             realizable = realizable.ContinueWith(
                 _ => _,
@@ -694,7 +694,7 @@ namespace Fx.Either
                 _ => _,
                 exception =>
                 {
-                    //// TODO share this exception logic? you used it in `select` above
+                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it...
 
                     if (exception is LeftGenerationException leftGenerationException)
                     {
