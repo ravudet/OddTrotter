@@ -104,6 +104,7 @@ namespace Fx.Either
                 where TContext : allows ref struct
                 where TContinuable : IContinuable<TResult>, allows ref struct
             {
+                //// TODO this doesn't implement the leftgeneration and rightgeneration exception logic
                 if (either.Decompose(out var left, out var right))
                 {
                     try
