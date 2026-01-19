@@ -109,8 +109,6 @@
         [TestMethod]
         public async Task Bar()
         {
-            //// TODO you are here
-
             var @string = await RefEitherUnitTests
                 .Foo()
                 .AsEither()
@@ -135,7 +133,7 @@
 
         private static Realizable<RefEither<int, Exception>> Foo()
         {
-            return new Realizable<RefEither<int, Exception>>(
+            return Realizable.Realizable.FromFuture( //// TODO why do you need the namespace here?
                 new FutureTask<RefEither<int, Exception>>(
                     Task.Delay(100),
                     () => RefEither.Right<Exception>().Left(42)));

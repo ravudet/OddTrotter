@@ -15,10 +15,16 @@
             return new Realizable<T>(value);
         }
 
+        public static Realizable<T> FromFuture<T>(ITask<T> value)
+            where T : allows ref struct
+        {
+            return new Realizable<T>(value);
+        }
+
         public static Realizable<T> FromException<T>(Exception exception)
             where T : allows ref struct
         {
-            return new Realizable<T>(new FromExceptionTask<T>(exception));
+            return Realizable.FromFuture(new FromExceptionTask<T>(exception));
         }
 
         private sealed class FromExceptionTask<T> : ITask<T>
