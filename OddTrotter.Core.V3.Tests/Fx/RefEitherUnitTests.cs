@@ -111,9 +111,7 @@
         {
             //// TODO you are here
 
-            
-            //// TODO add a test that has realized values
-            var @string = await TypeHolder2(Foo()).ApplyAsync(
+            var @string = await AsRealizableEither(Foo()).ApplyAsync(
                 value => Foo1(value).ToTaskWrapper(),
                 exception => Foo2(exception).ToTaskWrapper());
             Assert.That.AreEqual("42", @string);
@@ -137,6 +135,30 @@
                 new FutureTask<RefEither<int, Exception>>(
                     Task.Delay(100),
                     () => RefEither.Right<Exception>().Left(42)));
+        }
+
+        [TestMethod]
+        public async Task Bar2()
+        {
+            var @string = await AsRealizableEither(Foo5()).ApplyAsync(
+                value => Foo3(value).ToTaskWrapper(),
+                exception => Foo4(exception).ToTaskWrapper());
+            Assert.That.AreEqual("42", @string);
+        }
+
+        private static async Task<string> Foo4(Exception exception)
+        {
+            return await ToString(exception);
+        }
+
+        private static async Task<string> Foo3(int value)
+        {
+            return await ToString(value);
+        }
+
+        private static Realizable<RefEither<int, Exception>> Foo5()
+        {
+            return new Realizable<RefEither<int, Exception>>(RefEither.Right<Exception>().Left(42));
         }
 
         private sealed class FutureTask<T> : ITask<T>
@@ -291,7 +313,7 @@
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
 
             return 
-                TypeHolder2(parsed)
+                AsRealizableEither(parsed)
                 .Apply(
                 actualParsing => actualParsing.Apply(
                     actuallyParsed => actuallyParsed.ToString(),
@@ -308,7 +330,7 @@
                 future => future.ContinueWith(selector, _ => throw _, _ => throw _));
         }
 
-        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> TypeHolder2<TLeft, TRight>(Realizable<RefEither<TLeft, TRight>> realizable)
+        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsRealizableEither<TLeft, TRight>(Realizable<RefEither<TLeft, TRight>> realizable)
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
