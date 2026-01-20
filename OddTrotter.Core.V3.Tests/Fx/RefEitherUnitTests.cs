@@ -114,7 +114,8 @@
                 .AsEither()
                 .ApplyAsync(
                     value => Foo1(value),
-                    exception => Foo2(exception));
+                    exception => Foo2(exception))
+                .ConfigureAwait(false);
 
             Assert.That.AreEqual("42", @string);
         }
