@@ -262,13 +262,14 @@
         [TestMethod]
         public void RefLeft()
         {
-            //// TODO you are here
             var value = 42;
             var either = RefEither.Right<Exception>().Left(new SomeRef(value));
 
-            var result = either.AsEither.Apply(
-                left => left.Value,
-                right => right.ToString().Length);
+            var result = either
+                .AsEither
+                .Apply(
+                    left => left.Value,
+                    right => right.ToString().Length);
 
             Assert.That.AreEqual(value, result);
         }
@@ -286,6 +287,7 @@
         [TestMethod]
         public void RefRight()
         {
+            //// TODO you are here
             var value = 42;
             var either = new RefEither<Exception, SomeRef>(new SomeRef(value));
 
