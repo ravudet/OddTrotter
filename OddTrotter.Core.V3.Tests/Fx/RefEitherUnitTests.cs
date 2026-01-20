@@ -242,7 +242,7 @@
         public static Realizable<string> ToString(int value)
         {
             //// TODO you are here
-            return new Realizable<string>(new TaskWrapper<string>(ToStringImpl(value)));
+            return Realizable.Realizable.FromFuture(RefEitherUnitTests.ToStringImpl(value).ToTaskWrapper());
         }
 
         private static async Task<string> ToStringImpl(int value)
