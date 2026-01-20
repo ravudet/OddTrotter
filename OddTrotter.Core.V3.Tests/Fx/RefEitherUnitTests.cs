@@ -122,14 +122,14 @@
 
         private static async Task<string> Foo2(Exception exception)
         {
-            await Task.Delay(100);
-            return await ToString(exception);
+            await Task.Delay(100).ConfigureAwait(false);
+            return await ToString(exception).ConfigureAwait(false);
         }
 
         private static async Task<string> Foo1(int value)
         {
-            await Task.Delay(100);
-            return await ToString(value);
+            await Task.Delay(100).ConfigureAwait(false);
+            return await ToString(value).ConfigureAwait(false);
         }
 
         private static Realizable<RefEither<int, Exception>> Foo()
@@ -148,7 +148,8 @@
                 .AsEither()
                 .ApplyAsync(
                     value => Foo3(value),
-                    exception => Foo4(exception));
+                    exception => Foo4(exception))
+                .ConfigureAwait(false);
 
             Assert.That.AreEqual("42", @string);
         }
