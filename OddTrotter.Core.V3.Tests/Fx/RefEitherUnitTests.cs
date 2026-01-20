@@ -142,10 +142,13 @@
         [TestMethod]
         public async Task Bar2()
         {
-            //// TODO you are here
-            var @string = await AsRealizableEither(Foo5()).ApplyAsync(
-                value => Foo3(value),
-                exception => Foo4(exception));
+            var @string = await RefEitherUnitTests
+                .Foo5()
+                .AsEither()
+                .ApplyAsync(
+                    value => Foo3(value),
+                    exception => Foo4(exception));
+
             Assert.That.AreEqual("42", @string);
         }
 
@@ -161,7 +164,7 @@
 
         private static Realizable<RefEither<int, Exception>> Foo5()
         {
-            return new Realizable<RefEither<int, Exception>>(RefEither.Right<Exception>().Left(42));
+            return Realizable.Realizable.FromResult(RefEither.Right<Exception>().Left(42));
         }
 
         private sealed class FutureTask<T> : ITask<T>
@@ -172,6 +175,9 @@
 
             public FutureTask(Task initial, Func<T> final)
             {
+                //// TODO you are here
+
+                //// TODO can you combine this with `reftask` down below?
                 this.initial = initial;
                 this.final = final;
             }
