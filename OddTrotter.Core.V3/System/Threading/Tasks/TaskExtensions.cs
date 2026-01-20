@@ -6,5 +6,11 @@
         {
             return new TaskWrapper<T>(task);
         }
+
+        public static TaskWrapper<Nothing> ToTaskWrapper(this Task task)
+        {
+            //// TODO is this really the best way to accomplish this?
+            return task.ContinueWith(_ => new Nothing()).ToTaskWrapper();
+        }
     }
 }
