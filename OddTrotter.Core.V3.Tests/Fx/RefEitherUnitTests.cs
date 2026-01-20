@@ -287,13 +287,14 @@
         [TestMethod]
         public void RefRight()
         {
-            //// TODO you are here
             var value = 42;
-            var either = new RefEither<Exception, SomeRef>(new SomeRef(value));
+            var either = RefEither.Left<Exception>().Right(new SomeRef(value));
 
-            var result = either.AsEither.Apply(
-                left => left.ToString().Length,
-                right => right.Value);
+            var result = either
+                .AsEither
+                .Apply(
+                    left => left.ToString().Length,
+                    right => right.Value);
 
             Assert.That.AreEqual(value, result);
         }
@@ -301,6 +302,7 @@
         [TestMethod]
         public async Task AsyncRefLeft()
         {
+            //// TODO you are here
             var value = "42";
             var either = await AsyncRefWork(value).ConfigureAwait(false);
 
