@@ -172,12 +172,8 @@
         [TestMethod]
         public async Task TestMethod2Dot1()
         {
-            //// TODO you are here
-            
-            //// TODO you need to add configureawait everywhere
-            
             var either = RefEither.Right<Exception>().Left("42");
-            var result = await TestMethod2Impl(either).ConfigureAwait(false);
+            var result = await RefEitherUnitTests.TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual("42", result);
         }
@@ -185,8 +181,8 @@
         [TestMethod]
         public async Task TestMethod2Dot2()
         {
-            var either = new RefEither<string, Exception>("not a number");
-            var result = await TestMethod2Impl(either).ConfigureAwait(false);
+            var either = RefEither.Right<Exception>().Left("not a number");
+            var result = await RefEitherUnitTests.TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.IsTrue(result.Contains("FormatException"));
         }
@@ -195,14 +191,15 @@
         public async Task TestMethod2Dot3()
         {
             var exception = new Exception("the message");
-            var either = new RefEither<string, Exception>(exception);
-            var result = await TestMethod2Impl(either).ConfigureAwait(false);
+            var either = RefEither.Left<string>().Right(exception);
+            var result = await RefEitherUnitTests.TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual(exception.ToString(), result);
         }
 
         private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
         {
+            //// TODO you are here
             var parsed = either.SelectAsync<RefEither<string, Exception>, string, Exception, TaskWrapper<IEither<int, Exception>>, IEither<int, Exception>, TaskWrapper<Exception>, Exception>(
                 value => Parse(value),
                 error => new TaskWrapper<Exception>(Task.FromResult(error)));
