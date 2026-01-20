@@ -226,19 +226,22 @@
 
         private static IEither<int, Exception> ParseInner(string value)
         {
-            //// TODO you are here
+            int parsed;
             try
             {
-                return new Either<int, Exception>.Left(int.Parse(value));
+                parsed = int.Parse(value);
             }
             catch (Exception exception)
             {
-                return new Either<int, Exception>.Right(exception);
+                return Either.Either.Left<int>().Right(exception); //// TODO why do you need the namespace?
             }
+
+            return Either.Either.Right<Exception>().Left(parsed); //// TODO why do you need the namespace?
         }
 
         public static Realizable<string> ToString(int value)
         {
+            //// TODO you are here
             return new Realizable<string>(new TaskWrapper<string>(ToStringImpl(value)));
         }
 
