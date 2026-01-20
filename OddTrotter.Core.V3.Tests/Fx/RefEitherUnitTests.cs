@@ -200,18 +200,19 @@
         private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
         {
             //// TODO you are here
-            var parsed = either.AsEither.SelectAsync(
-                value => Parse(value),
-                error => new TaskWrapper<Exception>(Task.FromResult(error)));
+            var parsed = either
+                .AsEither
+                .SelectAsync(
+                    value => Parse(value),
+                    error => Task.FromResult(error).ToTaskWrapper());
 
-            return 
-                parsed.AsEither()
-                ////AsRealizableEither(parsed)
+            return parsed
+                .AsEither()
                 .Apply(
-                actualParsing => actualParsing.Apply(
-                    actuallyParsed => actuallyParsed.ToString(),
-                    parseError => parseError.ToString())!,
-                readError => readError.ToString()!);
+                    actualParsing => actualParsing.Apply(
+                        actuallyParsed => actuallyParsed.ToString(),
+                        parseError => parseError.ToString()),
+                    readError => readError.ToString());
         }
 
         public static Realizable<TResult> Select<TSource, TResult>(Realizable<TSource> realizable, Func<TSource, TResult> selector)
