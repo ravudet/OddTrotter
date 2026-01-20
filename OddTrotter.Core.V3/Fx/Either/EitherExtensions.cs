@@ -218,6 +218,21 @@ namespace Fx.Either
                     refEither => refEither.ToEither());
         }
 
+        public static Realizable<RefEither<TLeftResult, TRightResult>> SelectAsync<TEither, TLeftSource, TRightSource, TLeftResult, TRightResult>(
+            this TypeHolder<TEither, TLeftSource, TRightSource> either,
+            Func<TLeftSource, IContinuable<TLeftResult>> leftMap,
+            Func<TRightSource, IContinuable<TRightResult>> rightMap)
+            where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+            where TRightResult : allows ref struct
+        {
+            return either.Self.SelectAsync<TEither, TLeftSource, TRightSource, IContinuable<TLeftResult>, TLeftResult, IContinuable<TRightResult>, TRightResult>(
+                leftMap,
+                rightMap);
+        }
+
         public static Realizable<RefEither<TLeftResult, TRightResult>> SelectAsync<TEither, TLeftSource, TRightSource, TLeftContinuable, TLeftResult, TRightContinuable, TRightResult>(
             this TEither either,
             Func<TLeftSource, TLeftContinuable> leftMap,
