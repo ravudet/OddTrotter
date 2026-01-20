@@ -199,7 +199,6 @@
 
         private static Realizable<string> TestMethod2Impl(RefEither<string, Exception> either)
         {
-            //// TODO you are here
             var parsed = either
                 .AsEither
                 .SelectAsync(
@@ -215,34 +214,19 @@
                     readError => readError.ToString());
         }
 
-        public static Realizable<TResult> Select<TSource, TResult>(Realizable<TSource> realizable, Func<TSource, TResult> selector)
-            where TSource : allows ref struct
-            where TResult : allows ref struct
-        {
-            return realizable.AsEither.Apply(
-                realized => new Realizable<TResult>(selector(realized)),
-                future => future.ContinueWith(selector, _ => throw _, _ => throw _));
-        }
-
-        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsRealizableEither<TLeft, TRight>(Realizable<RefEither<TLeft, TRight>> realizable)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-        {
-            return Select(realizable, either => either.AsEither);
-        }
-
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
         {
-            return new TaskWrapper<IEither<int, Exception>>(ParseImpl(value));
+            return RefEitherUnitTests.ParseImpl(value).ToTaskWrapper();
         }
 
         private static async Task<IEither<int, Exception>> ParseImpl(string value)
         {
-            return await Task.FromResult(ParseInner(value)).ConfigureAwait(false);
+            return await Task.FromResult(RefEitherUnitTests.ParseInner(value)).ConfigureAwait(false);
         }
 
         private static IEither<int, Exception> ParseInner(string value)
         {
+            //// TODO you are here
             try
             {
                 return new Either<int, Exception>.Left(int.Parse(value));
