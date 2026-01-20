@@ -264,7 +264,7 @@
         {
             //// TODO you are here
             var value = 42;
-            var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
+            var either = RefEither.Right<Exception>().Left(new SomeRef(value));
 
             var result = either.AsEither.Apply(
                 left => left.Value,
