@@ -172,7 +172,9 @@
         {
             //// TODO you are here
             
-            var either = new RefEither<string, Exception>("42");
+            //// TODO you need to add configureawait everywhere
+            
+            var either = RefEither.Right<Exception>().Left("42");
             var result = await TestMethod2Impl(either).ConfigureAwait(false);
 
             Assert.That.AreEqual("42", result);
