@@ -241,7 +241,6 @@
 
         public static Realizable<string> ToString(int value)
         {
-            //// TODO you are here
             return Realizable.Realizable.FromFuture(RefEitherUnitTests.ToStringImpl(value).ToTaskWrapper());
         }
 
@@ -252,7 +251,7 @@
 
         public static Realizable<string> ToString(Exception exception)
         {
-            return new Realizable<string>(new TaskWrapper<string>(ToStringImpl(exception)));
+            return Realizable.Realizable.FromFuture(RefEitherUnitTests.ToStringImpl(exception).ToTaskWrapper());
         }
 
         private static async Task<string> ToStringImpl(Exception exception)
@@ -263,6 +262,7 @@
         [TestMethod]
         public void RefLeft()
         {
+            //// TODO you are here
             var value = 42;
             var either = new RefEither<SomeRef, Exception>(new SomeRef(value));
 
