@@ -302,9 +302,8 @@
         [TestMethod]
         public async Task AsyncRefLeft()
         {
-            //// TODO you are here
             var value = "42";
-            var either = await AsyncRefWork(value).ConfigureAwait(false);
+            var either = await RefEitherUnitTests.AsyncRefWork(value).ConfigureAwait(false);
 
             Assert.That.IsTrue(either.AsEither.Decompose(out var result, out _));
             Assert.That.AreEqual(42, result.Value);
@@ -312,6 +311,7 @@
 
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
         {
+            //// TODO you are here
             return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
                 Parse(value),
                 potentiallyParsed => potentiallyParsed
@@ -328,6 +328,7 @@
 
             public RefTask(ITask<TContext> task, Func<TContext, TValue> operation)
             {
+                //// TODO make this a "production" type
                 this.task = task;
                 this.operation = operation;
             }
