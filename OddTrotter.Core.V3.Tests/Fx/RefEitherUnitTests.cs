@@ -156,12 +156,12 @@
 
         private static async Task<string> Foo4(Exception exception)
         {
-            return await ToString(exception);
+            return await ToString(exception).ConfigureAwait(false);
         }
 
         private static async Task<string> Foo3(int value)
         {
-            return await ToString(value);
+            return await ToString(value).ConfigureAwait(false);
         }
 
         private static Realizable<RefEither<int, Exception>> Foo5()
