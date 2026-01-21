@@ -199,16 +199,39 @@
 
             public IAwaiter<TResult> GetAwaiter()
             {
-                throw new NotImplementedException();
+                return new Awaiter(
+                    this.future.GetAwaiter(),
+                    this.sourceContinuation, 
+                    this.exceptionContinuation, 
+                    this.canceledContinuation);
             }
 
             private sealed class Awaiter : IAwaiter<TResult>
             {
-                public Awaiter()
+                private readonly IAwaiter<TSource> awaiter;
+                private readonly Func<TSource, TResult> sourceContinuation;
+                private readonly Func<Exception, TResult> exceptionContinuation;
+                private readonly Func<OperationCanceledException, TResult> canceledContinuation;
+
+                public Awaiter(
+                    IAwaiter<TSource> awaiter,
+                    Func<TSource, TResult> sourceContinuation,
+                    Func<Exception, TResult> exceptionContinuation,
+                    Func<OperationCanceledException, TResult> canceledContinuation)
                 {
+                    this.awaiter = awaiter;
+                    this.sourceContinuation = sourceContinuation;
+                    this.exceptionContinuation = exceptionContinuation;
+                    this.canceledContinuation = canceledContinuation;
                 }
 
-                public bool IsCompleted => throw new NotImplementedException();
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        return this.awaiter.IsCompleted;
+                    }
+                }
 
                 public TResult GetResult()
                 {
