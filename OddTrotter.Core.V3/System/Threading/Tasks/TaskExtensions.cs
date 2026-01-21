@@ -169,7 +169,15 @@
                 }
             }
 
-            public bool IsCanceled => throw new NotImplementedException();
+            public bool IsCanceled
+            {
+                get
+                {
+                    //// TODO is this supposed to throw if the task isn't completed yet? or is it `false` until we encounter an exception?
+
+                    throw new NotImplementedException();
+                }
+            }
 
             public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
             {
@@ -198,6 +206,23 @@
             {
                 public Awaiter()
                 {
+                }
+
+                public bool IsCompleted => throw new NotImplementedException();
+
+                public TResult GetResult()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    throw new NotImplementedException();
                 }
             }
 
