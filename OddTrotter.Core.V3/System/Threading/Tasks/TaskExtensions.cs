@@ -31,4 +31,9 @@
 
 
     }
+
+    public interface IFuture<out T> //// TODO `itask` should be called `iawaitable` and this should be called `itask` (though, this doesn't have a `continuewith`, so maybe this shouldn't be called `itask`; i'm nervous about calling it `ifuture` though, because that's a name with a real mathematical meaning, and i didn't do any diligence to ensure i followed that meaning)
+        where T : allows ref struct
+    {
+    }
 }
