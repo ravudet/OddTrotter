@@ -17,6 +17,7 @@
     //// TODO `iawaitable` should be *only* what is needed for `await` to work
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
+    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration
     //// TODO implement assert extensions so you can always use assert.that
     //// TODO for the current "bare minimum", make everything look really nice and complete; you don't need every overload and variation, but the ones that you do have should be complete
     //// TODO add `assert.that` to code quality
