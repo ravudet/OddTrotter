@@ -255,7 +255,7 @@
             var parsed = either
                 .SelectAsync(
                     value => Parse(value),
-                    error => new TaskWrapper<Exception>(Task.FromResult(error)));
+                    error => Task.FromResult(error).ToTaskWrapper());
 
             return parsed
                 .Apply(
@@ -268,7 +268,7 @@
 
         public static TaskWrapper<IEither<int, Exception>> Parse(string value)
         {
-            return new TaskWrapper<IEither<int, Exception>>(ParseImpl(value));
+            return ParseImpl(value).ToTaskWrapper();
         }
 
         private static async Task<IEither<int, Exception>> ParseImpl(string value)
@@ -290,7 +290,7 @@
 
         public static TaskWrapper<string> ToString(int value)
         {
-            return new TaskWrapper<string>(ToStringImpl(value));
+            return ToStringImpl(value).ToTaskWrapper();
         }
 
         private static async Task<string> ToStringImpl(int value)
@@ -300,7 +300,7 @@
 
         public static TaskWrapper<string> ToString(Exception exception)
         {
-            return new TaskWrapper<string>(ToStringImpl(exception));
+            return ToStringImpl(exception).ToTaskWrapper();
         }
 
         private static async Task<string> ToStringImpl(Exception exception)

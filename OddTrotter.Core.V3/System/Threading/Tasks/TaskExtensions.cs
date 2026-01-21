@@ -26,7 +26,7 @@
 
         public static ITask<TResult> ContinueWith2<TSource, TResult>(this ITask<TSource> task)
         {
-
+            throw new Exception("TODO");
         }
 
 
