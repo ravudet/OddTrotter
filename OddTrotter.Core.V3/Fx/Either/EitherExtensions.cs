@@ -11,6 +11,13 @@ namespace Fx.Either
 
     public static class EitherExtensions
     {
+
+        //// TODO if you have issues with `realizable<ieither>` or anything like it regarding type inference, covariance, or implicit conversions, then it might make sense to have things that use `ieither` return `itask` instead of `realizable`; i think this can be implemented, and would definitely give you better type inference and such
+
+
+
+
+
         private static TypeHolder<IEither<TLeft, TRight>, TLeft, TRight> TypeHolder<TLeft, TRight>(this IEither<TLeft, TRight> either)
             where TLeft : allows ref struct
             where TRight : allows ref struct
