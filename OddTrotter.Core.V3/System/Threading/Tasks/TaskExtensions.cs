@@ -120,18 +120,18 @@
             where TResult : allows ref struct
         {
             private readonly IConfigurableFuture<TSource> future;
-            private readonly Func<TSource, TResult> continuation;
+            private readonly Func<TSource, TResult> sourceContinuation;
             private readonly Func<Exception, TResult> exceptionContinuation;
             private readonly Func<OperationCanceledException, TResult> canceledContinuation;
 
             public ContinueWith2Adapter(
                 IConfigurableFuture<TSource> future, 
-                Func<TSource, TResult> continuation,
+                Func<TSource, TResult> sourceContinuation,
                 Func<Exception, TResult> exceptionContinuation,
                 Func<OperationCanceledException, TResult> canceledContinuation)
             {
                 this.future = future;
-                this.continuation = continuation;
+                this.sourceContinuation = sourceContinuation;
                 this.exceptionContinuation = exceptionContinuation;
                 this.canceledContinuation = canceledContinuation;
             }
@@ -140,6 +140,8 @@
             {
                 get
                 {
+                    //// TODO is this supposed to throw if the task isn't completed yet? or is it `null` until we encounter an exception?
+
                     if (this.future.Exception != null)
                     {
                         try
@@ -179,12 +181,24 @@
                 Func<Exception, TResult1> exceptionContinuation, 
                 Func<OperationCanceledException, TResult1> canceledContinuation) where TResult1 : allows ref struct
             {
-                throw new NotImplementedException();
+                return Realizable.FromFuture(
+                    new ContinueWith2Adapter<TResult, TResult1>(
+                        this,
+                        sourceContinuation,
+                        exceptionContinuation,
+                        canceledContinuation));
             }
 
             public IAwaiter<TResult> GetAwaiter()
             {
                 throw new NotImplementedException();
+            }
+
+            private sealed class Awaiter : IAwaiter<TResult>
+            {
+                public Awaiter()
+                {
+                }
             }
 
             IFuture<TResult> IConfigurableFuture<TResult>.ConfigureAwait(bool continueOnCapturedContext)
