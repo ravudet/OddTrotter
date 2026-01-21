@@ -315,9 +315,9 @@
             return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
                 RefEitherUnitTests.Parse(value),
                 potentiallyParsed => potentiallyParsed
-                    .Apply<IEither<int, Exception>, int, Exception, RefEither<SomeRef, Exception>>(
-                        value => new RefEither<SomeRef, Exception>(new SomeRef(value)),
-                        exception => new RefEither<SomeRef, Exception>(exception)));
+                    .Apply(
+                        value => RefEither.Right<Exception>().Left(new SomeRef(value)),
+                        exception => RefEither.Left<SomeRef>().Right(exception)));
         }
 
         private sealed class RefTask<TContext, TValue> : ITask<TValue>
@@ -329,6 +329,7 @@
             public RefTask(ITask<TContext> task, Func<TContext, TValue> operation)
             {
                 //// TODO make this a "production" type
+                //// TODO this is really like `continuewith` on `task` but if `continuewith` returned `itask` instead of `realizable`
                 this.task = task;
                 this.operation = operation;
             }
