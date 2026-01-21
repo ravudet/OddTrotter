@@ -313,7 +313,7 @@
         {
             //// TODO you are here
             return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
-                Parse(value),
+                RefEitherUnitTests.Parse(value),
                 potentiallyParsed => potentiallyParsed
                     .Apply<IEither<int, Exception>, int, Exception, RefEither<SomeRef, Exception>>(
                         value => new RefEither<SomeRef, Exception>(new SomeRef(value)),
