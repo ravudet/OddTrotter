@@ -17,7 +17,7 @@
     //// TODO `iawaitable` should be *only* what is needed for `await` to work
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
-    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration
+    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration; "style" here is asking about anything, but particularly the newlines for the lambdas and the fluent ".{method}" new line conventions, and where to put `await` and `configureawait` and all of that stuff
     //// TODO implement assert extensions so you can always use assert.that
     //// TODO for the current "bare minimum", make everything look really nice and complete; you don't need every overload and variation, but the ones that you do have should be complete
     //// TODO add `assert.that` to code quality
