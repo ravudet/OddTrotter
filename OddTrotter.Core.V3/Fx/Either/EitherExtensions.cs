@@ -868,8 +868,6 @@ namespace Fx.Either
                 }
             }
 
-            TypeHolder<DecomposeCastable<TLeft, TRight>, TLeft, TRight> IAsAble<DecomposeCastable<TLeft, TRight>, TLeft, TRight>.As => AsEither;
-
             public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<TLeft, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<TRight, TContext, TContinuable, TResult> rightMap, ref TContext context)
                 where TResult : allows ref struct
                 where TContext : allows ref struct

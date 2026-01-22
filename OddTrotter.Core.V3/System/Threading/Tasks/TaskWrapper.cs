@@ -6,9 +6,13 @@ namespace System.Threading.Tasks
 
     using Fx.Realizable;
 
-    public sealed class TaskWrapper<T> : ITask<T>
+    public sealed class TaskWrapper<T> : ITask<T>, IConfigurableFuture<T>
     {
         private readonly Task<T> task;
+
+        public Exception? Exception => this.task.Exception;
+
+        public bool IsCanceled => this.task.IsCanceled;
 
         public TaskWrapper(Task<T> task)
         {
@@ -276,6 +280,30 @@ namespace System.Threading.Tasks
         public IConfiguredAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
         {
             return new ConfiguredAwaitable(this.task.ConfigureAwait(continueOnCapturedContext));
+        }
+
+        IFuture<T> IConfigurableFuture<T>.ConfigureAwait(bool continueOnCapturedContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        private sealed class ConfiguredFuture : IFuture<T>
+        {
+            private readonly Task<T> task;
+
+            public ConfiguredFuture(Task<T> task)
+            {
+                this.task = task;
+            }
+
+            public Exception? Exception => this.task.Exception;
+
+            public bool IsCanceled => this.task.IsCanceled;
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                return new ConfiguredAwaitable(this.task.ConfigureAwait(false)).GetAwaiter();
+            }
         }
 
         private sealed class ConfiguredAwaitable : IConfiguredAwaitable<T>

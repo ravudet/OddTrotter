@@ -134,10 +134,17 @@
 
         private static Realizable<RefEither<int, Exception>> Foo()
         {
-            return Realizable.Realizable.FromFuture( //// TODO why do you need the namespace here?
+            //// TODO redo the quality on this
+            return Realizable.Realizable.FromFuture(
+                Task.Delay(100).ToTaskWrapper().ContinueWith2(
+                     _ => RefEither.Right<Exception>().Left(42),
+                     _ => throw _,
+                     _ => throw _));
+
+            /*return Realizable.Realizable.FromFuture( //// TODO why do you need the namespace here?
                 new RefTask<Nothing, RefEither<int, Exception>>(
                     Task.Delay(100).ToTaskWrapper(),
-                    _ => RefEither.Right<Exception>().Left(42)));
+                    _ => RefEither.Right<Exception>().Left(42)));*/
         }
 
         [TestMethod]
@@ -312,12 +319,23 @@
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
         {
             //// TODO you are here
-            return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
+            //// TODO taskextensions
+            //// TODO taskwrapper
+
+            return RefEitherUnitTests.Parse(value).ContinueWith2(
+                potentiallyParsed => potentiallyParsed
+                    .Apply(
+                        value => RefEither.Right<Exception>().Left(new SomeRef(value)),
+                        exception => RefEither.Left<SomeRef>().Right(exception)),
+                _ => throw _,
+                _ => throw _);
+
+            /*return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
                 RefEitherUnitTests.Parse(value),
                 potentiallyParsed => potentiallyParsed
                     .Apply(
                         value => RefEither.Right<Exception>().Left(new SomeRef(value)),
-                        exception => RefEither.Left<SomeRef>().Right(exception)));
+                        exception => RefEither.Left<SomeRef>().Right(exception)));*/
         }
 
         private sealed class RefTask<TContext, TValue> : ITask<TValue>
@@ -416,11 +434,17 @@
             Assert.That.AreEqual(42, result);
         }
 
-        private static RefTask<string, RefEither<int, Exception>> ParseFromFile(string filePath)
+        private static ITask<RefEither<int, Exception>> ParseFromFile(string filePath)
         {
-            return new RefTask<string, RefEither<int, Exception>>(
+            return 
+                File.ReadAllTextAsync(filePath).ToFuture().ContinueWith2(
+                text => ParseToRef(text),
+                _ => throw _,
+                _ => throw _);
+
+            /*return new RefTask<string, RefEither<int, Exception>>(
                 new TaskWrapper<string>(File.ReadAllTextAsync(filePath)),
-                text => ParseToRef(text));
+                text => ParseToRef(text));*/
         }
 
         private static RefEither<int, Exception> ParseToRef(string text)

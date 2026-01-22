@@ -6,15 +6,7 @@ namespace Fx.Either
     using Fx;
     using Fx.Realizable;
 
-    public interface IAsAble<TSelf, T1, T2> 
-        where TSelf : IAsAble<TSelf, T1, T2>, allows ref struct
-        where T1 : allows ref struct
-        where T2 : allows ref struct
-    {
-        TypeHolder<TSelf, T1, T2> As { get; }
-    }
-
-    public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>, IAsAble<TEither, TLeft, TRight>
+    public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>
         where TEither : IEither<TEither, TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct
         where TRight : allows ref struct

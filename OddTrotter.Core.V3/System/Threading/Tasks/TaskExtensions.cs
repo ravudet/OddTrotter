@@ -22,12 +22,12 @@
 
 
 
-        public static IFuture<T> ToFuture<T>(this Task<T> task)
+        public static IConfigurableFuture<T> ToFuture<T>(this Task<T> task)
         {
             return new TaskToFuture<T>(task);
         }
 
-        private sealed class TaskToFuture<T> : IFuture<T>
+        private sealed class TaskToFuture<T> : IConfigurableFuture<T>
         {
             private readonly Task<T> task;
 
@@ -49,6 +49,67 @@
                 get
                 {
                     return this.task.IsCanceled;
+                }
+            }
+
+            public IFuture<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new Configured(this.task, continueOnCapturedContext);
+            }
+
+            private sealed class Configured : IFuture<T>
+            {
+                private readonly Task<T> task;
+                private readonly bool continueOnCapturedContext;
+
+                public Configured(
+                    Task<T> task,
+                    bool continueOnCapturedContext)
+                {
+                    this.task = task;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public Exception? Exception => this.task.Exception;
+
+                public bool IsCanceled => this.task.IsCanceled;
+
+                public IAwaiter<T> GetAwaiter()
+                {
+                    return new Awaiter(this.task.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
+                }
+
+                private sealed class Awaiter : IAwaiter<T>
+                {
+                    private readonly ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter awaiter;
+
+                    public Awaiter(ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter awaiter)
+                    {
+                        this.awaiter = awaiter;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return this.awaiter.IsCompleted;
+                        }
+                    }
+
+                    public T GetResult()
+                    {
+                        return this.awaiter.GetResult();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.awaiter.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.awaiter.UnsafeOnCompleted(continuation);
+                    }
                 }
             }
 
