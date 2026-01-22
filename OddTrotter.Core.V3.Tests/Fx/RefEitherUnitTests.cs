@@ -330,11 +330,6 @@
         [TestMethod]
         public async Task ReadFromFile()
         {
-            //// TODO you are here
-            //// TODO taskextensions
-            //// TODO taskwrapper
-            //// TODO realizableextensions
-
             var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
             var value = 42;
@@ -349,7 +344,12 @@
 
         private static ITask<RefEither<int, Exception>> ParseFromFile(string filePath)
         {
-            return 
+            //// TODO you are here
+            //// TODO taskextensions
+            //// TODO taskwrapper
+            //// TODO realizableextensions
+
+            return
                 File.ReadAllTextAsync(filePath).ToFuture().ContinueWith2(
                 text => ParseToRef(text),
                 _ => throw _,
