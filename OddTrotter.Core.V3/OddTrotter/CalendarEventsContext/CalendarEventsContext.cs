@@ -7,7 +7,6 @@
     using Fx.Either;
     using Fx.QueryContext;
     using Fx.QueryContext.Mixins;
-    using OddTrotter.Calendar;
 
     public sealed class CalendarEventsContext : 
         IQueryContext
@@ -25,10 +24,10 @@
                 IEither
                     <
                         CalendarEvent,
-                        CalendarEventsContextTranslationException
+                        CalendarEventTranslationException
                     >,
                 CalendarEvent,
-                CalendarEventsContextPagingException,
+                PagingException,
                 CalendarEventsContext
             >
     {
@@ -42,11 +41,6 @@
         }
 
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        ITask<IQueryResult<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEventsContextPagingException>> IQueryContext<IEither<CalendarEvent, CalendarEventsContextTranslationException>, CalendarEvent, CalendarEventsContextPagingException>.Evaluate()
         {
             throw new NotImplementedException();
         }
