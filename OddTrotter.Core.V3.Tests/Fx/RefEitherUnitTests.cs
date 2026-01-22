@@ -309,8 +309,9 @@
             var value = "42";
             var either = await RefEitherUnitTests.AsyncRefWork(value).ConfigureAwait(false);
 
-            Assert.That.IsTrue(either.AsEither.Decompose(out var result, out _));
+            Assert.That.IsTrue(either.AsEither.Decompose(out var result, out var exception));
             Assert.That.AreEqual(42, result.Value);
+            Assert.That.IsNull(exception);
         }
 
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
@@ -336,11 +337,14 @@
 
             var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
-            await WriteToFile(filePath, "42").ConfigureAwait(false);
+            var value = 42;
+            await RefEitherUnitTests.WriteToFile(filePath, value.ToString()).ConfigureAwait(false);
 
-            var potentiallyParsed = await ParseFromFile(filePath).ConfigureAwait(false);
-            Assert.That.IsTrue(potentiallyParsed.AsEither.Decompose(out var result, out _));
-            Assert.That.AreEqual(42, result);
+            var potentiallyParsed = await RefEitherUnitTests.ParseFromFile(filePath).ConfigureAwait(false);
+
+            Assert.That.IsTrue(potentiallyParsed.AsEither.Decompose(out var result, out var exception));
+            Assert.That.AreEqual(value, result);
+            Assert.That.IsNull(exception);
         }
 
         private static ITask<RefEither<int, Exception>> ParseFromFile(string filePath)

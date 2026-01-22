@@ -83,6 +83,11 @@
             Assert.AreEqual(expected, actual);
         }
 
+        public static void IsNull(this Assert assert, object? value)
+        {
+            Assert.IsNull(value);
+        }
+
         public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
         {
             Assert.IsInstanceOfType(value, expectedType);
