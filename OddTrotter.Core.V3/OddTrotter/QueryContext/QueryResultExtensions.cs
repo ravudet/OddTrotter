@@ -138,12 +138,12 @@ namespace Fx.QueryContext
                 .Apply(
                     element =>
                         Either
+                            .Right<TError>()
                             .Left(
                                 System.Linq.FirstOrDefault.Create(
                                     Either
-                                        .Left(element.Value)
-                                        .Right<TDefault>()))
-                            .Right<TError>(),
+                                        .Right<TDefault>()
+                                        .Left(element.Value))),
                     terminal =>
                         terminal
                             .Apply(
@@ -153,10 +153,10 @@ namespace Fx.QueryContext
                                         .Right(error.Value),
                                 empty =>
                                     Either
+                                        .Right<TError>()
                                         .Left(
                                             System.Linq.FirstOrDefault.Create(
-                                                Either.Left<TElement>().Right(@default)))
-                                        .Right<TError>()));
+                                                Either.Left<TElement>().Right(@default)))));
         }
 
         /// <summary>
