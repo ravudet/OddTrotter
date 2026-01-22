@@ -115,7 +115,7 @@
                 canceledContinuation);
         }
 
-        private sealed class ContinueWith2Adapter<TSource, TResult> : ITask<TResult>, IConfigurableFuture<TResult>
+        private sealed class ContinueWith2Adapter<TSource, TResult> : ITask<TResult>, IConfigurableFuture<TResult>, IConfiguredAwaitable<TResult>, IFuture<TResult>
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
@@ -123,17 +123,34 @@
             private readonly Func<TSource, TResult> sourceContinuation;
             private readonly Func<Exception, TResult> exceptionContinuation;
             private readonly Func<OperationCanceledException, TResult> canceledContinuation;
+            private readonly bool? continueOnCapturedContext;
 
             public ContinueWith2Adapter(
-                IConfigurableFuture<TSource> future, 
+                IConfigurableFuture<TSource> future,
                 Func<TSource, TResult> sourceContinuation,
                 Func<Exception, TResult> exceptionContinuation,
                 Func<OperationCanceledException, TResult> canceledContinuation)
+                : this(
+                      future,
+                      sourceContinuation,
+                      exceptionContinuation,
+                      canceledContinuation,
+                      null)
+            {
+            }
+
+            private ContinueWith2Adapter(
+                IConfigurableFuture<TSource> future, 
+                Func<TSource, TResult> sourceContinuation,
+                Func<Exception, TResult> exceptionContinuation,
+                Func<OperationCanceledException, TResult> canceledContinuation,
+                bool? continueOnCapturedContext)
             {
                 this.future = future;
                 this.sourceContinuation = sourceContinuation;
                 this.exceptionContinuation = exceptionContinuation;
                 this.canceledContinuation = canceledContinuation;
+                this.continueOnCapturedContext = continueOnCapturedContext;
             }
 
             public Exception? Exception
@@ -142,7 +159,16 @@
                 {
                     //// TODO is this supposed to throw if the task isn't completed yet? or is it `null` until we encounter an exception?
 
-                    var awaiter = this.GetAwaiter(); //// TODO this should call `configureawait` whenever appropriate
+                    IAwaiter<TResult> awaiter;
+                    if (this.continueOnCapturedContext == null)
+                    {
+                        awaiter = this.GetAwaiter();
+                    }
+                    else
+                    {
+                        awaiter = this.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter();
+                    }
+
                     if (!awaiter.IsCompleted)
                     {
                         return null;
@@ -292,57 +318,14 @@
                 return this.ConfigureAwaitImpl(continueOnCapturedContext);
             }
 
-            private ConfiguredAwaitable ConfigureAwaitImpl(bool continueOnCapturedContext)
+            private ContinueWith2Adapter<TSource, TResult> ConfigureAwaitImpl(bool continueOnCapturedContext)
             {
-                return new ConfiguredAwaitable(
-                    this,
+                return new ContinueWith2Adapter<TSource, TResult>(
+                    this.future,
                     this.sourceContinuation,
                     this.exceptionContinuation,
                     this.canceledContinuation,
                     continueOnCapturedContext);
-            }
-
-            private sealed class ConfiguredAwaitable : IFuture<TResult>, IConfiguredAwaitable<TResult>
-            {
-                private readonly ContinueWith2Adapter<TSource, TResult> future;
-                private readonly Func<TSource, TResult> sourceContinuation;
-                private readonly Func<Exception, TResult> exceptionContinuation;
-                private readonly Func<OperationCanceledException, TResult> canceledContinuation;
-                private readonly bool continueOnCapturedContext;
-
-                public ConfiguredAwaitable(
-                    ContinueWith2Adapter<TSource, TResult> future,
-                    Func<TSource, TResult> sourceContinuation,
-                    Func<Exception, TResult> exceptionContinuation,
-                    Func<OperationCanceledException, TResult> canceledContinuation,
-                    bool continueOnCapturedContext)
-                {
-                    this.future = future;
-                    this.sourceContinuation = sourceContinuation;
-                    this.exceptionContinuation = exceptionContinuation;
-                    this.canceledContinuation = canceledContinuation;
-                    this.continueOnCapturedContext = continueOnCapturedContext;
-                }
-
-                public Exception? Exception
-                {
-                    get
-                    {
-                        return this.future.Exception;
-                    }
-                }
-
-                public bool IsCanceled
-                {
-                    get
-                    {
-                    }
-                }
-
-                public IAwaiter<TResult> GetAwaiter()
-                {
-                    throw new NotImplementedException();
-                }
             }
         }
     }
