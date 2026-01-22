@@ -1,7 +1,7 @@
 ﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Fx
 {
-    public readonly ref struct TypeHolder<TSelf, T1>
+    public readonly ref struct TypeHolder<TSelf, T1> //// TODO create more of these //// TODO rename this to `as`?
         where TSelf : allows ref struct
         where T1 : allows ref struct
     {

@@ -174,7 +174,7 @@ namespace Fx.Either
             where TLeftSource : allows ref struct
             where TRightSource : allows ref struct
             where TLeftResult : allows ref struct
-            where TRightResult : allows ref struct
+            where TRightResult : allows ref struct //// TODO do you want to just go ahead and have these return `typeholder<refeither>` so that the caller doesn't have to use `aseither`? //// TODO same question for the async variants
         {
             //// TODO are you happy with this return type? can you do better?
             var realizable = SelectAsync<TEither, TLeftSource, TRightSource, Realizable<TLeftResult>, TLeftResult, Realizable<TRightResult>, TRightResult>(
