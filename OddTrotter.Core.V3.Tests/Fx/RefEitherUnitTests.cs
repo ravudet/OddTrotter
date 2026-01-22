@@ -315,114 +315,25 @@
 
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
         {
-            //// TODO you are here
-            //// TODO taskextensions
-            //// TODO taskwrapper
-            //// TODO realizableextensions
-
-            return RefEitherUnitTests.Parse(value).ContinueWith2(
-                potentiallyParsed => potentiallyParsed
-                    .Apply(
-                        value => RefEither.Right<Exception>().Left(new SomeRef(value)),
-                        exception => RefEither.Left<SomeRef>().Right(exception)),
-                _ => throw _,
-                _ => throw _);
-
-            /*return new RefTask<IEither<int, Exception>, RefEither<SomeRef, Exception>>(
-                RefEitherUnitTests.Parse(value),
-                potentiallyParsed => potentiallyParsed
-                    .Apply(
-                        value => RefEither.Right<Exception>().Left(new SomeRef(value)),
-                        exception => RefEither.Left<SomeRef>().Right(exception)));*/
-        }
-
-        private sealed class RefTask<TContext, TValue> : ITask<TValue>
-            where TValue : allows ref struct
-        {
-            private readonly ITask<TContext> task;
-            private readonly Func<TContext, TValue> operation;
-
-            public RefTask(ITask<TContext> task, Func<TContext, TValue> operation)
-            {
-                //// TODO make this a "production" type
-                //// TODO this is really like `continuewith` on `task` but if `continuewith` returned `itask` instead of `realizable`
-                this.task = task;
-                this.operation = operation;
-            }
-
-            public IConfiguredAwaitable<TValue> ConfigureAwait(bool continueOnCapturedContext)
-            {
-                return new ConfiguredAwaitable(
-                    new RefTask<TContext, TValue>.Awaiter(
-                        this.task.ConfigureAwait(continueOnCapturedContext).GetAwaiter(),
-                        this.operation));
-            }
-
-            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TValue>
-            {
-                private readonly Awaiter awaiter;
-
-                public ConfiguredAwaitable(RefTask<TContext, TValue>.Awaiter awaiter)
-                {
-                    this.awaiter = awaiter;
-                }
-
-                public IAwaiter<TValue> GetAwaiter()
-                {
-                    return this.awaiter;
-                }
-            }
-
-            public Realizable<TResult> ContinueWith<TResult>(Func<TValue, TResult> sourceContinuation, Func<Exception, TResult> exceptionContinuation, Func<OperationCanceledException, TResult> canceledContinuation) where TResult : allows ref struct
-            {
-                var self = this;
-                return this.task.ContinueWith(context => sourceContinuation(self.operation(context)), exceptionContinuation, canceledContinuation);
-            }
-
-            public IAwaiter<TValue> GetAwaiter()
-            {
-                return new Awaiter(this.task.GetAwaiter(), this.operation);
-            }
-
-            private sealed class Awaiter : IAwaiter<TValue>
-            {
-                private readonly IAwaiter<TContext> taskAwaiter;
-                private readonly Func<TContext, TValue> operation;
-
-                public Awaiter(IAwaiter<TContext> taskAwaiter, Func<TContext, TValue> operation)
-                {
-                    this.taskAwaiter = taskAwaiter;
-                    this.operation = operation;
-                }
-
-                public bool IsCompleted
-                {
-                    get
-                    {
-                        return this.taskAwaiter.IsCompleted;
-                    }
-                }
-
-                public TValue GetResult()
-                {
-                    return this.operation(this.taskAwaiter.GetResult());
-                }
-
-                public void OnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.OnCompleted(continuation);
-                }
-
-                public void UnsafeOnCompleted(Action continuation)
-                {
-                    this.taskAwaiter.UnsafeOnCompleted(continuation);
-                }
-            }
+            return RefEitherUnitTests
+                .Parse(value)
+                .ContinueWith2(
+                    potentiallyParsed => potentiallyParsed
+                        .Apply(
+                            value => RefEither.Right<Exception>().Left(new SomeRef(value)),
+                            exception => RefEither.Left<SomeRef>().Right(exception)),
+                    _ => throw _,
+                    _ => throw _);
         }
 
         [TestMethod]
         public async Task ReadFromFile()
         {
+            //// TODO you are here
+            //// TODO taskextensions
+            //// TODO taskwrapper
+            //// TODO realizableextensions
+
             var workingDirectory = Path.Combine(TestContext.TestRunDirectory, TestContext.TestName);
             var filePath = Path.Combine(workingDirectory, "somedata.txt");
             await WriteToFile(filePath, "42").ConfigureAwait(false);
