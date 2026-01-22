@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Threading.Tasks
 {
+    [AsyncMethodBuilder(typeof(TaskMethodBuilder<>))]
     public interface ITask<out T> : ITask<IConfiguredAwaitable<T>, IAwaiter<T>, T>
         where T : allows ref struct
     {
