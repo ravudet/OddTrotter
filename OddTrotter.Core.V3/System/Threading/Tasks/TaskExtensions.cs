@@ -469,7 +469,7 @@
                     }
                     else
                     {
-                        //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all? //// TODO i think you can use a mixin for this maybe?
+                        //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all? //// TODO i think you can use a mixin for this maybe? //// TODO you might just actually implement a task factory or task scheduler or something that will actually run the code
                         return this.sourceContinuation(this.awaiter.GetResult());
                     }
                 }
