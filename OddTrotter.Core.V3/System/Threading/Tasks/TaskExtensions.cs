@@ -47,6 +47,7 @@
 
             public OtherTaskToFuture(ITask<T> task, bool? continueOnCapturedContext)
             {
+                //// TODO the `iconfigurablefuture` implementation should have an instance of `ifuture` instead of trying to implement both
                 this.task = task;
                 this.continueOnCapturedContext = continueOnCapturedContext;
             }
@@ -96,7 +97,20 @@
                         awaiter = this.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter();
                     }
 
-                    return awaiter.IsCompleted; //// TODO do you need to call `getresult` to see if `operationcanceledexception` is thrown?
+                    if (!awaiter.IsCompleted)
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        awaiter.GetResult();
+                        return false;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return true;
+                    }
                 }
             }
 
