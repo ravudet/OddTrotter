@@ -355,11 +355,6 @@
 
         private static RefEither<int, Exception> ParseToRef(string text)
         {
-            //// TODO you are here
-            //// TODO taskextensions
-            //// TODO taskwrapper
-            //// TODO realizableextensions
-
             int value;
             try
             {
@@ -367,14 +362,19 @@
             }
             catch (Exception exception)
             {
-                return new RefEither<int, Exception>(exception);
+                return RefEither.Left<int>().Right(exception);
             }
 
-            return new RefEither<int, Exception>(value);
+            return RefEither.Right<Exception>().Left(value);
         }
 
         private static async Task WriteToFile(string filePath, string contents)
         {
+            //// TODO you are here
+            //// TODO taskextensions
+            //// TODO taskwrapper
+            //// TODO realizableextensions
+
             var parentDirectory = Path.GetDirectoryName(filePath);
             if (parentDirectory == null)
             {
