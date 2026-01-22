@@ -370,11 +370,6 @@
 
         private static async Task WriteToFile(string filePath, string contents)
         {
-            //// TODO you are here
-            //// TODO taskextensions
-            //// TODO taskwrapper
-            //// TODO realizableextensions
-
             var parentDirectory = Path.GetDirectoryName(filePath);
             if (parentDirectory == null)
             {
