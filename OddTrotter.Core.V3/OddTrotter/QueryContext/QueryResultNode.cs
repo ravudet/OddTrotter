@@ -22,28 +22,12 @@ namespace Fx.QueryContext
             this.node = node;
         }
 
-        /// <inheritdoc/>
-        public TResult Apply<TResult, TContext>(
-            Func<IElement<TValue, TError>, TContext, TResult> leftMap, 
-            Func<IEither<IError<TError>, IEmpty>, TContext, TResult> rightMap, 
-            TContext context)
+        public Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+            where TContinuable : IContinuable<TResult>, allows ref struct
         {
-            ArgumentNullException.ThrowIfNull(leftMap);
-            ArgumentNullException.ThrowIfNull(rightMap);
-
-            return this.node.Apply(leftMap, rightMap, context);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TResult> Apply<TResult, TContext>(
-            Func<IElement<TValue, TError>, TContext, Task<TResult>> leftMap, 
-            Func<IEither<IError<TError>, IEmpty>, TContext, Task<TResult>> rightMap, 
-            TContext context)
-        {
-            ArgumentNullException.ThrowIfNull(leftMap);
-            ArgumentNullException.ThrowIfNull(rightMap);
-
-            return await this.node.Apply(leftMap, rightMap, context).ConfigureAwait(false);
+            return this.node.ApplyAsync(leftMap, rightMap, ref context);
         }
     }
 }
