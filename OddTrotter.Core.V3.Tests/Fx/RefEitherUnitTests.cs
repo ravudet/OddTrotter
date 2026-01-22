@@ -344,24 +344,22 @@
 
         private static ITask<RefEither<int, Exception>> ParseFromFile(string filePath)
         {
+            return File
+                .ReadAllTextAsync(filePath)
+                .ToFuture()
+                .ContinueWith2(
+                    text => ParseToRef(text),
+                    _ => throw _,
+                    _ => throw _);
+        }
+
+        private static RefEither<int, Exception> ParseToRef(string text)
+        {
             //// TODO you are here
             //// TODO taskextensions
             //// TODO taskwrapper
             //// TODO realizableextensions
 
-            return
-                File.ReadAllTextAsync(filePath).ToFuture().ContinueWith2(
-                text => ParseToRef(text),
-                _ => throw _,
-                _ => throw _);
-
-            /*return new RefTask<string, RefEither<int, Exception>>(
-                new TaskWrapper<string>(File.ReadAllTextAsync(filePath)),
-                text => ParseToRef(text));*/
-        }
-
-        private static RefEither<int, Exception> ParseToRef(string text)
-        {
             int value;
             try
             {
