@@ -142,29 +142,20 @@
                 {
                     //// TODO is this supposed to throw if the task isn't completed yet? or is it `null` until we encounter an exception?
 
-                    if (this.future.Exception != null)
+                    var awaiter = this.GetAwaiter(); //// TODO this should call `configureawait` whenever appropriate
+                    if (!awaiter.IsCompleted)
                     {
-                        try
-                        {
-                            this.exceptionContinuation(this.future.Exception);
-                            return null;
-                        }
-                        catch (Exception exception)
-                        {
-                            return exception;
-                        }
+                        return null;
                     }
-                    else
+
+                    try
                     {
-                        try
-                        {
-                            this.GetAwaiter().GetResult();
-                            return null;
-                        }
-                        catch (Exception exception)
-                        {
-                            return exception;
-                        }
+                        awaiter.GetResult();
+                        return null;
+                    }
+                    catch (Exception exception)
+                    {
+                        return exception;
                     }
                 }
             }
@@ -175,13 +166,13 @@
                 {
                     //// TODO is this supposed to throw if the task isn't completed yet? or is it `false` until we encounter an exception?
 
-                    throw new NotImplementedException();
+                    return false; // this can't ever be canceled; if `future` is canceled, we run an uncancelable `func` on the result
                 }
             }
 
             public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
             {
-                throw new NotImplementedException();
+                return this.ConfigureAwaitImpl(continueOnCapturedContext);
             }
 
             public Realizable<TResult1> ContinueWith<TResult1>(
@@ -200,6 +191,7 @@
             public IAwaiter<TResult> GetAwaiter()
             {
                 return new Awaiter(
+                    this.future,
                     this.future.GetAwaiter(),
                     this.sourceContinuation, 
                     this.exceptionContinuation, 
@@ -208,17 +200,20 @@
 
             private sealed class Awaiter : IAwaiter<TResult>
             {
+                private readonly IConfigurableFuture<TSource> future;
                 private readonly IAwaiter<TSource> awaiter;
                 private readonly Func<TSource, TResult> sourceContinuation;
                 private readonly Func<Exception, TResult> exceptionContinuation;
                 private readonly Func<OperationCanceledException, TResult> canceledContinuation;
 
                 public Awaiter(
+                    IConfigurableFuture<TSource> future,
                     IAwaiter<TSource> awaiter,
                     Func<TSource, TResult> sourceContinuation,
                     Func<Exception, TResult> exceptionContinuation,
                     Func<OperationCanceledException, TResult> canceledContinuation)
                 {
+                    this.future = future;
                     this.awaiter = awaiter;
                     this.sourceContinuation = sourceContinuation;
                     this.exceptionContinuation = exceptionContinuation;
@@ -235,23 +230,119 @@
 
                 public TResult GetResult()
                 {
-                    throw new NotImplementedException();
+                    if (this.future.Exception != null)
+                    {
+                        var exception = this.future.Exception;
+                        if (exception is AggregateException aggregateException && aggregateException.InnerExceptions.Count == 1)
+                        {
+                            exception = aggregateException.InnerExceptions[0];
+                        }
+
+                        return this.exceptionContinuation(exception); //// TODO you need to implement some way for `exceptioncontinuation` to rethrow without losing the stack trace; .NET rebuilds the stack trace with something called `restoredispatchstate`: https://source.dot.net/#System.Private.CoreLib/src/System/Exception.CoreCLR.cs,50a6552033907120,references; so maybe way you could do is have `exceptionContinuation == null` indicate to rethrow; it would be something like:
+                        // TOld old;
+                        // try
+                        // {
+                        //   old = this.taskAwaiter.GetResult();
+                        // }
+                        // catch (OperationCanceledException operationCanceledException) when (this.task.IsCanceled) // needed so that you can differentiate the task being canceled from the underlying delegate happening to throw an unrelated `operationcanceledexception`
+                        // {
+                        //   if (this.canceledContinuation == null)
+                        //   {
+                        //     throw;
+                        //   }
+                        // 
+                        //   return this.canceledContinuation(operationCanceledException);
+                        // }
+                        // catch (Exception exception)
+                        // {
+                        //   if (this.exceptionContinuation == null)
+                        //   {
+                        //     throw;
+                        //   }
+                        // 
+                        //   return this.exceptionContinuation(exception);
+                        // }
+                        // 
+                        // return this.sourceContinuation(old);
+                    }
+                    else if (this.future.IsCanceled)
+                    {
+                        return this.canceledContinuation(new OperationCanceledException("TODO"));
+                    }
+                    else
+                    {
+                        //// TODO this means that the continuation function is not run asynchronously; you can maybe do better, but maybe it's not actually an issue at all? //// TODO i think you can use a mixin for this maybe?
+                        return this.sourceContinuation(this.awaiter.GetResult());
+                    }
                 }
 
                 public void OnCompleted(Action continuation)
                 {
-                    throw new NotImplementedException();
+                    this.awaiter.OnCompleted(continuation);
                 }
 
                 public void UnsafeOnCompleted(Action continuation)
                 {
-                    throw new NotImplementedException();
+                    this.awaiter.UnsafeOnCompleted(continuation);
                 }
             }
 
             IFuture<TResult> IConfigurableFuture<TResult>.ConfigureAwait(bool continueOnCapturedContext)
             {
-                throw new NotImplementedException();
+                return this.ConfigureAwaitImpl(continueOnCapturedContext);
+            }
+
+            private ConfiguredAwaitable ConfigureAwaitImpl(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(
+                    this,
+                    this.sourceContinuation,
+                    this.exceptionContinuation,
+                    this.canceledContinuation,
+                    continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IFuture<TResult>, IConfiguredAwaitable<TResult>
+            {
+                private readonly ContinueWith2Adapter<TSource, TResult> future;
+                private readonly Func<TSource, TResult> sourceContinuation;
+                private readonly Func<Exception, TResult> exceptionContinuation;
+                private readonly Func<OperationCanceledException, TResult> canceledContinuation;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(
+                    ContinueWith2Adapter<TSource, TResult> future,
+                    Func<TSource, TResult> sourceContinuation,
+                    Func<Exception, TResult> exceptionContinuation,
+                    Func<OperationCanceledException, TResult> canceledContinuation,
+                    bool continueOnCapturedContext)
+                {
+                    this.future = future;
+                    this.sourceContinuation = sourceContinuation;
+                    this.exceptionContinuation = exceptionContinuation;
+                    this.canceledContinuation = canceledContinuation;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public Exception? Exception
+                {
+                    get
+                    {
+                        return this.future.Exception;
+                    }
+                }
+
+                public bool IsCanceled
+                {
+                    get
+                    {
+                    }
+                }
+
+                public IAwaiter<TResult> GetAwaiter()
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
     }
