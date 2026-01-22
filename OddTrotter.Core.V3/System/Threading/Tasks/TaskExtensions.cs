@@ -169,6 +169,7 @@
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
+            //// TODO naming
             return new ContinueWith2Adapter<TSource, TResult>(
                 task, 
                 sourceContinuation,
