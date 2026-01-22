@@ -134,17 +134,14 @@
 
         private static Realizable<RefEither<int, Exception>> Foo()
         {
-            //// TODO redo the quality on this
-            return Realizable.Realizable.FromFuture(
-                Task.Delay(100).ToTaskWrapper().ContinueWith2(
-                     _ => RefEither.Right<Exception>().Left(42),
-                     _ => throw _,
-                     _ => throw _));
-
-            /*return Realizable.Realizable.FromFuture( //// TODO why do you need the namespace here?
-                new RefTask<Nothing, RefEither<int, Exception>>(
-                    Task.Delay(100).ToTaskWrapper(),
-                    _ => RefEither.Right<Exception>().Left(42)));*/
+            return Realizable.Realizable.FromFuture(//// TODO why do you need the namespace here?
+                Task
+                    .Delay(100)
+                    .ToTaskWrapper()
+                    .ContinueWith2(
+                        _ => RefEither.Right<Exception>().Left(42),
+                        _ => throw _,
+                        _ => throw _));
         }
 
         [TestMethod]
@@ -319,7 +316,6 @@
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
         {
             //// TODO you are here
-            //// TODO Foo
             //// TODO taskextensions
             //// TODO taskwrapper
             //// TODO realizableextensions
