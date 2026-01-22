@@ -1,5 +1,6 @@
 ﻿namespace System.Threading.Tasks
 {
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
 
     using Fx.Realizable;
@@ -22,12 +23,107 @@
 
 
 
+
+
+
+        public static IConfigurableFuture<T> ToFuture<T>(this ITask<T> task)
+            where T : allows ref struct
+        {
+            return new OtherTaskToFuture<T>(task);
+        }
+
+        private sealed class OtherTaskToFuture<T> : IConfigurableFuture<T>, IFuture<T> //// TODO naming
+            where T : allows ref struct
+        {
+            private readonly ITask<T> task;
+            private readonly bool? continueOnCapturedContext;
+
+            public OtherTaskToFuture(ITask<T> task)
+                : this(
+                      task,
+                      null)
+            {
+            }
+
+            public OtherTaskToFuture(ITask<T> task, bool? continueOnCapturedContext)
+            {
+                this.task = task;
+                this.continueOnCapturedContext = continueOnCapturedContext;
+            }
+
+            public Exception? Exception
+            {
+                get
+                {
+                    IAwaiter<T> awaiter;
+                    if (this.continueOnCapturedContext == null)
+                    {
+                        awaiter = this.GetAwaiter();
+                    }
+                    else
+                    {
+                        awaiter = this.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter();
+                    }
+
+                    if (!awaiter.IsCompleted)
+                    {
+                        return null;
+                    }
+
+                    try
+                    {
+                        awaiter.GetResult();
+                        return null;
+                    }
+                    catch (Exception exception)
+                    {
+                        return exception;
+                    }
+                }
+            }
+
+            public bool IsCanceled
+            {
+                get
+                {
+                    IAwaiter<T> awaiter;
+                    if (this.continueOnCapturedContext == null)
+                    {
+                        awaiter = this.GetAwaiter();
+                    }
+                    else
+                    {
+                        awaiter = this.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter();
+                    }
+
+                    return awaiter.IsCompleted; //// TODO do you need to call `getresult` to see if `operationcanceledexception` is thrown?
+                }
+            }
+
+            public IFuture<T> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new OtherTaskToFuture<T>(this.task, continueOnCapturedContext);
+            }
+
+            public IAwaiter<T> GetAwaiter()
+            {
+                if (this.continueOnCapturedContext == null)
+                {
+                    return this.task.GetAwaiter();
+                }
+                else
+                {
+                    return this.task.ConfigureAwait(this.continueOnCapturedContext.Value).GetAwaiter();
+                }
+            }
+        }
+
         public static IConfigurableFuture<T> ToFuture<T>(this Task<T> task)
         {
             return new TaskToFuture<T>(task);
         }
 
-        private sealed class TaskToFuture<T> : IConfigurableFuture<T>
+        private sealed class TaskToFuture<T> : IConfigurableFuture<T> //// TODO naming
         {
             private readonly Task<T> task;
 

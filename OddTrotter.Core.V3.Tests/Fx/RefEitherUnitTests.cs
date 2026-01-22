@@ -319,10 +319,10 @@
         private static ITask<RefEither<SomeRef, Exception>> AsyncRefWork(string value)
         {
             //// TODO you are here
-            //// TODO isn't there another "continue" implementation that oculd be replaced with your new type?
             //// TODO Foo
             //// TODO taskextensions
             //// TODO taskwrapper
+            //// TODO realizableextensions
 
             return RefEitherUnitTests.Parse(value).ContinueWith2(
                 potentiallyParsed => potentiallyParsed
