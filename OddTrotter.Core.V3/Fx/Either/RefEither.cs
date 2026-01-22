@@ -5,7 +5,7 @@
         public readonly ref struct EmptyLeft<TLeft>
             where TLeft : allows ref struct
         {
-            public RefEither<TLeft, TRight> Right<TRight>(TRight value)
+            public RefEither<TLeft, TRight> Right<TRight>(TRight value) //// TODO should these factories just return `typeholder<refeither>` so that the caller can immediately start using the extensions?
                 where TRight : allows ref struct
             {
                 return new RefEither<TLeft, TRight>(value);
