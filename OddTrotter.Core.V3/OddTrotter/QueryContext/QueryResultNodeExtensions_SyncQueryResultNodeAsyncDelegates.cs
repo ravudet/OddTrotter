@@ -5,6 +5,7 @@ namespace Fx.QueryContext
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Realizable;
 
     public static partial class QueryResultNodeExtensions
     {
@@ -38,6 +39,19 @@ namespace Fx.QueryContext
             ArgumentNullException.ThrowIfNull(source);
 
             return new QueryResultNodeAsync<TValue, TError>(await source.ConfigureAwait(false));
+        }
+
+        public static ITask<QueryResultNodeAsync<TValue, TError>> ToQueryResultNodeAsync<TValue, TError>(
+            this Realizable<IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>>> source)
+        {
+            if (source.AsEither.Decompose(out var realized, out var future))
+            {
+                return Task.FromResult(new QueryResultNodeAsync<TValue, TError>(realized)).ToTaskWrapper();
+            }
+            else
+            {
+                return future.ToQueryResultNodeAsync();
+            }
         }
     }
 }

@@ -282,11 +282,13 @@ namespace Fx.Either
 
 
 
-        public static IEither<TLeftResult, TRightSource> SelectLeft<TLeftSource, TRightSource, TLeftResult>(
+        public static Realizable<IEither<TLeftResult, TRightSource>> SelectLeft<TLeftSource, TRightSource, TLeftResult>(
             this IEither<TLeftSource, TRightSource> either,
-            Func<TLeftSource, TLeftResult> leftMap)
+            Func<TLeftSource, Task<TLeftResult>> leftMap)
         {
-            return either.Select(leftMap, _ => _);
+            return either.SelectAsync(
+                left => leftMap(left).ToTaskWrapper(), 
+                right => Task.FromResult(right).ToTaskWrapper());
         }
 
 

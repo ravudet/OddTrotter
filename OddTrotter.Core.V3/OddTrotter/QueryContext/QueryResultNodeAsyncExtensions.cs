@@ -9,6 +9,28 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultNodeAsyncExtensions
     {
+        public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Try<TValue, TResult> @try)
+        {
+            //// TODO wrong class
+            ArgumentNullException.ThrowIfNull(@try);
+
+            if (@try(value, out var output))
+            {
+                return Either.Right<Nothing>().Left(output);
+            }
+            else
+            {
+                return Either.Left<TResult>().Right(new Nothing());
+            }
+        }
+
+
+
+
+
+
+
+
         /// <summary>
         /// placeholder
         /// </summary>
@@ -31,7 +53,7 @@ namespace Fx.QueryContext
             return await source
                 .SelectLeft(
                     async element =>
-                        new SelectElementAsync<TValueSource, TError, TValueResult>(
+                        (IElementAsync<TValueResult, TError>)new SelectElementAsync<TValueSource, TError, TValueResult>(
                             selector(element.Value),
                             await element.Next().ConfigureAwait(false),
                             selector))
