@@ -306,6 +306,18 @@ namespace Fx.Either
                 .ConfigureAwait(false);
         }
 
+        public static IEither<TLeftResult, TRightSource> SelectLeft<TLeftSource, TRightSource, TLeftResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap)
+            where TLeftSource : allows ref struct
+        {
+            return either.SelectLeft(
+                left => Task.FromResult(leftMap(left)))
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+        }
+
 
 
 
