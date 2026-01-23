@@ -122,7 +122,7 @@ namespace Fx.QueryContext
                     async element => await element
                         .Value
                         .ToEither(@try)
-                        .Select(
+                        .SelectAsync(
                             async tried =>
                                 new TrySelectElementAsync<TValue, TError, TResult>(
                                     tried,
