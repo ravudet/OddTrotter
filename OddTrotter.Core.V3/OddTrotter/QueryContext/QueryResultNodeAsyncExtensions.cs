@@ -25,6 +25,26 @@ namespace Fx.QueryContext
             }
         }
 
+        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
+        {
+            //// TODO wrong class
+            ArgumentNullException.ThrowIfNull(predicate);
+
+            if (predicate(value))
+            {
+                return Either.Right<Nothing>().Left(value);
+            }
+            else
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+        }
+
+
+
+
+
+
 
 
 
@@ -125,11 +145,11 @@ namespace Fx.QueryContext
                         .ToEither(@try)
                         .SelectAsync(
                             async tried =>
-                                (IElementAsync<TResult, TError>)new TrySelectElementAsync<TValue, TError, TResult>(
+                                new TrySelectElementAsync<TValue, TError, TResult>(
                                     tried,
                                     await element.Next().ConfigureAwait(false),
                                     @try),
-                            async nothing => (IEither<IElementAsync<TResult, TError>, TError>)(await element.Next().TrySelect(@try).ConfigureAwait(false)))
+                            async nothing => await element.Next().TrySelect(@try).ConfigureAwait(false))
                         .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNodeAsync()
@@ -193,7 +213,7 @@ namespace Fx.QueryContext
                     async element => await element
                         .Value
                         .ToEither(predicate)
-                        .Select(
+                        .SelectAsync(
                             async value => 
                                 new WhereElementAsync<TValue, TError>(
                                     value, 
