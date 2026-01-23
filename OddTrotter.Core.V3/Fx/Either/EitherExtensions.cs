@@ -282,6 +282,20 @@ namespace Fx.Either
 
 
 
+        public static IEither<TLeftResult, TRightSource> SelectLeft<TLeftSource, TRightSource, TLeftResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap)
+        {
+            return either.Select(leftMap, _ => _);
+        }
+
+
+
+
+
+
+
+
 
 
 

@@ -311,6 +311,7 @@ namespace Fx.QueryContext
                 .Apply(
                     element =>
                         Either
+                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .Left(
                                 new ConcatSecondErrorElement<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
                                     error, 
@@ -319,7 +320,6 @@ namespace Fx.QueryContext
                                     firstErrorSelector, 
                                     secondErrorSelector, 
                                     errorAggregator))
-                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .ToQueryResultNode(),
                     terminal =>
                         terminal
@@ -329,12 +329,12 @@ namespace Fx.QueryContext
                                         .Left<IElement<TValue, TErrorResult>>()
                                         .Right(
                                             Either
+                                                .Right<IEmpty>()
                                                 .Left(
                                                     new Error<TErrorResult>(
                                                         error.TryGetValue(out var firstError) 
                                                             ? errorAggregator(firstError, secondError.Value) 
-                                                            : secondErrorSelector(secondError.Value)))
-                                                .Right<IEmpty>())
+                                                            : secondErrorSelector(secondError.Value))))
                                         .ToQueryResultNode(),
                                 empty =>
                                     error.TryGetValue(out var firstError)
@@ -342,10 +342,10 @@ namespace Fx.QueryContext
                                             .Left<IElement<TValue, TErrorResult>>()
                                             .Right(
                                                 Either
+                                                    .Right<IEmpty>()
                                                     .Left(
                                                         new Error<TErrorResult>(
-                                                            firstErrorSelector(firstError)))
-                                                    .Right<IEmpty>())
+                                                            firstErrorSelector(firstError))))
                                             .ToQueryResultNode()
                                         : Either
                                             .Left<IElement<TValue, TErrorResult>>()

@@ -53,7 +53,7 @@ namespace System.Linq
                     return FirstOrDefault.Create(Either.Left<TElement>().Right(@default));
                 }
 
-                return FirstOrDefault.Create(Either.Left(enumerator.Current).Right<TDefault>());
+                return FirstOrDefault.Create(Either.Right<TDefault>().Left(enumerator.Current));
             }
         }
 
