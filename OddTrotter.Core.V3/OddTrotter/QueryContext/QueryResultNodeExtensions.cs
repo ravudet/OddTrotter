@@ -190,6 +190,7 @@ namespace Fx.QueryContext
                 .Apply(
                     element =>
                         Either
+                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .Left(
                                 new ConcatFirstElement<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
                                     element.Value, 
@@ -198,7 +199,6 @@ namespace Fx.QueryContext
                                     firstErrorSelector, 
                                     secondErrorSelector, 
                                     errorAggregator))
-                            .Right<IEither<IError<TErrorResult>, IEmpty>>()
                             .ToQueryResultNode(),
                     terminal =>
                         terminal
