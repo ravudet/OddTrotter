@@ -1,8 +1,8 @@
 ﻿namespace OddTrotter.Odata.v4_01.ConventionContext
 {
-    internal sealed class ConventionRequest
+    internal sealed class GetCollectionResponse
     {
-        private ConventionRequest()
+        private GetCollectionResponse()
         {
         }
     }

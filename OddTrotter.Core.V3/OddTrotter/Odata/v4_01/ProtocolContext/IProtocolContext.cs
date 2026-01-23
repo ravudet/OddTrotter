@@ -4,6 +4,6 @@
 
     internal interface IProtocolContext
     {
-        Task<GetCollectionResponse> GetCollection(GetCollectionRequest request);
+        Task<GetCollectionResponse<T>> GetCollection<T>(GetCollectionRequest<T> request);
     }
 }

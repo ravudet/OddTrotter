@@ -4,6 +4,6 @@
 
     internal interface IConventionContext
     {
-        Task<ConventionResponse> Evaluate(ConventionRequest request);
+        Task<GetCollectionResponse> GetCollection(GetCollectionRequest request);
     }
 }
