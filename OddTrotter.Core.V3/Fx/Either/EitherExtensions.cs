@@ -302,14 +302,147 @@ namespace Fx.Either
                 left => leftMap(left).ToTaskWrapper(), 
                 right => Task.FromResult(right).ToTaskWrapper());
         }
-        public static async ITask<IEither<TLeft, TRight>> SelectManyRight<TLeft, TRight>(
-            this ITask<IEither<TLeft, IEither<TLeft, TRight>>> either)
-        {
-            ArgumentNullException.ThrowIfNull(either);
 
+
+
+
+
+
+        public static Realizable<IEither<TLeft, TRight>> SelectManyRight<TLeft, TRight>(
+            this Realizable<IEither<TLeft, IEither<TLeft, TRight>>> either)
+        {
             return (await either.ConfigureAwait(false)).SelectManyRight();
         }
 
+        public static IEither<TLeft, TRight> SelectManyRight<TLeft, TRight>(
+            this IEither<TLeft, IEither<TLeft, TRight>> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            return either.SelectManyRight(right => right);
+        }
+        public static IEither<TLeft, TRightResult> SelectManyRight<TLeft, TRightSource, TRightResult>(
+            this IEither<TLeft, TRightSource> either,
+            Func<TRightSource, IEither<TLeft, TRightResult>> selector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return either.SelectManyRight(selector, (right, nestedRight) => nestedRight);
+        }
+        public static IEither<TLeft, TRightResult> SelectManyRight<TLeft, TRightSource, TEither, TRightResult>(
+            this IEither<TLeft, TRightSource> either,
+            Func<TRightSource, IEither<TLeft, TEither>> selector,
+            Func<TRightSource, TEither, TRightResult> resultSelector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+            ArgumentNullException.ThrowIfNull(resultSelector);
+
+            return either.SelectMany(selector, resultSelector);
+        }
+        public static IEither<TLeft, TRightResult> SelectMany<TLeft, TRightSource, TEither, TRightResult>(
+            this IEither<TLeft, TRightSource> either,
+            Func<TRightSource, IEither<TLeft, TEither>> selector,
+            Func<TRightSource, TEither, TRightResult> resultSelector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+            ArgumentNullException.ThrowIfNull(resultSelector);
+
+            return either
+                .Apply(
+                    left => Either.Right<TRightResult>().Left(left),
+                    right =>
+                    {
+                        var selected = selector(right);
+                        try
+                        {
+                            return selected
+                                .Apply(
+                                    nestedLeft => Either.Right<TRightResult>().Left(nestedLeft),
+                                    nestedRight => Either.Left<TLeft>().Right(resultSelector(right, nestedRight)));
+                        }
+                        catch (RightMapException rightMapException)
+                        {
+                            throw rightMapException.InnerException!; //// TODO
+                        }
+                    });
+        }
+
+
+
+
+
+        public static Realizable<IEither<TLeft, TRight>> SelectManyLeft<TLeft, TRight>(
+            this Realizable<IEither<IEither<TLeft, TRight>, TRight>> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            return (await either.ConfigureAwait(false)).SelectManyLeft();
+        }
+
+        public static IEither<TLeft, TRight> SelectManyLeft<TLeft, TRight>(
+            this IEither<IEither<TLeft, TRight>, TRight> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            return either.SelectManyLeft(left => left);
+        }
+
+        public static IEither<TLeftResult, TRight> SelectManyLeft<TLeftSource, TRight, TLeftResult>(
+            this IEither<TLeftSource, TRight> either,
+            Func<TLeftSource, IEither<TLeftResult, TRight>> selector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return either.SelectManyLeft(selector, (left, nestedLeft) => nestedLeft);
+        }
+
+        public static IEither<TLeftResult, TRight> SelectManyLeft<TLeftSource, TRight, TEither, TLeftResult>(
+            this IEither<TLeftSource, TRight> either,
+            Func<TLeftSource, IEither<TEither, TRight>> selector,
+            Func<TLeftSource, TEither, TLeftResult> resultSelector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+            ArgumentNullException.ThrowIfNull(resultSelector);
+
+            return either.SelectMany(selector, resultSelector);
+        }
+
+        public static IEither<TLeftResult, TRight> SelectMany<TLeftSource, TRight, TEither, TLeftResult>(
+            this IEither<TLeftSource, TRight> either,
+            Func<TLeftSource, IEither<TEither, TRight>> selector,
+            Func<TLeftSource, TEither, TLeftResult> resultSelector)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(selector);
+            ArgumentNullException.ThrowIfNull(resultSelector);
+
+            return
+                either
+                    .Apply(
+                        left =>
+                        {
+                            var selected = selector(left);
+                            try
+                            {
+                                return
+                                    selected
+                                        .Apply(
+                                            nestedLeft => Either.Right<TRight>().Left(resultSelector(left, nestedLeft)),
+                                            right => Either.Left<TLeftResult>().Right(right));
+                            }
+                            catch (LeftMapException leftMapException)
+                            {
+                                throw leftMapException.InnerException!; //// TODO
+                            }
+                        },
+                        right =>
+                            Either.Left<TLeftResult>().Right(right));
+        }
 
 
 

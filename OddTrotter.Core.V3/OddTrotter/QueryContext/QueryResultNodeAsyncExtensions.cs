@@ -5,6 +5,7 @@ namespace Fx.QueryContext
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.Realizable;
     using Fx.Try;
 
     public static partial class QueryResultNodeAsyncExtensions
@@ -124,13 +125,12 @@ namespace Fx.QueryContext
                         .ToEither(@try)
                         .SelectAsync(
                             async tried =>
-                                new TrySelectElementAsync<TValue, TError, TResult>(
+                                (IElementAsync<TResult, TError>)new TrySelectElementAsync<TValue, TError, TResult>(
                                     tried,
                                     await element.Next().ConfigureAwait(false),
                                     @try),
-                            async nothing => await element.Next().TrySelect(@try).ConfigureAwait(false))
-                        .SelectManyRight()
-                        .ConfigureAwait(false))
+                            async nothing => (IEither<IElementAsync<TResult, TError>, TError>)(await element.Next().TrySelect(@try).ConfigureAwait(false)))
+                        .SelectManyRight())
                 .SelectManyLeft()
                 .ToQueryResultNodeAsync()
                 .ConfigureAwait(false);
