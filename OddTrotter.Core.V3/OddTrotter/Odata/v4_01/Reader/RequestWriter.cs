@@ -16,23 +16,24 @@
             this.httpClient = httpClient;
         }
 
-        public GetRequestWriter WriteGet()
+        public VerbWriter Write()
         {
-            return new GetRequestWriter(this.httpClient);
+            return new VerbWriter(this.httpClient);
         }
     }
 
-    internal sealed class GetRequestWriter
+    internal sealed class VerbWriter
     {
         private readonly IHttpClient httpClient;
 
-        public GetRequestWriter(IHttpClient httpClient)
+        public VerbWriter(IHttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
-        public UrlWriter Write()
+        public UrlWriter Write(HttpVerb httpVerb)
         {
+            //// TODO use the provided verb
             return new UrlWriter(this.httpClient, HttpMethod.Get);
         }
     }
@@ -71,16 +72,6 @@
         }
     }
 
-    internal sealed class UrlScheme
-    {
-        internal UrlScheme(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
-    }
-
     internal sealed class UrlDomainWriter
     {
         private readonly IHttpClient httpClient;
@@ -98,16 +89,6 @@
         {
             return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + urlDomain.Value);
         }
-    }
-
-    internal sealed class UrlDomain
-    {
-        internal UrlDomain(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 
     internal sealed class UrlPathWriter
@@ -151,16 +132,6 @@
         {
             return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + '/' + urlPathSegment.Value);
         }
-    }
-
-    internal sealed class UrlPathSegment
-    {
-        internal UrlPathSegment(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 
     internal sealed class UrlQueryWriter
@@ -242,16 +213,6 @@
         }
     }
 
-    internal sealed class UrlQueryName
-    {
-        internal UrlQueryName(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
-    }
-
     internal sealed class UrlQueryValueWriter
     {
         private readonly IHttpClient httpClient;
@@ -269,15 +230,5 @@
         {
             return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url + urlQueryValue.Value, false);
         }
-    }
-
-    internal sealed class UrlQueryValue
-    {
-        internal UrlQueryValue(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 }
