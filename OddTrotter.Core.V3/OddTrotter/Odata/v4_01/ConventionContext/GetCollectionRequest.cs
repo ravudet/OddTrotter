@@ -2,8 +2,11 @@
 {
     internal sealed class GetCollectionRequest
     {
-        private GetCollectionRequest()
+        internal GetCollectionRequest(string url)
         {
+            this.Url = url;
         }
+
+        internal string Url { get; }
     }
 }

@@ -1,69 +1,73 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader
 {
     using System;
+    using System.Linq;
     using System.Net.Http;
+    using System.Threading.Tasks;
 
-    internal sealed class RequestWriter<T>
+    using OddTrotter.Calendar;
+
+    internal sealed class RequestWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
 
-        public RequestWriter(Func<HttpMethod, string, T> factory)
+        public RequestWriter(IHttpClient httpClient)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
         }
 
-        public GetRequestWriter<T> WriteGet()
+        public GetRequestWriter WriteGet()
         {
-            return new GetRequestWriter<T>(this.factory);
+            return new GetRequestWriter(this.httpClient);
         }
     }
 
-    internal sealed class GetRequestWriter<T>
+    internal sealed class GetRequestWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
 
-        public GetRequestWriter(Func<HttpMethod, string, T> factory)
+        public GetRequestWriter(IHttpClient httpClient)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
         }
 
-        public UrlWriter<T> Write()
+        public UrlWriter Write()
         {
-            return new UrlWriter<T>(this.factory, HttpMethod.Get);
+            return new UrlWriter(this.httpClient, HttpMethod.Get);
         }
     }
 
-    internal sealed class UrlWriter<T>
+    internal sealed class UrlWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
 
-        public UrlWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod)
+        public UrlWriter(IHttpClient httpClient, HttpMethod httpMethod)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
         }
 
-        public UrlSchemeWriter<T> Write()
+        public UrlSchemeWriter Write()
         {
-            return new UrlSchemeWriter<T>(this.factory, this.httpMethod);
+            return new UrlSchemeWriter(this.httpClient, this.httpMethod);
         }
     }
 
-    internal sealed class UrlSchemeWriter<T>
+    internal sealed class UrlSchemeWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
 
-        public UrlSchemeWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod)
+        public UrlSchemeWriter(IHttpClient httpClient, HttpMethod httpMethod)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
         }
 
-        public UrlDomainWriter<T> Write(UrlScheme urlScheme)
+        public UrlDomainWriter Write(UrlScheme urlScheme)
         {
-            return new UrlDomainWriter<T>(this.factory, this.httpMethod, urlScheme.Value);
+            return new UrlDomainWriter(this.httpClient, this.httpMethod, urlScheme.Value);
         }
     }
 
@@ -77,22 +81,22 @@
         internal string Value { get; }
     }
 
-    internal sealed class UrlDomainWriter<T>
+    internal sealed class UrlDomainWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlDomainWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlDomainWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlPathWriter<T> Write(UrlDomain urlDomain)
+        public UrlPathWriter Write(UrlDomain urlDomain)
         {
-            return new UrlPathWriter<T>(this.factory, this.httpMethod, this.url + urlDomain.Value);
+            return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + urlDomain.Value);
         }
     }
 
@@ -106,46 +110,46 @@
         internal string Value { get; }
     }
 
-    internal sealed class UrlPathWriter<T>
+    internal sealed class UrlPathWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlPathWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlPathWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlQueryWriter<T> Write()
+        public UrlQueryWriter Write()
         {
-            return new UrlQueryWriter<T>(this.factory, this.httpMethod, this.url);
+            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, true);
         }
 
-        public UrlPathSegmentWriter<T> WriteSegment()
+        public UrlPathSegmentWriter WriteSegment()
         {
-            return new UrlPathSegmentWriter<T>(this.factory, this.httpMethod, this.url);
+            return new UrlPathSegmentWriter(this.httpClient, this.httpMethod, this.url);
         }
     }
 
-    internal sealed class UrlPathSegmentWriter<T>
+    internal sealed class UrlPathSegmentWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlPathSegmentWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlPathSegmentWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlPathWriter<T> Write(UrlPathSegment urlPathSegment)
+        public UrlPathWriter Write(UrlPathSegment urlPathSegment)
         {
-            return new UrlPathWriter<T>(this.factory, this.httpMethod, this.url + '/' + urlPathSegment.Value);
+            return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + '/' + urlPathSegment.Value);
         }
     }
 
@@ -159,70 +163,82 @@
         internal string Value { get; }
     }
 
-    internal sealed class UrlQueryWriter<T>
+    internal sealed class UrlQueryWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
+        private readonly bool first;
 
-        public UrlQueryWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlQueryWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, bool first)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
+            this.first = first;
         }
 
-        public T Write()
+        public Task<ResponseReader> Send()
         {
-            return this.factory(this.httpMethod, this.url);
+            throw new Exception("TODO this shouldn't send but instead should begin writing headers");
+            /*if (this.httpMethod == HttpMethod.Get)
+            {
+                //// TODO throws network exceptions
+                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), Enumerable.Empty<HttpHeader>());
+                return new ResponseReader(response);
+            }
+            else
+            {
+                throw new NotSupportedException("TODO how do you want to handle feature gaps?");
+            }*/
         }
 
-        public UrlQueryKvpWriter<T> WriteKvp()
+        public UrlQueryKvpWriter WriteKvp()
         {
-            return new UrlQueryKvpWriter<T>(this.factory, this.httpMethod, this.url + '?');
+            return new UrlQueryKvpWriter(this.httpClient, this.httpMethod, this.url + (this.first ? '?' : '&'));
         }
     }
 
-    internal sealed class UrlQueryKvpWriter<T>
+    internal sealed class UrlQueryKvpWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlQueryKvpWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlQueryKvpWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlQueryNameWriter<T> WriteName(UrlQueryName urlQueryName)
+        public UrlQueryNameWriter WriteName(UrlQueryName urlQueryName)
         {
-            return new UrlQueryNameWriter<T>(this.factory, this.httpMethod, this.url + urlQueryName.Value);
+            return new UrlQueryNameWriter(this.httpClient, this.httpMethod, this.url + urlQueryName.Value);
         }
     }
 
-    internal sealed class UrlQueryNameWriter<T>
+    internal sealed class UrlQueryNameWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlQueryNameWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlQueryNameWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlQueryWriter<T> Write()
+        public UrlQueryWriter Write()
         {
-            return new UrlQueryWriter<T>(this.factory, this.httpMethod, this.url);
+            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, false);
         }
 
-        public UrlQueryValueWriter<T> WriteValue()
+        public UrlQueryValueWriter WriteValue()
         {
-            return new UrlQueryValueWriter<T>(this.factory, this.httpMethod, this.url + '=');
+            return new UrlQueryValueWriter(this.httpClient, this.httpMethod, this.url + '=');
         }
     }
 
@@ -236,22 +252,22 @@
         internal string Value { get; }
     }
 
-    internal sealed class UrlQueryValueWriter<T>
+    internal sealed class UrlQueryValueWriter
     {
-        private readonly Func<HttpMethod, string, T> factory;
+        private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
-        public UrlQueryValueWriter(Func<HttpMethod, string, T> factory, HttpMethod httpMethod, string url)
+        public UrlQueryValueWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
-            this.factory = factory;
+            this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public UrlQueryWriter<T> Write(UrlQueryValue urlQueryValue)
+        public UrlQueryWriter Write(UrlQueryValue urlQueryValue)
         {
-            return new UrlQueryWriter<T>(this.factory, this.httpMethod, this.url + urlQueryValue.Value);
+            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url + urlQueryValue.Value, false);
         }
     }
 
