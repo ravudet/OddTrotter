@@ -120,7 +120,7 @@
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            if (requestUri.Segments.Length == 0)
+            if (requestUri.Segments.Length > this.segment)
             {
                 return new UrlPathToken.Query(new UrlQueryReader(this.httpRequestMessage));
             }
@@ -144,7 +144,19 @@
 
         public IUrlPathReader Read(out UrlPathSegment urlPathSegment)
         {
-            throw new System.NotImplementedException();
+            var requestUri = this.httpRequestMessage.RequestUri;
+            if (requestUri == null)
+            {
+                throw new OdataException("TODO can this actually be null?");
+            }
+
+            if (this.segment >= requestUri.Segments.Length)
+            {
+                throw new OdataException("TODO");
+            }
+
+            urlPathSegment = new UrlPathSegment(requestUri.Segments[this.segment]);
+            return new UrlPathReader(this.httpRequestMessage, this.segment + 1);
         }
     }
 
