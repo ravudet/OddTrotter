@@ -1,5 +1,6 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader
 {
+    using System;
     using System.Net.Http;
 
     using Fx.Either;
@@ -163,36 +164,123 @@
     internal sealed class UrlQueryReader : IUrlQueryReader
     {
         private readonly HttpRequestMessage httpRequestMessage;
+        private readonly int index;
 
         internal UrlQueryReader(HttpRequestMessage httpRequestMessage)
+            : this(httpRequestMessage, 1)
+        {
+        }
+
+        internal UrlQueryReader(HttpRequestMessage httpRequestMessage, int index)
         {
             this.httpRequestMessage = httpRequestMessage;
+            this.index = index;
         }
 
         public UrlQueryToken Read()
         {
-            throw new System.NotImplementedException();
+            var requestUri = this.httpRequestMessage.RequestUri;
+            if (requestUri == null)
+            {
+                throw new OdataException("TODO can this actually be null?");
+            }
+
+            if (string.IsNullOrEmpty(requestUri.Query) || string.IsNullOrEmpty(requestUri.Query.Substring(this.index)))
+            {
+                return new UrlQueryToken.Headers(new HeadersReader(this.httpRequestMessage));
+            }
+            else
+            {
+                return new UrlQueryToken.Kvp(new UrlQueryKvpReader(this.httpRequestMessage, this.index));
+            }
         }
     }
 
     internal sealed class UrlQueryKvpReader : IUrlQueryKvpReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly int index;
+
+        internal UrlQueryKvpReader(HttpRequestMessage httpRequestMessage, int index)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.index = index;
+        }
+
         public IUrlQueryNameReader Read()
         {
-            throw new System.NotImplementedException();
+            var requestUri = this.httpRequestMessage.RequestUri;
+            if (requestUri == null)
+            {
+                throw new OdataException("TODO can this actually be null?");
+            }
+
+            return new UrlQueryNameReader(this.httpRequestMessage, this.index);
         }
     }
 
     internal sealed class UrlQueryNameReader : IUrlQueryNameReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly int index;
+
+        internal UrlQueryNameReader(HttpRequestMessage httpRequestMessage, int index)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.index = index;
+        }
+
         public UrlQueryNameToken Read(out UrlQueryName urlQueryName)
         {
-            throw new System.NotImplementedException();
+            var requestUri = this.httpRequestMessage.RequestUri;
+            if (requestUri == null)
+            {
+                throw new OdataException("TODO can this actually be null?");
+            }
+
+            var kvpDelimiterIndex = requestUri.Query.IndexOf('&');
+            var valueDelimiterIndex = requestUri.Query.IndexOf('=');
+
+            if (kvpDelimiterIndex == -1 && valueDelimiterIndex == -1)
+            {
+                urlQueryName = new UrlQueryName(string.Empty); //// TODO is this a legal URL?
+                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, requestUri.Query.Length));
+            }
+
+            if (kvpDelimiterIndex == -1)
+            {
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, valueDelimiterIndex));
+                return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(this.httpRequestMessage, valueDelimiterIndex + 1));
+            }
+
+            if (valueDelimiterIndex == -1)
+            {
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
+                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex + 1));
+            }
+
+            if (kvpDelimiterIndex < valueDelimiterIndex)
+            {
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
+                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex + 1));
+            }
+
+            urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, valueDelimiterIndex));
+            return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(this.httpRequestMessage, valueDelimiterIndex + 1));
         }
     }
 
     internal sealed class UrlQueryValueReader : IUrlQueryValueReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly int index;
+
+        internal UrlQueryValueReader(HttpRequestMessage httpRequestMessage, int index)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.index = index;
+        }
+
         public IUrlQueryReader Read(out UrlQueryValue urlQueryValue)
         {
             throw new System.NotImplementedException();
@@ -201,6 +289,13 @@
 
     internal sealed class HeadersReader : IHeadersReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+
+        internal HeadersReader(HttpRequestMessage httpRequestMessage)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+        }
+
         public IHeaderReader Read()
         {
             throw new System.NotImplementedException();
