@@ -341,31 +341,68 @@
 
         public IHeaderKvpReader Read()
         {
-
+            return new HeaderKvpReader(this.httpRequestMessage, this.enumerator);
         }
     }
 
     internal sealed class HeaderKvpReader : IHeaderKvpReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
+
+        internal HeaderKvpReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.enumerator = enumerator;
+        }
+
         public IHeaderKeyReader Read()
         {
-            throw new System.NotImplementedException();
+            return new HeaderKeyReader(this.httpRequestMessage, this.enumerator);
         }
     }
 
     internal sealed class HeaderKeyReader : IHeaderKeyReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
+
+        internal HeaderKeyReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.enumerator = enumerator;
+        }
+
         public HeaderKeyToken Read(out HeaderKey headerKey)
         {
-            throw new System.NotImplementedException();
+            headerKey = new HeaderKey(this.enumerator.Current.Key);
+
+            var valuesEnumerator = this.enumerator.Current.Value.GetEnumerator();
+            if (!valuesEnumerator.MoveNext())
+            {
+                return new HeaderKeyToken.Headers(new HeadersReader(this.httpRequestMessage, this.enumerator));
+            }
+
+            return new HeaderKeyToken.HeaderValue(new HeaderValueReader(this.httpRequestMessage, this.enumerator, valuesEnumerator));
         }
     }
 
     internal sealed class HeaderValueReader : IHeaderValueReader
     {
-        public IHeadersReader Read(out HeaderValue headerValue)
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
+        private readonly IEnumerator<string> valuesEnumerator;
+
+        internal HeaderValueReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator, IEnumerator<string> valuesEnumerator)
         {
-            throw new System.NotImplementedException();
+            this.httpRequestMessage = httpRequestMessage;
+            this.enumerator = enumerator;
+            this.valuesEnumerator = valuesEnumerator;
+        }
+
+        public HeaderValueToken Read(out HeaderValue headerValue)
+        {
+
         }
     }
 
