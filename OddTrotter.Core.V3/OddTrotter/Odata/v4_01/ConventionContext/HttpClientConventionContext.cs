@@ -8,9 +8,9 @@
 
     internal sealed class HttpClientConventionContext : IConventionContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
     {
-        private readonly Func<HttpRequestMessage, RequestReader> requestReaderFactory;
+        private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
 
-        internal HttpClientConventionContext(Func<HttpRequestMessage, RequestReader> requestReaderFactory)
+        internal HttpClientConventionContext(Func<HttpRequestMessage, IRequestReader> requestReaderFactory)
         {
             this.requestReaderFactory = requestReaderFactory;
         }
@@ -25,6 +25,10 @@
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url))
             {
                 //// TODO headers
+                
+
+
+
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
 
             }

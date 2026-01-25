@@ -153,7 +153,7 @@
 
     internal interface IHeaderKeyReader
     {
-
+        HeaderKeyToken Read(out HeaderKey headerKey);
     }
 
     internal abstract class HeaderKeyToken
