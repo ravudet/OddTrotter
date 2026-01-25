@@ -9,7 +9,7 @@ namespace OddTrotter.Odata.v4_01.Reader
 
     internal interface IVerbWriter
     {
-        IUrlWriter Write(HttpVerb httpVerb);
+        IUrlWriter Write(HttpVerb httpVerb); //// TODO this should probably be dependent on the verb (e.g. get requests don't have a body)
     }
 
     internal sealed class HttpVerb
@@ -81,7 +81,7 @@ namespace OddTrotter.Odata.v4_01.Reader
 
     internal interface IUrlQueryWriter
     {
-        Task<IResponseReader> Send();
+        IHeadersWriter WriteHeaders();
 
         IUrlQueryKvpWriter Write();
     }
@@ -121,5 +121,61 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal string Value { get; }
+    }
+
+    internal interface IHeadersWriter
+    {
+        IBodyWriter Write();
+
+        IHeaderWriter WriteHeader();
+    }
+
+    internal interface IHeaderWriter
+    {
+        IHeaderKvpWriter Write();
+    }
+
+    internal interface IHeaderKvpWriter
+    {
+        IHeaderKeyWriter Write(HeaderKey headerKey);
+    }
+
+    internal sealed class HeaderKey
+    {
+        internal HeaderKey(string value)
+        {
+            Value = value;
+        }
+
+        public string Value { get; }
+    }
+
+    internal interface IHeaderKeyWriter
+    {
+        IHeadersWriter Write();
+
+        IHeaderValueWriter Write(HeaderValue headerValue);
+    }
+
+    internal sealed class HeaderValue
+    {
+        internal HeaderValue(string value)
+        {
+            Value = value;
+        }
+
+        public string Value { get; }
+    }
+
+    internal interface IHeaderValueWriter
+    {
+        IHeadersWriter Write();
+    }
+
+    internal interface IBodyWriter
+    {
+        //// TODO add the methods to write the body
+
+        Task<IResponseReader> Send();
     }
 }
