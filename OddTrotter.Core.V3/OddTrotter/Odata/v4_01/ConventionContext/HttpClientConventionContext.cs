@@ -17,6 +17,9 @@
 
         public Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
+            //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention))
+
+
             //// TODO do you want a level below this that has an odatarequest and an odataresponse?
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url))
