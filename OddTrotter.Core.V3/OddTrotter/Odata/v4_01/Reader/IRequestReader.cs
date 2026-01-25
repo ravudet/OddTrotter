@@ -138,7 +138,34 @@
 
     internal interface IHeadersReader
     {
-        IHeaderReader Read();
+        HeadersToken Read();
+    }
+
+    internal abstract class HeadersToken
+    {
+        private HeadersToken()
+        {
+        }
+
+        internal sealed class Header : HeadersToken
+        {
+            internal Header(IHeaderReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeaderReader Reader { get; }
+        }
+
+        internal sealed class Body : HeadersToken
+        {
+            internal Body(IBodyReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IBodyReader Reader { get; }
+        }
     }
 
     internal interface IHeaderReader

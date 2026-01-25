@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
 
     using Fx.Either;
@@ -303,23 +304,44 @@
     internal sealed class HeadersReader : IHeadersReader
     {
         private readonly HttpRequestMessage httpRequestMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
 
         internal HeadersReader(HttpRequestMessage httpRequestMessage)
+            : this(httpRequestMessage, httpRequestMessage.Headers.GetEnumerator())
         {
-            this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IHeaderReader Read()
+        internal HeadersReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
         {
-            throw new System.NotImplementedException();
+            this.httpRequestMessage = httpRequestMessage;
+            this.enumerator = enumerator;
+        }
+
+        public HeadersToken Read()
+        {
+            if (!enumerator.MoveNext())
+            {
+                return new HeadersToken.Body(new BodyReader(this.httpRequestMessage));
+            }
+
+            return new HeadersToken.Header(new HeaderReader(this.httpRequestMessage, this.enumerator));
         }
     }
 
     internal sealed class HeaderReader : IHeaderReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
+
+        internal HeaderReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+            this.enumerator = enumerator;
+        }
+
         public IHeaderKvpReader Read()
         {
-            throw new System.NotImplementedException();
+
         }
     }
 
@@ -349,6 +371,13 @@
 
     internal sealed class BodyReader : IBodyReader
     {
+        private readonly HttpRequestMessage httpRequestMessage;
+        
+        internal BodyReader(HttpRequestMessage httpRequestMessage)
+        {
+            this.httpRequestMessage = httpRequestMessage;
+        }
+
         public BodyToken Read()
         {
             throw new System.NotImplementedException();
