@@ -283,7 +283,20 @@
 
         public IUrlQueryReader Read(out UrlQueryValue urlQueryValue)
         {
-            throw new System.NotImplementedException();
+            var requestUri = this.httpRequestMessage.RequestUri;
+            if (requestUri == null)
+            {
+                throw new OdataException("TODO can this actually be null?");
+            }
+
+            var kvpDelimiterIndex = requestUri.Query.IndexOf('&');
+            if (kvpDelimiterIndex == -1)
+            {
+                kvpDelimiterIndex = requestUri.Query.Length;
+            }
+
+            urlQueryValue = new UrlQueryValue(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
+            return new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex);
         }
     }
 
