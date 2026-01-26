@@ -149,21 +149,6 @@
             this.first = first;
         }
 
-        public Task<ResponseReader> Send()
-        {
-            throw new Exception("TODO this shouldn't send but instead should begin writing headers");
-            /*if (this.httpMethod == HttpMethod.Get)
-            {
-                //// TODO throws network exceptions
-                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), Enumerable.Empty<HttpHeader>());
-                return new ResponseReader(response);
-            }
-            else
-            {
-                throw new NotSupportedException("TODO how do you want to handle feature gaps?");
-            }*/
-        }
-
         public IUrlQueryKvpWriter Write()
         {
             return new UrlQueryKvpWriter(this.httpClient, this.httpMethod, this.url + (this.first ? '?' : '&'));
@@ -171,6 +156,7 @@
 
         public IHeadersWriter WriteHeaders()
         {
+            return new HeadersWriter(this.httpClient, this.httpMethod, this.url);
         }
     }
 
@@ -235,4 +221,39 @@
             return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url + urlQueryValue.Value, false);
         }
     }
+
+    internal sealed class HeadersWriter : IHeadersWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+
+        public HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+        }
+
+        public IBodyWriter Write()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHeaderWriter WriteHeader()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /*if (this.httpMethod == HttpMethod.Get)
+            {
+                //// TODO throws network exceptions
+                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), Enumerable.Empty<HttpHeader>());
+                return new ResponseReader(response);
+            }
+            else
+            {
+                throw new NotSupportedException("TODO how do you want to handle feature gaps?");
+            }*/
 }
