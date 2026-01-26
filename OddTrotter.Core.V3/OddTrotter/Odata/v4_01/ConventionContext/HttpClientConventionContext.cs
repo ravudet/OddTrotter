@@ -21,7 +21,7 @@
 
         public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
-            //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention))
+            //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
 
 
             //// TODO do you want a level below this that has an odatarequest and an odataresponse?
