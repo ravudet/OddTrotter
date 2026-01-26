@@ -402,7 +402,15 @@
 
         public HeaderValueToken Read(out HeaderValue headerValue)
         {
-
+            headerValue = new HeaderValue(this.valuesEnumerator.Current);
+            if (this.valuesEnumerator.MoveNext())
+            {
+                return new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpRequestMessage, this.enumerator, this.valuesEnumerator));
+            }
+            else
+            {
+                return new HeaderValueToken.Headers(new HeadersReader(this.httpRequestMessage, this.enumerator));
+            }
         }
     }
 
@@ -417,7 +425,8 @@
 
         public BodyToken Read()
         {
-            throw new System.NotImplementedException();
+            //// TODO implement actually reading the body
+            return BodyToken.End.Instance;
         }
     }
 }
