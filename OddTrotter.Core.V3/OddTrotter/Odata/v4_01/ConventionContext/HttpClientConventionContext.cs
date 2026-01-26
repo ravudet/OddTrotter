@@ -22,7 +22,7 @@
         public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
 
-            //// TODO implement the requestwriter and then create the below breakdown
+            //// TODO implement the requestwriter and then create the below breakdown and then implement the responsereader
 
 
 
