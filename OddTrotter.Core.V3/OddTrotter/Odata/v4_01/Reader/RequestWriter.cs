@@ -7,7 +7,7 @@
 
     using OddTrotter.Calendar;
 
-    internal sealed class RequestWriter
+    internal sealed class RequestWriter : IRequestWriter
     {
         private readonly IHttpClient httpClient;
 
@@ -16,13 +16,13 @@
             this.httpClient = httpClient;
         }
 
-        public VerbWriter Write()
+        public IVerbWriter Write()
         {
             return new VerbWriter(this.httpClient);
         }
     }
 
-    internal sealed class VerbWriter
+    internal sealed class VerbWriter : IVerbWriter
     {
         private readonly IHttpClient httpClient;
 
@@ -31,14 +31,14 @@
             this.httpClient = httpClient;
         }
 
-        public UrlWriter Write(HttpVerb httpVerb)
+        public IUrlWriter Write(HttpVerb httpVerb)
         {
             //// TODO use the provided verb
             return new UrlWriter(this.httpClient, HttpMethod.Get);
         }
     }
 
-    internal sealed class UrlWriter
+    internal sealed class UrlWriter : IUrlWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -49,13 +49,13 @@
             this.httpMethod = httpMethod;
         }
 
-        public UrlSchemeWriter Write()
+        public IUrlSchemeWriter Write()
         {
             return new UrlSchemeWriter(this.httpClient, this.httpMethod);
         }
     }
 
-    internal sealed class UrlSchemeWriter
+    internal sealed class UrlSchemeWriter : IUrlSchemeWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -66,13 +66,13 @@
             this.httpMethod = httpMethod;
         }
 
-        public UrlDomainWriter Write(UrlScheme urlScheme)
+        public IUrlDomainWriter Write(UrlScheme urlScheme)
         {
             return new UrlDomainWriter(this.httpClient, this.httpMethod, urlScheme.Value);
         }
     }
 
-    internal sealed class UrlDomainWriter
+    internal sealed class UrlDomainWriter : IUrlDomainWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -85,7 +85,7 @@
             this.url = url;
         }
 
-        public UrlPathWriter Write(UrlDomain urlDomain)
+        public IUrlPathWriter Write(UrlDomain urlDomain)
         {
             return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + urlDomain.Value);
         }
