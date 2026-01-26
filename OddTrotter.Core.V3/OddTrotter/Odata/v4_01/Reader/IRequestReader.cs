@@ -1,4 +1,6 @@
-﻿namespace OddTrotter.Odata.v4_01.Reader
+﻿using System;
+
+namespace OddTrotter.Odata.v4_01.Reader
 {
     internal interface IRequestReader
     {
@@ -34,6 +36,24 @@
     {
         private UrlPathToken()
         {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<UrlPathToken.PathSegment, TResult> pathSegmentMap,
+            Func<UrlPathToken.Query, TResult> queryMap)
+        {
+            if (this is UrlPathToken.PathSegment pathSegment)
+            {
+                return pathSegmentMap(pathSegment);
+            }
+            else if (this is UrlPathToken.Query query)
+            {
+                return queryMap(query);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         public sealed class PathSegment : UrlPathToken
@@ -73,6 +93,24 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<UrlQueryToken.Kvp, TResult> kvpMap,
+            Func<UrlQueryToken.Headers, TResult> headersMap)
+        {
+            if (this is UrlQueryToken.Kvp kvp)
+            {
+                return kvpMap(kvp);
+            }
+            else if (this is UrlQueryToken.Headers headers)
+            {
+                return headersMap(headers);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class Kvp : UrlQueryToken
         {
             internal Kvp(IUrlQueryKvpReader reader)
@@ -110,6 +148,24 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<UrlQueryNameToken.QueryValue, TResult> queryValueMap,
+            Func<UrlQueryNameToken.Query, TResult> queryMap)
+        {
+            if (this is UrlQueryNameToken.QueryValue queryValue)
+            {
+                return queryValueMap(queryValue);
+            }
+            else if (this is UrlQueryNameToken.Query query)
+            {
+                return queryMap(query);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class QueryValue : UrlQueryNameToken
         {
             internal QueryValue(IUrlQueryValueReader reader)
@@ -145,6 +201,24 @@
     {
         private HeadersToken()
         {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<HeadersToken.Header, TResult> headerMap,
+            Func<HeadersToken.Body, TResult> bodyMap)
+        {
+            if (this is HeadersToken.Header header)
+            {
+                return headerMap(header);
+            }
+            else if (this is HeadersToken.Body body)
+            {
+                return bodyMap(body);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         internal sealed class Header : HeadersToken
@@ -189,6 +263,24 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<HeaderKeyToken.HeaderValue, TResult> headerValueMap,
+            Func<HeaderKeyToken.Headers, TResult> headersMap)
+        {
+            if (this is HeaderKeyToken.HeaderValue headerValue)
+            {
+                return headerValueMap(headerValue);
+            }
+            else if (this is HeaderKeyToken.Headers headers)
+            {
+                return headersMap(headers);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class HeaderValue : HeaderKeyToken
         {
             internal HeaderValue(IHeaderValueReader reader)
@@ -221,6 +313,24 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<HeaderValueToken.HeaderValue, TResult> headerValueMap,
+            Func<HeaderValueToken.Headers, TResult> headersMap)
+        {
+            if (this is HeaderValueToken.HeaderValue headerValue)
+            {
+                return headerValueMap(headerValue);
+            }
+            else if (this is HeaderValueToken.Headers headers)
+            {
+                return headersMap(headers);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class HeaderValue : HeaderValueToken
         {
             internal HeaderValue(IHeaderValueReader reader)
@@ -251,6 +361,19 @@
     {
         private BodyToken()
         {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<BodyToken.End, TResult> endMap)
+        {
+            if (this is BodyToken.End end)
+            {
+                return endMap(end);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         internal sealed class End : BodyToken
