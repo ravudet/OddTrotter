@@ -91,7 +91,7 @@
         }
     }
 
-    internal sealed class UrlPathWriter
+    internal sealed class UrlPathWriter : IUrlPathWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -104,18 +104,18 @@
             this.url = url;
         }
 
-        public UrlQueryWriter Write()
+        public IUrlQueryWriter Write()
         {
             return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, true);
         }
 
-        public UrlPathSegmentWriter WriteSegment()
+        public IUrlPathSegmentWriter WriteSegment()
         {
             return new UrlPathSegmentWriter(this.httpClient, this.httpMethod, this.url);
         }
     }
 
-    internal sealed class UrlPathSegmentWriter
+    internal sealed class UrlPathSegmentWriter : IUrlPathSegmentWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -128,13 +128,13 @@
             this.url = url;
         }
 
-        public UrlPathWriter Write(UrlPathSegment urlPathSegment)
+        public IUrlPathWriter Write(UrlPathSegment urlPathSegment)
         {
             return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + '/' + urlPathSegment.Value);
         }
     }
 
-    internal sealed class UrlQueryWriter
+    internal sealed class UrlQueryWriter : IUrlQueryWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -164,13 +164,17 @@
             }*/
         }
 
-        public UrlQueryKvpWriter WriteKvp()
+        public IUrlQueryKvpWriter Write()
         {
             return new UrlQueryKvpWriter(this.httpClient, this.httpMethod, this.url + (this.first ? '?' : '&'));
         }
+
+        public IHeadersWriter WriteHeaders()
+        {
+        }
     }
 
-    internal sealed class UrlQueryKvpWriter
+    internal sealed class UrlQueryKvpWriter : IUrlQueryKvpWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -183,13 +187,13 @@
             this.url = url;
         }
 
-        public UrlQueryNameWriter WriteName(UrlQueryName urlQueryName)
+        public IUrlQueryNameWriter Write(UrlQueryName urlQueryName)
         {
             return new UrlQueryNameWriter(this.httpClient, this.httpMethod, this.url + urlQueryName.Value);
         }
     }
 
-    internal sealed class UrlQueryNameWriter
+    internal sealed class UrlQueryNameWriter : IUrlQueryNameWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -202,18 +206,18 @@
             this.url = url;
         }
 
-        public UrlQueryWriter Write()
+        public IUrlQueryWriter Write()
         {
             return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, false);
         }
 
-        public UrlQueryValueWriter WriteValue()
+        public IUrlQueryValueWriter WriteValue()
         {
             return new UrlQueryValueWriter(this.httpClient, this.httpMethod, this.url + '=');
         }
     }
 
-    internal sealed class UrlQueryValueWriter
+    internal sealed class UrlQueryValueWriter : IUrlQueryValueWriter
     {
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
@@ -226,7 +230,7 @@
             this.url = url;
         }
 
-        public UrlQueryWriter Write(UrlQueryValue urlQueryValue)
+        public IUrlQueryWriter Write(UrlQueryValue urlQueryValue)
         {
             return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url + urlQueryValue.Value, false);
         }
