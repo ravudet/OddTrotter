@@ -21,6 +21,11 @@
 
         public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
+
+            //// TODO implement the requestwriter and then create the below breakdown
+
+
+
             //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
 
 
