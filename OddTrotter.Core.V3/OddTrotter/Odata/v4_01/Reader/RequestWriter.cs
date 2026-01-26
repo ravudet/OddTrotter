@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
@@ -227,33 +228,77 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
+        private readonly IEnumerable<string> headers;
 
         public HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
+            : this(httpClient, httpMethod, url, Enumerable.Empty<string>())
+        {
+        }
+
+        internal HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<string> headers)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+            this.headers = headers;
+        }
+
+        public IBodyWriter Write()
+        {
+            return new BodyWriter(this.httpClient, this.httpMethod, this.url, this.headers);
+        }
+
+        public IHeaderWriter WriteHeader()
+        {
+            return new HeaderWriter(this.httpClient, this.httpMethod, this.url);
+        }
+    }
+
+    internal sealed class HeaderWriter : IHeaderWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+
+        public HeaderWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
         }
 
-        public IBodyWriter Write()
+        public IHeaderKvpWriter Write()
         {
-            throw new NotImplementedException();
-        }
-
-        public IHeaderWriter WriteHeader()
-        {
-            throw new NotImplementedException();
         }
     }
 
-    /*if (this.httpMethod == HttpMethod.Get)
+    internal sealed class BodyWriter : IBodyWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+        private readonly IEnumerable<string> headers;
+
+
+        public BodyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<string> headers)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+            this.headers = headers;
+        }
+
+        public async Task<IResponseReader> Send()
+        {
+            if (this.httpMethod == HttpMethod.Get)
             {
-                //// TODO throws network exceptions
-                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), Enumerable.Empty<HttpHeader>());
+                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), this.headers);
                 return new ResponseReader(response);
             }
             else
             {
                 throw new NotSupportedException("TODO how do you want to handle feature gaps?");
-            }*/
+            }
+        }
+    }
 }
