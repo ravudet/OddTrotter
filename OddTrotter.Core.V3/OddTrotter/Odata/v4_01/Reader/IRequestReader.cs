@@ -22,7 +22,7 @@ namespace OddTrotter.Odata.v4_01.Reader
         IUrlDomainReader Read(out UrlScheme urlScheme);
     }
 
-    internal interface IUrlDomainReader
+    internal interface IUrlDomainReader //// TODO the domain actually isn't in the HTTP request, it's in the ip request
     {
         IUrlPathReader Read(out UrlDomain urlDomain);
     }

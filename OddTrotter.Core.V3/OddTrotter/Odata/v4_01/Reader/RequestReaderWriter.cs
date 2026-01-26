@@ -11,7 +11,9 @@
 
         public IVerbWriter Write()
         {
-            //// TODO add the "apply" methods to the tokens before implementing this
+            var verbReader = this.requestReader.Read();
+            verbReader.Read(out var verb)
+
 
             ////requestReader.Move()
             ////throw new System.Exception("TODO");
