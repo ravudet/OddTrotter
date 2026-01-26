@@ -28,11 +28,6 @@
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url))
             {
-                //// TODO headers
-
-
-
-
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
 
