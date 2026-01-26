@@ -40,7 +40,7 @@
             }
         }
 
-        private static Task<IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
+        private static async Task<IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
             var verbReader = requestReader.Read();
             var verbWriter = requestWriter.Write();
@@ -57,68 +57,22 @@
             var urlPathReader = urlDomainReader.Read(out var urlDomain);
             var urlPathWriter = urlDomainWriter.Write(urlDomain);
 
-            var (urlQueryReader, urlQueryWriter) = Transfer(urlPathReader, urlPathWriter);
+            var (urlQueryReader, urlQueryWriter) = HttpClientConventionContext.Transfer(urlPathReader, urlPathWriter);
 
-            var (headersReader, headersWriter) = Transfer(urlQueryReader, urlQueryWriter);
+            var (headersReader, headersWriter) = HttpClientConventionContext.Transfer(urlQueryReader, urlQueryWriter);
 
-            var (bodyReader, bodyWriter) = Transfer(headersReader, headersWriter);
+            var (bodyReader, bodyWriter) = HttpClientConventionContext.Transfer(headersReader, headersWriter);
 
-
+            return await HttpClientConventionContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
-        private static (IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter) Transfer(
-            IUrlPathReader urlPathReader, 
-            IUrlPathWriter urlPathWriter)
+        private static async Task<IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
-            var urlPathToken = urlPathReader.Read();
-            return urlPathToken.Apply(
-                pathSegment =>
-                {
-                    var newUrlPathReader = pathSegment.Reader.Read(out var urlPathSegment);
-                    var urlPathSegmentWriter = urlPathWriter.WriteSegment();
-                    var newUrlPathWriter = urlPathSegmentWriter.Write(urlPathSegment);
-
-                    return HttpClientConventionContext.Transfer(newUrlPathReader, newUrlPathWriter);
-                },
-                query =>
-                {
-                    return (query.Reader, urlPathWriter.Write());
-                });
-        }
-
-        private static (IHeadersReader HeadersReader, IHeadersWriter HeadersWriter) Transfer(
-            IUrlQueryReader urlQueryReader,
-            IUrlQueryWriter urlQueryWriter)
-        {
-            var urlQueryToken = urlQueryReader.Read();
-            return urlQueryToken.Apply(
-                kvp =>
-                {
-                    var urlQueryKvpWriter = urlQueryWriter.Write();
-
-                    var urlQueryNameReader = kvp.Reader.Read();
-                    var urlQueryNameToken = urlQueryNameReader.Read(out var urlQueryName);
-                    var urlQueryNameWriter = urlQueryKvpWriter.Write(urlQueryName);
-
-                    return urlQueryNameToken.Apply(
-                        queryValue =>
-                        {
-                            var newUrlQueryReader = queryValue.Reader.Read(out var urlQueryValue);
-
-                            var urlQueryValueWriter = urlQueryNameWriter.WriteValue();
-                            var newUrlQueryWriter = urlQueryValueWriter.Write(urlQueryValue);
-
-                            return HttpClientConventionContext.Transfer(newUrlQueryReader, newUrlQueryWriter);
-                        },
-                        query =>
-                        {
-                            return HttpClientConventionContext.Transfer(query.Reader, urlQueryNameWriter.Write());
-                        });
-                },
-                headers =>
-                {
-                    return (headers.Reader, urlQueryWriter.WriteHeaders());
-                });
+            var bodyToken = bodyReader.Read();
+            return await bodyToken
+                .Apply(
+                    async end => await bodyWriter.Send().ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         private static (IBodyReader BodyReader, IBodyWriter BodyWriter) Transfer(
@@ -169,6 +123,60 @@
                 headers =>
                 {
                     return HttpClientConventionContext.Transfer(headers.Reader, headerValueWriter.Write().Write());
+                });
+        }
+        private static (IHeadersReader HeadersReader, IHeadersWriter HeadersWriter) Transfer(
+            IUrlQueryReader urlQueryReader,
+            IUrlQueryWriter urlQueryWriter)
+        {
+            var urlQueryToken = urlQueryReader.Read();
+            return urlQueryToken.Apply(
+                kvp =>
+                {
+                    var urlQueryKvpWriter = urlQueryWriter.Write();
+
+                    var urlQueryNameReader = kvp.Reader.Read();
+                    var urlQueryNameToken = urlQueryNameReader.Read(out var urlQueryName);
+                    var urlQueryNameWriter = urlQueryKvpWriter.Write(urlQueryName);
+
+                    return urlQueryNameToken.Apply(
+                        queryValue =>
+                        {
+                            var newUrlQueryReader = queryValue.Reader.Read(out var urlQueryValue);
+
+                            var urlQueryValueWriter = urlQueryNameWriter.WriteValue();
+                            var newUrlQueryWriter = urlQueryValueWriter.Write(urlQueryValue);
+
+                            return HttpClientConventionContext.Transfer(newUrlQueryReader, newUrlQueryWriter);
+                        },
+                        query =>
+                        {
+                            return HttpClientConventionContext.Transfer(query.Reader, urlQueryNameWriter.Write());
+                        });
+                },
+                headers =>
+                {
+                    return (headers.Reader, urlQueryWriter.WriteHeaders());
+                });
+        }
+
+        private static (IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter) Transfer(
+            IUrlPathReader urlPathReader, 
+            IUrlPathWriter urlPathWriter)
+        {
+            var urlPathToken = urlPathReader.Read();
+            return urlPathToken.Apply(
+                pathSegment =>
+                {
+                    var newUrlPathReader = pathSegment.Reader.Read(out var urlPathSegment);
+                    var urlPathSegmentWriter = urlPathWriter.WriteSegment();
+                    var newUrlPathWriter = urlPathSegmentWriter.Write(urlPathSegment);
+
+                    return HttpClientConventionContext.Transfer(newUrlPathReader, newUrlPathWriter);
+                },
+                query =>
+                {
+                    return (query.Reader, urlPathWriter.Write());
                 });
         }
     }
