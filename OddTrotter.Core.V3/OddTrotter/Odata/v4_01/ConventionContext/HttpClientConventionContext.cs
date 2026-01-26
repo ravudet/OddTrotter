@@ -61,6 +61,8 @@
 
             var (headersReader, headersWriter) = Transfer(urlQueryReader, urlQueryWriter);
 
+            var (bodyReader, bodyWriter) = Transfer(headersReader, headersWriter);
+
 
         }
 
@@ -116,7 +118,58 @@
                 headers =>
                 {
                     return (headers.Reader, urlQueryWriter.WriteHeaders());
-                })
+                });
+        }
+
+        private static (IBodyReader BodyReader, IBodyWriter BodyWriter) Transfer(
+            IHeadersReader headersReader,
+            IHeadersWriter headersWriter)
+        {
+            var headersToken = headersReader.Read();
+            return headersToken.Apply(
+                header =>
+                {
+                    var headerWriter = headersWriter.WriteHeader();
+
+                    var headerKvpReader = header.Reader.Read();
+                    var headerKvpWriter = headerWriter.Write();
+
+                    var headerKeyReader = headerKvpReader.Read();
+                    var headerKeyToken = headerKeyReader.Read(out var headerKey);
+                    var headerKeyWriter = headerKvpWriter.Write(headerKey);
+
+                    return headerKeyToken.Apply(
+                        headerValue =>
+                        {
+                            return HttpClientConventionContext.Transfer(headerValue.Reader, headerKeyWriter);
+                        },
+                        headers =>
+                        {
+                            return HttpClientConventionContext.Transfer(headers.Reader, headerKeyWriter.Write());
+                        });
+                },
+                body =>
+                {
+                    return (body.Reader, headersWriter.Write());
+                });
+        }
+
+        private static (IBodyReader BodyReader, IBodyWriter BodyWriter) Transfer(
+            IHeaderValueReader headerValueReader,
+            IHeaderKeyWriter headerKeyWriter)
+        {
+            var headerValueToken = headerValueReader.Read(out var headerValue);
+            var headerValueWriter = headerKeyWriter.Write(headerValue);
+
+            return headerValueToken.Apply(
+                headerValueReader =>
+                {
+                    return HttpClientConventionContext.Transfer(headerValueReader.Reader, headerValueWriter.Write());
+                },
+                headers =>
+                {
+                    return HttpClientConventionContext.Transfer(headers.Reader, headerValueWriter.Write().Write());
+                });
         }
     }
 }

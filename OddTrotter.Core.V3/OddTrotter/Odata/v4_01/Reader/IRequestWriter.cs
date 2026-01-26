@@ -169,7 +169,7 @@ namespace OddTrotter.Odata.v4_01.Reader
 
     internal interface IHeaderValueWriter
     {
-        IHeadersWriter Write();
+        IHeaderKeyWriter Write();
     }
 
     internal interface IBodyWriter
