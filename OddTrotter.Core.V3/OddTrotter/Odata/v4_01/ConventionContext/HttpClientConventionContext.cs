@@ -24,6 +24,15 @@
             //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
 
 
+
+
+            //// TODO i think you should have iprotocolcontext which takes odatarequest and returns odataresponse, basically using the readers to create a parse tree
+            //// TODO then you should have weakconvention and strongconvention; weak should check things like "we were give a get collection request but received a single-valued response" and strong should use a generic type parameter
+            //// TODO make the note that protocol is about syntax and convention is about semantics
+            //// TODO you still have the question of when you should apply somehting like an actual instace of iedmmodel or whatever
+
+
+
             //// TODO do you want a level below this that has an odatarequest and an odataresponse?
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url))
@@ -37,6 +46,11 @@
 
         private static async Task<IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
+            //// TODO you could have ioexceptions while reading
+            //// TODO you could have ioexceptions while writing
+            //// TODO you could have invalid syntax when reading
+            //// TODO you could have network issues when sending
+
             var verbReader = requestReader.Read();
             var verbWriter = requestWriter.Write();
 
