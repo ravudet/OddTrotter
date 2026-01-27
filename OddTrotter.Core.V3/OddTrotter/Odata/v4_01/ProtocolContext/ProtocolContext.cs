@@ -7,7 +7,7 @@
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
 
-    internal sealed class ProtocolContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
+    internal sealed class ProtocolContext : IProtocolContext
     {
         private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
         private readonly Func<IRequestWriter> requestWriterFactory;
