@@ -23,7 +23,7 @@
         public async Task<OdataResponse> GetCollection(OdataRequest request)
         {
 
-            //// TODO then create the responsereader interfaces and then add the apply methods to the tokens and then implement the responsereader and then finish this implementation
+            //// TODO then add the apply methods to the tokens and then implement the responsereader and then finish this implementation
 
 
 
