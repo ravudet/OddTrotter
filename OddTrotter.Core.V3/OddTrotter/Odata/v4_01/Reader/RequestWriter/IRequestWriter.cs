@@ -12,16 +12,6 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
         IUrlWriter Write(HttpVerb httpVerb); //// TODO this should probably be dependent on the verb (e.g. get requests don't have a body)
     }
 
-    internal sealed class HttpVerb
-    {
-        internal HttpVerb(string value)
-        {
-            Value = value;
-        }
-
-        public string Value { get; }
-    }
-
     internal interface IUrlWriter
     {
         IUrlSchemeWriter Write();
@@ -32,29 +22,9 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
         IUrlDomainWriter Write(UrlScheme urlScheme);
     }
 
-    internal sealed class UrlScheme
-    {
-        internal UrlScheme(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
-    }
-
     internal interface IUrlDomainWriter
     {
         IUrlPathWriter Write(UrlDomain urlDomain);
-    }
-
-    internal sealed class UrlDomain
-    {
-        internal UrlDomain(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 
     internal interface IUrlPathWriter
@@ -67,16 +37,6 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
     internal interface IUrlPathSegmentWriter
     {
         IUrlPathWriter Write(UrlPathSegment urlPathSegment);
-    }
-
-    internal sealed class UrlPathSegment
-    {
-        internal UrlPathSegment(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 
     internal interface IUrlQueryWriter
@@ -98,29 +58,9 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
         IUrlQueryValueWriter WriteValue();
     }
 
-    internal sealed class UrlQueryName
-    {
-        internal UrlQueryName(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
-    }
-
     internal interface IUrlQueryValueWriter
     {
         IUrlQueryWriter Write(UrlQueryValue urlQueryValue);
-    }
-
-    internal sealed class UrlQueryValue
-    {
-        internal UrlQueryValue(string value)
-        {
-            Value = value;
-        }
-
-        internal string Value { get; }
     }
 
     internal interface IHeadersWriter
@@ -140,31 +80,11 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
         IHeaderKeyWriter Write(HeaderKey headerKey);
     }
 
-    internal sealed class HeaderKey
-    {
-        internal HeaderKey(string value)
-        {
-            Value = value;
-        }
-
-        public string Value { get; }
-    }
-
     internal interface IHeaderKeyWriter
     {
         IHeadersWriter Write();
 
         IHeaderValueWriter Write(HeaderValue headerValue);
-    }
-
-    internal sealed class HeaderValue
-    {
-        internal HeaderValue(string value)
-        {
-            Value = value;
-        }
-
-        public string Value { get; }
     }
 
     internal interface IHeaderValueWriter
@@ -176,6 +96,6 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
     {
         //// TODO add the methods to write the body
 
-        Task<IResponseReader> Send();
+        Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Send();
     }
 }

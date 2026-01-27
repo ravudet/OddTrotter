@@ -1,10 +1,314 @@
-﻿namespace OddTrotter.Odata.v4_01.Reader.ResponseReader.ResponseReader
+﻿using System;
+
+namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
 {
     internal interface IResponseReader
     {
+        IHeadersReader Read();
     }
 
     internal interface IHeadersReader
+    {
+        HeadersToken Read();
+    }
+
+    internal abstract class HeadersToken
+    {
+        private HeadersToken()
+        {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<Header, TResult> headerMap,
+            Func<Body, TResult> bodyMap)
+        {
+            if (this is Header header)
+            {
+                return headerMap(header);
+            }
+            else if (this is Body body)
+            {
+                return bodyMap(body);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        internal sealed class Header : HeadersToken
+        {
+            internal Header(IHeaderReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeaderReader Reader { get; }
+        }
+
+        internal sealed class Body : HeadersToken
+        {
+            internal Body(IBodyReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IBodyReader Reader { get; }
+        }
+    }
+
+    internal interface IHeaderReader
+    {
+        IHeaderKvpReader Read();
+    }
+
+    internal interface IHeaderKvpReader
+    {
+        IHeaderKeyReader Read();
+    }
+
+    internal interface IHeaderKeyReader
+    {
+        HeaderKeyToken Read(out HeaderKey headerKey);
+    }
+
+    internal abstract class HeaderKeyToken
+    {
+        private HeaderKeyToken()
+        {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<HeaderValue, TResult> headerValueMap,
+            Func<Headers, TResult> headersMap)
+        {
+            if (this is HeaderValue headerValue)
+            {
+                return headerValueMap(headerValue);
+            }
+            else if (this is Headers headers)
+            {
+                return headersMap(headers);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        internal sealed class HeaderValue : HeaderKeyToken
+        {
+            internal HeaderValue(IHeaderValueReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeaderValueReader Reader { get; }
+        }
+
+        internal sealed class Headers : HeaderKeyToken
+        {
+            internal Headers(IHeadersReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeadersReader Reader { get; }
+        }
+    }
+
+    internal interface IHeaderValueReader
+    {
+        HeaderValueToken Read(out HeaderValue headerValue);
+    }
+
+    internal abstract class HeaderValueToken
+    {
+        private HeaderValueToken()
+        {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<HeaderValue, TResult> headerValueMap,
+            Func<Headers, TResult> headersMap)
+        {
+            if (this is HeaderValue headerValue)
+            {
+                return headerValueMap(headerValue);
+            }
+            else if (this is Headers headers)
+            {
+                return headersMap(headers);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        internal sealed class HeaderValue : HeaderValueToken
+        {
+            internal HeaderValue(IHeaderValueReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeaderValueReader Reader { get; }
+        }
+
+        internal sealed class Headers : HeaderValueToken
+        {
+            internal Headers(IHeadersReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeadersReader Reader { get; }
+        }
+    }
+
+    internal interface IBodyReader
+    {
+        BodyToken Read();
+    }
+
+    internal abstract class BodyToken
+    {
+        private BodyToken()
+        {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<End, TResult> endMap)
+        {
+            if (this is End end)
+            {
+                return endMap(end);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        internal sealed class Property : BodyToken
+        {
+            public Property(IPropertyReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IPropertyReader Reader { get; }
+        }
+
+        internal sealed class End : BodyToken
+        {
+            private End()
+            {
+            }
+
+            public static End Instance { get; } = new End();
+        }
+    }
+
+    internal interface IPropertyReader
+    {
+        IPropertyNameReader Read();
+    }
+
+    internal interface IPropertyNameReader
+    {
+        IPropertyValueReader Read(out PropertyName propertyName);
+    }
+
+    internal sealed class PropertyName
+    {
+        internal PropertyName(string value)
+        {
+            Value = value;
+        }
+
+        public string Value { get; }
+    }
+
+    internal interface IPropertyValueReader
+    {
+    }
+
+    internal abstract class PropertyValueToken
+    {
+        private PropertyValueToken()
+        {
+        }
+
+        internal sealed class Literal : PropertyValueToken
+        {
+            internal Literal(ILiteralReader reader)
+            {
+                Reader = reader;
+            }
+
+            public ILiteralReader Reader { get; }
+        }
+
+        internal sealed class Null : PropertyValueToken
+        {
+            internal Null(INullReader reader)
+            {
+                Reader = reader;
+            }
+
+            public INullReader Reader { get; }
+        }
+
+        internal sealed class String : PropertyValueToken
+        {
+            internal String(IStringReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IStringReader Reader { get; }
+        }
+
+        internal sealed class Object : PropertyValueToken
+        {
+            internal Object(IObjectReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IObjectReader Reader { get; }
+        }
+
+        internal sealed class CollectionReader : PropertyValueToken
+        {
+            internal CollectionReader(ICollectionReader reader)
+            {
+                Reader = reader;
+            }
+
+            public ICollectionReader Reader { get; }
+        }
+    }
+
+    internal interface ILiteralReader
+    {
+    }
+
+    internal interface INullReader
+    {
+    }
+
+    internal interface IStringReader
+    {
+    }
+
+    internal interface IObjectReader
+    {
+    }
+
+    internal interface ICollectionReader
     {
     }
 }
