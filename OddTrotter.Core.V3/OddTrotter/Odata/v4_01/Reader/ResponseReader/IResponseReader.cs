@@ -223,6 +223,7 @@
 
     internal interface IPropertyValueReader
     {
+        PropertyValueToken Read();
     }
 
     internal abstract class PropertyValueToken
