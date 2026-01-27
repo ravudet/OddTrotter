@@ -2,7 +2,7 @@
 {
     using System.Net.Http;
 
-    internal sealed class ResponseReader
+    internal sealed class ResponseReader : IResponseReader
     {
         private readonly HttpResponseMessage httpResponseMessage;
 

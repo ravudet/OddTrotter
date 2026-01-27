@@ -228,14 +228,14 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
-        private readonly IEnumerable<string> headers;
+        private readonly IEnumerable<Tuple<string, string>> headers;
 
         public HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
-            : this(httpClient, httpMethod, url, Enumerable.Empty<string>())
+            : this(httpClient, httpMethod, url, Enumerable.Empty<Tuple<string, string>>())
         {
         }
 
-        internal HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<string> headers)
+        internal HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
             this.httpMethod = httpMethod;
@@ -250,7 +250,7 @@
 
         public IHeaderWriter WriteHeader()
         {
-            return new HeaderWriter(this.httpClient, this.httpMethod, this.url);
+            return new HeaderWriter(this.httpClient, this.httpMethod, this.url, this.headers);
         }
     }
 
@@ -259,16 +259,97 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
+        private readonly IEnumerable<Tuple<string, string>> headers;
 
-        public HeaderWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
+        public HeaderWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
             this.httpMethod = httpMethod;
             this.url = url;
+            this.headers = headers;
         }
 
         public IHeaderKvpWriter Write()
         {
+            return new HeaderKvpWriter(this.httpClient, this.httpMethod, this.url, this.headers);
+        }
+    }
+
+    internal sealed class HeaderKvpWriter : IHeaderKvpWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+        private readonly IEnumerable<Tuple<string, string>> headers;
+
+        public HeaderKvpWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+            this.headers = headers;
+        }
+
+        public IHeaderKeyWriter Write(HeaderKey headerKey)
+        {
+            return new HeaderKeyWriter(this.httpClient, this.httpMethod, this.url, this.headers, headerKey.Value, string.Empty, true);
+        }
+    }
+
+    internal sealed class HeaderKeyWriter : IHeaderKeyWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+        private readonly IEnumerable<Tuple<string, string>> headers;
+        private readonly string headerKey;
+        private readonly string header;
+        private readonly bool first;
+
+        public HeaderKeyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers, string headerKey, string header, bool first)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+            this.headers = headers;
+            this.headerKey = headerKey;
+            this.header = header;
+            this.first = first;
+        }
+
+        public IHeadersWriter Write()
+        {
+            return new HeadersWriter(this.httpClient, this.httpMethod, this.url, this.headers.Append(Tuple.Create(this.headerKey, this.headerKey)));
+        }
+
+        public IHeaderValueWriter Write(HeaderValue headerValue)
+        {
+            return new HeaderValueWriter(this.httpClient, this.httpMethod, this.url, this.headers, this.headerKey, this.header + (first ? string.Empty : ";") + headerValue.Value);
+        }
+    }
+
+    internal sealed class HeaderValueWriter : IHeaderValueWriter
+    {
+        private readonly IHttpClient httpClient;
+        private readonly HttpMethod httpMethod;
+        private readonly string url;
+        private readonly IEnumerable<Tuple<string, string>> headers;
+        private readonly string headerKey;
+        private readonly string header;
+
+        public HeaderValueWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers, string headerKey, string header)
+        {
+            this.httpClient = httpClient;
+            this.httpMethod = httpMethod;
+            this.url = url;
+            this.headers = headers;
+            this.headerKey = headerKey;
+            this.header = header;
+        }
+
+        public IHeaderKeyWriter Write()
+        {
+            return new HeaderKeyWriter(this.httpClient, this.httpMethod, this.url, this.headers, this.headerKey, this.header, false);
         }
     }
 
@@ -277,10 +358,10 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
         private readonly string url;
-        private readonly IEnumerable<string> headers;
+        private readonly IEnumerable<Tuple<string, string>> headers;
 
 
-        public BodyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<string> headers)
+        public BodyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
             this.httpMethod = httpMethod;
@@ -292,7 +373,7 @@
         {
             if (this.httpMethod == HttpMethod.Get)
             {
-                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), this.headers);
+                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), this.headers.Select(header => new HttpHeader(header.Item1, header.Item2)));
                 return new ResponseReader(response);
             }
             else
