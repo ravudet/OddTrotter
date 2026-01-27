@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
+﻿namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
 {
+    using System;
+
     internal interface IResponseReader
     {
         IHeadersReader Read();

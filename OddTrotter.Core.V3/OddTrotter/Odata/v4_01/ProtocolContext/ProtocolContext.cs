@@ -4,6 +4,9 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using OddTrotter.Odata.v4_01.Reader.RequestReader;
+    using OddTrotter.Odata.v4_01.Reader.RequestWriter;
+
     internal sealed class ProtocolContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
     {
         private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
@@ -20,7 +23,7 @@
         public async Task<OdataResponse> GetCollection(OdataRequest request)
         {
 
-            //// TODO then create the responsereader interfaces and then implement the responsereader and then finish this implementation
+            //// TODO then create the responsereader interfaces and then add the apply methods to the tokens and then implement the responsereader and then finish this implementation
 
 
 
@@ -43,7 +46,7 @@
             }
         }
 
-        private static async Task<IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
+        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
             //// TODO you could have ioexceptions while reading
             //// TODO you could have ioexceptions while writing
@@ -74,7 +77,7 @@
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
-        private static async Task<IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
+        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
             var bodyToken = bodyReader.Read();
             return await bodyToken

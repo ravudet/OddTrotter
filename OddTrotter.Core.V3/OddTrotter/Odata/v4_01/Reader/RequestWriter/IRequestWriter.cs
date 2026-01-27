@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-
-namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
+﻿namespace OddTrotter.Odata.v4_01.Reader.RequestWriter
 {
+    using System.Threading.Tasks;
+
     internal interface IRequestWriter
     {
         IVerbWriter Write();

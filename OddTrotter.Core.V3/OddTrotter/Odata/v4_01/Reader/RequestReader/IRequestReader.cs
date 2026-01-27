@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OddTrotter.Odata.v4_01.Reader.RequestReader.RequestReader
+namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 {
     internal interface IRequestReader
     {
