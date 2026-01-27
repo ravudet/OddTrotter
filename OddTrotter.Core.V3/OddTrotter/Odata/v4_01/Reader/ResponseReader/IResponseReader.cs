@@ -221,16 +221,6 @@ namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
         IPropertyValueReader Read(out PropertyName propertyName);
     }
 
-    internal sealed class PropertyName
-    {
-        internal PropertyName(string value)
-        {
-            Value = value;
-        }
-
-        public string Value { get; }
-    }
-
     internal interface IPropertyValueReader
     {
     }
@@ -293,6 +283,56 @@ namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
     }
 
     internal interface ILiteralReader
+    {
+        LiteralToken Read();
+    }
+
+    internal abstract class LiteralToken
+    {
+        private LiteralToken()
+        {
+        }
+
+        internal sealed class True : LiteralToken
+        {
+            internal True(ITrueReader reader)
+            {
+                Reader = reader;
+            }
+
+            public ITrueReader Reader { get; }
+        }
+
+        internal sealed class False : LiteralToken
+        {
+            internal False(IFalseReader reader)
+            {
+                Reader = reader;
+            }
+
+            public IFalseReader Reader { get; }
+        }
+
+        internal sealed class Number : LiteralToken
+        {
+            internal Number(INumberReader reader)
+            {
+                Reader = reader;
+            }
+
+            public INumberReader Reader { get; }
+        }
+    }
+
+    internal interface ITrueReader
+    {
+    }
+
+    internal interface IFalseReader
+    {
+    }
+
+    internal interface INumberReader
     {
     }
 
