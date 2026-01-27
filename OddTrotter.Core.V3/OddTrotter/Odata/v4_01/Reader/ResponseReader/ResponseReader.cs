@@ -142,25 +142,21 @@
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     internal sealed class BodyReader : IBodyReader
     {
+        private readonly HttpResponseMessage httpResponseMessage;
+
+        internal BodyReader(
+            HttpResponseMessage httpResponseMessage)
+        {
+            this.httpResponseMessage = httpResponseMessage;
+        }
+
         public BodyToken Read()
         {
-            throw new System.NotImplementedException();
+            //// TODO actually implement this
+
+            return BodyToken.End.Instance;
         }
     }
 }
