@@ -4,9 +4,6 @@
 
     using OddTrotter.Odata.v4_01.Reader;
 
-    using static OddTrotter.Odata.v4_01.Reader.ResponseReader.BodyToken;
-    using static OddTrotter.Odata.v4_01.Reader.ResponseReader.PropertyValueToken;
-
     internal interface IResponseReader
     {
         IHeadersReader Read();

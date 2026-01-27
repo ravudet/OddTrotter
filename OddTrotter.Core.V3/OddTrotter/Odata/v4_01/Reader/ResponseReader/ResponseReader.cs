@@ -10,5 +10,18 @@
         {
             this.httpResponseMessage = httpResponseMessage;
         }
+
+        public IHeadersReader Read()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    internal sealed class HeadersReader : IHeadersReader
+    {
+        public HeadersToken Read()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
