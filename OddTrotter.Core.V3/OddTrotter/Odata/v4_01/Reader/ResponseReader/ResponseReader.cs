@@ -39,7 +39,7 @@
             }
             else
             {
-                return new HeadersToken.Header(new HeaderReader(this.httpResponseMessage, this.headers);
+                return new HeadersToken.Header(new HeaderReader(this.httpResponseMessage, this.headers));
             }
         }
     }
@@ -130,7 +130,15 @@
 
         public HeaderValueToken Read(out HeaderValue headerValue)
         {
-            throw new System.NotImplementedException();
+            headerValue = new HeaderValue(this.values.Current);
+            if (!this.values.MoveNext())
+            {
+                return new HeaderValueToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+            }
+            else
+            {
+                return new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, this.values));
+            }
         }
     }
 
