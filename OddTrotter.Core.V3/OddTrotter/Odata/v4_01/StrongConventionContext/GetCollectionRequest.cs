@@ -1,6 +1,6 @@
-﻿namespace OddTrotter.Odata.v4_01.ConventionContext
+﻿namespace OddTrotter.Odata.v4_01.StrongConventionContext
 {
-    internal sealed class GetCollectionRequest
+    internal sealed class GetCollectionRequest<T>
     {
         internal GetCollectionRequest(string url)
         {

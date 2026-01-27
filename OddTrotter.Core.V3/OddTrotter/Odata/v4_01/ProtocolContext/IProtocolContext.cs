@@ -4,6 +4,6 @@
 
     internal interface IProtocolContext
     {
-        Task<GetCollectionResponse<T>> GetCollection<T>(GetCollectionRequest<T> request);
+        Task<OdataResponse> GetCollection(OdataRequest request);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.Odata.v4_01.ConventionContext
+﻿namespace OddTrotter.Odata.v4_01.ProtocolContext
 {
     using System;
     using System.Net.Http;
@@ -6,7 +6,7 @@
 
     using OddTrotter.Odata.v4_01.Reader;
 
-    internal sealed class HttpClientConventionContext : IConventionContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
+    internal sealed class HttpClientConventionContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
     {
         private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
         private readonly Func<IRequestWriter> requestWriterFactory;
@@ -19,7 +19,7 @@
             this.requestWriterFactory = requestWriterFactory;
         }
 
-        public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
+        public async Task<OdataResponse> GetCollection(OdataRequest request)
         {
 
             //// TODO then create the below breakdown and then create the responsereader interfaces and then implement the responsereader and then finish this implementation
