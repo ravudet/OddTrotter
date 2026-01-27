@@ -6,12 +6,12 @@
 
     using OddTrotter.Odata.v4_01.Reader;
 
-    internal sealed class HttpClientConventionContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
+    internal sealed class ProtocolContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
     {
         private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
         private readonly Func<IRequestWriter> requestWriterFactory;
 
-        internal HttpClientConventionContext(
+        internal ProtocolContext(
             Func<HttpRequestMessage, IRequestReader> requestReaderFactory,
             Func<IRequestWriter> requestWriterFactory)
         {
@@ -41,7 +41,7 @@
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
 
-                var responseReader = await HttpClientConventionContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
+                var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
             }
         }
 
@@ -67,13 +67,13 @@
             var urlPathReader = urlDomainReader.Read(out var urlDomain);
             var urlPathWriter = urlDomainWriter.Write(urlDomain);
 
-            var (urlQueryReader, urlQueryWriter) = HttpClientConventionContext.Transfer(urlPathReader, urlPathWriter);
+            var (urlQueryReader, urlQueryWriter) = ProtocolContext.Transfer(urlPathReader, urlPathWriter);
 
-            var (headersReader, headersWriter) = HttpClientConventionContext.Transfer(urlQueryReader, urlQueryWriter);
+            var (headersReader, headersWriter) = ProtocolContext.Transfer(urlQueryReader, urlQueryWriter);
 
-            var (bodyReader, bodyWriter) = HttpClientConventionContext.Transfer(headersReader, headersWriter);
+            var (bodyReader, bodyWriter) = ProtocolContext.Transfer(headersReader, headersWriter);
 
-            return await HttpClientConventionContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
+            return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
         private static async Task<IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
@@ -105,11 +105,11 @@
                     return headerKeyToken.Apply(
                         headerValue =>
                         {
-                            return HttpClientConventionContext.Transfer(headerValue.Reader, headerKeyWriter);
+                            return ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter);
                         },
                         headers =>
                         {
-                            return HttpClientConventionContext.Transfer(headers.Reader, headerKeyWriter.Write());
+                            return ProtocolContext.Transfer(headers.Reader, headerKeyWriter.Write());
                         });
                 },
                 body =>
@@ -128,11 +128,11 @@
             return headerValueToken.Apply(
                 headerValueReader =>
                 {
-                    return HttpClientConventionContext.Transfer(headerValueReader.Reader, headerValueWriter.Write());
+                    return ProtocolContext.Transfer(headerValueReader.Reader, headerValueWriter.Write());
                 },
                 headers =>
                 {
-                    return HttpClientConventionContext.Transfer(headers.Reader, headerValueWriter.Write().Write());
+                    return ProtocolContext.Transfer(headers.Reader, headerValueWriter.Write().Write());
                 });
         }
         private static (IHeadersReader HeadersReader, IHeadersWriter HeadersWriter) Transfer(
@@ -157,11 +157,11 @@
                             var urlQueryValueWriter = urlQueryNameWriter.WriteValue();
                             var newUrlQueryWriter = urlQueryValueWriter.Write(urlQueryValue);
 
-                            return HttpClientConventionContext.Transfer(newUrlQueryReader, newUrlQueryWriter);
+                            return ProtocolContext.Transfer(newUrlQueryReader, newUrlQueryWriter);
                         },
                         query =>
                         {
-                            return HttpClientConventionContext.Transfer(query.Reader, urlQueryNameWriter.Write());
+                            return ProtocolContext.Transfer(query.Reader, urlQueryNameWriter.Write());
                         });
                 },
                 headers =>
@@ -182,7 +182,7 @@
                     var urlPathSegmentWriter = urlPathWriter.WriteSegment();
                     var newUrlPathWriter = urlPathSegmentWriter.Write(urlPathSegment);
 
-                    return HttpClientConventionContext.Transfer(newUrlPathReader, newUrlPathWriter);
+                    return ProtocolContext.Transfer(newUrlPathReader, newUrlPathWriter);
                 },
                 query =>
                 {
