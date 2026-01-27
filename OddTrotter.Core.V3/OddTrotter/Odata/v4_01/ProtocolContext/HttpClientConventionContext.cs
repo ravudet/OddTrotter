@@ -36,7 +36,7 @@
 
             //// TODO do you want a level below this that has an odatarequest and an odataresponse?
 
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url))
+            using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
             {
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
