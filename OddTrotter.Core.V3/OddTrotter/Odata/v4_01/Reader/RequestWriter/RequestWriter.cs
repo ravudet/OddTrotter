@@ -369,12 +369,12 @@
             this.headers = headers;
         }
 
-        public async Task<IResponseReader> Send()
+        public async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Send()
         {
             if (httpMethod == HttpMethod.Get)
             {
                 var response = await httpClient.GetAsync(new AbsoluteUri(new Uri(url, UriKind.Absolute)), headers.Select(header => new HttpHeader(header.Item1, header.Item2)));
-                return new ResponseReader(response);
+                return new OddTrotter.Odata.v4_01.Reader.ResponseReader.ResponseReader(response);
             }
             else
             {
