@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.Odata.v4_01.Reader
+﻿namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +17,7 @@
 
         public IVerbReader Read()
         {
-            return new VerbReader(this.httpRequestMessage);
+            return new VerbReader(httpRequestMessage);
         }
     }
 
@@ -32,8 +32,8 @@
 
         public IUrlReader Read(out HttpVerb httpVerb)
         {
-            httpVerb = new HttpVerb(this.httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
-            return new UrlReader(this.httpRequestMessage);
+            httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
+            return new UrlReader(httpRequestMessage);
         }
     }
 
@@ -48,7 +48,7 @@
 
         public IUrlSchemeReader Read()
         {
-            return new UrlSchemeReader(this.httpRequestMessage);
+            return new UrlSchemeReader(httpRequestMessage);
         }
     }
 
@@ -63,14 +63,14 @@
 
         public IUrlDomainReader Read(out UrlScheme urlScheme)
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
             urlScheme = new UrlScheme(requestUri.Scheme);
-            return new UrlDomainReader(this.httpRequestMessage);
+            return new UrlDomainReader(httpRequestMessage);
         }
     }
 
@@ -85,14 +85,14 @@
 
         public IUrlPathReader Read(out UrlDomain urlDomain)
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
             urlDomain = new UrlDomain(requestUri.Host);
-            return new UrlPathReader(this.httpRequestMessage);
+            return new UrlPathReader(httpRequestMessage);
         }
     }
 
@@ -116,19 +116,19 @@
         {
             //// TODO we should probably confirm that there is no fragment (and anything else that odata doesn't leverage)
 
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            if (requestUri.Segments.Length > this.segment)
+            if (requestUri.Segments.Length > segment)
             {
-                return new UrlPathToken.Query(new UrlQueryReader(this.httpRequestMessage));
+                return new UrlPathToken.Query(new UrlQueryReader(httpRequestMessage));
             }
             else
             {
-                return new UrlPathToken.PathSegment(new UrlPathSegmentReader(this.httpRequestMessage, this.segment));
+                return new UrlPathToken.PathSegment(new UrlPathSegmentReader(httpRequestMessage, segment));
             }
         }
     }
@@ -146,19 +146,19 @@
 
         public IUrlPathReader Read(out UrlPathSegment urlPathSegment)
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            if (this.segment >= requestUri.Segments.Length)
+            if (segment >= requestUri.Segments.Length)
             {
                 throw new OdataException("TODO");
             }
 
-            urlPathSegment = new UrlPathSegment(requestUri.Segments[this.segment]);
-            return new UrlPathReader(this.httpRequestMessage, this.segment + 1);
+            urlPathSegment = new UrlPathSegment(requestUri.Segments[segment]);
+            return new UrlPathReader(httpRequestMessage, segment + 1);
         }
     }
 
@@ -180,19 +180,19 @@
 
         public UrlQueryToken Read()
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            if (string.IsNullOrEmpty(requestUri.Query) || string.IsNullOrEmpty(requestUri.Query.Substring(this.index)))
+            if (string.IsNullOrEmpty(requestUri.Query) || string.IsNullOrEmpty(requestUri.Query.Substring(index)))
             {
-                return new UrlQueryToken.Headers(new HeadersReader(this.httpRequestMessage));
+                return new UrlQueryToken.Headers(new HeadersReader(httpRequestMessage));
             }
             else
             {
-                return new UrlQueryToken.Kvp(new UrlQueryKvpReader(this.httpRequestMessage, this.index));
+                return new UrlQueryToken.Kvp(new UrlQueryKvpReader(httpRequestMessage, index));
             }
         }
     }
@@ -210,13 +210,13 @@
 
         public IUrlQueryNameReader Read()
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            return new UrlQueryNameReader(this.httpRequestMessage, this.index);
+            return new UrlQueryNameReader(httpRequestMessage, index);
         }
     }
 
@@ -233,7 +233,7 @@
 
         public UrlQueryNameToken Read(out UrlQueryName urlQueryName)
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
@@ -245,29 +245,29 @@
             if (kvpDelimiterIndex == -1 && valueDelimiterIndex == -1)
             {
                 urlQueryName = new UrlQueryName(string.Empty); //// TODO is this a legal URL?
-                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, requestUri.Query.Length));
+                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, requestUri.Query.Length));
             }
 
             if (kvpDelimiterIndex == -1)
             {
-                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, valueDelimiterIndex));
-                return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(this.httpRequestMessage, valueDelimiterIndex + 1));
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, valueDelimiterIndex));
+                return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
             }
 
             if (valueDelimiterIndex == -1)
             {
-                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
-                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex + 1));
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, kvpDelimiterIndex));
+                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
             }
 
             if (kvpDelimiterIndex < valueDelimiterIndex)
             {
-                urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
-                return new UrlQueryNameToken.Query(new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex + 1));
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, kvpDelimiterIndex));
+                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
             }
 
-            urlQueryName = new UrlQueryName(requestUri.Query.Substring(this.index, valueDelimiterIndex));
-            return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(this.httpRequestMessage, valueDelimiterIndex + 1));
+            urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, valueDelimiterIndex));
+            return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
         }
     }
 
@@ -284,7 +284,7 @@
 
         public IUrlQueryReader Read(out UrlQueryValue urlQueryValue)
         {
-            var requestUri = this.httpRequestMessage.RequestUri;
+            var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
                 throw new OdataException("TODO can this actually be null?");
@@ -296,8 +296,8 @@
                 kvpDelimiterIndex = requestUri.Query.Length;
             }
 
-            urlQueryValue = new UrlQueryValue(requestUri.Query.Substring(this.index, kvpDelimiterIndex));
-            return new UrlQueryReader(this.httpRequestMessage, kvpDelimiterIndex);
+            urlQueryValue = new UrlQueryValue(requestUri.Query.Substring(index, kvpDelimiterIndex));
+            return new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex);
         }
     }
 
@@ -321,10 +321,10 @@
         {
             if (!enumerator.MoveNext())
             {
-                return new HeadersToken.Body(new BodyReader(this.httpRequestMessage));
+                return new HeadersToken.Body(new BodyReader(httpRequestMessage));
             }
 
-            return new HeadersToken.Header(new HeaderReader(this.httpRequestMessage, this.enumerator));
+            return new HeadersToken.Header(new HeaderReader(httpRequestMessage, enumerator));
         }
     }
 
@@ -341,7 +341,7 @@
 
         public IHeaderKvpReader Read()
         {
-            return new HeaderKvpReader(this.httpRequestMessage, this.enumerator);
+            return new HeaderKvpReader(httpRequestMessage, enumerator);
         }
     }
 
@@ -358,7 +358,7 @@
 
         public IHeaderKeyReader Read()
         {
-            return new HeaderKeyReader(this.httpRequestMessage, this.enumerator);
+            return new HeaderKeyReader(httpRequestMessage, enumerator);
         }
     }
 
@@ -375,15 +375,15 @@
 
         public HeaderKeyToken Read(out HeaderKey headerKey)
         {
-            headerKey = new HeaderKey(this.enumerator.Current.Key);
+            headerKey = new HeaderKey(enumerator.Current.Key);
 
-            var valuesEnumerator = this.enumerator.Current.Value.GetEnumerator();
+            var valuesEnumerator = enumerator.Current.Value.GetEnumerator();
             if (!valuesEnumerator.MoveNext())
             {
-                return new HeaderKeyToken.Headers(new HeadersReader(this.httpRequestMessage, this.enumerator));
+                return new HeaderKeyToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
             }
 
-            return new HeaderKeyToken.HeaderValue(new HeaderValueReader(this.httpRequestMessage, this.enumerator, valuesEnumerator));
+            return new HeaderKeyToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
         }
     }
 
@@ -402,14 +402,14 @@
 
         public HeaderValueToken Read(out HeaderValue headerValue)
         {
-            headerValue = new HeaderValue(this.valuesEnumerator.Current);
-            if (this.valuesEnumerator.MoveNext())
+            headerValue = new HeaderValue(valuesEnumerator.Current);
+            if (valuesEnumerator.MoveNext())
             {
-                return new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpRequestMessage, this.enumerator, this.valuesEnumerator));
+                return new HeaderValueToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
             }
             else
             {
-                return new HeaderValueToken.Headers(new HeadersReader(this.httpRequestMessage, this.enumerator));
+                return new HeaderValueToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
             }
         }
     }

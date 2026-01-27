@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OddTrotter.Odata.v4_01.Reader
+namespace OddTrotter.Odata.v4_01.Reader.RequestReader.RequestReader
 {
     internal interface IRequestReader
     {
@@ -39,14 +39,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<UrlPathToken.PathSegment, TResult> pathSegmentMap,
-            Func<UrlPathToken.Query, TResult> queryMap)
+            Func<PathSegment, TResult> pathSegmentMap,
+            Func<Query, TResult> queryMap)
         {
-            if (this is UrlPathToken.PathSegment pathSegment)
+            if (this is PathSegment pathSegment)
             {
                 return pathSegmentMap(pathSegment);
             }
-            else if (this is UrlPathToken.Query query)
+            else if (this is Query query)
             {
                 return queryMap(query);
             }
@@ -94,14 +94,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<UrlQueryToken.Kvp, TResult> kvpMap,
-            Func<UrlQueryToken.Headers, TResult> headersMap)
+            Func<Kvp, TResult> kvpMap,
+            Func<Headers, TResult> headersMap)
         {
-            if (this is UrlQueryToken.Kvp kvp)
+            if (this is Kvp kvp)
             {
                 return kvpMap(kvp);
             }
-            else if (this is UrlQueryToken.Headers headers)
+            else if (this is Headers headers)
             {
                 return headersMap(headers);
             }
@@ -149,14 +149,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<UrlQueryNameToken.QueryValue, TResult> queryValueMap,
-            Func<UrlQueryNameToken.Query, TResult> queryMap)
+            Func<QueryValue, TResult> queryValueMap,
+            Func<Query, TResult> queryMap)
         {
-            if (this is UrlQueryNameToken.QueryValue queryValue)
+            if (this is QueryValue queryValue)
             {
                 return queryValueMap(queryValue);
             }
-            else if (this is UrlQueryNameToken.Query query)
+            else if (this is Query query)
             {
                 return queryMap(query);
             }
@@ -204,14 +204,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<HeadersToken.Header, TResult> headerMap,
-            Func<HeadersToken.Body, TResult> bodyMap)
+            Func<Header, TResult> headerMap,
+            Func<Body, TResult> bodyMap)
         {
-            if (this is HeadersToken.Header header)
+            if (this is Header header)
             {
                 return headerMap(header);
             }
-            else if (this is HeadersToken.Body body)
+            else if (this is Body body)
             {
                 return bodyMap(body);
             }
@@ -264,14 +264,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<HeaderKeyToken.HeaderValue, TResult> headerValueMap,
-            Func<HeaderKeyToken.Headers, TResult> headersMap)
+            Func<HeaderValue, TResult> headerValueMap,
+            Func<Headers, TResult> headersMap)
         {
-            if (this is HeaderKeyToken.HeaderValue headerValue)
+            if (this is HeaderValue headerValue)
             {
                 return headerValueMap(headerValue);
             }
-            else if (this is HeaderKeyToken.Headers headers)
+            else if (this is Headers headers)
             {
                 return headersMap(headers);
             }
@@ -314,14 +314,14 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<HeaderValueToken.HeaderValue, TResult> headerValueMap,
-            Func<HeaderValueToken.Headers, TResult> headersMap)
+            Func<HeaderValue, TResult> headerValueMap,
+            Func<Headers, TResult> headersMap)
         {
-            if (this is HeaderValueToken.HeaderValue headerValue)
+            if (this is HeaderValue headerValue)
             {
                 return headerValueMap(headerValue);
             }
-            else if (this is HeaderValueToken.Headers headers)
+            else if (this is Headers headers)
             {
                 return headersMap(headers);
             }
@@ -364,9 +364,9 @@ namespace OddTrotter.Odata.v4_01.Reader
         }
 
         internal TResult Apply<TResult>(
-            Func<BodyToken.End, TResult> endMap)
+            Func<End, TResult> endMap)
         {
-            if (this is BodyToken.End end)
+            if (this is End end)
             {
                 return endMap(end);
             }

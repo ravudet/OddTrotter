@@ -4,8 +4,6 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    using OddTrotter.Odata.v4_01.Reader;
-
     internal sealed class ProtocolContext : IProtocolContext //// TODO call this one weak and the other one strong? (as in weak typing and strong typing?)
     {
         private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;

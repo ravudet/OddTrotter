@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.Odata.v4_01.Reader
+﻿namespace OddTrotter.Odata.v4_01.Reader.RequestWriter
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@
 
         public IVerbWriter Write()
         {
-            return new VerbWriter(this.httpClient);
+            return new VerbWriter(httpClient);
         }
     }
 
@@ -35,7 +35,7 @@
         public IUrlWriter Write(HttpVerb httpVerb)
         {
             //// TODO use the provided verb
-            return new UrlWriter(this.httpClient, HttpMethod.Get);
+            return new UrlWriter(httpClient, HttpMethod.Get);
         }
     }
 
@@ -52,7 +52,7 @@
 
         public IUrlSchemeWriter Write()
         {
-            return new UrlSchemeWriter(this.httpClient, this.httpMethod);
+            return new UrlSchemeWriter(httpClient, httpMethod);
         }
     }
 
@@ -69,7 +69,7 @@
 
         public IUrlDomainWriter Write(UrlScheme urlScheme)
         {
-            return new UrlDomainWriter(this.httpClient, this.httpMethod, urlScheme.Value);
+            return new UrlDomainWriter(httpClient, httpMethod, urlScheme.Value);
         }
     }
 
@@ -88,7 +88,7 @@
 
         public IUrlPathWriter Write(UrlDomain urlDomain)
         {
-            return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + urlDomain.Value);
+            return new UrlPathWriter(httpClient, httpMethod, url + urlDomain.Value);
         }
     }
 
@@ -107,12 +107,12 @@
 
         public IUrlQueryWriter Write()
         {
-            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, true);
+            return new UrlQueryWriter(httpClient, httpMethod, url, true);
         }
 
         public IUrlPathSegmentWriter WriteSegment()
         {
-            return new UrlPathSegmentWriter(this.httpClient, this.httpMethod, this.url);
+            return new UrlPathSegmentWriter(httpClient, httpMethod, url);
         }
     }
 
@@ -131,7 +131,7 @@
 
         public IUrlPathWriter Write(UrlPathSegment urlPathSegment)
         {
-            return new UrlPathWriter(this.httpClient, this.httpMethod, this.url + '/' + urlPathSegment.Value);
+            return new UrlPathWriter(httpClient, httpMethod, url + '/' + urlPathSegment.Value);
         }
     }
 
@@ -152,12 +152,12 @@
 
         public IUrlQueryKvpWriter Write()
         {
-            return new UrlQueryKvpWriter(this.httpClient, this.httpMethod, this.url + (this.first ? '?' : '&'));
+            return new UrlQueryKvpWriter(httpClient, httpMethod, url + (first ? '?' : '&'));
         }
 
         public IHeadersWriter WriteHeaders()
         {
-            return new HeadersWriter(this.httpClient, this.httpMethod, this.url);
+            return new HeadersWriter(httpClient, httpMethod, url);
         }
     }
 
@@ -176,7 +176,7 @@
 
         public IUrlQueryNameWriter Write(UrlQueryName urlQueryName)
         {
-            return new UrlQueryNameWriter(this.httpClient, this.httpMethod, this.url + urlQueryName.Value);
+            return new UrlQueryNameWriter(httpClient, httpMethod, url + urlQueryName.Value);
         }
     }
 
@@ -195,12 +195,12 @@
 
         public IUrlQueryWriter Write()
         {
-            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url, false);
+            return new UrlQueryWriter(httpClient, httpMethod, url, false);
         }
 
         public IUrlQueryValueWriter WriteValue()
         {
-            return new UrlQueryValueWriter(this.httpClient, this.httpMethod, this.url + '=');
+            return new UrlQueryValueWriter(httpClient, httpMethod, url + '=');
         }
     }
 
@@ -219,7 +219,7 @@
 
         public IUrlQueryWriter Write(UrlQueryValue urlQueryValue)
         {
-            return new UrlQueryWriter(this.httpClient, this.httpMethod, this.url + urlQueryValue.Value, false);
+            return new UrlQueryWriter(httpClient, httpMethod, url + urlQueryValue.Value, false);
         }
     }
 
@@ -245,12 +245,12 @@
 
         public IBodyWriter Write()
         {
-            return new BodyWriter(this.httpClient, this.httpMethod, this.url, this.headers);
+            return new BodyWriter(httpClient, httpMethod, url, headers);
         }
 
         public IHeaderWriter WriteHeader()
         {
-            return new HeaderWriter(this.httpClient, this.httpMethod, this.url, this.headers);
+            return new HeaderWriter(httpClient, httpMethod, url, headers);
         }
     }
 
@@ -271,7 +271,7 @@
 
         public IHeaderKvpWriter Write()
         {
-            return new HeaderKvpWriter(this.httpClient, this.httpMethod, this.url, this.headers);
+            return new HeaderKvpWriter(httpClient, httpMethod, url, headers);
         }
     }
 
@@ -292,7 +292,7 @@
 
         public IHeaderKeyWriter Write(HeaderKey headerKey)
         {
-            return new HeaderKeyWriter(this.httpClient, this.httpMethod, this.url, this.headers, headerKey.Value, string.Empty, true);
+            return new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey.Value, string.Empty, true);
         }
     }
 
@@ -319,12 +319,12 @@
 
         public IHeadersWriter Write()
         {
-            return new HeadersWriter(this.httpClient, this.httpMethod, this.url, this.headers.Append(Tuple.Create(this.headerKey, this.headerKey)));
+            return new HeadersWriter(httpClient, httpMethod, url, headers.Append(Tuple.Create(headerKey, headerKey)));
         }
 
         public IHeaderValueWriter Write(HeaderValue headerValue)
         {
-            return new HeaderValueWriter(this.httpClient, this.httpMethod, this.url, this.headers, this.headerKey, this.header + (first ? string.Empty : ";") + headerValue.Value);
+            return new HeaderValueWriter(httpClient, httpMethod, url, headers, headerKey, header + (first ? string.Empty : ";") + headerValue.Value);
         }
     }
 
@@ -349,7 +349,7 @@
 
         public IHeaderKeyWriter Write()
         {
-            return new HeaderKeyWriter(this.httpClient, this.httpMethod, this.url, this.headers, this.headerKey, this.header, false);
+            return new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey, header, false);
         }
     }
 
@@ -371,9 +371,9 @@
 
         public async Task<IResponseReader> Send()
         {
-            if (this.httpMethod == HttpMethod.Get)
+            if (httpMethod == HttpMethod.Get)
             {
-                var response = await this.httpClient.GetAsync(new AbsoluteUri(new Uri(this.url, UriKind.Absolute)), this.headers.Select(header => new HttpHeader(header.Item1, header.Item2)));
+                var response = await httpClient.GetAsync(new AbsoluteUri(new Uri(url, UriKind.Absolute)), headers.Select(header => new HttpHeader(header.Item1, header.Item2)));
                 return new ResponseReader(response);
             }
             else

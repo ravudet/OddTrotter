@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace OddTrotter.Odata.v4_01.Reader
+namespace OddTrotter.Odata.v4_01.Reader.RequestWriter.RequestWriter
 {
     internal interface IRequestWriter
     {

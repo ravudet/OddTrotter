@@ -1,4 +1,4 @@
-﻿namespace OddTrotter.Odata.v4_01.Reader
+﻿namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
 {
     using System.Net.Http;
 
