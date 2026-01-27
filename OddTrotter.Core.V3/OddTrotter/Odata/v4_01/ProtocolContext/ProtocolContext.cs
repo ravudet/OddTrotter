@@ -23,7 +23,7 @@
         public async Task<OdataResponse> GetCollection(OdataRequest request)
         {
 
-            //// then implement the responsereader and then finish this implementation
+            //// then finish this implementation
 
 
 
@@ -39,10 +39,14 @@
 
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
             {
+                //// TODO add headers to the request message
+
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
 
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
+
+
             }
         }
 
