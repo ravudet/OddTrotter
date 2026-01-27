@@ -22,17 +22,13 @@
         public async Task<OdataResponse> GetCollection(OdataRequest request)
         {
 
-            //// TODO then create the below breakdown and then create the responsereader interfaces and then implement the responsereader and then finish this implementation
+            //// TODO then create the responsereader interfaces and then implement the responsereader and then finish this implementation
 
 
 
             //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
 
 
-
-
-            //// TODO i think you should have iprotocolcontext which takes odatarequest and returns odataresponse, basically using the readers to create a parse tree
-            //// TODO then you should have weakconvention and strongconvention; weak should check things like "we were give a get collection request but received a single-valued response" and strong should use a generic type parameter
             //// TODO make the note that protocol is about syntax and convention is about semantics
             //// TODO you still have the question of when you should apply somehting like an actual instace of iedmmodel or whatever
 
