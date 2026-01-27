@@ -39,7 +39,10 @@
 
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
             {
-                //// TODO add headers to the request message
+                foreach (var header in request.Headers)
+                {
+                    httpRequestMessage.Headers.Add(header.Name, header.Value);
+                }
 
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
