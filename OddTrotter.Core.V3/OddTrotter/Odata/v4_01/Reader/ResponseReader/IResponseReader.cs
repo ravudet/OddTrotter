@@ -4,6 +4,9 @@
 
     using OddTrotter.Odata.v4_01.Reader;
 
+    using static OddTrotter.Odata.v4_01.Reader.ResponseReader.BodyToken;
+    using static OddTrotter.Odata.v4_01.Reader.ResponseReader.PropertyValueToken;
+
     internal interface IResponseReader
     {
         IHeadersReader Read();
@@ -181,9 +184,14 @@
         }
 
         internal TResult Apply<TResult>(
+            Func<Property, TResult> propertyMap,
             Func<End, TResult> endMap)
         {
-            if (this is End end)
+            if (this is Property property)
+            {
+                return propertyMap(property);
+            }
+            else if (this is End end)
             {
                 return endMap(end);
             }
@@ -234,6 +242,29 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<Literal, TResult> literalMap,
+            Func<Null, TResult> nullMap,
+            Func<String, TResult> stringMap)
+        {
+            if (this is Literal literal)
+            {
+                return literalMap(literal);
+            }
+            else if (this is Null @null)
+            {
+                return nullMap(@null);
+            }
+            else if (this is String @string)
+            {
+                return stringMap(@string);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class Literal : PropertyValueToken
         {
             internal Literal(ILiteralReader reader)
@@ -276,6 +307,29 @@
     {
         private LiteralToken()
         {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<True, TResult> trueMap,
+            Func<False, TResult> falseMap,
+            Func<Number, TResult> numberMap)
+        {
+            if (this is True @true)
+            {
+                return trueMap(@true);
+            }
+            else if (this is False @false)
+            {
+                return falseMap(@false);
+            }
+            else if (this is Number number)
+            {
+                return numberMap(number);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         internal sealed class True : LiteralToken
