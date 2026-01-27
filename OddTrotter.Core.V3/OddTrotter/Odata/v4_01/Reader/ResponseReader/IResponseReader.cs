@@ -2,6 +2,8 @@
 {
     using System;
 
+    using OddTrotter.Odata.v4_01.Reader;
+
     internal interface IResponseReader
     {
         IHeadersReader Read();
@@ -262,25 +264,7 @@
             public IStringReader Reader { get; }
         }
 
-        internal sealed class Object : PropertyValueToken
-        {
-            internal Object(IObjectReader reader)
-            {
-                Reader = reader;
-            }
-
-            public IObjectReader Reader { get; }
-        }
-
-        internal sealed class CollectionReader : PropertyValueToken
-        {
-            internal CollectionReader(ICollectionReader reader)
-            {
-                Reader = reader;
-            }
-
-            public ICollectionReader Reader { get; }
-        }
+        //// TODO add objects and collections
     }
 
     internal interface ILiteralReader
@@ -327,29 +311,26 @@
 
     internal interface ITrueReader
     {
+        IBodyReader Read(out TrueToken trueToken);
     }
 
     internal interface IFalseReader
     {
+        IBodyReader Read(out FalseToken falseToken);
     }
 
     internal interface INumberReader
     {
+        IBodyReader Read(out Number number);
     }
 
     internal interface INullReader
     {
+        IBodyReader Read(out NullToken nullToken);
     }
 
     internal interface IStringReader
     {
-    }
-
-    internal interface IObjectReader
-    {
-    }
-
-    internal interface ICollectionReader
-    {
+        IBodyReader Read(out StringToken stringToken);
     }
 }
