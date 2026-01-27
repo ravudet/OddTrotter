@@ -35,7 +35,7 @@
         {
             if (!this.headers.MoveNext())
             {
-                return new HeadersToken.Body(new BodyReader());
+                return new HeadersToken.Body(new BodyReader(this.httpResponseMessage));
             }
             else
             {
