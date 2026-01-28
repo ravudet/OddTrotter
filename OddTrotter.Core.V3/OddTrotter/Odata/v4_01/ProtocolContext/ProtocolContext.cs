@@ -20,7 +20,7 @@
             this.requestWriterFactory = requestWriterFactory;
         }
 
-        public async Task<OdataResponse> GetCollection(OdataRequest request)
+        public async Task<OdataResponse> Send(OdataRequest request)
         {
 
             //// then finish this implementation
