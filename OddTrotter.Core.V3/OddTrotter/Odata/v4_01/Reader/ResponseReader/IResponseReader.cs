@@ -6,7 +6,12 @@
 
     internal interface IResponseReader
     {
-        IHeadersReader Read();
+        IStatusCodeReader Read();
+    }
+
+    internal interface IStatusCodeReader
+    {
+        IHeadersReader Read(out HttpStatusCode httpStatusCode);
     }
 
     internal interface IHeadersReader

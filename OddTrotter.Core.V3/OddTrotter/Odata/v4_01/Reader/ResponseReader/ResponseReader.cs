@@ -12,8 +12,24 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
-        public IHeadersReader Read()
+        public IStatusCodeReader Read()
         {
+            return new StatusCodeReader(this.httpResponseMessage);
+        }
+    }
+
+    internal sealed class StatusCodeReader : IStatusCodeReader
+    {
+        private readonly HttpResponseMessage httpResponseMessage;
+
+        internal StatusCodeReader(HttpResponseMessage httpResponseMessage)
+        {
+            this.httpResponseMessage = httpResponseMessage;
+        }
+
+        public IHeadersReader Read(out HttpStatusCode httpStatusCode)
+        {
+            httpStatusCode = new HttpStatusCode(this.httpResponseMessage.StatusCode.ToString());
             return new HeadersReader(this.httpResponseMessage, this.httpResponseMessage.Headers.GetEnumerator());
         }
     }
