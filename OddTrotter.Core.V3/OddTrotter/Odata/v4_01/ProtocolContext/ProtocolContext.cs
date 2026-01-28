@@ -35,8 +35,6 @@
 
 
 
-            //// TODO do you want a level below this that has an odatarequest and an odataresponse?
-
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
             {
                 foreach (var header in request.Headers)
