@@ -37,6 +37,9 @@
 
             //// TODO make the note that protocol is about syntax and convention is about semantics
             //// TODO you still have the question of when you should apply somehting like an actual instace of iedmmodel or whatever
+            
+
+            //// TODO what layer do you find out if there are duplicate property names?
 
 
 
@@ -75,8 +78,40 @@
                 end => odataResponseBuilder);
         }
 
-        private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
+        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
         {
+            var propertyNameReader = propertyReader.Read();
+
+            var propertyValueReader = propertyNameReader.Read(out var propertyName);
+
+            var propertyValueToken = propertyValueReader.Read();
+            propertyValueToken.Apply(
+                literal =>
+                {
+                    var literalToken = literal.Reader.Read();
+                    return literalToken.Apply(
+                        @true =>
+                        {
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "true"));
+                            return @true.Reader.Read(out _);
+                        },
+                        @false =>
+                        {
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "false"));
+                            return @false.Reader.Read(out _);
+                        },
+                        numberReader =>
+                        {
+                            var bodyReader = numberReader.Reader.Read(out var number);
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, number.Value));
+                            return bodyReader;
+                        });
+                },
+                @null =>
+                {
+                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
+
+                })
         }
 
         private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
