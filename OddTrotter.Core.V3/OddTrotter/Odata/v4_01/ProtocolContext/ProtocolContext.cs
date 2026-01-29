@@ -1,9 +1,11 @@
 ﻿namespace OddTrotter.Odata.v4_01.ProtocolContext
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using OddTrotter.Calendar;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
 
@@ -47,7 +49,23 @@
 
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
+            }
+        }
 
+        private sealed class OdataResponseBuilder
+        {
+            public string? HttpVerb { get; set; }
+
+            public List<HttpHeader> Headers { get; set; } = new List<HttpHeader>();
+
+            public List<OdataProperty> Properties { get; set; } = new List<OdataProperty>();
+
+            public OdataResponse Build()
+            {
+                ArgumentNullException.ThrowIfNull(this.HttpVerb, nameof(this.HttpVerb));
+                //// TODO other null checks
+                
+                return new OdataResponse(this.HttpVerb, this.Headers, this.Properties);
             }
         }
 

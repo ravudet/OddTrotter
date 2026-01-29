@@ -6,19 +6,21 @@
 
     internal sealed class OdataResponse
     {
-        public OdataResponse(IEnumerable<HttpHeader> headers, IEnumerable<Property> properties)
+        public OdataResponse(string httpVerb, IEnumerable<HttpHeader> headers, IEnumerable<OdataProperty> properties)
         {
+            HttpVerb = httpVerb;
             Headers = headers;
             Properties = properties;
         }
 
+        public string HttpVerb { get; }
         public IEnumerable<HttpHeader> Headers { get; }
-        public IEnumerable<Property> Properties { get; }
+        public IEnumerable<OdataProperty> Properties { get; }
     }
 
-    internal sealed class Property
+    internal sealed class OdataProperty
     {
-        public Property(string name, string value)
+        public OdataProperty(string name, string value)
         {
             Name = name;
             Value = value;
