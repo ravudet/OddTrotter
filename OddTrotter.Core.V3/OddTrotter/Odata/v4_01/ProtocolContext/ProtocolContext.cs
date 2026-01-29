@@ -74,7 +74,11 @@
         {
             var bodyToken = bodyReader.Read();
             return bodyToken.Apply(
-                property => ProtocolContext.Read(property.Reader, odataResponseBuilder),
+                property =>
+                {
+                    var bodyReader = ProtocolContext.Read(property.Reader, odataResponseBuilder);
+                    return ProtocolContext.Read(bodyReader, odataResponseBuilder);
+                },
                 end => odataResponseBuilder);
         }
 
@@ -85,7 +89,7 @@
             var propertyValueReader = propertyNameReader.Read(out var propertyName);
 
             var propertyValueToken = propertyValueReader.Read();
-            propertyValueToken.Apply(
+            return propertyValueToken.Apply(
                 literal =>
                 {
                     var literalToken = literal.Reader.Read();
@@ -110,8 +114,14 @@
                 @null =>
                 {
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
-
-                })
+                    return @null.Reader.Read(out _);
+                },
+                @string =>
+                {
+                    var bodyReader = @string.Reader.Read(out var stringToken);
+                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, stringToken.Value));
+                    return bodyReader;
+                });
         }
 
         private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
