@@ -30,7 +30,8 @@
 
             //// then finish this implementation
 
-
+            //// TODO go through todos in this file
+            
 
             //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
 
@@ -41,6 +42,7 @@
 
             //// TODO what layer do you find out if there are duplicate property names?
 
+            //// TODO you need to know what exceptions are being thrown
 
 
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
