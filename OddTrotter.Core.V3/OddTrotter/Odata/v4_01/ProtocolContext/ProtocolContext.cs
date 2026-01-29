@@ -5,7 +5,10 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+
     using OddTrotter.Calendar;
+    using OddTrotter.Odata.v4_01.Reader;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
 
@@ -49,12 +52,49 @@
 
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
+                var odataResponseBuilder = new OdataResponseBuilder();
+
+                var statusCodeReader = responseReader.Read();
+
+                var headersReader = statusCodeReader.Read(out var httpStatusCode);
+                odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
+
+                
             }
+        }
+
+        private static OdataResponseBuilder Read(IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
+        {
+            var headersToken = headersReader.Read();
+            return headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
+                header =>
+                {
+                    var kvpHeaderReader = header.Reader.Read();
+                    var headerKeyReader = kvpHeaderReader.Read();
+                    var headerKeyToken = headerKeyReader.Read(out var headerKey);
+                    return headerKeyToken.Apply(
+                        headerValue => ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder),
+                        headers => ProtocolContext.Read(headers.Reader, odataResponseBuilder));
+                },
+                body => ProtocolContext.Read(body.Reader, odataResponseBuilder));
+        }
+
+        private static OdataResponseBuilder Read(IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
+        {
+        }
+
+        private static OdataResponseBuilder Read(IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
+        {
+            var headerValueToken = headerValueReader.Read(out var headerValue);
+            odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
+            return headerValueToken.Apply(
+                headerValue => ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder),
+                headers => ProtocolContext.Read(headers.Reader, odataResponseBuilder));
         }
 
         private sealed class OdataResponseBuilder
         {
-            public string? HttpVerb { get; set; }
+            public string? HttpStatusCode { get; set; }
 
             public List<HttpHeader> Headers { get; set; } = new List<HttpHeader>();
 
@@ -62,10 +102,10 @@
 
             public OdataResponse Build()
             {
-                ArgumentNullException.ThrowIfNull(this.HttpVerb, nameof(this.HttpVerb));
+                ArgumentNullException.ThrowIfNull(this.HttpStatusCode, nameof(this.HttpStatusCode));
                 //// TODO other null checks
                 
-                return new OdataResponse(this.HttpVerb, this.Headers, this.Properties);
+                return new OdataResponse(this.HttpStatusCode, this.Headers, this.Properties);
             }
         }
 
