@@ -28,7 +28,7 @@
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
-            //// then finish this implementation
+            //// TODO add property reading to your response reader implementation
 
             //// TODO go through todos in this file
             
