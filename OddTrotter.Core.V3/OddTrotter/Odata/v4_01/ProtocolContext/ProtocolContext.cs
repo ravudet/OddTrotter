@@ -5,8 +5,6 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    using Fx.Either;
-
     using OddTrotter.Calendar;
     using OddTrotter.Odata.v4_01.Reader;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
@@ -74,6 +72,8 @@
 
         private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
+            //// TODO will exceptions reading from the stream surface as ioexceptions or network exceptions?
+            
             var bodyToken = bodyReader.Read();
             return bodyToken.Apply(
                 property =>
@@ -174,6 +174,7 @@
             //// TODO you could have ioexceptions while writing
             //// TODO you could have invalid syntax when reading
             //// TODO you could have network issues when sending
+            //// TODO can you have network issues when writing? or will those end up as ioexceptions?
 
             var verbReader = requestReader.Read();
             var verbWriter = requestWriter.Write();
