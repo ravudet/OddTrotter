@@ -60,8 +60,23 @@
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
                 var bodyReader = ProtocolContext.Read(headersReader, odataResponseBuilder);
-                
+
+                odataResponseBuilder = ProtocolContext.Read(bodyReader, odataResponseBuilder);
+
+                return odataResponseBuilder.Build();
             }
+        }
+
+        private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
+        {
+            var bodyToken = bodyReader.Read();
+            return bodyToken.Apply(
+                property => ProtocolContext.Read(property.Reader, odataResponseBuilder),
+                end => odataResponseBuilder);
+        }
+
+        private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
+        {
         }
 
         private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
