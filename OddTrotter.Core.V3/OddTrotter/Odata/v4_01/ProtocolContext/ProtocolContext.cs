@@ -59,11 +59,12 @@
                 var headersReader = statusCodeReader.Read(out var httpStatusCode);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
+                var bodyReader = ProtocolContext.Read(headersReader, odataResponseBuilder);
                 
             }
         }
 
-        private static OdataResponseBuilder Read(IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
+        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
             var headersToken = headersReader.Read();
             return headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
@@ -76,14 +77,10 @@
                         headerValue => ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder),
                         headers => ProtocolContext.Read(headers.Reader, odataResponseBuilder));
                 },
-                body => ProtocolContext.Read(body.Reader, odataResponseBuilder));
+                body => body.Reader);
         }
 
-        private static OdataResponseBuilder Read(IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
-        {
-        }
-
-        private static OdataResponseBuilder Read(IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
+        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
             var headerValueToken = headerValueReader.Read(out var headerValue);
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
