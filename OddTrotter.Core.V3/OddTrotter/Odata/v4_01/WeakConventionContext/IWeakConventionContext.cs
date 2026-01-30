@@ -2,6 +2,9 @@
 {
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// TODO "convention" is around semantics (e.g. we expected a collection but didn't receive one)
+    /// </summary>
     internal interface IWeakConventionContext
     {
         /// <summary>
