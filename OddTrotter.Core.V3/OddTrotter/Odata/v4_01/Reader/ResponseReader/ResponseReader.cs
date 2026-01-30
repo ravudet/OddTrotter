@@ -447,7 +447,26 @@
 
         public IBodyReader Read(out NullToken nullToken)
         {
-            throw new NotImplementedException();
+            long i;
+            var slicedBytes = this.bytes.AsSpan();
+            for (i = this.index; i > int.MaxValue; i -= int.MaxValue)
+            {
+                slicedBytes = slicedBytes.Slice(int.MaxValue);
+            }
+
+            var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
+            if (!jsonReader.Read())
+            {
+                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+            }
+
+            if (jsonReader.TokenType != JsonTokenType.Null)
+            {
+                throw new OdataException("TODO");
+            }
+
+            nullToken = NullToken.Instance;
+            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
         }
     }
 
@@ -464,7 +483,32 @@
 
         public IBodyReader Read(out StringToken stringToken)
         {
-            throw new NotImplementedException();
+            long i;
+            var slicedBytes = this.bytes.AsSpan();
+            for (i = this.index; i > int.MaxValue; i -= int.MaxValue)
+            {
+                slicedBytes = slicedBytes.Slice(int.MaxValue);
+            }
+
+            var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
+            if (!jsonReader.Read())
+            {
+                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+            }
+
+            if (jsonReader.TokenType != JsonTokenType.String)
+            {
+                throw new OdataException("TODO");
+            }
+
+            var receivedPropertyName = jsonReader.GetString();
+            if (receivedPropertyName == null)
+            {
+                throw new OdataException("TODO what would a null value even mean here? is this just a jsonreader deficiency?");
+            }
+
+            stringToken = new StringToken(receivedPropertyName);
+            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
         }
     }
 }
