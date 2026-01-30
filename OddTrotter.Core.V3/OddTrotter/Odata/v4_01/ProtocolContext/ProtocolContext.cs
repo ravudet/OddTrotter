@@ -29,8 +29,6 @@
             //// TODO go through todos in this file
             
 
-            //// TODO protocol should mean syntax and convention should mean semantics (i.e. it was syntactically an odata response (protocol), but semantically, it was supposed to be a collection, and it wasn't (convention)) //// TODO i think this is actually delineated by when you apply the edm model to the validity of the request
-
 
             //// TODO make the note that protocol is about syntax and convention is about semantics
             //// TODO you still have the question of when you should apply somehting like an actual instace of iedmmodel or whatever
