@@ -26,8 +26,6 @@
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
-            //// TODO add property reading to your response reader implementation
-
             //// TODO go through todos in this file
             
 
@@ -62,7 +60,7 @@
                 var headersReader = statusCodeReader.Read(out var httpStatusCode);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
-                var bodyReader = ProtocolContext.Read(headersReader, odataResponseBuilder);
+                var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
                 odataResponseBuilder = ProtocolContext.Read(bodyReader, odataResponseBuilder);
 
@@ -127,29 +125,32 @@
                 });
         }
 
-        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var headersToken = headersReader.Read();
-            return headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
-                header =>
+            var headersToken = await headersReader.Read().ConfigureAwait(false);
+            return await headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
+                async header =>
                 {
                     var kvpHeaderReader = header.Reader.Read();
                     var headerKeyReader = kvpHeaderReader.Read();
                     var headerKeyToken = headerKeyReader.Read(out var headerKey);
-                    return headerKeyToken.Apply(
-                        headerValue => ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder),
-                        headers => ProtocolContext.Read(headers.Reader, odataResponseBuilder));
+                    return await headerKeyToken.Apply(
+                        async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
+                        async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
+                    .ConfigureAwait(false);
                 },
-                body => body.Reader);
+                body => Task.FromResult(body.Reader))
+                .ConfigureAwait(false);
         }
 
-        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
             var headerValueToken = headerValueReader.Read(out var headerValue);
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
-            return headerValueToken.Apply(
-                headerValue => ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder),
-                headers => ProtocolContext.Read(headers.Reader, odataResponseBuilder));
+            return await headerValueToken.Apply(
+                async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
+                async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
+                .ConfigureAwait(false);
         }
 
         private sealed class OdataResponseBuilder
