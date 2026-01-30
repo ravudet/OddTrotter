@@ -30,10 +30,6 @@
             
 
 
-            //// TODO make the note that protocol is about syntax and convention is about semantics
-            //// TODO you still have the question of when you should apply somehting like an actual instace of iedmmodel or whatever
-            
-
             //// TODO what layer do you find out if there are duplicate property names?
 
             //// TODO you need to know what exceptions are being thrown
