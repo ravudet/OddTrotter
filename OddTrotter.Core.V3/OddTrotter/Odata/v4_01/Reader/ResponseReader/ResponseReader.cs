@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
 
@@ -338,7 +339,26 @@
 
         public IBodyReader Read(out FalseToken falseToken)
         {
-            throw new NotImplementedException();
+            long i;
+            var slicedBytes = this.bytes.AsSpan();
+            for (i = this.index; i > int.MaxValue; i -= int.MaxValue)
+            {
+                slicedBytes = slicedBytes.Slice(int.MaxValue);
+            }
+
+            var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
+            if (!jsonReader.Read())
+            {
+                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+            }
+
+            if (jsonReader.TokenType != JsonTokenType.False)
+            {
+                throw new OdataException("TODO");
+            }
+
+            falseToken = FalseToken.Instance;
+            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
         }
     }
 
@@ -355,7 +375,26 @@
 
         public IBodyReader Read(out Number number)
         {
-            throw new NotImplementedException();
+            long i;
+            var slicedBytes = this.bytes.AsSpan();
+            for (i = this.index; i > int.MaxValue; i -= int.MaxValue)
+            {
+                slicedBytes = slicedBytes.Slice(int.MaxValue);
+            }
+
+            var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
+            if (!jsonReader.Read())
+            {
+                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+            }
+
+            if (jsonReader.TokenType != JsonTokenType.Number)
+            {
+                throw new OdataException("TODO");
+            }
+
+            number = new Number(Encoding.UTF8.GetString(jsonReader.ValueSpan));
+            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
         }
     }
 
