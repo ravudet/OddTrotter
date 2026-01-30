@@ -30,7 +30,7 @@
             
 
 
-            //// TODO what layer do you find out if there are duplicate property names?
+            //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care?
 
             //// TODO you need to know what exceptions are being thrown
 
