@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
 {
     using System;
+    using System.Threading.Tasks;
 
     using OddTrotter.Odata.v4_01.Reader;
 
@@ -16,7 +17,7 @@
 
     internal interface IHeadersReader
     {
-        HeadersToken Read();
+        Task<HeadersToken> Read();
     }
 
     internal abstract class HeadersToken
