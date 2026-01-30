@@ -4,6 +4,8 @@
 
     /// <summary>
     /// TODO "convention" is around semantics (e.g. we expected a collection but didn't receive one)
+    /// 
+    /// TODO "strong" means that we use .net types with model based names (e.g. strongly typed properties); this could also be considered "deserialization"
     /// </summary>
     internal interface IStrongConventionContext
     {

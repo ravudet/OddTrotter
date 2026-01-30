@@ -4,6 +4,8 @@
 
     /// <summary>
     /// TODO "convention" is around semantics (e.g. we expected a collection but didn't receive one)
+    /// 
+    /// TODO "weak" means that we use .net types with odata language (e.g. nextlink, property names, etc)
     /// </summary>
     internal interface IWeakConventionContext
     {
