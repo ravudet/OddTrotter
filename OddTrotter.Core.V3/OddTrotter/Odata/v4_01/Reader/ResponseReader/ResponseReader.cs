@@ -411,7 +411,26 @@
 
         public IBodyReader Read(out TrueToken trueToken)
         {
-            throw new NotImplementedException();
+            long i;
+            var slicedBytes = this.bytes.AsSpan();
+            for (i = this.index; i > int.MaxValue; i -= int.MaxValue)
+            {
+                slicedBytes = slicedBytes.Slice(int.MaxValue);
+            }
+
+            var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
+            if (!jsonReader.Read())
+            {
+                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+            }
+
+            if (jsonReader.TokenType != JsonTokenType.True)
+            {
+                throw new OdataException("TODO");
+            }
+
+            trueToken = TrueToken.Instance;
+            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
         }
     }
 
