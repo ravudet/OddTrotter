@@ -4,92 +4,92 @@
 
     internal interface IRequestWriter
     {
-        IVerbWriter Write();
+        Task<IVerbWriter> Write();
     }
 
     internal interface IVerbWriter
     {
-        IUrlWriter Write(HttpVerb httpVerb); //// TODO this should probably be dependent on the verb (e.g. get requests don't have a body)
+        Task<IUrlWriter> Write(HttpVerb httpVerb); //// TODO this should probably be dependent on the verb (e.g. get requests don't have a body)
     }
 
     internal interface IUrlWriter
     {
-        IUrlSchemeWriter Write();
+        Task<IUrlSchemeWriter> Write();
     }
 
     internal interface IUrlSchemeWriter
     {
-        IUrlDomainWriter Write(UrlScheme urlScheme);
+        Task<IUrlDomainWriter> Write(UrlScheme urlScheme);
     }
 
     internal interface IUrlDomainWriter
     {
-        IUrlPathWriter Write(UrlDomain urlDomain);
+        Task<IUrlPathWriter> Write(UrlDomain urlDomain);
     }
 
     internal interface IUrlPathWriter
     {
-        IUrlQueryWriter Write();
+        Task<IUrlQueryWriter> Write();
 
-        IUrlPathSegmentWriter WriteSegment();
+        Task<IUrlPathSegmentWriter> WriteSegment();
     }
 
     internal interface IUrlPathSegmentWriter
     {
-        IUrlPathWriter Write(UrlPathSegment urlPathSegment);
+        Task<IUrlPathWriter> Write(UrlPathSegment urlPathSegment);
     }
 
     internal interface IUrlQueryWriter
     {
-        IHeadersWriter WriteHeaders();
+        Task<IHeadersWriter> WriteHeaders();
 
-        IUrlQueryKvpWriter Write();
+        Task<IUrlQueryKvpWriter> Write();
     }
 
     internal interface IUrlQueryKvpWriter
     {
-        IUrlQueryNameWriter Write(UrlQueryName urlQueryName);
+        Task<IUrlQueryNameWriter> Write(UrlQueryName urlQueryName);
     }
 
     internal interface IUrlQueryNameWriter
     {
-        IUrlQueryWriter Write();
+        Task<IUrlQueryWriter> Write();
 
-        IUrlQueryValueWriter WriteValue();
+        Task<IUrlQueryValueWriter> WriteValue();
     }
 
     internal interface IUrlQueryValueWriter
     {
-        IUrlQueryWriter Write(UrlQueryValue urlQueryValue);
+        Task<IUrlQueryWriter> Write(UrlQueryValue urlQueryValue);
     }
 
     internal interface IHeadersWriter
     {
-        IBodyWriter Write();
+        Task<IBodyWriter> Write();
 
-        IHeaderWriter WriteHeader();
+        Task<IHeaderWriter> WriteHeader();
     }
 
     internal interface IHeaderWriter
     {
-        IHeaderKvpWriter Write();
+        Task<IHeaderKvpWriter> Write();
     }
 
     internal interface IHeaderKvpWriter
     {
-        IHeaderKeyWriter Write(HeaderKey headerKey);
+        Task<IHeaderKeyWriter> Write(HeaderKey headerKey);
     }
 
     internal interface IHeaderKeyWriter
     {
-        IHeadersWriter Write();
+        Task<IHeadersWriter> Write();
 
-        IHeaderValueWriter Write(HeaderValue headerValue);
+        Task<IHeaderValueWriter> Write(HeaderValue headerValue);
     }
 
     internal interface IHeaderValueWriter
     {
-        IHeaderKeyWriter Write();
+        Task<IHeaderKeyWriter> Write();
     }
 
     internal interface IBodyWriter
