@@ -61,7 +61,6 @@
 
         private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            //// TODO will exceptions reading from the stream surface as ioexceptions or network exceptions?
             //// TODO because you can read and write to streams, should the `read` and `write` methods all be async?
             
             var bodyToken = bodyReader.Read();
