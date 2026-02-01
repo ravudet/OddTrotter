@@ -14,8 +14,11 @@
         [TestMethod]
         public async Task ReadingFromDeadNetworkStream()
         {
+            //// TODO to repro this, you need to turn off wifi, set a breakpoint for after `readasstreamasync`, run the test, let the breakpoint get hit, disconnect the network cable, and continue from the breakpoint
+
             using (var handler = new SocketsHttpHandler())
             {
+                //// TODO by default (i.e. when no handler is provided), `httpclient` doesn't appear to have a timeout for when the underlying connection is no longer available (e.g. due to disconnected hardware), so we need to set a timeout; 5 seconds is probably too short for practical uses
                 handler.PooledConnectionIdleTimeout = TimeSpan.FromSeconds(5);
                 using (var httpClient = new HttpClient(handler, false))
                 {
@@ -26,6 +29,7 @@
                     ////var url = "https://www.google.com";
 
 
+                    //// TODO `httpcompletionoption` needs to be set so that only the headers are read; otherwise, we will sit at this line until the entire payload is read into memory
                     using (var httpResponse = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                     {
                         using (var contentStream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
@@ -41,6 +45,7 @@
                                 }
                                 catch (IOException ioException)
                                 {
+                                    //// TODO `readasync` throws `ioexception` (which i think is good that they actually chose to preserve the `stream` contract), but when the underlying connection has an issue, it has an inner `socketexception`, so we, knowing that the stream is actually coming from an httpclient, can use this inner exception to give our caller a better experience
                                     if (ioException.InnerException is SocketException socketException)
                                     {
                                         throw new HttpRequestException("TODO", socketException);
