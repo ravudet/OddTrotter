@@ -12,12 +12,12 @@
 
     internal interface IResponseReader
     {
-        IStatusCodeReader Read();
+        Task<IStatusCodeReader> Read();
     }
 
     internal interface IStatusCodeReader
     {
-        IHeadersReader Read(out HttpStatusCode httpStatusCode);
+        Task<IHeadersReader> Read(out HttpStatusCode httpStatusCode);
     }
 
     internal interface IHeadersReader
@@ -72,17 +72,17 @@
 
     internal interface IHeaderReader
     {
-        IHeaderKvpReader Read();
+        Task<IHeaderKvpReader> Read();
     }
 
     internal interface IHeaderKvpReader
     {
-        IHeaderKeyReader Read();
+        Task<IHeaderKeyReader> Read();
     }
 
     internal interface IHeaderKeyReader
     {
-        HeaderKeyToken Read(out HeaderKey headerKey);
+        Task<HeaderKeyToken> Read(out HeaderKey headerKey);
     }
 
     internal abstract class HeaderKeyToken
@@ -132,7 +132,7 @@
 
     internal interface IHeaderValueReader
     {
-        HeaderValueToken Read(out HeaderValue headerValue);
+        Task<HeaderValueToken> Read(out HeaderValue headerValue);
     }
 
     internal abstract class HeaderValueToken
@@ -182,7 +182,7 @@
 
     internal interface IBodyReader
     {
-        BodyToken Read();
+        Task<BodyToken> Read();
     }
 
     internal abstract class BodyToken
@@ -231,17 +231,17 @@
 
     internal interface IPropertyReader
     {
-        IPropertyNameReader Read();
+        Task<IPropertyNameReader> Read();
     }
 
     internal interface IPropertyNameReader
     {
-        IPropertyValueReader Read(out PropertyName propertyName);
+        Task<IPropertyValueReader> Read(out PropertyName propertyName);
     }
 
     internal interface IPropertyValueReader
     {
-        PropertyValueToken Read();
+        Task<PropertyValueToken> Read();
     }
 
     internal abstract class PropertyValueToken
@@ -308,7 +308,7 @@
 
     internal interface ILiteralReader
     {
-        LiteralToken Read();
+        Task<LiteralToken> Read();
     }
 
     internal abstract class LiteralToken
@@ -373,26 +373,26 @@
 
     internal interface ITrueReader
     {
-        IBodyReader Read(out TrueToken trueToken);
+        Task<IBodyReader> Read(out TrueToken trueToken);
     }
 
     internal interface IFalseReader
     {
-        IBodyReader Read(out FalseToken falseToken);
+        Task<IBodyReader> Read(out FalseToken falseToken);
     }
 
     internal interface INumberReader
     {
-        IBodyReader Read(out Number number);
+        Task<IBodyReader> Read(out Number number);
     }
 
     internal interface INullReader
     {
-        IBodyReader Read(out NullToken nullToken);
+        Task<IBodyReader> Read(out NullToken nullToken);
     }
 
     internal interface IStringReader
     {
-        IBodyReader Read(out StringToken stringToken);
+        Task<IBodyReader> Read(out StringToken stringToken);
     }
 }
