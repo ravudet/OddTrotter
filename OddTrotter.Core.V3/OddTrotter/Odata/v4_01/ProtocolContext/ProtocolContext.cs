@@ -168,7 +168,7 @@
             //// TODO you could have ioexceptions while writing
             //// TODO you could have invalid syntax when reading
             //// TODO you could have network issues when sending
-            //// TODO can you have network issues when writing? or will those end up as ioexceptions? //// TODO you set up PlaygourndTests.ReadingFromDeadNetworkStream to try this
+            //// TODO can you have network issues when writing? or will those end up as ioexceptions? //// TODO you set up PlaygourndTests.ReadingFromDeadNetworkStream to demonstrate this
 
             var verbReader = requestReader.Read();
             var verbWriter = requestWriter.Write();
