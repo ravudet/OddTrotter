@@ -1,7 +1,9 @@
 ﻿namespace Fx
 {
     using System;
+    using System.IO;
     using System.Net.Http;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -29,9 +31,23 @@
                         using (var contentStream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         {
                             var buffer = new byte[1024];
-                            int read;
-                            while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) != 0)
+                            int read = -1;
+
+                            while (read != 0)
                             {
+                                try
+                                {
+                                    read = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                                }
+                                catch (IOException ioException)
+                                {
+                                    if (ioException.InnerException is SocketException socketException)
+                                    {
+                                        throw new HttpRequestException("TODO", socketException);
+                                    }
+
+                                    throw;
+                                }
                             }
                         }
                     }
