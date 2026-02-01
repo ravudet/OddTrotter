@@ -5,6 +5,11 @@
 
     using OddTrotter.Odata.v4_01.Reader;
 
+
+
+    //// TODO you need to implement a requestreader, a requestwriter, a responsereader, and a responsewriter that ensure that payload content is streamed completely
+
+
     internal interface IResponseReader
     {
         IStatusCodeReader Read();
