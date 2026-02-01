@@ -17,9 +17,9 @@
             this.httpClient = httpClient;
         }
 
-        public IVerbWriter Write()
+        public async Task<IVerbWriter> Write()
         {
-            return new VerbWriter(httpClient);
+            return await Task.FromResult(new VerbWriter(httpClient)).ConfigureAwait(false);
         }
     }
 
@@ -32,10 +32,10 @@
             this.httpClient = httpClient;
         }
 
-        public IUrlWriter Write(HttpVerb httpVerb)
+        public async Task<IUrlWriter> Write(HttpVerb httpVerb)
         {
             //// TODO use the provided verb
-            return new UrlWriter(httpClient, HttpMethod.Get);
+            return await Task.FromResult(new UrlWriter(httpClient, HttpMethod.Get)).ConfigureAwait(false);
         }
     }
 
@@ -50,9 +50,9 @@
             this.httpMethod = httpMethod;
         }
 
-        public IUrlSchemeWriter Write()
+        public async Task<IUrlSchemeWriter> Write()
         {
-            return new UrlSchemeWriter(httpClient, httpMethod);
+            return await Task.FromResult(new UrlSchemeWriter(httpClient, httpMethod)).ConfigureAwait(false);
         }
     }
 
@@ -67,9 +67,9 @@
             this.httpMethod = httpMethod;
         }
 
-        public IUrlDomainWriter Write(UrlScheme urlScheme)
+        public async Task<IUrlDomainWriter> Write(UrlScheme urlScheme)
         {
-            return new UrlDomainWriter(httpClient, httpMethod, urlScheme.Value);
+            return await Task.FromResult(new UrlDomainWriter(httpClient, httpMethod, urlScheme.Value)).ConfigureAwait(false);
         }
     }
 
@@ -86,9 +86,9 @@
             this.url = url;
         }
 
-        public IUrlPathWriter Write(UrlDomain urlDomain)
+        public async Task<IUrlPathWriter> Write(UrlDomain urlDomain)
         {
-            return new UrlPathWriter(httpClient, httpMethod, url + urlDomain.Value);
+            return await Task.FromResult(new UrlPathWriter(httpClient, httpMethod, url + urlDomain.Value)).ConfigureAwait(false);
         }
     }
 
@@ -105,14 +105,14 @@
             this.url = url;
         }
 
-        public IUrlQueryWriter Write()
+        public async Task<IUrlQueryWriter> Write()
         {
-            return new UrlQueryWriter(httpClient, httpMethod, url, true);
+            return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url, true)).ConfigureAwait(false);
         }
 
-        public IUrlPathSegmentWriter WriteSegment()
+        public async Task<IUrlPathSegmentWriter> WriteSegment()
         {
-            return new UrlPathSegmentWriter(httpClient, httpMethod, url);
+            return await Task.FromResult(new UrlPathSegmentWriter(httpClient, httpMethod, url)).ConfigureAwait(false);
         }
     }
 
@@ -129,9 +129,9 @@
             this.url = url;
         }
 
-        public IUrlPathWriter Write(UrlPathSegment urlPathSegment)
+        public async Task<IUrlPathWriter> Write(UrlPathSegment urlPathSegment)
         {
-            return new UrlPathWriter(httpClient, httpMethod, url + '/' + urlPathSegment.Value);
+            return await Task.FromResult(new UrlPathWriter(httpClient, httpMethod, url + '/' + urlPathSegment.Value)).ConfigureAwait(false);
         }
     }
 
@@ -150,14 +150,14 @@
             this.first = first;
         }
 
-        public IUrlQueryKvpWriter Write()
+        public async Task<IUrlQueryKvpWriter> Write()
         {
-            return new UrlQueryKvpWriter(httpClient, httpMethod, url + (first ? '?' : '&'));
+            return await Task.FromResult(new UrlQueryKvpWriter(httpClient, httpMethod, url + (first ? '?' : '&'))).ConfigureAwait(false);
         }
 
-        public IHeadersWriter WriteHeaders()
+        public async Task<IHeadersWriter> WriteHeaders()
         {
-            return new HeadersWriter(httpClient, httpMethod, url);
+            return await Task.FromResult(new HeadersWriter(httpClient, httpMethod, url)).ConfigureAwait(false);
         }
     }
 
@@ -174,9 +174,9 @@
             this.url = url;
         }
 
-        public IUrlQueryNameWriter Write(UrlQueryName urlQueryName)
+        public async Task<IUrlQueryNameWriter> Write(UrlQueryName urlQueryName)
         {
-            return new UrlQueryNameWriter(httpClient, httpMethod, url + urlQueryName.Value);
+            return await Task.FromResult(new UrlQueryNameWriter(httpClient, httpMethod, url + urlQueryName.Value)).ConfigureAwait(false);
         }
     }
 
@@ -193,14 +193,14 @@
             this.url = url;
         }
 
-        public IUrlQueryWriter Write()
+        public async Task<IUrlQueryWriter> Write()
         {
-            return new UrlQueryWriter(httpClient, httpMethod, url, false);
+            return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url, false)).ConfigureAwait(false);
         }
 
-        public IUrlQueryValueWriter WriteValue()
+        public async Task<IUrlQueryValueWriter> WriteValue()
         {
-            return new UrlQueryValueWriter(httpClient, httpMethod, url + '=');
+            return await Task.FromResult(new UrlQueryValueWriter(httpClient, httpMethod, url + '=')).ConfigureAwait(false);
         }
     }
 
@@ -217,9 +217,9 @@
             this.url = url;
         }
 
-        public IUrlQueryWriter Write(UrlQueryValue urlQueryValue)
+        public async Task<IUrlQueryWriter> Write(UrlQueryValue urlQueryValue)
         {
-            return new UrlQueryWriter(httpClient, httpMethod, url + urlQueryValue.Value, false);
+            return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url + urlQueryValue.Value, false)).ConfigureAwait(false);
         }
     }
 
@@ -243,14 +243,14 @@
             this.headers = headers;
         }
 
-        public IBodyWriter Write()
+        public async Task<IBodyWriter> Write()
         {
-            return new BodyWriter(httpClient, httpMethod, url, headers);
+            return await Task.FromResult(new BodyWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
         }
 
-        public IHeaderWriter WriteHeader()
+        public async Task<IHeaderWriter> WriteHeader()
         {
-            return new HeaderWriter(httpClient, httpMethod, url, headers);
+            return await Task.FromResult(new HeaderWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
         }
     }
 
@@ -269,9 +269,9 @@
             this.headers = headers;
         }
 
-        public IHeaderKvpWriter Write()
+        public async Task<IHeaderKvpWriter> Write()
         {
-            return new HeaderKvpWriter(httpClient, httpMethod, url, headers);
+            return await Task.FromResult(new HeaderKvpWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
         }
     }
 
@@ -290,9 +290,9 @@
             this.headers = headers;
         }
 
-        public IHeaderKeyWriter Write(HeaderKey headerKey)
+        public async Task<IHeaderKeyWriter> Write(HeaderKey headerKey)
         {
-            return new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey.Value, string.Empty, true);
+            return await Task.FromResult(new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey.Value, string.Empty, true)).ConfigureAwait(false);
         }
     }
 
@@ -317,14 +317,14 @@
             this.first = first;
         }
 
-        public IHeadersWriter Write()
+        public async Task<IHeadersWriter> Write()
         {
-            return new HeadersWriter(httpClient, httpMethod, url, headers.Append(Tuple.Create(headerKey, headerKey)));
+            return await Task.FromResult(new HeadersWriter(httpClient, httpMethod, url, headers.Append(Tuple.Create(headerKey, headerKey)))).ConfigureAwait(false);
         }
 
-        public IHeaderValueWriter Write(HeaderValue headerValue)
+        public async Task<IHeaderValueWriter> Write(HeaderValue headerValue)
         {
-            return new HeaderValueWriter(httpClient, httpMethod, url, headers, headerKey, header + (first ? string.Empty : ";") + headerValue.Value);
+            return await Task.FromResult(new HeaderValueWriter(httpClient, httpMethod, url, headers, headerKey, header + (first ? string.Empty : ";") + headerValue.Value)).ConfigureAwait(false);
         }
     }
 
@@ -347,9 +347,9 @@
             this.header = header;
         }
 
-        public IHeaderKeyWriter Write()
+        public async Task<IHeaderKeyWriter> Write()
         {
-            return new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey, header, false);
+            return await Task.FromResult(new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey, header, false)).ConfigureAwait(false);
         }
     }
 
