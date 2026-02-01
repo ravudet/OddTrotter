@@ -1,5 +1,6 @@
 ﻿namespace Fx
 {
+    using System;
     using System.Net.Http;
     using System.Threading.Tasks;
 
@@ -11,16 +12,27 @@
         [TestMethod]
         public async Task ReadingFromDeadNetworkStream()
         {
-            using (var httpClient = new HttpClient())
+            using (var handler = new SocketsHttpHandler())
             {
-                using (var httpResponse = await httpClient.GetAsync("https://www.google.com").ConfigureAwait(false))
+                handler.PooledConnectionIdleTimeout = TimeSpan.FromSeconds(5);
+                using (var httpClient = new HttpClient(handler, false))
                 {
-                    using (var contentStream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.3719.104");
+
+                    var url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.3.0-amd64-netinst.iso";
+                    ////var url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.3.0-amd64-netinst.iso";
+                    ////var url = "https://www.google.com";
+
+
+                    using (var httpResponse = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                     {
-                        var buffer = new byte[1024];
-                        int read;
-                        while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) != 0)
+                        using (var contentStream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         {
+                            var buffer = new byte[1024];
+                            int read;
+                            while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) != 0)
+                            {
+                            }
                         }
                     }
                 }
