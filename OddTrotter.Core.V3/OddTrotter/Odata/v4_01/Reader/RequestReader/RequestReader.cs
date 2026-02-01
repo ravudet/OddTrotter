@@ -47,9 +47,9 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IUrlSchemeReader Read()
+        public async Task<IUrlSchemeReader> Read()
         {
-            return new UrlSchemeReader(httpRequestMessage);
+            return await Task.FromResult(new UrlSchemeReader(httpRequestMessage)).ConfigureAwait(false);
         }
     }
 
@@ -113,7 +113,7 @@
             this.segment = segment;
         }
 
-        public UrlPathToken Read()
+        public async Task<UrlPathToken> Read()
         {
             //// TODO we should probably confirm that there is no fragment (and anything else that odata doesn't leverage)
 
@@ -125,11 +125,11 @@
 
             if (requestUri.Segments.Length > segment)
             {
-                return new UrlPathToken.Query(new UrlQueryReader(httpRequestMessage));
+                return await Task.FromResult(new UrlPathToken.Query(new UrlQueryReader(httpRequestMessage))).ConfigureAwait(false);
             }
             else
             {
-                return new UrlPathToken.PathSegment(new UrlPathSegmentReader(httpRequestMessage, segment));
+                return await Task.FromResult(new UrlPathToken.PathSegment(new UrlPathSegmentReader(httpRequestMessage, segment))).ConfigureAwait(false);
             }
         }
     }
@@ -179,7 +179,7 @@
             this.index = index;
         }
 
-        public UrlQueryToken Read()
+        public async Task<UrlQueryToken> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -189,11 +189,11 @@
 
             if (string.IsNullOrEmpty(requestUri.Query) || string.IsNullOrEmpty(requestUri.Query.Substring(index)))
             {
-                return new UrlQueryToken.Headers(new HeadersReader(httpRequestMessage));
+                return await Task.FromResult(new UrlQueryToken.Headers(new HeadersReader(httpRequestMessage))).ConfigureAwait(false);
             }
             else
             {
-                return new UrlQueryToken.Kvp(new UrlQueryKvpReader(httpRequestMessage, index));
+                return await Task.FromResult(new UrlQueryToken.Kvp(new UrlQueryKvpReader(httpRequestMessage, index))).ConfigureAwait(false);
             }
         }
     }
@@ -209,7 +209,7 @@
             this.index = index;
         }
 
-        public IUrlQueryNameReader Read()
+        public async Task<IUrlQueryNameReader> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -217,7 +217,7 @@
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            return new UrlQueryNameReader(httpRequestMessage, index);
+            return await Task.FromResult(new UrlQueryNameReader(httpRequestMessage, index)).ConfigureAwait(false);
         }
     }
 
@@ -318,14 +318,14 @@
             this.enumerator = enumerator;
         }
 
-        public HeadersToken Read()
+        public async Task<HeadersToken> Read()
         {
             if (!enumerator.MoveNext())
             {
                 return new HeadersToken.Body(new BodyReader(httpRequestMessage));
             }
 
-            return new HeadersToken.Header(new HeaderReader(httpRequestMessage, enumerator));
+            return await Task.FromResult(new HeadersToken.Header(new HeaderReader(httpRequestMessage, enumerator))).ConfigureAwait(false);
         }
     }
 
@@ -340,9 +340,9 @@
             this.enumerator = enumerator;
         }
 
-        public IHeaderKvpReader Read()
+        public async Task<IHeaderKvpReader> Read()
         {
-            return new HeaderKvpReader(httpRequestMessage, enumerator);
+            return await Task.FromResult(new HeaderKvpReader(httpRequestMessage, enumerator)).ConfigureAwait(false);
         }
     }
 
@@ -357,9 +357,9 @@
             this.enumerator = enumerator;
         }
 
-        public IHeaderKeyReader Read()
+        public async Task<IHeaderKeyReader> Read()
         {
-            return new HeaderKeyReader(httpRequestMessage, enumerator);
+            return await Task.FromResult(new HeaderKeyReader(httpRequestMessage, enumerator)).ConfigureAwait(false);
         }
     }
 
@@ -424,10 +424,10 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public BodyToken Read()
+        public async Task<BodyToken> Read()
         {
             //// TODO implement actually reading the body
-            return BodyToken.End.Instance;
+            return await Task.FromResult(BodyToken.End.Instance).ConfigureAwait(false);
         }
     }
 }
