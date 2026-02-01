@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Threading.Tasks;
 
     using Fx.Either;
 
@@ -15,9 +16,9 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IVerbReader Read()
+        public async Task<IVerbReader> Read()
         {
-            return new VerbReader(httpRequestMessage);
+            return await Task.FromResult(new VerbReader(httpRequestMessage)).ConfigureAwait(false);
         }
     }
 
@@ -30,10 +31,10 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IUrlReader Read(out HttpVerb httpVerb)
+        public async Task<IUrlReader> Read(out HttpVerb httpVerb) //// TODO i think the read methods should return a tuple?
         {
             httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
-            return new UrlReader(httpRequestMessage);
+            return await Task.FromResult(new UrlReader(httpRequestMessage)).ConfigureAwait(false);
         }
     }
 
