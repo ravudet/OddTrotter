@@ -293,7 +293,7 @@
             this.index = index;
         }
 
-        public IUrlQueryReader Read(out UrlQueryValue urlQueryValue)
+        public async Task<(IUrlQueryReader UrlQueryReader, UrlQueryValue UrlQueryValue)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -307,8 +307,10 @@
                 kvpDelimiterIndex = requestUri.Query.Length;
             }
 
-            urlQueryValue = new UrlQueryValue(requestUri.Query.Substring(index, kvpDelimiterIndex));
-            return new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex);
+            var urlQueryValue = new UrlQueryValue(requestUri.Query.Substring(index, kvpDelimiterIndex));
+            var urlQueryReader = new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex);
+
+            return await Task.FromResult((urlQueryReader, urlQueryValue)).ConfigureAwait(false);
         }
     }
 
@@ -384,17 +386,21 @@
             this.enumerator = enumerator;
         }
 
-        public HeaderKeyToken Read(out HeaderKey headerKey)
+        public async Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read()
         {
-            headerKey = new HeaderKey(enumerator.Current.Key);
+            var headerKey = new HeaderKey(enumerator.Current.Key);
 
             var valuesEnumerator = enumerator.Current.Value.GetEnumerator();
             if (!valuesEnumerator.MoveNext())
             {
-                return new HeaderKeyToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
+                var headers = new HeaderKeyToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
+
+                return await Task.FromResult((headers, headerKey)).ConfigureAwait(false);
             }
 
-            return new HeaderKeyToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
+            var headerValue = new HeaderKeyToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
+
+            return await Task.FromResult((headerValue, headerKey)).ConfigureAwait(false);
         }
     }
 
@@ -411,16 +417,20 @@
             this.valuesEnumerator = valuesEnumerator;
         }
 
-        public HeaderValueToken Read(out HeaderValue headerValue)
+        public async Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read()
         {
-            headerValue = new HeaderValue(valuesEnumerator.Current);
+            var headerValue = new HeaderValue(valuesEnumerator.Current);
             if (valuesEnumerator.MoveNext())
             {
-                return new HeaderValueToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
+                var token = new HeaderValueToken.HeaderValue(new HeaderValueReader(httpRequestMessage, enumerator, valuesEnumerator));
+
+                return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
             else
             {
-                return new HeaderValueToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
+                var token = new HeaderValueToken.Headers(new HeadersReader(httpRequestMessage, enumerator));
+
+                return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
         }
     }
