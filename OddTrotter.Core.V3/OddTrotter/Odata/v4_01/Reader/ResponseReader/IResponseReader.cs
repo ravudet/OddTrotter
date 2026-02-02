@@ -17,7 +17,7 @@
 
     internal interface IStatusCodeReader
     {
-        Task<IHeadersReader> Read(out HttpStatusCode httpStatusCode);
+        Task<(IHeadersReader HeadersReader, HttpStatusCode HttpStatusCode)> Read();
     }
 
     internal interface IHeadersReader
@@ -82,7 +82,7 @@
 
     internal interface IHeaderKeyReader
     {
-        Task<HeaderKeyToken> Read(out HeaderKey headerKey);
+        Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read();
     }
 
     internal abstract class HeaderKeyToken
@@ -132,7 +132,7 @@
 
     internal interface IHeaderValueReader
     {
-        Task<HeaderValueToken> Read(out HeaderValue headerValue);
+        Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read();
     }
 
     internal abstract class HeaderValueToken
@@ -236,7 +236,7 @@
 
     internal interface IPropertyNameReader
     {
-        Task<IPropertyValueReader> Read(out PropertyName propertyName);
+        Task<(IPropertyValueReader PropertyValueReader, PropertyName PropertyName)> Read();
     }
 
     internal interface IPropertyValueReader
@@ -373,26 +373,26 @@
 
     internal interface ITrueReader
     {
-        Task<IBodyReader> Read(out TrueToken trueToken);
+        Task<(IBodyReader BodyReader, TrueToken TrueToken)> Read();
     }
 
     internal interface IFalseReader
     {
-        Task<IBodyReader> Read(out FalseToken falseToken);
+        Task<(IBodyReader BodyReader, FalseToken FalseToken)> Read();
     }
 
     internal interface INumberReader
     {
-        Task<IBodyReader> Read(out Number number);
+        Task<(IBodyReader BodyReader, Number Number)> Read();
     }
 
     internal interface INullReader
     {
-        Task<IBodyReader> Read(out NullToken nullToken);
+        Task<(IBodyReader BodyReader, NullToken NullToken)> Read();
     }
 
     internal interface IStringReader
     {
-        Task<IBodyReader> Read(out StringToken stringToken);
+        Task<(IBodyReader BodyReader, StringToken StringToken)> Read();
     }
 }
