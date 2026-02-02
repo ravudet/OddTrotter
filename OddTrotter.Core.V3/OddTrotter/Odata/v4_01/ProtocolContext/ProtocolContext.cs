@@ -40,7 +40,7 @@
                     httpRequestMessage.Headers.Add(header.Name, header.Value);
                 }
 
-                var requestReader = this.requestReaderFactory(httpRequestMessage);
+                var requestReader = this.requestReaderFactory(httpRequestMessage); //// TODO i think we know that there won't be `ioexception`s coming from the reader because we are controlling the underlying payload (the `httprequestmessage` variable in this method) and so we know that it doesn't have any IO issues
                 var requestWriter = this.requestWriterFactory();
 
                 //// TODO you are here
