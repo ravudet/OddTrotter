@@ -252,39 +252,39 @@
                     return await ProtocolContext.Transfer(headers.Reader, await (await headerValueWriter.Write().ConfigureAwait(false)).Write().ConfigureAwait(false)).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
-        private static (IHeadersReader HeadersReader, IHeadersWriter HeadersWriter) Transfer(
+        private static async Task<(IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
             IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
-            var urlQueryToken = urlQueryReader.Read();
-            return urlQueryToken.Apply(
-                kvp =>
+            var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false);
+            return await urlQueryToken.Apply(
+                async kvp =>
                 {
-                    var urlQueryKvpWriter = urlQueryWriter.Write();
+                    var urlQueryKvpWriter = await urlQueryWriter.Write().ConfigureAwait(false);
 
-                    var urlQueryNameReader = kvp.Reader.Read();
-                    var urlQueryNameToken = urlQueryNameReader.Read(out var urlQueryName);
-                    var urlQueryNameWriter = urlQueryKvpWriter.Write(urlQueryName);
+                    var urlQueryNameReader = await kvp.Reader.Read().ConfigureAwait(false);
+                    var (urlQueryNameToken, urlQueryName) = await urlQueryNameReader.Read().ConfigureAwait(false);
+                    var urlQueryNameWriter = await urlQueryKvpWriter.Write(urlQueryName).ConfigureAwait(false);
 
-                    return urlQueryNameToken.Apply(
-                        queryValue =>
+                    return await urlQueryNameToken.Apply(
+                        async queryValue =>
                         {
-                            var newUrlQueryReader = queryValue.Reader.Read(out var urlQueryValue);
+                            var (newUrlQueryReader, urlQueryValue) = await queryValue.Reader.Read().ConfigureAwait(false);
 
-                            var urlQueryValueWriter = urlQueryNameWriter.WriteValue();
-                            var newUrlQueryWriter = urlQueryValueWriter.Write(urlQueryValue);
+                            var urlQueryValueWriter = await urlQueryNameWriter.WriteValue().ConfigureAwait(false);
+                            var newUrlQueryWriter = await urlQueryValueWriter.Write(urlQueryValue).ConfigureAwait(false);
 
-                            return ProtocolContext.Transfer(newUrlQueryReader, newUrlQueryWriter);
+                            return await ProtocolContext.Transfer(newUrlQueryReader, newUrlQueryWriter).ConfigureAwait(false);
                         },
-                        query =>
+                        async query =>
                         {
-                            return ProtocolContext.Transfer(query.Reader, urlQueryNameWriter.Write());
-                        });
+                            return await ProtocolContext.Transfer(query.Reader, await urlQueryNameWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
+                        }).ConfigureAwait(false);
                 },
-                headers =>
+                async headers =>
                 {
-                    return (headers.Reader, urlQueryWriter.WriteHeaders());
-                });
+                    return (headers.Reader, await urlQueryWriter.WriteHeaders().ConfigureAwait(false));
+                }).ConfigureAwait(false);
         }
 
         private static (IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter) Transfer(
