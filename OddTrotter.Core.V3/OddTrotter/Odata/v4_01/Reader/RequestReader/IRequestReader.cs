@@ -10,7 +10,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IVerbReader
     {
-        Task<IUrlReader> Read(out HttpVerb httpVerb);
+        Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read();
     }
 
     internal interface IUrlReader
@@ -20,12 +20,12 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlSchemeReader
     {
-        Task<IUrlDomainReader> Read(out UrlScheme urlScheme);
+        Task<(IUrlDomainReader UrlDomainReader, UrlScheme UrlScheme)> Read();
     }
 
     internal interface IUrlDomainReader //// TODO the domain actually isn't in the HTTP request, it's in the ip request
     {
-        Task<IUrlPathReader> Read(out UrlDomain urlDomain);
+        Task<(IUrlPathReader UrlPathReader, UrlDomain UrlDomain)> Read();
     }
 
     internal interface IUrlPathReader
@@ -80,7 +80,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlPathSegmentReader
     {
-        Task<IUrlPathReader> Read(out UrlPathSegment urlPathSegment);
+        Task<(IUrlPathReader UrlPathReader, UrlPathSegment UrlPathSegment)> Read();
     }
 
     internal interface IUrlQueryReader
@@ -140,7 +140,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlQueryNameReader
     {
-        Task<UrlQueryNameToken> Read(out UrlQueryName urlQueryName);
+        Task<(UrlQueryNameToken UrlQueryNameToken, UrlQueryName UrlQueryName)> Read();
     }
 
     internal abstract class UrlQueryNameToken
@@ -190,7 +190,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlQueryValueReader
     {
-        Task<IUrlQueryReader> Read(out UrlQueryValue urlQueryValue);
+        Task<(IUrlQueryReader UrlQueryReader, UrlQueryValue UrlQueryValue)> Read();
     }
 
     internal interface IHeadersReader
@@ -255,7 +255,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IHeaderKeyReader
     {
-        Task<HeaderKeyToken> Read(out HeaderKey headerKey);
+        Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read();
     }
 
     internal abstract class HeaderKeyToken
@@ -305,7 +305,7 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IHeaderValueReader
     {
-        Task<HeaderValueToken> Read(out HeaderValue headerValue);
+        Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read();
     }
 
     internal abstract class HeaderValueToken
