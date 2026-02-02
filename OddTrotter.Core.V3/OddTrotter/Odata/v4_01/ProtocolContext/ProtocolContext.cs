@@ -117,7 +117,7 @@
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false);
-            return await headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
+            return await headersToken.Apply(
                 async header =>
                 {
                     var kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
