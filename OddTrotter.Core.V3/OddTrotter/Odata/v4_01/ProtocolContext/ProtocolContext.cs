@@ -287,24 +287,24 @@
                 }).ConfigureAwait(false);
         }
 
-        private static (IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter) Transfer(
+        private static async Task<(IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
             IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
-            var urlPathToken = urlPathReader.Read();
-            return urlPathToken.Apply(
-                pathSegment =>
+            var urlPathToken = await urlPathReader.Read().ConfigureAwait(false);
+            return await urlPathToken.Apply(
+                async pathSegment =>
                 {
-                    var newUrlPathReader = pathSegment.Reader.Read(out var urlPathSegment);
-                    var urlPathSegmentWriter = urlPathWriter.WriteSegment();
-                    var newUrlPathWriter = urlPathSegmentWriter.Write(urlPathSegment);
+                    var (newUrlPathReader, urlPathSegment) = await pathSegment.Reader.Read().ConfigureAwait(false);
+                    var urlPathSegmentWriter = await urlPathWriter.WriteSegment().ConfigureAwait(false);
+                    var newUrlPathWriter = await urlPathSegmentWriter.Write(urlPathSegment).ConfigureAwait(false);
 
-                    return ProtocolContext.Transfer(newUrlPathReader, newUrlPathWriter);
+                    return await ProtocolContext.Transfer(newUrlPathReader, newUrlPathWriter).ConfigureAwait(false);
                 },
-                query =>
+                async query =>
                 {
-                    return (query.Reader, urlPathWriter.Write());
-                });
+                    return (query.Reader, await urlPathWriter.Write().ConfigureAwait(false));
+                }).ConfigureAwait(false);
         }
     }
 }
