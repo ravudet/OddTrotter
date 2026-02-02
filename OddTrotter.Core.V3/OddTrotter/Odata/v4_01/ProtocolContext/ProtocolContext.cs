@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Net.Http;
     using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@
                 var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
 
+                //// TODO you are here
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
                 var odataResponseBuilder = new OdataResponseBuilder();
@@ -59,28 +61,49 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodyReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
         private static async Task<OdataResponseBuilder> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var bodyToken = await bodyReader.Read().ConfigureAwait(false);
+            var bodyToken = await bodyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+
+            //// TODO you are here
             return await bodyToken.Apply(
                 async property =>
                 {
+                    //// TODO you are here
                     var bodyReader = await ProtocolContext.Read(property.Reader, odataResponseBuilder).ConfigureAwait(false);
                     return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
                 },
                 async end => await Task.FromResult(odataResponseBuilder).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propertyReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var propertyNameReader = await propertyReader.Read().ConfigureAwait(false);
+            var propertyNameReader = await propertyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
 
-            var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false);
+            var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
 
-            var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false);
+            var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            //// TODO you are here
             return await propertyValueToken.Apply(
                 async literal =>
                 {
+                    //// TODO you are here
                     var literalToken = await literal.Reader.Read().ConfigureAwait(false);
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
                     return await literalToken.Apply(
