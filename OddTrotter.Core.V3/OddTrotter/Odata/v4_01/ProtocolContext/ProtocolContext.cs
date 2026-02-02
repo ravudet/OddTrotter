@@ -184,11 +184,11 @@
             var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false);
             var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
 
-            var (urlQueryReader, urlQueryWriter) = ProtocolContext.Transfer(urlPathReader, urlPathWriter);
+            var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
-            var (headersReader, headersWriter) = ProtocolContext.Transfer(urlQueryReader, urlQueryWriter);
+            var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
-            var (bodyReader, bodyWriter) = ProtocolContext.Transfer(headersReader, headersWriter);
+            var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
 
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
