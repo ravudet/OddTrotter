@@ -136,7 +136,7 @@
 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
-            var headerValueToken = headerValueReader.Read(out var headerValue);
+            var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
             return await headerValueToken.Apply(
                 async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
