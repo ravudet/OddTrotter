@@ -59,31 +59,31 @@
             }
         }
 
-        private static OdataResponseBuilder Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OdataResponseBuilder> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
             //// TODO because you can read and write to streams, should the `read` and `write` methods all be async?
             
-            var bodyToken = bodyReader.Read();
-            return bodyToken.Apply(
-                property =>
+            var bodyToken = await bodyReader.Read().ConfigureAwait(false);
+            return await bodyToken.Apply(
+                async property =>
                 {
-                    var bodyReader = ProtocolContext.Read(property.Reader, odataResponseBuilder);
-                    return ProtocolContext.Read(bodyReader, odataResponseBuilder);
+                    var bodyReader = await ProtocolContext.Read(property.Reader, odataResponseBuilder).ConfigureAwait(false);
+                    return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
                 },
-                end => odataResponseBuilder);
+                async end => await Task.FromResult(odataResponseBuilder).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        private static OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var propertyNameReader = propertyReader.Read();
+            var propertyNameReader = await propertyReader.Read().ConfigureAwait(false);
 
-            var propertyValueReader = propertyNameReader.Read(out var propertyName);
+            var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false);
 
-            var propertyValueToken = propertyValueReader.Read();
+            var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false);
             return propertyValueToken.Apply(
-                literal =>
+                async literal =>
                 {
-                    var literalToken = literal.Reader.Read();
+                    var literalToken = await literal.Reader.Read().ConfigureAwait(false);
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
                     return literalToken.Apply(
                         @true =>
