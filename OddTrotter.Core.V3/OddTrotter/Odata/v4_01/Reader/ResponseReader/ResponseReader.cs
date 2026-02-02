@@ -309,7 +309,7 @@
             this.index = index;
         }
 
-        public LiteralToken Read()
+        public async Task<LiteralToken> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -327,11 +327,11 @@
             switch (jsonReader.TokenType)
             {
                 case JsonTokenType.False:
-                    return new LiteralToken.False(new FalseReader(this.bytes, this.index));
+                    return await Task.FromResult(new LiteralToken.False(new FalseReader(this.bytes, this.index))).ConfigureAwait(false);
                 case JsonTokenType.Number:
-                    return new LiteralToken.Number(new NumberReader(this.bytes, this.index));
+                    return await Task.FromResult(new LiteralToken.Number(new NumberReader(this.bytes, this.index))).ConfigureAwait(false);
                 case JsonTokenType.True:
-                    return new LiteralToken.True(new TrueReader(this.bytes, this.index));
+                    return await Task.FromResult(new LiteralToken.True(new TrueReader(this.bytes, this.index))).ConfigureAwait(false);
                 default:
                     throw new OdataException("TODO");
             }
@@ -349,7 +349,7 @@
             this.index = index;
         }
 
-        public IBodyReader Read(out FalseToken falseToken)
+        public async Task<(IBodyReader BodyReader, FalseToken FalseToken)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -369,8 +369,10 @@
                 throw new OdataException("TODO");
             }
 
-            falseToken = FalseToken.Instance;
-            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
+            var falseToken = FalseToken.Instance;
+            var bodyReader = new BodyReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((bodyReader, falseToken)).ConfigureAwait(false);
         }
     }
 
@@ -385,7 +387,7 @@
             this.index = index;
         }
 
-        public IBodyReader Read(out Number number)
+        public async Task<(IBodyReader BodyReader, Number Number)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -405,8 +407,10 @@
                 throw new OdataException("TODO");
             }
 
-            number = new Number(Encoding.UTF8.GetString(jsonReader.ValueSpan));
-            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
+            var number = new Number(Encoding.UTF8.GetString(jsonReader.ValueSpan));
+            var bodyReader = new BodyReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((bodyReader, number)).ConfigureAwait(false);
         }
     }
 
@@ -421,7 +425,7 @@
             this.index = index;
         }
 
-        public IBodyReader Read(out TrueToken trueToken)
+        public async Task<(IBodyReader BodyReader, TrueToken TrueToken)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -441,8 +445,10 @@
                 throw new OdataException("TODO");
             }
 
-            trueToken = TrueToken.Instance;
-            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
+            var trueToken = TrueToken.Instance;
+            var bodyReader = new BodyReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((bodyReader, trueToken)).ConfigureAwait(false);
         }
     }
 
@@ -457,7 +463,7 @@
             this.index = index;
         }
 
-        public IBodyReader Read(out NullToken nullToken)
+        public async Task<(IBodyReader BodyReader, NullToken NullToken)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -477,8 +483,10 @@
                 throw new OdataException("TODO");
             }
 
-            nullToken = NullToken.Instance;
-            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
+            var nullToken = NullToken.Instance;
+            var bodyReader = new BodyReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((bodyReader, nullToken)).ConfigureAwait(false);
         }
     }
 
@@ -493,7 +501,7 @@
             this.index = index;
         }
 
-        public IBodyReader Read(out StringToken stringToken)
+        public async Task<(IBodyReader BodyReader, StringToken StringToken)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -519,8 +527,10 @@
                 throw new OdataException("TODO what would a null value even mean here? is this just a jsonreader deficiency?");
             }
 
-            stringToken = new StringToken(receivedPropertyName);
-            return new BodyReader(this.bytes, jsonReader.BytesConsumed);
+            var stringToken = new StringToken(receivedPropertyName);
+            var bodyReader = new BodyReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((bodyReader, stringToken)).ConfigureAwait(false);
         }
     }
 }
