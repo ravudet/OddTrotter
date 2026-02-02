@@ -27,13 +27,6 @@
         {
 
 
-            //// TODO finish documenting these exceptions
-    
-            //// TODO you could have ioexceptions while reading
-            //// TODO you could have ioexceptions while writing
-            //// TODO you could have invalid syntax when reading
-            //// TODO you could have network issues when sending
-
 
             //// TODO then go through this file to make sure you've got the exceptiosn handled, and document the `iprotocolcontext` interface to surface reasonable exceptions
 
