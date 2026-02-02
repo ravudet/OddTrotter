@@ -26,10 +26,17 @@
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
-            //// TODO go through todos in this file
-            
 
-            //// TODO you need to know what exceptions are being thrown
+            //// TODO finish documenting these exceptions
+    
+            //// TODO you could have ioexceptions while reading
+            //// TODO you could have ioexceptions while writing
+            //// TODO you could have invalid syntax when reading
+            //// TODO you could have network issues when sending
+
+
+            //// TODO then go through this file to make sure you've got the exceptiosn handled, and document the `iprotocolcontext` interface to surface reasonable exceptions
+
 
 
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
@@ -161,12 +168,6 @@
 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
-            //// TODO you could have ioexceptions while reading
-            //// TODO you could have ioexceptions while writing
-            //// TODO you could have invalid syntax when reading
-            //// TODO you could have network issues when sending
-            //// TODO can you have network issues when writing? or will those end up as ioexceptions? //// TODO you set up PlaygourndTests.ReadingFromDeadNetworkStream to demonstrate this
-
             var verbReader = await requestReader.Read().ConfigureAwait(false);
             var verbWriter = await requestWriter.Write().ConfigureAwait(false);
 
