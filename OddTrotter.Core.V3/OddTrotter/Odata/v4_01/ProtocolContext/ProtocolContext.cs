@@ -56,10 +56,10 @@
 
                 var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
-                //// TODO you are here
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
+                //// TODO you are here
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
                 odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
@@ -107,22 +107,22 @@
             return await propertyValueToken.Apply(
                 async literal =>
                 {
-                    var literalToken = await literal.Reader.Read().ConfigureAwait(false);
+                    var literalToken = await literal.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
                     return await literalToken.Apply(
                         async @true =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "true"));
-                            return (await @true.Reader.Read().ConfigureAwait(false)).BodyReader;
+                            return (await @true.Reader.Read().ConfigureAwait(false)).BodyReader; // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                         },
                         async @false =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "false"));
-                            return (await @false.Reader.Read().ConfigureAwait(false)).BodyReader;
+                            return (await @false.Reader.Read().ConfigureAwait(false)).BodyReader; // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                         },
                         async numberReader =>
                         {
-                            var (bodyReader, number) = await numberReader.Reader.Read().ConfigureAwait(false);
+                            var (bodyReader, number) = await numberReader.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, number.Value));
                             return bodyReader;
                         }).ConfigureAwait(false);
@@ -130,16 +130,22 @@
                 async @null =>
                 {
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
-                    return (await @null.Reader.Read().ConfigureAwait(false)).BodyReader;
+                    return (await @null.Reader.Read().ConfigureAwait(false)).BodyReader; // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                 },
                 async @string =>
                 {
-                    var (bodyReader, stringToken) = await @string.Reader.Read().ConfigureAwait(false);
+                    var (bodyReader, stringToken) = await @string.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, stringToken.Value));
                     return bodyReader;
                 }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headersReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false);
