@@ -9,12 +9,9 @@
 
 
 
-    //// TODO you need to implement a requestreader, a requestwriter, a responsereader, and a responsewriter that ensure that payload content is completely streamed (look at `playgroundtests.ReadingFromDeadNetworkStream` for more information)
 
 
-
-
-    //// TODO look at `playgroundtests.ReadingFromDeadNetworkStream` to make sure that the ioexceptions you surface aren't accidentally httprequestexceptions
+    //// TODO look at `playgroundtests.ReadingFromDeadNetworkStream` to make sure that the ioexceptions you surface aren't accidentally httprequestexceptions and to make sure that payload content is completely streamed; do the same for the writer
 
 
     internal interface IResponseReader
