@@ -100,16 +100,37 @@
 
     internal interface IHeaderReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IHeaderKvpReader> Read();
     }
 
     internal interface IHeaderKvpReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IHeaderKeyReader> Read();
     }
 
     internal interface IHeaderKeyReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read();
     }
 
@@ -160,6 +181,13 @@
 
     internal interface IHeaderValueReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read();
     }
 
@@ -210,6 +238,13 @@
 
     internal interface IBodyReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<BodyToken> Read();
     }
 
@@ -259,16 +294,37 @@
 
     internal interface IPropertyReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IPropertyNameReader> Read();
     }
 
     internal interface IPropertyNameReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IPropertyValueReader PropertyValueReader, PropertyName PropertyName)> Read();
     }
 
     internal interface IPropertyValueReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<PropertyValueToken> Read();
     }
 
@@ -336,6 +392,13 @@
 
     internal interface ILiteralReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<LiteralToken> Read();
     }
 
@@ -401,26 +464,61 @@
 
     internal interface ITrueReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, TrueToken TrueToken)> Read();
     }
 
     internal interface IFalseReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, FalseToken FalseToken)> Read();
     }
 
     internal interface INumberReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, Number Number)> Read();
     }
 
     internal interface INullReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, NullToken NullToken)> Read();
     }
 
     internal interface IStringReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, StringToken StringToken)> Read();
     }
 }
