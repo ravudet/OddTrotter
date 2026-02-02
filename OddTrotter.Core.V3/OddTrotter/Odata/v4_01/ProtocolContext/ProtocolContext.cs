@@ -169,20 +169,20 @@
             //// TODO you could have network issues when sending
             //// TODO can you have network issues when writing? or will those end up as ioexceptions? //// TODO you set up PlaygourndTests.ReadingFromDeadNetworkStream to demonstrate this
 
-            var verbReader = requestReader.Read();
-            var verbWriter = requestWriter.Write();
+            var verbReader = await requestReader.Read().ConfigureAwait(false);
+            var verbWriter = await requestWriter.Write().ConfigureAwait(false);
 
-            var urlReader = verbReader.Read(out var httpVerb);
-            var urlWriter = verbWriter.Write(httpVerb);
+            var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false);
+            var urlWriter = await verbWriter.Write(httpVerb).ConfigureAwait(false);
 
-            var urlSchemeReader = urlReader.Read();
-            var urlSchemeWriter = urlWriter.Write();
+            var urlSchemeReader = await urlReader.Read().ConfigureAwait(false);
+            var urlSchemeWriter = await urlWriter.Write().ConfigureAwait(false);
 
-            var urlDomainReader = urlSchemeReader.Read(out var urlScheme);
-            var urlDomainWriter = urlSchemeWriter.Write(urlScheme);
+            var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false);
+            var urlDomainWriter = await urlSchemeWriter.Write(urlScheme).ConfigureAwait(false);
 
-            var urlPathReader = urlDomainReader.Read(out var urlDomain);
-            var urlPathWriter = urlDomainWriter.Write(urlDomain);
+            var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false);
+            var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
 
             var (urlQueryReader, urlQueryWriter) = ProtocolContext.Transfer(urlPathReader, urlPathWriter);
 
@@ -195,62 +195,62 @@
 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
-            var bodyToken = bodyReader.Read();
+            var bodyToken = await bodyReader.Read().ConfigureAwait(false);
             return await bodyToken
                 .Apply(
                     async end => await bodyWriter.Send().ConfigureAwait(false))
                 .ConfigureAwait(false);
         }
 
-        private static (IBodyReader BodyReader, IBodyWriter BodyWriter) Transfer(
+        private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
             IHeadersReader headersReader,
             IHeadersWriter headersWriter)
         {
-            var headersToken = headersReader.Read();
+            var headersToken = await headersReader.Read().ConfigureAwait(false);
             return headersToken.Apply(
-                header =>
+                async header =>
                 {
-                    var headerWriter = headersWriter.WriteHeader();
+                    var headerWriter = await headersWriter.WriteHeader().ConfigureAwait(false);
 
-                    var headerKvpReader = header.Reader.Read();
-                    var headerKvpWriter = headerWriter.Write();
+                    var headerKvpReader = await header.Reader.Read().ConfigureAwait(false);
+                    var headerKvpWriter = await headerWriter.Write().ConfigureAwait(false);
 
-                    var headerKeyReader = headerKvpReader.Read();
-                    var headerKeyToken = headerKeyReader.Read(out var headerKey);
-                    var headerKeyWriter = headerKvpWriter.Write(headerKey);
+                    var headerKeyReader = await headerKvpReader.Read().ConfigureAwait(false);
+                    var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
+                    var headerKeyWriter = await headerKvpWriter.Write(headerKey).ConfigureAwait(false);
 
                     return headerKeyToken.Apply(
                         headerValue =>
                         {
                             return ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter);
                         },
-                        headers =>
+                        async headers =>
                         {
-                            return ProtocolContext.Transfer(headers.Reader, headerKeyWriter.Write());
+                            return ProtocolContext.Transfer(headers.Reader, await headerKeyWriter.Write().ConfigureAwait(false));
                         });
                 },
-                body =>
+                async body =>
                 {
-                    return (body.Reader, headersWriter.Write());
+                    return (body.Reader, await headersWriter.Write().ConfigureAwait(false));
                 });
         }
 
-        private static (IBodyReader BodyReader, IBodyWriter BodyWriter) Transfer(
+        private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
             IHeaderValueReader headerValueReader,
             IHeaderKeyWriter headerKeyWriter)
         {
-            var headerValueToken = headerValueReader.Read(out var headerValue);
-            var headerValueWriter = headerKeyWriter.Write(headerValue);
+            var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
+            var headerValueWriter = await headerKeyWriter.Write(headerValue).ConfigureAwait(false);
 
-            return headerValueToken.Apply(
-                headerValueReader =>
+            return await headerValueToken.Apply(
+                async headerValueReader =>
                 {
-                    return ProtocolContext.Transfer(headerValueReader.Reader, headerValueWriter.Write());
+                    return await ProtocolContext.Transfer(headerValueReader.Reader, await headerValueWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
                 },
-                headers =>
+                async headers =>
                 {
-                    return ProtocolContext.Transfer(headers.Reader, headerValueWriter.Write().Write());
-                });
+                    return await ProtocolContext.Transfer(headers.Reader, await (await headerValueWriter.Write().ConfigureAwait(false)).Write().ConfigureAwait(false)).ConfigureAwait(false);
+                }).ConfigureAwait(false);
         }
         private static (IHeadersReader HeadersReader, IHeadersWriter HeadersWriter) Transfer(
             IUrlQueryReader urlQueryReader,
