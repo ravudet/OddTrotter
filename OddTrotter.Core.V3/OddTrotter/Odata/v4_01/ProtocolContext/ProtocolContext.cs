@@ -61,8 +61,6 @@
 
         private static async Task<OdataResponseBuilder> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            //// TODO because you can read and write to streams, should the `read` and `write` methods all be async?
-            
             var bodyToken = await bodyReader.Read().ConfigureAwait(false);
             return await bodyToken.Apply(
                 async property =>
