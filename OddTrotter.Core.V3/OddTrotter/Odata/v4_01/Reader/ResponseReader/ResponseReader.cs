@@ -16,9 +16,9 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
-        public IStatusCodeReader Read()
+        public async Task<IStatusCodeReader> Read()
         {
-            return new StatusCodeReader(this.httpResponseMessage);
+            return await Task.FromResult(new StatusCodeReader(this.httpResponseMessage)).ConfigureAwait(false);
         }
     }
 
@@ -31,10 +31,12 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
-        public IHeadersReader Read(out HttpStatusCode httpStatusCode)
+        public async Task<(IHeadersReader HeadersReader, HttpStatusCode HttpStatusCode)> Read()
         {
-            httpStatusCode = new HttpStatusCode(this.httpResponseMessage.StatusCode.ToString());
-            return new HeadersReader(this.httpResponseMessage, this.httpResponseMessage.Headers.GetEnumerator());
+            var httpStatusCode = new HttpStatusCode(this.httpResponseMessage.StatusCode.ToString());
+            var headersReader = new HeadersReader(this.httpResponseMessage, this.httpResponseMessage.Headers.GetEnumerator());
+
+            return await Task.FromResult((headersReader,  httpStatusCode)).ConfigureAwait(false);
         }
     }
 
