@@ -31,10 +31,11 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public async Task<IUrlReader> Read(out HttpVerb httpVerb) //// TODO i think the read methods should return a tuple?
+        public async Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read() //// TODO i think the read methods should return a tuple?
         {
-            httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
-            return await Task.FromResult(new UrlReader(httpRequestMessage)).ConfigureAwait(false);
+            var httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
+            var urlReader = new UrlReader(httpRequestMessage);
+            return await Task.FromResult((urlReader, httpVerb)).ConfigureAwait(false);
         }
     }
 
@@ -62,7 +63,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IUrlDomainReader Read(out UrlScheme urlScheme)
+        public async Task<(IUrlDomainReader UrlDomainReader, UrlScheme UrlScheme)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -70,8 +71,10 @@
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            urlScheme = new UrlScheme(requestUri.Scheme);
-            return new UrlDomainReader(httpRequestMessage);
+            var urlScheme = new UrlScheme(requestUri.Scheme);
+            var urlDomainReader = new UrlDomainReader(httpRequestMessage);
+
+            return await Task.FromResult((urlDomainReader, urlScheme)).ConfigureAwait(false);
         }
     }
 
@@ -84,7 +87,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public IUrlPathReader Read(out UrlDomain urlDomain)
+        public async Task<(IUrlPathReader UrlPathReader, UrlDomain UrlDomain)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -92,8 +95,10 @@
                 throw new OdataException("TODO can this actually be null?");
             }
 
-            urlDomain = new UrlDomain(requestUri.Host);
-            return new UrlPathReader(httpRequestMessage);
+            var urlDomain = new UrlDomain(requestUri.Host);
+            var urlPathReader = new UrlPathReader(httpRequestMessage);
+
+            return await Task.FromResult((urlPathReader, urlDomain)).ConfigureAwait(false);
         }
     }
 
