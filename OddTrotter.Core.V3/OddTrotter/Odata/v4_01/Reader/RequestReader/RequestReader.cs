@@ -68,7 +68,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             var urlScheme = new UrlScheme(requestUri.Scheme);
@@ -92,7 +92,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             var urlDomain = new UrlDomain(requestUri.Host);
@@ -125,7 +125,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             if (requestUri.Segments.Length > segment)
@@ -155,12 +155,12 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             if (segment >= requestUri.Segments.Length)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var urlPathSegment = new UrlPathSegment(requestUri.Segments[segment]);
@@ -191,7 +191,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             if (string.IsNullOrEmpty(requestUri.Query) || string.IsNullOrEmpty(requestUri.Query.Substring(index)))
@@ -221,7 +221,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             return await Task.FromResult(new UrlQueryNameReader(httpRequestMessage, index)).ConfigureAwait(false);
@@ -244,7 +244,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             var kvpDelimiterIndex = requestUri.Query.IndexOf('&');
@@ -298,7 +298,7 @@
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
             {
-                throw new OdataException("TODO can this actually be null?");
+                throw new ReadException("TODO can this actually be null?");
             }
 
             var kvpDelimiterIndex = requestUri.Query.IndexOf('&');

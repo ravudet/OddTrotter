@@ -234,18 +234,18 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.PropertyName)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var receivedPropertyName = jsonReader.GetString();
             if (string.IsNullOrEmpty(receivedPropertyName))
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var propertyName = new PropertyName(receivedPropertyName);
@@ -278,7 +278,7 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             //// TODO you need to always skip comments in the JSON
@@ -293,7 +293,7 @@
                 case JsonTokenType.String:
                     return await Task.FromResult(new PropertyValueToken.String(new StringReader(this.bytes, this.index))).ConfigureAwait(false);
                 default:
-                    throw new OdataException("TODO");
+                    throw new ReadException("TODO");
             }
         }
     }
@@ -321,7 +321,7 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             switch (jsonReader.TokenType)
@@ -333,7 +333,7 @@
                 case JsonTokenType.True:
                     return await Task.FromResult(new LiteralToken.True(new TrueReader(this.bytes, this.index))).ConfigureAwait(false);
                 default:
-                    throw new OdataException("TODO");
+                    throw new ReadException("TODO");
             }
         }
     }
@@ -361,12 +361,12 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.False)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var falseToken = FalseToken.Instance;
@@ -399,12 +399,12 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.Number)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var number = new Number(Encoding.UTF8.GetString(jsonReader.ValueSpan));
@@ -437,12 +437,12 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.True)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var trueToken = TrueToken.Instance;
@@ -475,12 +475,12 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.Null)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var nullToken = NullToken.Instance;
@@ -513,18 +513,18 @@
             var jsonReader = new Utf8JsonReader(slicedBytes.Slice((int)i));
             if (!jsonReader.Read())
             {
-                throw new OdataException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
+                throw new ReadException("TODO invalid JSON"); //// TODO do you want a dedicated exception type for the underlying format being broken? so, something that differentiates between "bad odata syntax (like two properties with the same name)" and "invalid JSON/XML/whatever"?
             }
 
             if (jsonReader.TokenType != JsonTokenType.String)
             {
-                throw new OdataException("TODO");
+                throw new ReadException("TODO");
             }
 
             var receivedPropertyName = jsonReader.GetString();
             if (receivedPropertyName == null)
             {
-                throw new OdataException("TODO what would a null value even mean here? is this just a jsonreader deficiency?");
+                throw new ReadException("TODO what would a null value even mean here? is this just a jsonreader deficiency?");
             }
 
             var stringToken = new StringToken(receivedPropertyName);
