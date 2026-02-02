@@ -31,7 +31,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
-        public async Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read() //// TODO i think the read methods should return a tuple?
+        public async Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read()
         {
             var httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
             var urlReader = new UrlReader(httpRequestMessage);
