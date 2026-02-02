@@ -80,40 +80,40 @@
             var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false);
 
             var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false);
-            return propertyValueToken.Apply(
+            return await propertyValueToken.Apply(
                 async literal =>
                 {
                     var literalToken = await literal.Reader.Read().ConfigureAwait(false);
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
-                    return literalToken.Apply(
-                        @true =>
+                    return await literalToken.Apply(
+                        async @true =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "true"));
-                            return @true.Reader.Read(out _);
+                            return (await @true.Reader.Read().ConfigureAwait(false)).BodyReader;
                         },
-                        @false =>
+                        async @false =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "false"));
-                            return @false.Reader.Read(out _);
+                            return (await @false.Reader.Read().ConfigureAwait(false)).BodyReader;
                         },
-                        numberReader =>
+                        async numberReader =>
                         {
-                            var bodyReader = numberReader.Reader.Read(out var number);
+                            var (bodyReader, number) = await numberReader.Reader.Read().ConfigureAwait(false);
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, number.Value));
                             return bodyReader;
-                        });
+                        }).ConfigureAwait(false);
                 },
-                @null =>
+                async @null =>
                 {
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
-                    return @null.Reader.Read(out _);
+                    return (await @null.Reader.Read().ConfigureAwait(false)).BodyReader;
                 },
-                @string =>
+                async @string =>
                 {
-                    var bodyReader = @string.Reader.Read(out var stringToken);
+                    var (bodyReader, stringToken) = await @string.Reader.Read().ConfigureAwait(false);
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, stringToken.Value));
                     return bodyReader;
-                });
+                }).ConfigureAwait(false);
         }
 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
