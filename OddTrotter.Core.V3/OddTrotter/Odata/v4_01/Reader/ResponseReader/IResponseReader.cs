@@ -7,11 +7,15 @@
 
 
 
-    //// TODO you need to implement a requestreader, a requestwriter, a responsereader, and a responsewriter that ensure that payload content is completely streamed
+    //// TODO you need to implement a requestreader, a requestwriter, a responsereader, and a responsewriter that ensure that payload content is completely streamed (look at `playgroundtests.ReadingFromDeadNetworkStream` for more information)
 
 
     internal interface IResponseReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task<IStatusCodeReader> Read();
     }
 
