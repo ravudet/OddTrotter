@@ -150,7 +150,7 @@
             this.segment = segment;
         }
 
-        public IUrlPathReader Read(out UrlPathSegment urlPathSegment)
+        public async Task<(IUrlPathReader UrlPathReader, UrlPathSegment UrlPathSegment)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -163,8 +163,10 @@
                 throw new OdataException("TODO");
             }
 
-            urlPathSegment = new UrlPathSegment(requestUri.Segments[segment]);
-            return new UrlPathReader(httpRequestMessage, segment + 1);
+            var urlPathSegment = new UrlPathSegment(requestUri.Segments[segment]);
+            var urlPathReader = new UrlPathReader(httpRequestMessage, segment + 1);
+
+            return await Task.FromResult((urlPathReader, urlPathSegment)).ConfigureAwait(false);
         }
     }
 
@@ -237,7 +239,7 @@
             this.index = index;
         }
 
-        public UrlQueryNameToken Read(out UrlQueryName urlQueryName)
+        public async Task<(UrlQueryNameToken UrlQueryNameToken, UrlQueryName UrlQueryName)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
             if (requestUri == null)
@@ -248,32 +250,35 @@
             var kvpDelimiterIndex = requestUri.Query.IndexOf('&');
             var valueDelimiterIndex = requestUri.Query.IndexOf('=');
 
+            UrlQueryName urlQueryName;
+            UrlQueryNameToken urlQueryNameToken;
             if (kvpDelimiterIndex == -1 && valueDelimiterIndex == -1)
             {
                 urlQueryName = new UrlQueryName(string.Empty); //// TODO is this a legal URL?
-                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, requestUri.Query.Length));
+                urlQueryNameToken = new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, requestUri.Query.Length));
             }
-
-            if (kvpDelimiterIndex == -1)
+            else if (kvpDelimiterIndex == -1)
             {
                 urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, valueDelimiterIndex));
-                return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
+                urlQueryNameToken = new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
             }
-
-            if (valueDelimiterIndex == -1)
+            else if (valueDelimiterIndex == -1)
             {
                 urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, kvpDelimiterIndex));
-                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
+                urlQueryNameToken = new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
             }
-
-            if (kvpDelimiterIndex < valueDelimiterIndex)
+            else if (kvpDelimiterIndex < valueDelimiterIndex)
             {
                 urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, kvpDelimiterIndex));
-                return new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
+                urlQueryNameToken = urlQueryNameToken = new UrlQueryNameToken.Query(new UrlQueryReader(httpRequestMessage, kvpDelimiterIndex + 1));
+            }
+            else
+            {
+                urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, valueDelimiterIndex));
+                urlQueryNameToken = new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
             }
 
-            urlQueryName = new UrlQueryName(requestUri.Query.Substring(index, valueDelimiterIndex));
-            return new UrlQueryNameToken.QueryValue(new UrlQueryValueReader(httpRequestMessage, valueDelimiterIndex + 1));
+            return await Task.FromResult((urlQueryNameToken, urlQueryName)).ConfigureAwait(false);
         }
     }
 
