@@ -207,7 +207,7 @@
             IHeadersWriter headersWriter)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false);
-            return headersToken.Apply(
+            return await headersToken.Apply(
                 async header =>
                 {
                     var headerWriter = await headersWriter.WriteHeader().ConfigureAwait(false);
@@ -219,20 +219,20 @@
                     var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
                     var headerKeyWriter = await headerKvpWriter.Write(headerKey).ConfigureAwait(false);
 
-                    return headerKeyToken.Apply(
-                        headerValue =>
+                    return await headerKeyToken.Apply(
+                        async headerValue =>
                         {
-                            return ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter);
+                            return await ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter).ConfigureAwait(false);
                         },
                         async headers =>
                         {
-                            return ProtocolContext.Transfer(headers.Reader, await headerKeyWriter.Write().ConfigureAwait(false));
-                        });
+                            return await ProtocolContext.Transfer(headers.Reader, await headerKeyWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
+                        }).ConfigureAwait(false);
                 },
                 async body =>
                 {
                     return (body.Reader, await headersWriter.Write().ConfigureAwait(false));
-                });
+                }).ConfigureAwait(false);
         }
 
         private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
