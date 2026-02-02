@@ -79,9 +79,9 @@
             this.headers = headers;
         }
 
-        public IHeaderKvpReader Read()
+        public async Task<IHeaderKvpReader> Read()
         {
-            return new HeaderKvpReader(this.httpResponseMessage, this.headers);
+            return await Task.FromResult(new HeaderKvpReader(this.httpResponseMessage, this.headers)).ConfigureAwait(false);
         }
     }
 
@@ -98,9 +98,9 @@
             this.headers = headers;
         }
 
-        public IHeaderKeyReader Read()
+        public async Task<IHeaderKeyReader> Read()
         {
-            return new HeaderKeyReader(this.httpResponseMessage, this.headers);
+            return await Task.FromResult(new HeaderKeyReader(this.httpResponseMessage, this.headers)).ConfigureAwait(false);
         }
     }
 
@@ -117,19 +117,23 @@
             this.headers = headers;
         }
 
-        public HeaderKeyToken Read(out HeaderKey headerKey)
+        public async Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read()
         {
             var header = this.headers.Current;
-            headerKey = new HeaderKey(header.Key);
+            var headerKey = new HeaderKey(header.Key);
 
             var values = header.Value.GetEnumerator();
             if (!values.MoveNext())
             {
-                return new HeaderKeyToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+                var token = new HeaderKeyToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+
+                return await Task.FromResult((token, headerKey)).ConfigureAwait(false);
             }
             else
             {
-                return new HeaderKeyToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, values));
+                var token = new HeaderKeyToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, values));
+
+                return await Task.FromResult((token, headerKey)).ConfigureAwait(false);
             }
         }
     }
@@ -150,16 +154,20 @@
             this.values = values;
         }
 
-        public HeaderValueToken Read(out HeaderValue headerValue)
+        public async Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read()
         {
-            headerValue = new HeaderValue(this.values.Current);
+            var headerValue = new HeaderValue(this.values.Current);
             if (!this.values.MoveNext())
             {
-                return new HeaderValueToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+                var token = new HeaderValueToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+
+                return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
             else
             {
-                return new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, this.values));
+                var token = new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, this.values));
+
+                return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
         }
     }
@@ -175,14 +183,14 @@
             this.index = index;
         }
 
-        public BodyToken Read()
+        public async Task<BodyToken> Read()
         {
             if (this.index == this.bytes.Length)
             {
-                return BodyToken.End.Instance;
+                return await Task.FromResult(BodyToken.End.Instance).ConfigureAwait(false);
             }
 
-            return new BodyToken.Property(new PropertyReader(this.bytes, this.index));
+            return await Task.FromResult(new BodyToken.Property(new PropertyReader(this.bytes, this.index))).ConfigureAwait(false);
         }
     }
 
@@ -197,9 +205,9 @@
             this.index = index;
         }
 
-        public IPropertyNameReader Read()
+        public async Task<IPropertyNameReader> Read()
         {
-            return new PropertyNameReader(this.bytes, this.index);
+            return await Task.FromResult(new PropertyNameReader(this.bytes, this.index)).ConfigureAwait(false);
         }
     }
 
@@ -214,7 +222,7 @@
             this.index = index;
         }
 
-        public IPropertyValueReader Read(out PropertyName propertyName)
+        public async Task<(IPropertyValueReader PropertyValueReader, PropertyName PropertyName)> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -240,8 +248,10 @@
                 throw new OdataException("TODO");
             }
 
-            propertyName = new PropertyName(receivedPropertyName);
-            return new PropertyValueReader(this.bytes, jsonReader.BytesConsumed);
+            var propertyName = new PropertyName(receivedPropertyName);
+            var propertyValueReader = new PropertyValueReader(this.bytes, jsonReader.BytesConsumed);
+
+            return await Task.FromResult((propertyValueReader, propertyName)).ConfigureAwait(false);
         }
     }
 
