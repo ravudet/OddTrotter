@@ -1,35 +1,79 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace OddTrotter.Odata.v4_01.Reader.RequestReader
+﻿namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 {
+    using System;
+    using System.IO;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+
     internal interface IRequestReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IVerbReader> Read();
     }
 
     internal interface IVerbReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read();
     }
 
     internal interface IUrlReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IUrlSchemeReader> Read();
     }
 
     internal interface IUrlSchemeReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IUrlDomainReader UrlDomainReader, UrlScheme UrlScheme)> Read();
     }
 
     internal interface IUrlDomainReader //// TODO the domain actually isn't in the HTTP request, it's in the ip request
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IUrlPathReader UrlPathReader, UrlDomain UrlDomain)> Read();
     }
 
     internal interface IUrlPathReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<UrlPathToken> Read();
     }
 
@@ -80,11 +124,25 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlPathSegmentReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IUrlPathReader UrlPathReader, UrlPathSegment UrlPathSegment)> Read();
     }
 
     internal interface IUrlQueryReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<UrlQueryToken> Read();
     }
 
@@ -135,11 +193,25 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlQueryKvpReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IUrlQueryNameReader> Read();
     }
 
     internal interface IUrlQueryNameReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(UrlQueryNameToken UrlQueryNameToken, UrlQueryName UrlQueryName)> Read();
     }
 
@@ -190,11 +262,25 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IUrlQueryValueReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IUrlQueryReader UrlQueryReader, UrlQueryValue UrlQueryValue)> Read();
     }
 
     internal interface IHeadersReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<HeadersToken> Read();
     }
 
@@ -245,16 +331,37 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IHeaderReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IHeaderKvpReader> Read();
     }
 
     internal interface IHeaderKvpReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IHeaderKeyReader> Read();
     }
 
     internal interface IHeaderKeyReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read();
     }
 
@@ -305,6 +412,13 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IHeaderValueReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read();
     }
 
@@ -355,6 +469,13 @@ namespace OddTrotter.Odata.v4_01.Reader.RequestReader
 
     internal interface IBodyReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<BodyToken> Read();
     }
 
