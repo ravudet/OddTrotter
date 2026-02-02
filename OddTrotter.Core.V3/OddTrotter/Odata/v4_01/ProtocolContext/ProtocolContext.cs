@@ -122,9 +122,9 @@
             return await headersToken.Apply( //// TODO the apply methods need a `context` parameter so you can pass the builder; the builder likely should be a `ref struct` passed by `ref`
                 async header =>
                 {
-                    var kvpHeaderReader = header.Reader.Read();
-                    var headerKeyReader = kvpHeaderReader.Read();
-                    var headerKeyToken = headerKeyReader.Read(out var headerKey);
+                    var kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
+                    var headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false);
+                    var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
                     return await headerKeyToken.Apply(
                         async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
                         async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
