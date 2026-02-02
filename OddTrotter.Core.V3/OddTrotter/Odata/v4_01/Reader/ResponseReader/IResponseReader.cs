@@ -1,6 +1,8 @@
 ﻿namespace OddTrotter.Odata.v4_01.Reader.ResponseReader
 {
     using System;
+    using System.IO;
+    using System.Net.Http;
     using System.Threading.Tasks;
 
     using OddTrotter.Odata.v4_01.Reader;
@@ -10,22 +12,44 @@
     //// TODO you need to implement a requestreader, a requestwriter, a responsereader, and a responsewriter that ensure that payload content is completely streamed (look at `playgroundtests.ReadingFromDeadNetworkStream` for more information)
 
 
+
+
+    //// TODO look at `playgroundtests.ReadingFromDeadNetworkStream` to make sure that the ioexceptions you surface aren't accidentally httprequestexceptions
+
+
     internal interface IResponseReader
     {
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<IStatusCodeReader> Read();
     }
 
     internal interface IStatusCodeReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IHeadersReader HeadersReader, HttpStatusCode HttpStatusCode)> Read();
     }
 
     internal interface IHeadersReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<HeadersToken> Read();
     }
 
