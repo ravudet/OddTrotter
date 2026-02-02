@@ -24,6 +24,13 @@
             this.requestWriterFactory = requestWriterFactory;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
@@ -43,13 +50,13 @@
                 var requestReader = this.requestReaderFactory(httpRequestMessage); //// TODO i think we know that there won't be `ioexception`s coming from the reader because we are controlling the underlying payload (the `httprequestmessage` variable in this method) and so we know that it doesn't have any IO issues
                 var requestWriter = this.requestWriterFactory();
 
-                //// TODO you are here
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
                 var odataResponseBuilder = new OdataResponseBuilder();
 
                 var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
+                //// TODO you are here
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
@@ -73,11 +80,9 @@
         {
             var bodyToken = await bodyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
 
-            //// TODO you are here
             return await bodyToken.Apply(
                 async property =>
                 {
-                    //// TODO you are here
                     var bodyReader = await ProtocolContext.Read(property.Reader, odataResponseBuilder).ConfigureAwait(false);
                     return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
                 },
@@ -99,11 +104,9 @@
             var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
 
             var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
-            //// TODO you are here
             return await propertyValueToken.Apply(
                 async literal =>
                 {
-                    //// TODO you are here
                     var literalToken = await literal.Reader.Read().ConfigureAwait(false);
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
                     return await literalToken.Apply(
