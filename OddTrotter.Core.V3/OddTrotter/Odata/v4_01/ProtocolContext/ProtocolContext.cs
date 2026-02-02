@@ -46,14 +46,14 @@
 
                 var odataResponseBuilder = new OdataResponseBuilder();
 
-                var statusCodeReader = responseReader.Read();
+                var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
-                var headersReader = statusCodeReader.Read(out var httpStatusCode);
+                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
-                odataResponseBuilder = ProtocolContext.Read(bodyReader, odataResponseBuilder);
+                odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
 
                 return odataResponseBuilder.Build();
             }
