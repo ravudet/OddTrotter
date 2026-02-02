@@ -266,7 +266,7 @@
             this.index = index;
         }
 
-        public PropertyValueToken Read()
+        public async Task<PropertyValueToken> Read()
         {
             long i;
             var slicedBytes = this.bytes.AsSpan();
@@ -287,11 +287,11 @@
                 case JsonTokenType.False:
                 case JsonTokenType.Number:
                 case JsonTokenType.True:
-                    return new PropertyValueToken.Literal(new LiteralReader(this.bytes, this.index));
+                    return await Task.FromResult(new PropertyValueToken.Literal(new LiteralReader(this.bytes, this.index))).ConfigureAwait(false);
                 case JsonTokenType.Null:
-                    return new PropertyValueToken.Null(new NullReader(this.bytes, this.index));
+                    return await Task.FromResult(new PropertyValueToken.Null(new NullReader(this.bytes, this.index))).ConfigureAwait(false);
                 case JsonTokenType.String:
-                    return new PropertyValueToken.String(new StringReader(this.bytes, this.index));
+                    return await Task.FromResult(new PropertyValueToken.String(new StringReader(this.bytes, this.index))).ConfigureAwait(false);
                 default:
                     throw new OdataException("TODO");
             }
