@@ -186,9 +186,50 @@
                 async header =>
                 {
                     //// TODO you are here
-                    var kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
-                    var headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false);
-                    var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
+
+                    Response.IHeaderKvpReader kvpHeaderReader;
+                    try
+                    {
+                        kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
+                    Response.IHeaderKeyReader headerKeyReader;
+                    try
+                    {
+                        headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
+                    Response.HeaderKeyToken headerKeyToken;
+                    HeaderKey headerKey;
+                    try
+                    {
+                        (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
                     return await headerKeyToken.Apply(
                         async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
                         async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
