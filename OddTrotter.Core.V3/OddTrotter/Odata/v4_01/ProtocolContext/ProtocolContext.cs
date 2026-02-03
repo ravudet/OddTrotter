@@ -53,11 +53,12 @@
                 //// TODO you are here
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
+                //// TODO from here down you completely messed up and still thought you were reading the request; fix it
                 var odataResponseBuilder = new OdataResponseBuilder();
 
-                var statusCodeReader = await responseReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+                var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
-                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
