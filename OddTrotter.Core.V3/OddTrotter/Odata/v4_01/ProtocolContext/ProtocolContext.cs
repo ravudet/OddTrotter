@@ -74,12 +74,24 @@
                     throw new Protocol.ProtocolException("TODO", readException);
                 }
 
-                //// TODO you are here
                 Response.IHeadersReader headersReader;
                 HttpStatusCode httpStatusCode;
-                (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
+                try
+                {
+                    (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
+                }
+                catch (IOException ioException)
+                {
+                    throw new Protocol.ReadException("TODO", ioException);
+                }
+                catch (Reader.ReadException readException)
+                {
+                    throw new Protocol.ProtocolException("TODO", readException);
+                }
+
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
+                //// TODO you are here
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
                 odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
