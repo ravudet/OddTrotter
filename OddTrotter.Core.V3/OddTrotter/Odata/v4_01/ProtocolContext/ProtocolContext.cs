@@ -175,23 +175,22 @@
         /// <param name="requestReader"></param>
         /// <param name="requestWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException"></exception>
-        /// <exception cref="HttpRequestException"></exception>
+        /// 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
-            var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var verbWriter = await requestWriter.Write().ConfigureAwait(false);
 
-            var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlWriter = await verbWriter.Write(httpVerb).ConfigureAwait(false);
 
-            var urlSchemeReader = await urlReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            var urlSchemeReader = await urlReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlSchemeWriter = await urlWriter.Write().ConfigureAwait(false);
 
-            var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlDomainWriter = await urlSchemeWriter.Write(urlScheme).ConfigureAwait(false);
 
-            var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
+            var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
 
             //// TODO you are here
@@ -298,16 +297,23 @@
                 }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="urlPathReader"></param>
+        /// <param name="urlPathWriter"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
             IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
-            //// TODO you are here
-            var urlPathToken = await urlPathReader.Read().ConfigureAwait(false);
+            var urlPathToken = await urlPathReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlPathToken.Apply(
                 async pathSegment =>
                 {
-                    var (newUrlPathReader, urlPathSegment) = await pathSegment.Reader.Read().ConfigureAwait(false);
+                    var (newUrlPathReader, urlPathSegment) = await pathSegment.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
                     var urlPathSegmentWriter = await urlPathWriter.WriteSegment().ConfigureAwait(false);
                     var newUrlPathWriter = await urlPathSegmentWriter.Write(urlPathSegment).ConfigureAwait(false);
 
