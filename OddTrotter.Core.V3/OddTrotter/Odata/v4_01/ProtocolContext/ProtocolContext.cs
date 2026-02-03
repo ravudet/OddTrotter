@@ -50,11 +50,11 @@
                 var requestReader = this.requestReaderFactory(httpRequestMessage); //// TODO i think we know that there won't be `ioexception`s coming from the reader because we are controlling the underlying payload (the `httprequestmessage` variable in this method) and so we know that it doesn't have any IO issues
                 var requestWriter = this.requestWriterFactory();
 
-                //// TODO you are here
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
                 var odataResponseBuilder = new OdataResponseBuilder();
 
+                //// TODO you are here
                 var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
@@ -275,7 +275,7 @@
         {
             var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var headerValueWriter = await headerKeyWriter.Write(headerValue).ConfigureAwait(false);
-            `
+            
             return await headerValueToken.Apply(
                 async headerValueReader =>
                 {
