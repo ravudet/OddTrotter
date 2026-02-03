@@ -50,16 +50,16 @@
                 var requestReader = this.requestReaderFactory(httpRequestMessage); //// TODO i think we know that there won't be `ioexception`s coming from the reader because we are controlling the underlying payload (the `httprequestmessage` variable in this method) and so we know that it doesn't have any IO issues
                 var requestWriter = this.requestWriterFactory();
 
+                //// TODO you are here
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
                 var odataResponseBuilder = new OdataResponseBuilder();
 
-                var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
+                var statusCodeReader = await responseReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
 
-                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
+                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
-                //// TODO you are here
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
                 odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
@@ -151,14 +151,12 @@
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
-            //// TODO you are here
             return await headersToken.Apply(
                 async header =>
                 {
                     var kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                     var headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
                     var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
-                    //// TODO you are here
                     return await headerKeyToken.Apply(
                         async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
                         async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
@@ -168,10 +166,17 @@
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headersReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
-            //// TODO you are here
-            var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
+            var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
             return await headerValueToken.Apply(
                 async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
@@ -198,6 +203,7 @@
 
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
+            //// TODO you are here
             var verbReader = await requestReader.Read().ConfigureAwait(false);
             var verbWriter = await requestWriter.Write().ConfigureAwait(false);
 
