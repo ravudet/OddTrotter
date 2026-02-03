@@ -29,8 +29,8 @@
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        /// <exception cref="IOException"></exception>
-        /// <exception cref="HttpRequestException"></exception>
+        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
@@ -198,15 +198,22 @@
 
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
-            //// TODO you are here
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
 
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodyReader"></param>
+        /// <param name="bodyWriter"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
-            var bodyToken = await bodyReader.Read().ConfigureAwait(false);
+            var bodyToken = await bodyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await bodyToken
                 .Apply(
                     async end => await bodyWriter.Send().ConfigureAwait(false))
