@@ -10,7 +10,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IVerbWriter> Write();
     }
@@ -21,7 +21,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlWriter> Write(HttpVerb httpVerb); //// TODO this should probably be dependent on the verb (e.g. get requests don't have a body)
     }
@@ -32,7 +32,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlSchemeWriter> Write();
     }
@@ -43,7 +43,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlDomainWriter> Write(UrlScheme urlScheme);
     }
@@ -54,7 +54,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlPathWriter> Write(UrlDomain urlDomain);
     }
@@ -65,7 +65,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryWriter> Write();
 
@@ -73,7 +73,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlPathSegmentWriter> WriteSegment();
     }
@@ -84,7 +84,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlPathWriter> Write(UrlPathSegment urlPathSegment);
     }
@@ -95,7 +95,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeadersWriter> WriteHeaders();
 
@@ -103,7 +103,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryKvpWriter> Write();
     }
@@ -114,7 +114,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryNameWriter> Write(UrlQueryName urlQueryName);
     }
@@ -125,7 +125,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryWriter> Write();
 
@@ -133,7 +133,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryValueWriter> WriteValue();
     }
@@ -144,7 +144,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IUrlQueryWriter> Write(UrlQueryValue urlQueryValue);
     }
@@ -155,7 +155,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IBodyWriter> Write();
 
@@ -163,7 +163,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeaderWriter> WriteHeader();
     }
@@ -174,7 +174,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeaderKvpWriter> Write();
     }
@@ -185,7 +185,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeaderKeyWriter> Write(HeaderKey headerKey);
     }
@@ -196,7 +196,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeadersWriter> Write();
 
@@ -204,7 +204,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeaderValueWriter> Write(HeaderValue headerValue);
     }
@@ -215,7 +215,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<IHeaderKeyWriter> Write();
     }
@@ -228,7 +228,7 @@
         /// 
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
+        /// <exception cref="IOException" awaited="true">thrown if an error occurred writing to the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while sending the payload to the service</exception>
         Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Send();
     }

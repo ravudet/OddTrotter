@@ -270,25 +270,26 @@
         /// <param name="urlQueryReader"></param>
         /// <param name="urlQueryWriter"></param>
         /// <returns></returns>
+        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
             IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
-            //// TODO you are here
-            var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false);
+            var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlQueryToken.Apply(
                 async kvp =>
                 {
                     var urlQueryKvpWriter = await urlQueryWriter.Write().ConfigureAwait(false);
 
-                    var urlQueryNameReader = await kvp.Reader.Read().ConfigureAwait(false);
-                    var (urlQueryNameToken, urlQueryName) = await urlQueryNameReader.Read().ConfigureAwait(false);
+                    var urlQueryNameReader = await kvp.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
+                    var (urlQueryNameToken, urlQueryName) = await urlQueryNameReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
                     var urlQueryNameWriter = await urlQueryKvpWriter.Write(urlQueryName).ConfigureAwait(false);
 
                     return await urlQueryNameToken.Apply(
                         async queryValue =>
                         {
-                            var (newUrlQueryReader, urlQueryValue) = await queryValue.Reader.Read().ConfigureAwait(false);
+                            var (newUrlQueryReader, urlQueryValue) = await queryValue.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
 
                             var urlQueryValueWriter = await urlQueryNameWriter.WriteValue().ConfigureAwait(false);
                             var newUrlQueryWriter = await urlQueryValueWriter.Write(urlQueryValue).ConfigureAwait(false);
