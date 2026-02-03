@@ -176,21 +176,53 @@
         /// <param name="requestReader"></param>
         /// <param name="requestWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
             var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var verbWriter = await requestWriter.Write().ConfigureAwait(false);
+            IVerbWriter verbWriter;
+            try
+            {
+                verbWriter = await requestWriter.Write().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
 
             var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var urlWriter = await verbWriter.Write(httpVerb).ConfigureAwait(false);
+            IUrlWriter urlWriter;
+            try
+            {
+                urlWriter = await verbWriter.Write(httpVerb).ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
 
             var urlSchemeReader = await urlReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var urlSchemeWriter = await urlWriter.Write().ConfigureAwait(false);
+            IUrlSchemeWriter urlSchemeWriter;
+            try
+            {
+                urlSchemeWriter = await urlWriter.Write().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
 
             var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var urlDomainWriter = await urlSchemeWriter.Write(urlScheme).ConfigureAwait(false);
+            IUrlDomainWriter urlDomainWriter;
+            try
+            {
+                urlDomainWriter = await urlSchemeWriter.Write(urlScheme).ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
 
             var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
