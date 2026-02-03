@@ -241,7 +241,6 @@
 
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
 
-            //// TODO you are here
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
@@ -251,14 +250,27 @@
         /// <param name="bodyReader"></param>
         /// <param name="bodyWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
             var bodyToken = await bodyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await bodyToken
                 .Apply(
-                    async end => await bodyWriter.Send().ConfigureAwait(false))
+                    async end =>
+                    {
+                        OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader responseReader;
+                        try
+                        {
+                            responseReader = await bodyWriter.Send().ConfigureAwait(false);
+                        }
+                        catch (IOException ioException)
+                        {
+                            throw new WriteException("TODO", ioException);
+                        }
+
+                        return responseReader;
+                    })
                 .ConfigureAwait(false);
         }
 
