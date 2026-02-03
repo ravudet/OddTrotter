@@ -30,7 +30,7 @@
         /// <param name="request"></param>
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
-        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred trasmitting data between the client and the service</exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
