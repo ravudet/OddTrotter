@@ -30,7 +30,7 @@
         /// <param name="request"></param>
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
-        /// <exception cref="HttpRequestException">Thrown if an error occurred trasmitting data between the client and the service</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred trasmitting data between the client and the service</exception> //// TODO do you want to split this into 2 exceptions, one for read and one for write?
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
