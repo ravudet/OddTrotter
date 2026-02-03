@@ -335,21 +335,38 @@
         /// <param name="urlQueryReader"></param>
         /// <param name="urlQueryWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
             IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
+            //// TODO you are here
             var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlQueryToken.Apply(
                 async kvp =>
                 {
-                    var urlQueryKvpWriter = await urlQueryWriter.Write().ConfigureAwait(false);
+                    IUrlQueryKvpWriter urlQueryKvpWriter;
+                    try
+                    {
+                        urlQueryKvpWriter = await urlQueryWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     var urlQueryNameReader = await kvp.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
                     var (urlQueryNameToken, urlQueryName) = await urlQueryNameReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-                    var urlQueryNameWriter = await urlQueryKvpWriter.Write(urlQueryName).ConfigureAwait(false);
+                    IUrlQueryNameWriter urlQueryNameWriter;
+                    try
+                    {
+                        urlQueryNameWriter = await urlQueryKvpWriter.Write(urlQueryName).ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     return await urlQueryNameToken.Apply(
                         async queryValue =>
