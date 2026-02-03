@@ -175,7 +175,8 @@
         /// <param name="requestReader"></param>
         /// <param name="requestWriter"></param>
         /// <returns></returns>
-        /// 
+        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
             var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
@@ -193,9 +194,9 @@
             var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
 
-            //// TODO you are here
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
+            //// TODO you are here
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
@@ -262,10 +263,18 @@
                     return await ProtocolContext.Transfer(headers.Reader, await (await headerValueWriter.Write().ConfigureAwait(false)).Write().ConfigureAwait(false)).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="urlQueryReader"></param>
+        /// <param name="urlQueryWriter"></param>
+        /// <returns></returns>
         private static async Task<(IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
             IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
+            //// TODO you are here
             var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false);
             return await urlQueryToken.Apply(
                 async kvp =>
