@@ -235,9 +235,9 @@
                 throw new WriteException("TODO", ioException);
             }
 
-            //// TODO you are here
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
+            //// TODO you are here
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
@@ -384,7 +384,6 @@
             IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
-            //// TODO you are here
             var urlPathToken = await urlPathReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlPathToken.Apply(
                 async pathSegment =>
@@ -414,7 +413,17 @@
                 },
                 async query =>
                 {
-                    return (query.Reader, await urlPathWriter.Write().ConfigureAwait(false));
+                    IUrlQueryWriter urlQueryWriter;
+                    try
+                    {
+                        urlQueryWriter = await urlPathWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    return (query.Reader, urlQueryWriter);
                 }).ConfigureAwait(false);
         }
     }
