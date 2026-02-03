@@ -239,9 +239,9 @@
 
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
-            //// TODO you are here
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
 
+            //// TODO you are here
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
         }
 
@@ -314,17 +314,36 @@
                     return await headerKeyToken.Apply(
                         async headerValue =>
                         {
-                            //// TODO you are here
                             return await ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter).ConfigureAwait(false);
                         },
                         async headers =>
                         {
-                            return await ProtocolContext.Transfer(headers.Reader, await headerKeyWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
+                            IHeadersWriter headersWriter;
+                            try
+                            {
+                                headersWriter = await headerKeyWriter.Write().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new WriteException("TODO", ioException);
+                            }
+
+                            return await ProtocolContext.Transfer(headers.Reader, headersWriter).ConfigureAwait(false);
                         }).ConfigureAwait(false);
                 },
                 async body =>
                 {
-                    return (body.Reader, await headersWriter.Write().ConfigureAwait(false));
+                    IBodyWriter bodyWriter;
+                    try
+                    {
+                        bodyWriter = await headersWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    return (body.Reader, bodyWriter);
                 }).ConfigureAwait(false);
         }
 
