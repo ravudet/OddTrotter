@@ -225,7 +225,15 @@
             }
 
             var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
+            IUrlPathWriter urlPathWriter;
+            try
+            {
+                urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
 
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
