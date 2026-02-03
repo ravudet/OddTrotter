@@ -185,8 +185,6 @@
             return await headersToken.Apply(
                 async header =>
                 {
-                    //// TODO you are here
-
                     Response.IHeaderKvpReader kvpHeaderReader;
                     try
                     {
@@ -230,8 +228,13 @@
                         throw new Protocol.ProtocolException("TODO", readException);
                     }
 
+                    //// TODO you are here
                     return await headerKeyToken.Apply(
-                        async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
+                        async headerValue =>
+                        {
+                            //// TODO you are here
+                            return await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false);
+                        },
                         async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
                     .ConfigureAwait(false);
                 },
