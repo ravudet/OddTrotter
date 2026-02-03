@@ -226,7 +226,6 @@
             IHeadersWriter headersWriter)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            //// TODO you are here
             return await headersToken.Apply(
                 async header =>
                 {
@@ -239,11 +238,9 @@
                     var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
                     var headerKeyWriter = await headerKvpWriter.Write(headerKey).ConfigureAwait(false);
 
-                    //// TODO you are here
                     return await headerKeyToken.Apply(
                         async headerValue =>
                         {
-                            //// TODO you are here
                             return await ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter).ConfigureAwait(false);
                         },
                         async headers =>
@@ -271,7 +268,7 @@
         {
             var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             var headerValueWriter = await headerKeyWriter.Write(headerValue).ConfigureAwait(false);
-
+            `
             return await headerValueToken.Apply(
                 async headerValueReader =>
                 {
