@@ -235,6 +235,7 @@
                 throw new WriteException("TODO", ioException);
             }
 
+            //// TODO you are here
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
@@ -377,19 +378,37 @@
         /// <param name="urlPathReader"></param>
         /// <param name="urlPathWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
             IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
+            //// TODO you are here
             var urlPathToken = await urlPathReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlPathToken.Apply(
                 async pathSegment =>
                 {
                     var (newUrlPathReader, urlPathSegment) = await pathSegment.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-                    var urlPathSegmentWriter = await urlPathWriter.WriteSegment().ConfigureAwait(false);
-                    var newUrlPathWriter = await urlPathSegmentWriter.Write(urlPathSegment).ConfigureAwait(false);
+                    IUrlPathSegmentWriter urlPathSegmentWriter;
+                    try
+                    {
+                        urlPathSegmentWriter = await urlPathWriter.WriteSegment().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    IUrlPathWriter newUrlPathWriter;
+                    try
+                    {
+                        newUrlPathWriter = await urlPathSegmentWriter.Write(urlPathSegment).ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     return await ProtocolContext.Transfer(newUrlPathReader, newUrlPathWriter).ConfigureAwait(false);
                 },
