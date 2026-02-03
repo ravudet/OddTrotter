@@ -156,12 +156,36 @@
                 }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headersReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         private static async Task<Response.IBodyReader> Read(Response.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var headersToken = await headersReader.Read().ConfigureAwait(false);
+            Response.HeadersToken headersToken;
+            try
+            {
+                headersToken = await headersReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
+
+            //// TODO you are here
             return await headersToken.Apply(
                 async header =>
                 {
+                    //// TODO you are here
                     var kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
                     var headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false);
                     var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false);
