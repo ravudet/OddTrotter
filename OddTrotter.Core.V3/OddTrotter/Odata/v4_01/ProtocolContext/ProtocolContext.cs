@@ -55,6 +55,7 @@
                 var odataResponseBuilder = new OdataResponseBuilder();
 
                 //// TODO you are here
+                //// TODO adapt the `trasnfer` ioexceptions to `writeexception`s, then pick up with documenting here
                 var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
