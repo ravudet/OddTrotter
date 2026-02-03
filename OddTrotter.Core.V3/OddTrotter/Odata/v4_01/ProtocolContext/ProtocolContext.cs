@@ -268,7 +268,7 @@
         /// <param name="headersReader"></param>
         /// <param name="headersWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
             IHeadersReader headersReader,
@@ -278,18 +278,43 @@
             return await headersToken.Apply(
                 async header =>
                 {
-                    var headerWriter = await headersWriter.WriteHeader().ConfigureAwait(false);
+                    IHeaderWriter headerWriter;
+                    try
+                    {
+                        headerWriter = await headersWriter.WriteHeader().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     var headerKvpReader = await header.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-                    var headerKvpWriter = await headerWriter.Write().ConfigureAwait(false);
+                    IHeaderKvpWriter headerKvpWriter;
+                    try
+                    {
+                        headerKvpWriter = await headerWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     var headerKeyReader = await headerKvpReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
                     var (headerKeyToken, headerKey) = await headerKeyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-                    var headerKeyWriter = await headerKvpWriter.Write(headerKey).ConfigureAwait(false);
+                    IHeaderKeyWriter headerKeyWriter;
+                    try
+                    {
+                        headerKeyWriter = await headerKvpWriter.Write(headerKey).ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
 
                     return await headerKeyToken.Apply(
                         async headerValue =>
                         {
+                            //// TODO you are here
                             return await ProtocolContext.Transfer(headerValue.Reader, headerKeyWriter).ConfigureAwait(false);
                         },
                         async headers =>
@@ -309,23 +334,61 @@
         /// <param name="headerValueReader"></param>
         /// <param name="headerKeyWriter"></param>
         /// <returns></returns>
-        /// <exception cref="IOException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
             IHeaderValueReader headerValueReader,
             IHeaderKeyWriter headerKeyWriter)
         {
             var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
-            var headerValueWriter = await headerKeyWriter.Write(headerValue).ConfigureAwait(false);
+            IHeaderValueWriter headerValueWriter;
+            try
+            {
+                headerValueWriter = await headerKeyWriter.Write(headerValue).ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new WriteException("TODO", ioException);
+            }
             
             return await headerValueToken.Apply(
                 async headerValueReader =>
                 {
-                    return await ProtocolContext.Transfer(headerValueReader.Reader, await headerValueWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
+                    IHeaderKeyWriter headerKeyWriter;
+                    try
+                    {
+                        headerKeyWriter = await headerValueWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    return await ProtocolContext.Transfer(headerValueReader.Reader, headerKeyWriter).ConfigureAwait(false);
                 },
                 async headers =>
                 {
-                    return await ProtocolContext.Transfer(headers.Reader, await (await headerValueWriter.Write().ConfigureAwait(false)).Write().ConfigureAwait(false)).ConfigureAwait(false);
+                    IHeaderKeyWriter headerKeyWriter;
+                    try
+                    {
+                        headerKeyWriter = await headerValueWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    IHeadersWriter headersWriter;
+                    try
+                    {
+                        headersWriter = await headerKeyWriter.Write().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    return await ProtocolContext.Transfer(headers.Reader, headersWriter).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
 
