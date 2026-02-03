@@ -10,6 +10,10 @@
     using OddTrotter.Odata.v4_01.Reader;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
+    using OddTrotter.Odata.v4_01.Reader.ResponseReader;
+
+    using Protocol = OddTrotter.Odata.v4_01.ProtocolContext;
+    using Reader = OddTrotter.Odata.v4_01.Reader;
 
     internal sealed class ProtocolContext : IProtocolContext
     {
@@ -29,8 +33,10 @@
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="Protocol.WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred trasmitting data between the client and the service</exception> //// TODO do you want to split this into 2 exceptions, one for read and one for write?
+        /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
 
@@ -55,7 +61,19 @@
                 var odataResponseBuilder = new OdataResponseBuilder();
 
                 //// TODO you are here
-                var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
+                IStatusCodeReader statusCodeReader;
+                try
+                {
+                    statusCodeReader = await responseReader.Read().ConfigureAwait(false);
+                }
+                catch (IOException ioException)
+                {
+                    throw new Protocol.ReadException("TODO", ioException);
+                }
+                catch (Reader.ReadException readException)
+                {
+                    throw new Protocol.ProtocolException("TODO", readException);
+                }
 
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
