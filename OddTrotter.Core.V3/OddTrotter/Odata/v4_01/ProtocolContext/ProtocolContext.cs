@@ -237,9 +237,9 @@
 
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
-            //// TODO you are here
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
 
+            //// TODO you are here
             var (bodyReader, bodyWriter) = await ProtocolContext.Transfer(headersReader, headersWriter).ConfigureAwait(false);
 
             return await ProtocolContext.Transfer(bodyReader, bodyWriter).ConfigureAwait(false);
@@ -341,7 +341,6 @@
             IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
-            //// TODO you are here
             var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await urlQueryToken.Apply(
                 async kvp =>
@@ -373,19 +372,56 @@
                         {
                             var (newUrlQueryReader, urlQueryValue) = await queryValue.Reader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
 
-                            var urlQueryValueWriter = await urlQueryNameWriter.WriteValue().ConfigureAwait(false);
-                            var newUrlQueryWriter = await urlQueryValueWriter.Write(urlQueryValue).ConfigureAwait(false);
+                            IUrlQueryValueWriter urlQueryValueWriter;
+                            try
+                            {
+                                urlQueryValueWriter = await urlQueryNameWriter.WriteValue().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new WriteException("TODO", ioException);
+                            }
+
+                            IUrlQueryWriter newUrlQueryWriter;
+                            try
+                            {
+                                newUrlQueryWriter = await urlQueryValueWriter.Write(urlQueryValue).ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new WriteException("TODO", ioException);
+                            }
 
                             return await ProtocolContext.Transfer(newUrlQueryReader, newUrlQueryWriter).ConfigureAwait(false);
                         },
                         async query =>
                         {
-                            return await ProtocolContext.Transfer(query.Reader, await urlQueryNameWriter.Write().ConfigureAwait(false)).ConfigureAwait(false);
+                            IUrlQueryWriter urlQueryWriter;
+                            try
+                            {
+                                urlQueryWriter = await urlQueryNameWriter.Write().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new WriteException("TODO", ioException);
+                            }
+
+                            return await ProtocolContext.Transfer(query.Reader, urlQueryWriter).ConfigureAwait(false);
                         }).ConfigureAwait(false);
                 },
                 async headers =>
                 {
-                    return (headers.Reader, await urlQueryWriter.WriteHeaders().ConfigureAwait(false));
+                    IHeadersWriter headersWriter;
+                    try
+                    {
+                        headersWriter = await urlQueryWriter.WriteHeaders().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new WriteException("TODO", ioException);
+                    }
+
+                    return (headers.Reader, headersWriter);
                 }).ConfigureAwait(false);
         }
 
