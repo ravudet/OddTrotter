@@ -47,7 +47,7 @@
                     httpRequestMessage.Headers.Add(header.Name, header.Value);
                 }
 
-                var requestReader = this.requestReaderFactory(httpRequestMessage); //// TODO i think we know that there won't be `ioexception`s coming from the reader because we are controlling the underlying payload (the `httprequestmessage` variable in this method) and so we know that it doesn't have any IO issues
+                var requestReader = this.requestReaderFactory(httpRequestMessage);
                 var requestWriter = this.requestWriterFactory();
 
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
@@ -55,7 +55,6 @@
                 var odataResponseBuilder = new OdataResponseBuilder();
 
                 //// TODO you are here
-                //// TODO adapt the `trasnfer` ioexceptions to `writeexception`s, then pick up with documenting here
                 var statusCodeReader = await responseReader.Read().ConfigureAwait(false);
 
                 var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
