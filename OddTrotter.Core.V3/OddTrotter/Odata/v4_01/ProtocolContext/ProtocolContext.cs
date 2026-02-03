@@ -201,24 +201,32 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestReader"></param>
+        /// <param name="requestWriter"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
         private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
         {
-            //// TODO you are here
-            var verbReader = await requestReader.Read().ConfigureAwait(false);
+            var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             var verbWriter = await requestWriter.Write().ConfigureAwait(false);
 
-            var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false);
+            var (urlReader, httpVerb) = await verbReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             var urlWriter = await verbWriter.Write(httpVerb).ConfigureAwait(false);
 
-            var urlSchemeReader = await urlReader.Read().ConfigureAwait(false);
+            var urlSchemeReader = await urlReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             var urlSchemeWriter = await urlWriter.Write().ConfigureAwait(false);
 
-            var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false);
+            var (urlDomainReader, urlScheme) = await urlSchemeReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             var urlDomainWriter = await urlSchemeWriter.Write(urlScheme).ConfigureAwait(false);
 
-            var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false);
+            var (urlPathReader, urlDomain) = await urlDomainReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw `readexception` because what is being read is coming from a `odatarequest` which is already supposed to be validated
             var urlPathWriter = await urlDomainWriter.Write(urlDomain).ConfigureAwait(false);
 
+            //// TODO you are here
             var (urlQueryReader, urlQueryWriter) = await ProtocolContext.Transfer(urlPathReader, urlPathWriter).ConfigureAwait(false);
 
             var (headersReader, headersWriter) = await ProtocolContext.Transfer(urlQueryReader, urlQueryWriter).ConfigureAwait(false);
@@ -326,6 +334,7 @@
             IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
+            //// TODO you are here
             var urlPathToken = await urlPathReader.Read().ConfigureAwait(false);
             return await urlPathToken.Apply(
                 async pathSegment =>
