@@ -8,20 +8,20 @@
 
     using OddTrotter.Calendar;
     using OddTrotter.Odata.v4_01.Reader;
-    using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
-    using OddTrotter.Odata.v4_01.Reader.ResponseReader;
 
     using Protocol = OddTrotter.Odata.v4_01.ProtocolContext;
     using Reader = OddTrotter.Odata.v4_01.Reader;
+    using Request = OddTrotter.Odata.v4_01.Reader.RequestReader;
+    using Response = OddTrotter.Odata.v4_01.Reader.ResponseReader;
 
     internal sealed class ProtocolContext : IProtocolContext
     {
-        private readonly Func<HttpRequestMessage, IRequestReader> requestReaderFactory;
+        private readonly Func<HttpRequestMessage, Request.IRequestReader> requestReaderFactory;
         private readonly Func<IRequestWriter> requestWriterFactory;
 
         internal ProtocolContext(
-            Func<HttpRequestMessage, IRequestReader> requestReaderFactory,
+            Func<HttpRequestMessage, Request.IRequestReader> requestReaderFactory,
             Func<IRequestWriter> requestWriterFactory)
         {
             this.requestReaderFactory = requestReaderFactory;
@@ -60,8 +60,7 @@
 
                 var odataResponseBuilder = new OdataResponseBuilder();
 
-                //// TODO you are here
-                IStatusCodeReader statusCodeReader;
+                Response.IStatusCodeReader statusCodeReader;
                 try
                 {
                     statusCodeReader = await responseReader.Read().ConfigureAwait(false);
@@ -75,7 +74,10 @@
                     throw new Protocol.ProtocolException("TODO", readException);
                 }
 
-                var (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
+                //// TODO you are here
+                Response.IHeadersReader headersReader;
+                HttpStatusCode httpStatusCode;
+                (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
@@ -86,7 +88,7 @@
             }
         }
 
-        private static async Task<OdataResponseBuilder> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OdataResponseBuilder> Read(Response.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
             var bodyToken = await bodyReader.Read().ConfigureAwait(false);
 
@@ -99,7 +101,7 @@
                 async end => await Task.FromResult(odataResponseBuilder).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<Response.IBodyReader> Read(Response.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
         {
             var propertyNameReader = await propertyReader.Read().ConfigureAwait(false);
 
@@ -142,7 +144,7 @@
                 }).ConfigureAwait(false);
         }
 
-        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<Response.IBodyReader> Read(Response.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false);
             return await headersToken.Apply(
@@ -160,7 +162,7 @@
                 .ConfigureAwait(false);
         }
 
-        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IBodyReader> Read(OddTrotter.Odata.v4_01.Reader.ResponseReader.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<Response.IBodyReader> Read(Response.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
             var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
@@ -195,7 +197,7 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IRequestReader requestReader, IRequestWriter requestWriter)
+        private static async Task<Response.IResponseReader> Transfer(Request.IRequestReader requestReader, IRequestWriter requestWriter)
         {
             var verbReader = await requestReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             IVerbWriter verbWriter;
@@ -269,14 +271,14 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Transfer(IBodyReader bodyReader, IBodyWriter bodyWriter)
+        private static async Task<Response.IResponseReader> Transfer(Request.IBodyReader bodyReader, IBodyWriter bodyWriter)
         {
             var bodyToken = await bodyReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
             return await bodyToken
                 .Apply(
                     async end =>
                     {
-                        OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader responseReader;
+                        Response.IResponseReader responseReader;
                         try
                         {
                             responseReader = await bodyWriter.Send().ConfigureAwait(false);
@@ -299,8 +301,8 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
-            IHeadersReader headersReader,
+        private static async Task<(Request.IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
+            Request.IHeadersReader headersReader,
             IHeadersWriter headersWriter)
         {
             var headersToken = await headersReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
@@ -384,8 +386,8 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<(IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
-            IHeaderValueReader headerValueReader,
+        private static async Task<(Request.IBodyReader BodyReader, IBodyWriter BodyWriter)> Transfer(
+            Request.IHeaderValueReader headerValueReader,
             IHeaderKeyWriter headerKeyWriter)
         {
             var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
@@ -448,8 +450,8 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<(IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
-            IUrlQueryReader urlQueryReader,
+        private static async Task<(Request.IHeadersReader HeadersReader, IHeadersWriter HeadersWriter)> Transfer(
+            Request.IUrlQueryReader urlQueryReader,
             IUrlQueryWriter urlQueryWriter)
         {
             var urlQueryToken = await urlQueryReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
@@ -544,8 +546,8 @@
         /// <returns></returns>
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
-        private static async Task<(IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
-            IUrlPathReader urlPathReader, 
+        private static async Task<(Request.IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
+            Request.IUrlPathReader urlPathReader, 
             IUrlPathWriter urlPathWriter)
         {
             var urlPathToken = await urlPathReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
