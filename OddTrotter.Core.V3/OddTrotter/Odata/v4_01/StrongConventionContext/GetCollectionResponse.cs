@@ -7,11 +7,23 @@
 
     internal sealed class GetCollectionResponse<T>
     {
-        private GetCollectionResponse(IEnumerable<IEither<T, Exception>> elements)
+        private GetCollectionResponse(IEnumerable<CollectionElement<T>> elements)
         {
             this.Elements = elements;
         }
 
-        internal IEnumerable<IEither<T, Exception>> Elements { get; }
+        internal IEnumerable<CollectionElement<T>> Elements { get; }
+    }
+
+    internal sealed class CollectionElement<T>
+    {
+        public CollectionElement(IEither<T, Exception> element)
+        {
+            Element = element;
+        }
+
+        //// TODO annotations and stuff go here
+
+        internal IEither<T, Exception> Element { get; }
     }
 }

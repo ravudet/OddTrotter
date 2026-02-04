@@ -6,7 +6,7 @@
 
     internal sealed class OdataRequest
     {
-        private OdataRequest(string httpVerb, string url, IEnumerable<HttpHeader> headers)
+        internal OdataRequest(string httpVerb, string url, IEnumerable<HttpHeader> headers)
         {
             HttpVerb = httpVerb;
             Url = url;
