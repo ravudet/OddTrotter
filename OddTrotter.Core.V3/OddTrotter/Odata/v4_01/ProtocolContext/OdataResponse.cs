@@ -35,9 +35,12 @@
 
         internal sealed class OdataContext : ControlInformation
         {
-            public OdataContext()
+            public OdataContext(string url)
             {
+                Url = url;
             }
+
+            public string Url { get; }
         }
     }
 
