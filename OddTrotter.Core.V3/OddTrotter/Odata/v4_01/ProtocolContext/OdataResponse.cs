@@ -33,20 +33,23 @@
         {
         }
 
-        internal sealed class OdataContext : ControlInformation
+        internal sealed class Unknown : ControlInformation
         {
-            public OdataContext(string url)
+            public Unknown(string name, string value)
             {
-                Url = url;
+                Name = name;
+                Value = value;
+                // you need `unknown` because odata asks that you skip control information that you don't understand, but we still want that information to be available to the caller
             }
 
-            public string Url { get; }
+            public string Name { get; }
+            public string Value { get; }
         }
     }
 
     internal sealed class OdataProperty
     {
-        public OdataProperty(string name, string value)
+        public OdataProperty(string name, OdataPropertyValue value)
         {
             //// TODO this needs to either validate `name` and `value`, or it needs to make them strongly typed
 
@@ -55,6 +58,31 @@
         }
 
         public string Name { get; }
-        public string Value { get; }
+        public OdataPropertyValue Value { get; }
+    }
+
+    internal abstract class OdataPropertyValue
+    {
+        private OdataPropertyValue()
+        {
+        }
+
+        public sealed class String : OdataPropertyValue
+        {
+            public String(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
+        public sealed class Object : OdataPropertyValue
+        {
+        }
+
+        public sealed class Collection : OdataPropertyValue
+        {
+        }
     }
 }

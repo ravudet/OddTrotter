@@ -204,7 +204,7 @@
                     return await literalToken.Apply(
                         async @true =>
                         {
-                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "true"));
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, new OdataPropertyValue.String("true")));
                             Response.IBodyReader bodyReader;
                             try
                             {
@@ -223,7 +223,7 @@
                         },
                         async @false =>
                         {
-                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "false"));
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, new OdataPropertyValue.String("false")));
                             Response.IBodyReader bodyReader;
                             try
                             {
@@ -257,13 +257,13 @@
                                 throw new Protocol.ProtocolException("TODO", readException);
                             }
 
-                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, number.Value));
+                            odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, new OdataPropertyValue.String(number.Value)));
                             return bodyReader;
                         }).ConfigureAwait(false);
                 },
                 async @null =>
                 {
-                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
+                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, new OdataPropertyValue.String("null")));
                     Response.IBodyReader bodyReader;
                     try
                     {
@@ -297,7 +297,7 @@
                         throw new Protocol.ProtocolException("TODO", readException);
                     }
 
-                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, stringToken.Value));
+                    odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, new OdataPropertyValue.String(stringToken.Value)));
                     return bodyReader;
                 }).ConfigureAwait(false);
         }
