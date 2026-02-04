@@ -30,6 +30,7 @@
 
             if (!odataResponse.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, "value")).TrySingle(out var valueProperty))
             {
+                //// TODO should there be two error messages, one for "value wasn't present" and another for "other properties are present"?
                 throw new Exception("TODO");
             }
 
@@ -38,7 +39,11 @@
                 throw new Exception("TODO");
             }
 
-            return new GetCollectionResponse();
+            return new GetCollectionResponse(
+                odataResponse.HttpStatusCode,
+                odataResponse.Headers,
+                collection.Elements.Select(
+                    element => new CollectionElement(element)));
         }
     }
 
