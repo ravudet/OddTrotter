@@ -83,6 +83,19 @@
 
         public sealed class Collection : OdataPropertyValue
         {
+            public Collection(IReadOnlyList<OdataObject> elements)
+            {
+                Elements = elements;
+            }
+
+            public IReadOnlyList<OdataObject> Elements { get; }
+        }
+    }
+
+    internal sealed class OdataObject
+    {
+        private OdataObject()
+        {
         }
     }
 }

@@ -21,5 +21,11 @@
 
     internal sealed class CollectionElement
     {
+        internal CollectionElement(OdataObject odataObject)
+        {
+            OdataObject = odataObject;
+        }
+
+        public OdataObject OdataObject { get; }
     }
 }

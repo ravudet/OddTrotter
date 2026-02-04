@@ -28,11 +28,16 @@
                 request.Headers);
             var odataResponse = await this.protocolContext.Send(odataRequest).ConfigureAwait(false);
 
-            if (!odataResponse.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, "value")).TrySingle(out var value))
+            if (!odataResponse.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, "value")).TrySingle(out var valueProperty))
             {
                 throw new Exception("TODO");
             }
-            
+
+            if (!(valueProperty.Value is OdataPropertyValue.Collection collection))
+            {
+                throw new Exception("TODO");
+            }
+
             return new GetCollectionResponse();
         }
     }
