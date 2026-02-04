@@ -39,6 +39,7 @@
                 throw new Exception("TODO");
             }
 
+            //// TODO this *maybe* should still have a status code property, but errors are supposed to be in the `odataerror` format
             return new GetCollectionResponse(
                 odataResponse.HttpStatusCode,
                 odataResponse.Headers,
