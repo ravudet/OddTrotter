@@ -40,13 +40,6 @@
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
-
-
-
-            //// TODO then go through this file to make sure you've got the exceptiosn handled, and document the `iprotocolcontext` interface to surface reasonable exceptions
-
-
-
             using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpVerb), request.Url))
             {
                 foreach (var header in request.Headers)
