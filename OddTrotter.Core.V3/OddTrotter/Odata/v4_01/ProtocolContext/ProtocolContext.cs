@@ -8,6 +8,7 @@
 
     using OddTrotter.Calendar;
     using OddTrotter.Odata.v4_01.Reader;
+    using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
 
     using Protocol = OddTrotter.Odata.v4_01.ProtocolContext;
@@ -93,53 +94,176 @@
 
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
-                //// TODO you are here
                 odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
 
                 return odataResponseBuilder.Build();
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bodyReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         private static async Task<OdataResponseBuilder> Read(Response.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            //// TODO you are here
-            var bodyToken = await bodyReader.Read().ConfigureAwait(false);
+            Response.BodyToken bodyToken;
+            try
+            {
+                bodyToken = await bodyReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
 
+            //// TODO you are here
             return await bodyToken.Apply(
                 async property =>
                 {
+                    //// TODO you are here
                     var bodyReader = await ProtocolContext.Read(property.Reader, odataResponseBuilder).ConfigureAwait(false);
                     return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
                 },
                 async end => await Task.FromResult(odataResponseBuilder).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propertyReader"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         private static async Task<Response.IBodyReader> Read(Response.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
         {
-            var propertyNameReader = await propertyReader.Read().ConfigureAwait(false);
+            Response.IPropertyNameReader propertyNameReader;
+            try
+            {
+                propertyNameReader = await propertyReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
 
-            var (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false);
+            Response.IPropertyValueReader propertyValueReader;
+            PropertyName propertyName;
+            try
+            {
+                (propertyValueReader, propertyName) = await propertyNameReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
 
-            var propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false);
+            Response.PropertyValueToken propertyValueToken;
+            try
+            {
+                propertyValueToken = await propertyValueReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
+
             return await propertyValueToken.Apply(
                 async literal =>
                 {
-                    var literalToken = await literal.Reader.Read().ConfigureAwait(false);
+                    Response.LiteralToken literalToken;
+                    try
+                    {
+                        literalToken = await literal.Reader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
                     //// TODO what layer do you find out if there are duplicate property names? do you need a new layer for this? the argument for a new layer is this: the existing `protocolcontext` simply takes the readers and makes them into CLR types that mimic a parse tree; is it really that layer's responsibility to ensure that things like duplicate property names are validated? well, the answer to that is "yes" because that's what we've defined as the job of "protocol", but is there something between "protocol" and "reader" that *doesn't* care? //// TODO call it "parsecontext"?
                     return await literalToken.Apply(
                         async @true =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "true"));
-                            return (await @true.Reader.Read().ConfigureAwait(false)).BodyReader;
+                            Response.IBodyReader bodyReader;
+                            try
+                            {
+                                (bodyReader, _) = await @true.Reader.Read().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new Protocol.ReadException("TODO", ioException);
+                            }
+                            catch (Reader.ReadException readException)
+                            {
+                                throw new Protocol.ProtocolException("TODO", readException);
+                            }
+
+                            return bodyReader;
                         },
                         async @false =>
                         {
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "false"));
-                            return (await @false.Reader.Read().ConfigureAwait(false)).BodyReader;
+                            Response.IBodyReader bodyReader;
+                            try
+                            {
+                                (bodyReader, _) = await @false.Reader.Read().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new Protocol.ReadException("TODO", ioException);
+                            }
+                            catch (Reader.ReadException readException)
+                            {
+                                throw new Protocol.ProtocolException("TODO", readException);
+                            }
+
+                            return bodyReader;
                         },
                         async numberReader =>
                         {
-                            var (bodyReader, number) = await numberReader.Reader.Read().ConfigureAwait(false);
+                            Response.IBodyReader bodyReader;
+                            Number number;
+                            try
+                            {
+                                (bodyReader, number) = await numberReader.Reader.Read().ConfigureAwait(false);
+                            }
+                            catch (IOException ioException)
+                            {
+                                throw new Protocol.ReadException("TODO", ioException);
+                            }
+                            catch (Reader.ReadException readException)
+                            {
+                                throw new Protocol.ProtocolException("TODO", readException);
+                            }
+
                             odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, number.Value));
                             return bodyReader;
                         }).ConfigureAwait(false);
@@ -147,11 +271,39 @@
                 async @null =>
                 {
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, "null"));
-                    return (await @null.Reader.Read().ConfigureAwait(false)).BodyReader;
+                    Response.IBodyReader bodyReader;
+                    try
+                    {
+                        (bodyReader, _) = await @null.Reader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
+                    return bodyReader;
                 },
                 async @string =>
                 {
-                    var (bodyReader, stringToken) = await @string.Reader.Read().ConfigureAwait(false);
+                    Response.IBodyReader bodyReader;
+                    StringToken stringToken;
+                    try
+                    {
+                        (bodyReader, stringToken) = await @string.Reader.Read().ConfigureAwait(false);
+                    }
+                    catch (IOException ioException)
+                    {
+                        throw new Protocol.ReadException("TODO", ioException);
+                    }
+                    catch (Reader.ReadException readException)
+                    {
+                        throw new Protocol.ProtocolException("TODO", readException);
+                    }
+
                     odataResponseBuilder.Properties.Add(new OdataProperty(propertyName.Value, stringToken.Value));
                     return bodyReader;
                 }).ConfigureAwait(false);
