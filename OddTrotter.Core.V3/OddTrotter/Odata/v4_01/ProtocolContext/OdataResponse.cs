@@ -6,16 +6,39 @@
 
     internal sealed class OdataResponse
     {
-        public OdataResponse(string httpStatusCode, IEnumerable<HttpHeader> headers, IEnumerable<OdataProperty> properties)
+        public OdataResponse(
+            string httpStatusCode,
+            IEnumerable<HttpHeader> headers, 
+            IEnumerable<OdataProperty> properties, 
+            IEnumerable<ControlInformation> controlInformation)
         {
             HttpStatusCode = httpStatusCode;
             Headers = headers;
             Properties = properties;
+            this.ControlInformation = controlInformation;
         }
 
         public string HttpStatusCode { get; } //// TODO this should be strongly typed
+
         public IEnumerable<HttpHeader> Headers { get; } //// TODO make sure `httpheader` properly validates; another option would be to make it very strongly typed //// TODO actually, should there be "odataheader"s? this wouldn't just be headers specific to odata (like odataversion), but also headers that odata takes a strong opinion on (like accept headers)
+
         public IEnumerable<OdataProperty> Properties { get; }
+
+        public IEnumerable<ControlInformation> ControlInformation { get; }
+    }
+
+    internal abstract class ControlInformation
+    {
+        private ControlInformation()
+        {
+        }
+
+        internal sealed class OdataContext : ControlInformation
+        {
+            public OdataContext()
+            {
+            }
+        }
     }
 
     internal sealed class OdataProperty
