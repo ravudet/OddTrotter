@@ -91,9 +91,9 @@
 
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
-                //// TODO you are here
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
+                //// TODO you are here
                 odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
 
                 return odataResponseBuilder.Build();
@@ -102,6 +102,7 @@
 
         private static async Task<OdataResponseBuilder> Read(Response.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
         {
+            //// TODO you are here
             var bodyToken = await bodyReader.Read().ConfigureAwait(false);
 
             return await bodyToken.Apply(
