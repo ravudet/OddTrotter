@@ -181,7 +181,6 @@
                 throw new Protocol.ProtocolException("TODO", readException);
             }
 
-            //// TODO you are here
             return await headersToken.Apply(
                 async header =>
                 {
@@ -228,13 +227,8 @@
                         throw new Protocol.ProtocolException("TODO", readException);
                     }
 
-                    //// TODO you are here
                     return await headerKeyToken.Apply(
-                        async headerValue =>
-                        {
-                            //// TODO you are here
-                            return await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false);
-                        },
+                        async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
                         async headers => await ProtocolContext.Read(headers.Reader, odataResponseBuilder).ConfigureAwait(false))
                     .ConfigureAwait(false);
                 },
@@ -242,9 +236,33 @@
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headerValueReader"></param>
+        /// <param name="headerKey"></param>
+        /// <param name="odataResponseBuilder"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
+        /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         private static async Task<Response.IBodyReader> Read(Response.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
-            var (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
+            Response.HeaderValueToken headerValueToken;
+            HeaderValue headerValue;
+            try
+            {
+                (headerValueToken, headerValue) = await headerValueReader.Read().ConfigureAwait(false);
+            }
+            catch (IOException ioException)
+            {
+                throw new Protocol.ReadException("TODO", ioException);
+            }
+            catch (Reader.ReadException readException)
+            {
+                throw new Protocol.ProtocolException("TODO", readException);
+            }
+
             odataResponseBuilder.Headers.Add(new HttpHeader(headerKey.Value, headerValue.Value));
             return await headerValueToken.Apply(
                 async headerValue => await ProtocolContext.Read(headerValue.Reader, headerKey, odataResponseBuilder).ConfigureAwait(false),
