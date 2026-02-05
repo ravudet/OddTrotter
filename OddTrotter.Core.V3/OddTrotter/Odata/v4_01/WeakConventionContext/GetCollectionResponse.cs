@@ -1,13 +1,53 @@
 ﻿namespace OddTrotter.Odata.v4_01.WeakConventionContext
 {
+    using System;
     using System.Collections.Generic;
 
     using OddTrotter.Calendar;
     using OddTrotter.Odata.v4_01.ProtocolContext;
 
-    internal sealed class GetCollectionResponse
+    internal abstract class GetCollectionResponse
     {
-        internal GetCollectionResponse(string httpStatusCode, IEnumerable<HttpHeader> headers, IEnumerable<CollectionElement> elements)
+        private GetCollectionResponse()
+        {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<Success, TResult> successMap,
+            Func<Failure, TResult> failureMap)
+        {
+            if (this is Success success)
+            {
+                return successMap(success);
+            }
+            else if (this is Failure failure)
+            {
+                return failureMap(failure);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
+        internal sealed class Success : GetCollectionResponse
+        {
+            public Success(OddTrotter.Odata.v4_01.WeakConventionContext.Success value)
+            {
+                Value = value;
+            }
+
+            public v4_01.WeakConventionContext.Success Value { get; }
+        }
+
+        internal sealed class Failure : GetCollectionResponse
+        {
+        }
+    }
+
+    internal sealed class Success
+    {
+        internal Success(string httpStatusCode, IEnumerable<HttpHeader> headers, IEnumerable<CollectionElement> elements)
         {
             HttpStatusCode = httpStatusCode;
             Headers = headers;

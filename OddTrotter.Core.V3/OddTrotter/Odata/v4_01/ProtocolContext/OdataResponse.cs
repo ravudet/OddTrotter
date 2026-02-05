@@ -1,5 +1,6 @@
 ﻿namespace OddTrotter.Odata.v4_01.ProtocolContext
 {
+    using System;
     using System.Collections.Generic;
 
     using OddTrotter.Calendar;
@@ -8,6 +9,24 @@
     {
         private OdataResponse()
         {
+        }
+
+        internal TResult Apply<TResult>(
+            Func<Success, TResult> successMap,
+            Func<Failure, TResult> failureMap)
+        {
+            if (this is Success success)
+            {
+                return successMap(success);
+            }
+            else if (this is Failure failure)
+            {
+                return failureMap(failure);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
         }
 
         internal sealed class Success : OdataResponse

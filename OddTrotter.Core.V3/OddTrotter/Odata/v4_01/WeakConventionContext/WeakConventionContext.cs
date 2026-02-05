@@ -28,23 +28,29 @@
                 request.Headers);
             var odataResponse = await this.protocolContext.Send(odataRequest).ConfigureAwait(false);
 
-            if (!odataResponse.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, "value")).TrySingle(out var valueProperty))
-            {
-                //// TODO should there be two error messages, one for "value wasn't present" and another for "other properties are present"?
-                throw new Exception("TODO");
-            }
+            return odataResponse.Apply<GetCollectionResponse>(
+                success =>
+                {
+                    if (!success.Value.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, "value")).TrySingle(out var valueProperty))
+                    {
+                        //// TODO should there be two error messages, one for "value wasn't present" and another for "other properties are present"?
+                        throw new Exception("TODO");
+                    }
 
-            if (!(valueProperty.Value is OdataPropertyValue.Collection collection))
-            {
-                throw new Exception("TODO");
-            }
+                    if (!(valueProperty.Value is OdataPropertyValue.Collection collection))
+                    {
+                        throw new Exception("TODO");
+                    }
 
-            //// TODO this *maybe* should still have a status code property, but errors are supposed to be in the `odataerror` format //// TODO this maybe even should be done at the reader level...
-            return new GetCollectionResponse(
-                odataResponse.HttpStatusCode,
-                odataResponse.Headers,
-                collection.Elements.Select(
-                    element => new CollectionElement(element)));
+                    //// TODO this *maybe* should still have a status code property, but errors are supposed to be in the `odataerror` format //// TODO this maybe even should be done at the reader level...
+                    return new GetCollectionResponse.Success(
+                        new Success(
+                            success.Value.HttpStatusCode,
+                            success.Value.Headers,
+                            collection.Elements.Select(
+                                element => new CollectionElement(element))));
+                },
+                failure => new GetCollectionResponse.Failure());
         }
     }
 
