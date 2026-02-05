@@ -39,10 +39,10 @@
 
 
 
-    //// TODO you need to add control information to protocol and reader //// TODO actually remove this
-    //// TODO you need to add property value parsing to protocol and reader
+    
     //// TODO you are implementing the odata interfaces, in service of the next TODO item; you are currently implementing `weakconventioncontext`
     
+    //// TODO document on concrete types when `innerexception` is set
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
     //// TODO `iawaitable` should be *only* what is needed for `await` to work

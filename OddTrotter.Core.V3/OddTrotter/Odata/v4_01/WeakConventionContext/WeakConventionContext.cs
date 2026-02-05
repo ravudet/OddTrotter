@@ -20,6 +20,12 @@
             this.propertyNameComparer = propertyNameComparer;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
             var odataRequest = new OdataRequest(

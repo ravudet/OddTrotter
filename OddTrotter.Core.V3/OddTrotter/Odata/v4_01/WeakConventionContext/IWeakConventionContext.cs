@@ -12,9 +12,7 @@
     internal interface IWeakConventionContext
     {
         /// <summary>
-        /// TODO error response //// TODO these should be individual exceptions (that *maybe* have a base type)
-        /// TODO not odata response
-        /// TODO not collection response
+        /// TODO at what point should failure responses be surfaces as exceptions?
         /// 
         /// TODO at what point do we check if the request is actually to a collection? i.e. when do we require the model?
         /// </summary>
