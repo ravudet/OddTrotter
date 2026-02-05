@@ -4,9 +4,30 @@
 
     using OddTrotter.Calendar;
 
-    internal sealed class OdataResponse
+    internal abstract class OdataResponse
     {
-        public OdataResponse(
+        private OdataResponse()
+        {
+        }
+
+        internal sealed class Success : OdataResponse
+        {
+            public Success(OddTrotter.Odata.v4_01.ProtocolContext.Success value)
+            {
+                Value = value;
+            }
+
+            public v4_01.ProtocolContext.Success Value { get; }
+        }
+
+        internal sealed class Failure : OdataResponse
+        { 
+        }
+    }
+
+    internal sealed class Success
+    {
+        public Success(
             string httpStatusCode,
             IEnumerable<HttpHeader> headers, 
             IEnumerable<OdataProperty> properties, 
@@ -18,7 +39,7 @@
             this.ControlInformation = controlInformation;
         }
 
-        public string HttpStatusCode { get; } //// TODO this should be strongly typed
+        public string HttpStatusCode { get; } //// TODO this should be strongly typed (and probably at reader level too); also, this should only allow *success* status codes
 
         public IEnumerable<HttpHeader> Headers { get; } //// TODO make sure `httpheader` properly validates; another option would be to make it very strongly typed //// TODO actually, should there be "odataheader"s? this wouldn't just be headers specific to odata (like odataversion), but also headers that odata takes a strong opinion on (like accept headers)
 
