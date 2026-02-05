@@ -4,7 +4,7 @@
 
     using OddTrotter.Calendar;
 
-    internal sealed class GetCollectionRequest
+    internal sealed class GetCollectionRequest //// TODO you need to start using the proper "multivalued" term when referring to collections
     {
         internal GetCollectionRequest(string url, IEnumerable<HttpHeader> headers)
         {
