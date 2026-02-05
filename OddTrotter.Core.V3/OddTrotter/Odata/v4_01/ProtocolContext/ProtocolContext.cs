@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
+    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
 
     using OddTrotter.Calendar;
@@ -55,8 +56,6 @@
 
                 var responseReader = await ProtocolContext.Transfer(requestReader, requestWriter).ConfigureAwait(false);
 
-                var odataResponseBuilder = new OdataResponseBuilder();
-
                 Response.IStatusCodeReader statusCodeReader;
                 try
                 {
@@ -86,21 +85,24 @@
                     throw new Protocol.ProtocolException("TODO", readException);
                 }
 
-                odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
-
-                odataResponseBuilder = await statusCodeToken.Apply(
+                return await statusCodeToken.Apply(
                     async success =>
                     {
+                        var odataResponseBuilder = new OdataResponseBuilder.Success();
+                        odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
+
                         var bodyReader = await ProtocolContext.Read(success.Reader, odataResponseBuilder).ConfigureAwait(false);
-                        return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
+                        odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
+
+                        return odataResponseBuilder.Build();
                     },
                     async failure =>
                     {
-                        var errorResponseReader = await ProtocolContext.Read(failure.Reader, odataResponseBuilder).ConfigureAwait(false);
-                        return odataResponseBuilder;
-                    }).ConfigureAwait(false);
+                        var odataResponseBuilder = new OdataResponseBuilder.Failure();
 
-                return odataResponseBuilder.Build();
+                        var errorResponseReader = await ProtocolContext.Read(failure.Reader, odataResponseBuilder).ConfigureAwait(false);
+                        return odataResponseBuilder.Build();
+                    }).ConfigureAwait(false);
             }
         }
 
@@ -113,7 +115,7 @@
         /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
-        private static async Task<OdataResponseBuilder> Read(Response.IBodyReader bodyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<OdataResponseBuilder.Success> Read(Response.IBodyReader bodyReader, OdataResponseBuilder.Success odataResponseBuilder)
         {
             Response.BodyToken bodyToken;
             try
@@ -149,7 +151,7 @@
         /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
-        private static async Task<Response.IBodyReader> Read(Response.IPropertyReader propertyReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<Response.IBodyReader> Read(Response.IPropertyReader propertyReader, OdataResponseBuilder.Success odataResponseBuilder)
         {
             Response.IPropertyNameReader propertyNameReader;
             try
@@ -427,24 +429,40 @@
                 .ConfigureAwait(false);
         }
 
-        private sealed class OdataResponseBuilder
+        private abstract class OdataResponseBuilder
         {
             public string? HttpStatusCode { get; set; }
 
             public List<HttpHeader> Headers { get; set; } = new List<HttpHeader>();
 
-            public List<OdataProperty> Properties { get; set; } = new List<OdataProperty>();
+            public abstract OdataResponse Build();
 
-            public OdataResponse Build()
+            public sealed class Success : OdataResponseBuilder
             {
-                ArgumentNullException.ThrowIfNull(this.HttpStatusCode, nameof(this.HttpStatusCode));
-                //// TODO other null checks
-                
-                return new OdataResponse(
-                    this.HttpStatusCode, 
-                    this.Headers, 
-                    this.Properties, 
-                    System.Linq.Enumerable.Empty<ControlInformation>());
+                public List<OdataProperty> Properties { get; set; } = new List<OdataProperty>();
+
+                public override OdataResponse Build()
+                {
+                    ArgumentNullException.ThrowIfNull(base.HttpStatusCode, nameof(base.HttpStatusCode));
+                    //// TODO other null checks
+
+                    return new OdataResponse.Success(
+                        new OddTrotter.Odata.v4_01.ProtocolContext.Success(
+                            base.HttpStatusCode,
+                            base.Headers,
+                            this.Properties,
+                            System.Linq.Enumerable.Empty<ControlInformation>()));
+                }
+            }
+
+            public sealed class Failure : OdataResponseBuilder
+            {
+                public override OdataResponse Build()
+                {
+                    ArgumentNullException.ThrowIfNull(base.HttpStatusCode, nameof(base.HttpStatusCode));
+
+                    return new OdataResponse.Failure();
+                }
             }
         }
 
@@ -659,7 +677,7 @@
             {
                 throw new WriteException("TODO", ioException);
             }
-            
+
             return await headerValueToken.Apply(
                 async headerValueReader =>
                 {
@@ -806,7 +824,7 @@
         /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
         /// <exception cref="HttpRequestException">Thrown if an error occurred sending the payload to the service</exception>
         private static async Task<(Request.IUrlQueryReader UrlQueryReader, IUrlQueryWriter UrlQueryWriter)> Transfer(
-            Request.IUrlPathReader urlPathReader, 
+            Request.IUrlPathReader urlPathReader,
             IUrlPathWriter urlPathWriter)
         {
             var urlPathToken = await urlPathReader.Read().ConfigureAwait(false); // NOTE: shouldn't throw any exceptions because the data is an in-memory representation of the request that we have validated and control
