@@ -7,7 +7,7 @@
     /// 
     /// TODO "strong" means that we use .net types with model based names (e.g. strongly typed properties); this could also be considered "deserialization"
     /// </summary>
-    internal interface IStrongConventionContext
+    internal interface IStrongConventionContext<T>
     {
         /// <summary>
         /// TODO at what point should failure responses be surfaces as exceptions?
@@ -16,6 +16,6 @@
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<GetCollectionResponse<T>> GetCollection<T>(GetCollectionRequest<T> request);
+        Task<GetCollectionResponse<T>> GetCollection(GetCollectionRequest<T> request);
     }
 }
