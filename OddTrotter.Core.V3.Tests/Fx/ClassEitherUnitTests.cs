@@ -39,7 +39,7 @@
 
 
 
-
+    //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
     //// TODO you are implementing the odata interfaces, in service of the next TODO item; you are currently implementing `StrongConventionContext`
 
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
