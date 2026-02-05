@@ -35,10 +35,37 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<(IHeadersReader HeadersReader, HttpStatusCode HttpStatusCode)> Read();
+        Task<(StatusCodeToken StatusCodeToken, HttpStatusCode HttpStatusCode)> Read();
     }
 
-    internal interface IHeadersReader
+    internal abstract class StatusCodeToken
+    {
+        private StatusCodeToken()
+        {
+        }
+
+        internal sealed class Success : StatusCodeToken
+        {
+            public Success(IHeadersReader<IBodyReader> reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeadersReader<IBodyReader> Reader { get; }
+        }
+
+        internal sealed class Failure : StatusCodeToken
+        {
+            public Failure(IHeadersReader<IErrorResponseReader> reader)
+            {
+                Reader = reader;
+            }
+
+            public IHeadersReader<IErrorResponseReader> Reader { get; }
+        }
+    }
+
+    internal interface IHeadersReader<T>
     {
         /// <summary>
         /// 
@@ -50,7 +77,7 @@
         Task<HeadersToken> Read();
     }
 
-    internal abstract class HeadersToken
+    internal abstract class HeadersToken<T>
     {
         private HeadersToken()
         {
@@ -517,5 +544,9 @@
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
         Task<(IBodyReader BodyReader, StringToken StringToken)> Read();
+    }
+
+    internal interface IErrorResponseReader
+    {
     }
 }
