@@ -42,7 +42,6 @@
                         throw new Exception("TODO");
                     }
 
-                    //// TODO this *maybe* should still have a status code property, but errors are supposed to be in the `odataerror` format //// TODO this maybe even should be done at the reader level...
                     return new GetCollectionResponse.Success(
                         new Success(
                             success.Value.HttpStatusCode,
