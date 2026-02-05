@@ -7,6 +7,8 @@
     using System.Text.Json;
     using System.Threading.Tasks;
 
+    using OddTrotter.Odata.v4_01.Reader.RequestReader;
+
     internal sealed class ResponseReader : IResponseReader
     {
         private readonly HttpResponseMessage httpResponseMessage;
@@ -31,93 +33,124 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
-        public async Task<(IHeadersReader HeadersReader, HttpStatusCode HttpStatusCode)> Read()
+        public async Task<(StatusCodeToken StatusCodeToken, HttpStatusCode HttpStatusCode)> Read()
         {
             var httpStatusCode = new HttpStatusCode(this.httpResponseMessage.StatusCode.ToString());
-            var headersReader = new HeadersReader(this.httpResponseMessage, this.httpResponseMessage.Headers.GetEnumerator());
-
-            return await Task.FromResult((headersReader,  httpStatusCode)).ConfigureAwait(false);
-        }
-    }
-
-    internal sealed class HeadersReader : IHeadersReader
-    {
-        private readonly HttpResponseMessage httpResponseMessage;
-        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
-
-        internal HeadersReader(
-            HttpResponseMessage httpResponseMessage,
-            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers)
-        {
-            this.httpResponseMessage = httpResponseMessage;
-            this.headers = headers;
-        }
-
-        public async Task<HeadersToken> Read()
-        {
-            if (!this.headers.MoveNext())
+            StatusCodeToken statusCodeToken;
+            if (int.TryParse(httpStatusCode.Value, out var code) && code >= 400 && code < 600)
             {
-                return new HeadersToken.Body(new BodyReader(await this.httpResponseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false), 0));
+                statusCodeToken = new StatusCodeToken.Failure(
+                    new HeadersReader<IErrorResponseReader>(
+                        this.httpResponseMessage, 
+                        this.httpResponseMessage.Headers.GetEnumerator(),
+                        (bytes, index) => new ErrorResponseReader()));
             }
             else
             {
-                return new HeadersToken.Header(new HeaderReader(this.httpResponseMessage, this.headers));
+                statusCodeToken = new StatusCodeToken.Success(
+                    new HeadersReader<IBodyReader>(
+                        this.httpResponseMessage,
+                        this.httpResponseMessage.Headers.GetEnumerator(),
+                        (bytes, index) => new BodyReader(bytes, index)));
+            }
+
+            return await Task.FromResult((statusCodeToken,  httpStatusCode)).ConfigureAwait(false);
+        }
+    }
+
+    internal sealed class HeadersReader<T> : IHeadersReader<T>
+    {
+        private readonly HttpResponseMessage httpResponseMessage;
+        private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
+        private readonly Func<byte[], long, T> bodyReaderFactory;
+
+        internal HeadersReader(
+            HttpResponseMessage httpResponseMessage,
+            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
+            Func<byte[], long, T> bodyReaderFactory)
+        {
+            this.httpResponseMessage = httpResponseMessage;
+            this.headers = headers;
+            this.bodyReaderFactory = bodyReaderFactory;
+        }
+
+        public async Task<HeadersToken<T>> Read()
+        {
+            if (!this.headers.MoveNext())
+            {
+                var bytes = await this.httpResponseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                var index = 0L;
+                var bodyReader = this.bodyReaderFactory(bytes, index);
+                return new HeadersToken<T>.Body(bodyReader);
+            }
+            else
+            {
+                return new HeadersToken<T>.Header(new HeaderReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory));
             }
         }
     }
 
-    internal sealed class HeaderReader : IHeaderReader
+    internal sealed class HeaderReader<T> : IHeaderReader<T>
     {
         private readonly HttpResponseMessage httpResponseMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
+        private readonly Func<byte[], long, T> bodyReaderFactory;
 
         internal HeaderReader(
             HttpResponseMessage httpResponseMessage,
-            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers)
+            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
+            Func<byte[], long, T> bodyReaderFactory)
         {
             this.httpResponseMessage = httpResponseMessage;
             this.headers = headers;
+            this.bodyReaderFactory = bodyReaderFactory;
         }
 
-        public async Task<IHeaderKvpReader> Read()
+        public async Task<IHeaderKvpReader<T>> Read()
         {
-            return await Task.FromResult(new HeaderKvpReader(this.httpResponseMessage, this.headers)).ConfigureAwait(false);
+            return await Task.FromResult(new HeaderKvpReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory)).ConfigureAwait(false);
         }
     }
 
-    internal sealed class HeaderKvpReader : IHeaderKvpReader
+    internal sealed class HeaderKvpReader<T> : IHeaderKvpReader<T>
     {
         private readonly HttpResponseMessage httpResponseMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
+        private readonly Func<byte[], long, T> bodyReaderFactory;
 
         internal HeaderKvpReader(
             HttpResponseMessage httpResponseMessage,
-            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers)
+            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
+            Func<byte[], long, T> bodyReaderFactory)
         {
             this.httpResponseMessage = httpResponseMessage;
             this.headers = headers;
+            this.bodyReaderFactory = bodyReaderFactory;
         }
 
-        public async Task<IHeaderKeyReader> Read()
+        public async Task<IHeaderKeyReader<T>> Read()
         {
-            return await Task.FromResult(new HeaderKeyReader(this.httpResponseMessage, this.headers)).ConfigureAwait(false);
+            return await Task.FromResult(new HeaderKeyReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory)).ConfigureAwait(false);
         }
     }
 
-    internal sealed class HeaderKeyReader : IHeaderKeyReader
+    internal sealed class HeaderKeyReader<T> : IHeaderKeyReader<T>
     {
         private readonly HttpResponseMessage httpResponseMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
+        private readonly Func<byte[], long, T> bodyReaderFactory;
 
         internal HeaderKeyReader(
             HttpResponseMessage httpResponseMessage,
-            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers)
+            IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
+            Func<byte[], long, T> bodyReaderFactory)
         {
             this.httpResponseMessage = httpResponseMessage;
             this.headers = headers;
+            this.bodyReaderFactory = bodyReaderFactory;
         }
 
-        public async Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read()
+        public async Task<(HeaderKeyToken<T> HeaderKeyToken, HeaderKey HeaderKey)> Read()
         {
             var header = this.headers.Current;
             var headerKey = new HeaderKey(header.Key);
@@ -125,47 +158,50 @@
             var values = header.Value.GetEnumerator();
             if (!values.MoveNext())
             {
-                var token = new HeaderKeyToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+                var token = new HeaderKeyToken<T>.Headers(new HeadersReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory));
 
                 return await Task.FromResult((token, headerKey)).ConfigureAwait(false);
             }
             else
             {
-                var token = new HeaderKeyToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, values));
+                var token = new HeaderKeyToken<T>.HeaderValue(new HeaderValueReader<T>(this.httpResponseMessage, this.headers, values, this.bodyReaderFactory));
 
                 return await Task.FromResult((token, headerKey)).ConfigureAwait(false);
             }
         }
     }
 
-    internal sealed class HeaderValueReader : IHeaderValueReader
+    internal sealed class HeaderValueReader<T> : IHeaderValueReader<T>
     {
         private readonly HttpResponseMessage httpResponseMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
         private readonly IEnumerator<string> values;
+        private readonly Func<byte[], long, T> bodyReaderFactory;
 
         internal HeaderValueReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
-            IEnumerator<string> values)
+            IEnumerator<string> values,
+            Func<byte[], long, T> bodyReaderFactory)
         {
             this.httpResponseMessage = httpResponseMessage;
             this.headers = headers;
             this.values = values;
+            this.bodyReaderFactory = bodyReaderFactory;
         }
 
-        public async Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read()
+        public async Task<(HeaderValueToken<T> HeaderValueToken, HeaderValue HeaderValue)> Read()
         {
             var headerValue = new HeaderValue(this.values.Current);
             if (!this.values.MoveNext())
             {
-                var token = new HeaderValueToken.Headers(new HeadersReader(this.httpResponseMessage, this.headers));
+                var token = new HeaderValueToken<T>.Headers(new HeadersReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory));
 
                 return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
             else
             {
-                var token = new HeaderValueToken.HeaderValue(new HeaderValueReader(this.httpResponseMessage, this.headers, this.values));
+                var token = new HeaderValueToken<T>.HeaderValue(new HeaderValueReader<T>(this.httpResponseMessage, this.headers, this.values, this.bodyReaderFactory));
 
                 return await Task.FromResult((token, headerValue)).ConfigureAwait(false);
             }
@@ -532,5 +568,9 @@
 
             return await Task.FromResult((bodyReader, stringToken)).ConfigureAwait(false);
         }
+    }
+
+    internal sealed class ErrorResponseReader : IErrorResponseReader
+    {
     }
 }

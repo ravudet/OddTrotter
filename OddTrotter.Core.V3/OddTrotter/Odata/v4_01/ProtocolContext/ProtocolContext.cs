@@ -68,11 +68,11 @@
                     throw new Protocol.ProtocolException("TODO", readException);
                 }
 
-                Response.IHeadersReader headersReader;
+                Response.StatusCodeToken statusCodeToken;
                 HttpStatusCode httpStatusCode;
                 try
                 {
-                    (headersReader, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
+                    (statusCodeToken, httpStatusCode) = await statusCodeReader.Read().ConfigureAwait(false);
                 }
                 catch (IOException ioException)
                 {
@@ -84,6 +84,8 @@
                 }
 
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
+
+
 
                 var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
 
@@ -311,9 +313,9 @@
         /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
-        private static async Task<Response.IBodyReader> Read(Response.IHeadersReader headersReader, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<T> Read<T>(Response.IHeadersReader<T> headersReader, OdataResponseBuilder odataResponseBuilder)
         {
-            Response.HeadersToken headersToken;
+            Response.HeadersToken<T> headersToken;
             try
             {
                 headersToken = await headersReader.Read().ConfigureAwait(false);
@@ -330,7 +332,7 @@
             return await headersToken.Apply(
                 async header =>
                 {
-                    Response.IHeaderKvpReader kvpHeaderReader;
+                    Response.IHeaderKvpReader<T> kvpHeaderReader;
                     try
                     {
                         kvpHeaderReader = await header.Reader.Read().ConfigureAwait(false);
@@ -344,7 +346,7 @@
                         throw new Protocol.ProtocolException("TODO", readException);
                     }
 
-                    Response.IHeaderKeyReader headerKeyReader;
+                    Response.IHeaderKeyReader<T> headerKeyReader;
                     try
                     {
                         headerKeyReader = await kvpHeaderReader.Read().ConfigureAwait(false);
@@ -358,7 +360,7 @@
                         throw new Protocol.ProtocolException("TODO", readException);
                     }
 
-                    Response.HeaderKeyToken headerKeyToken;
+                    Response.HeaderKeyToken<T> headerKeyToken;
                     HeaderKey headerKey;
                     try
                     {
@@ -392,9 +394,9 @@
         /// <exception cref="HttpRequestException">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="Protocol.ReadException">Thrown if an error occurred reading from the underlying stream</exception>
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
-        private static async Task<Response.IBodyReader> Read(Response.IHeaderValueReader headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
+        private static async Task<T> Read<T>(Response.IHeaderValueReader<T> headerValueReader, HeaderKey headerKey, OdataResponseBuilder odataResponseBuilder)
         {
-            Response.HeaderValueToken headerValueToken;
+            Response.HeaderValueToken<T> headerValueToken;
             HeaderValue headerValue;
             try
             {
@@ -429,7 +431,11 @@
                 ArgumentNullException.ThrowIfNull(this.HttpStatusCode, nameof(this.HttpStatusCode));
                 //// TODO other null checks
                 
-                return new OdataResponse(this.HttpStatusCode, this.Headers, this.Properties);
+                return new OdataResponse(
+                    this.HttpStatusCode, 
+                    this.Headers, 
+                    this.Properties, 
+                    System.Linq.Enumerable.Empty<ControlInformation>());
             }
         }
 
