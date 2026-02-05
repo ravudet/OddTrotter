@@ -9,15 +9,14 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     //// TODO the "bare minimum" should be for that top-level "production" code; you will then do this recursively later for other files
-    
+
     //// TODO the stuff in the `oddtrotter` folder is still being explored; once you've productized the stuff in `fx` and `system`, you should completely rewrite the stuff in `oddtrotter`
 
     //// TODO taskextensions
     //// TODO taskwrapper
     //// TODO realizableextensions
-    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (mixins) (what are all of the extension method variants? (async maps, ref struct, async either, etc.)
+    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (mixins) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
     //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
-    
 
 
 
@@ -39,10 +38,10 @@
 
 
 
-    
-    //// TODO you are implementing the odata interfaces, in service of the next TODO item; you are currently implementing `weakconventioncontext`
-    
-    //// TODO document on concrete types when `innerexception` is set
+
+
+    //// TODO you are implementing the odata interfaces, in service of the next TODO item; you are currently implementing `StrongConventionContext`
+
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
     //// TODO `iawaitable` should be *only* what is needed for `await` to work
