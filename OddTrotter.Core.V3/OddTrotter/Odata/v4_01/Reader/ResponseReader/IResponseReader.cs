@@ -44,6 +44,24 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<Success, TResult> successMap,
+            Func<Failure, TResult> failureMap)
+        {
+            if (this is Success success)
+            {
+                return successMap(success);
+            }
+            else if (this is Failure failure)
+            {
+                return failureMap(failure);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         internal sealed class Success : StatusCodeToken
         {
             public Success(IHeadersReader<IBodyReader> reader)
@@ -74,7 +92,7 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<HeadersToken> Read();
+        Task<HeadersToken<T>> Read();
     }
 
     internal abstract class HeadersToken<T>
@@ -101,28 +119,28 @@
             }
         }
 
-        internal sealed class Header : HeadersToken
+        internal sealed class Header : HeadersToken<T>
         {
-            internal Header(IHeaderReader reader)
+            internal Header(IHeaderReader<T> reader)
             {
                 Reader = reader;
             }
 
-            public IHeaderReader Reader { get; }
+            public IHeaderReader<T> Reader { get; }
         }
 
-        internal sealed class Body : HeadersToken
+        internal sealed class Body : HeadersToken<T>
         {
-            internal Body(IBodyReader reader)
+            internal Body(T reader)
             {
                 Reader = reader;
             }
 
-            public IBodyReader Reader { get; }
+            public T Reader { get; }
         }
     }
 
-    internal interface IHeaderReader
+    internal interface IHeaderReader<T>
     {
         /// <summary>
         /// 
@@ -131,10 +149,10 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<IHeaderKvpReader> Read();
+        Task<IHeaderKvpReader<T>> Read();
     }
 
-    internal interface IHeaderKvpReader
+    internal interface IHeaderKvpReader<T>
     {
         /// <summary>
         /// 
@@ -143,10 +161,10 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<IHeaderKeyReader> Read();
+        Task<IHeaderKeyReader<T>> Read();
     }
 
-    internal interface IHeaderKeyReader
+    internal interface IHeaderKeyReader<T>
     {
         /// <summary>
         /// 
@@ -155,10 +173,10 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read();
+        Task<(HeaderKeyToken<T> HeaderKeyToken, HeaderKey HeaderKey)> Read();
     }
 
-    internal abstract class HeaderKeyToken
+    internal abstract class HeaderKeyToken<T>
     {
         private HeaderKeyToken()
         {
@@ -182,28 +200,28 @@
             }
         }
 
-        internal sealed class HeaderValue : HeaderKeyToken
+        internal sealed class HeaderValue : HeaderKeyToken<T>
         {
-            internal HeaderValue(IHeaderValueReader reader)
+            internal HeaderValue(IHeaderValueReader<T> reader)
             {
                 Reader = reader;
             }
 
-            public IHeaderValueReader Reader { get; }
+            public IHeaderValueReader<T> Reader { get; }
         }
 
-        internal sealed class Headers : HeaderKeyToken
+        internal sealed class Headers : HeaderKeyToken<T>
         {
-            internal Headers(IHeadersReader reader)
+            internal Headers(IHeadersReader<T> reader)
             {
                 Reader = reader;
             }
 
-            public IHeadersReader Reader { get; }
+            public IHeadersReader<T> Reader { get; }
         }
     }
 
-    internal interface IHeaderValueReader
+    internal interface IHeaderValueReader<T>
     {
         /// <summary>
         /// 
@@ -212,10 +230,10 @@
         /// <exception cref="IOException" awaited="true">thrown if an error occurred reading from the underlying payload</exception>
         /// <exception cref="HttpRequestException" awaited="true">thrown if an error occurred while receiving the payload from the service</exception>
         /// <exception cref="ReadException" awaited="true">thrown if the payload is not valid odata</exception>
-        Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read();
+        Task<(HeaderValueToken<T> HeaderValueToken, HeaderValue HeaderValue)> Read();
     }
 
-    internal abstract class HeaderValueToken
+    internal abstract class HeaderValueToken<T>
     {
         private HeaderValueToken()
         {
@@ -239,24 +257,24 @@
             }
         }
 
-        internal sealed class HeaderValue : HeaderValueToken
+        internal sealed class HeaderValue : HeaderValueToken<T>
         {
-            internal HeaderValue(IHeaderValueReader reader)
+            internal HeaderValue(IHeaderValueReader<T> reader)
             {
                 Reader = reader;
             }
 
-            public IHeaderValueReader Reader { get; }
+            public IHeaderValueReader<T> Reader { get; }
         }
 
-        internal sealed class Headers : HeaderValueToken
+        internal sealed class Headers : HeaderValueToken<T>
         {
-            internal Headers(IHeadersReader reader)
+            internal Headers(IHeadersReader<T> reader)
             {
                 Reader = reader;
             }
 
-            public IHeadersReader Reader { get; }
+            public IHeadersReader<T> Reader { get; }
         }
     }
 
