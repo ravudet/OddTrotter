@@ -10,6 +10,9 @@
     using OddTrotter.Odata.v4_01.Reader;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
+    using OddTrotter.Odata.v4_01.Reader.ResponseReader;
+
+    using static OddTrotter.Odata.v4_01.Reader.ResponseReader.StatusCodeToken;
 
     using Protocol = OddTrotter.Odata.v4_01.ProtocolContext;
     using Reader = OddTrotter.Odata.v4_01.Reader;
@@ -85,11 +88,17 @@
 
                 odataResponseBuilder.HttpStatusCode = httpStatusCode.Value;
 
-
-
-                var bodyReader = await ProtocolContext.Read(headersReader, odataResponseBuilder).ConfigureAwait(false);
-
-                odataResponseBuilder = await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
+                odataResponseBuilder = await statusCodeToken.Apply(
+                    async success =>
+                    {
+                        var bodyReader = await ProtocolContext.Read(success.Reader, odataResponseBuilder).ConfigureAwait(false);
+                        return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
+                    },
+                    async failure =>
+                    {
+                        var errorResponseReader = await ProtocolContext.Read(failure.Reader, odataResponseBuilder).ConfigureAwait(false);
+                        return odataResponseBuilder;
+                    }).ConfigureAwait(false);
 
                 return odataResponseBuilder.Build();
             }
