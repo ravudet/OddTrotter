@@ -25,7 +25,7 @@
                 var requestWriterFactory = () => new RequestWriter(new HttpClientAdapter(httpClient));
                 var protocolContext = new ProtocolContext(requestReaderFactory, requestWriterFactory);
                 var weakConventionContext = new WeakConventionContext(protocolContext, StringComparer.Ordinal);
-                var calendarEventDeserializer = new CalendarEventDeserializer();
+                var calendarEventDeserializer = new CalendarEventDeserializer(StringComparer.OrdinalIgnoreCase);
                 var strongConventionContext = new StrongConventionContext<Graph.CalendarEventsContext.CalendarEvent>(
                     weakConventionContext,
                     calendarEventDeserializer);
