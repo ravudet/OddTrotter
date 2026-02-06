@@ -938,7 +938,7 @@ namespace Fx.Either
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            return either.Self.Apply(leftMap, rightMap, context);
+            return either.Self.Apply3(leftMap, rightMap, context);
         }
 
         private readonly ref struct Wrapper<T>
@@ -952,7 +952,7 @@ namespace Fx.Either
             public T Value { get; }
         }
 
-        public static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
+        public static TResult Apply3<TEither, TLeft, TRight, TContext, TResult>(
             this TEither either,
             Func<TLeft, TContext, TResult> leftMap,
             Func<TRight, TContext, TResult> rightMap,
@@ -963,20 +963,28 @@ namespace Fx.Either
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            //// TODO https://stackoverflow.com/a/61381175
-            var result = either.Apply<TEither, TLeft, TRight, TContext, TResult>(
-                (left, wrapper) => leftMap(left, wrapper), 
-                (right, wrapper) => rightMap(right, wrapper),
-                ref context);
 
-            return result;
+            //// TODO https://stackoverflow.com/a/61381175
+            unsafe
+            {
+                var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
+                    (left, wrapper) => leftMap(left, wrapper),
+                    (right, wrapper) => rightMap(right, wrapper),
+                    ref context);
+
+                //// TODO what could happen is `apply2` sets `context` to something that is allocated in the `apply2` stack frame; then, we when return from `apply2`, `apply3` will now have access to something allocated in the popped `apply2` stack frame
+
+#pragma warning disable CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
+                return result;
+#pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
+            }
         }
 
-        private static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
+        private static TResult Apply2<TEither, TLeft, TRight, TContext, TResult>(
             this TEither either,
             Func<TLeft, TContext, TResult> leftMap,
             Func<TRight, TContext, TResult> rightMap,
-            [UnscopedRef] ref TContext context)
+            ref TContext context)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
