@@ -913,12 +913,37 @@ namespace Fx.Either
 
 
 
+        public delegate void SomeAction<in TValue, TContext>(TValue value, ref TContext context) //// TODO fix this name
+            where TValue : allows ref struct
+            where TContext : allows ref struct;
 
-        
         public delegate TResult SomeMap<in TValue, TContext, out TResult>(TValue value, ref TContext context) //// TODO fix this name
             where TValue : allows ref struct
             where TContext : allows ref struct
             where TResult : allows ref struct;
+
+        public static void Apply<TLeft, TRight, TContext>( //// TODO do "action" variants need to be added? maybe add them specifically to the `apply` methods, but not the other ones?
+            this IEither<TLeft, TRight> either,
+            SomeAction<TLeft, TContext> leftMap,
+            SomeAction<TRight, TContext> rightMap,
+            ref TContext context)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TContext : allows ref struct
+        {
+            either.TypeHolder().Apply(
+                (left, ref context) =>
+                {
+                    leftMap(left, ref context);
+                    return new Nothing();
+                },
+                (right, ref context) =>
+                {
+                    rightMap(right, ref context);
+                    return new Nothing();
+                },
+                ref context);
+        }
 
         public static TResult Apply<TLeft, TRight, TContext, TResult>(
             this IEither<TLeft, TRight> either,

@@ -89,7 +89,7 @@
             //// TODO do you want to do *all* validations before returning? for example, should you validate the *existing* properties even if some of them are missing, that way you give the most comprehensive error result?
             
             var state = (new CalendarEventBuilder(), new List<DeserializationException>());
-            id.Apply( //// TODO you need a synchronous overload for  left, right, context; you also need to have overloads that use "actions"
+            id.Apply(
                 (value, ref state) =>
                 {
                     state.Item1.Id = value;
