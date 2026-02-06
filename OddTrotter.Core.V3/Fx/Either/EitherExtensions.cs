@@ -971,11 +971,12 @@ namespace Fx.Either
             var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
                     (left, wrapper) => leftMap(left, wrapper),
                     (right, wrapper) => rightMap(right, wrapper),
-                    ref wrapper);
+                    ref context);
             return result;
+            //// TODO make the project safe again
 
-            //// TODO https://stackoverflow.com/a/61381175
-            unsafe //// TODO make the project safe again
+            /*//// TODO https://stackoverflow.com/a/61381175
+            unsafe
             {
                 var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
                     (left, wrapper) => leftMap(left, wrapper),
@@ -986,8 +987,8 @@ namespace Fx.Either
 
 #pragma warning disable CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
                 return result;
-#pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
-            }
+#pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope*/
+        }
         }
 
         private static TResult Apply2<TEither, TLeft, TRight, TContext, TResult>(
