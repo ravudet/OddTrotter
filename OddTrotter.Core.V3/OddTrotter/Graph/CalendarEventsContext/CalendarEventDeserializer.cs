@@ -6,8 +6,7 @@
     using System.Linq;
 
     using Fx.Either;
-    using Fx.Try;
-
+    
     using OddTrotter.Odata.v4_01.ProtocolContext;
     using OddTrotter.Odata.v4_01.StrongConventionContext;
     using OddTrotter.Odata.v4_01.WeakConventionContext;
