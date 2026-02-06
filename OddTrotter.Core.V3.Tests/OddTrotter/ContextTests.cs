@@ -1,6 +1,17 @@
 ﻿namespace OddTrotter
 {
+    using System;
+    using System.Net.Http;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using OddTrotter.Calendar;
+    using OddTrotter.Graph.CalendarEventsContext;
+    using OddTrotter.Odata.v4_01.ProtocolContext;
+    using OddTrotter.Odata.v4_01.Reader.RequestReader;
+    using OddTrotter.Odata.v4_01.Reader.RequestWriter;
+    using OddTrotter.Odata.v4_01.StrongConventionContext;
+    using OddTrotter.Odata.v4_01.WeakConventionContext;
 
     [TestClass]
     public sealed class ContextTests
@@ -8,7 +19,17 @@
         [TestMethod]
         public void Run()
         {
-
+            var requestReaderFactory = (HttpRequestMessage httpRequestMessage) => new RequestReader(httpRequestMessage);
+            using (var httpClient = new HttpClient())
+            {
+                var requestWriterFactory = () => new RequestWriter(new HttpClientAdapter(httpClient));
+                var protocolContext = new ProtocolContext(requestReaderFactory, requestWriterFactory);
+                var weakConventionContext = new WeakConventionContext(protocolContext, StringComparer.Ordinal);
+                var calendarEventDeserializer = new CalendarEventDeserializer();
+                var strongConventionContext = new StrongConventionContext<Graph.CalendarEventsContext.CalendarEvent>(
+                    weakConventionContext,
+                    calendarEventDeserializer);
+            }
         }
     }
 }

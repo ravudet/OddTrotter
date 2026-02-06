@@ -15,7 +15,7 @@
   <ItemGroup>
     <!--TODO remove this-->
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>OddTrotter.Core.V3.Tests.Internals</_Parameter1>
+      <_Parameter1>OddTrotter.Core.V3.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
