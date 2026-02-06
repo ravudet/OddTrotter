@@ -914,86 +914,49 @@ namespace Fx.Either
 
 
 
+        
+        public delegate TResult SomeMap<in TValue, TContext, out TResult>(TValue value, ref TContext context) //// TODO fix this name
+            where TValue : allows ref struct
+            where TContext : allows ref struct
+            where TResult : allows ref struct;
+
         public static TResult Apply<TLeft, TRight, TContext, TResult>(
             this IEither<TLeft, TRight> either,
-            Func<TLeft, TContext, TResult> leftMap,
-            Func<TRight, TContext, TResult> rightMap,
-            TContext context)
+            SomeMap<TLeft, TContext, TResult> leftMap,
+            SomeMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            return either.TypeHolder().Apply(leftMap, rightMap, context);
+            return either.TypeHolder().Apply(
+                leftMap,
+                rightMap,
+                ref context);
         }
 
         public static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
             this TypeHolder<TEither, TLeft, TRight> either,
-            Func<TLeft, TContext, TResult> leftMap,
-            Func<TRight, TContext, TResult> rightMap,
-            TContext context)
+            SomeMap<TLeft, TContext, TResult> leftMap,
+            SomeMap<TRight, TContext, TResult> rightMap,
+            ref TContext context)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            return either.Self.Apply3(leftMap, rightMap, context);
+            return either.Self.Apply(
+                leftMap,
+                rightMap,
+                ref context);
         }
 
-        private ref struct Wrapper<T>
-            where T : allows ref struct
-        {
-            public Wrapper(T value)
-            {
-                Value = value;
-            }
-
-            public T Value { get; }
-
-            public Span<byte> Bytes { get; set; }
-        }
-
-        public static TResult Apply3<TEither, TLeft, TRight, TContext, TResult>(
+        public static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
             this TEither either,
-            Func<TLeft, TContext, TResult> leftMap,
-            Func<TRight, TContext, TResult> rightMap,
-            TContext context)
-            where TEither : IEither<TLeft, TRight>, allows ref struct
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-        {
-
-            var wrapper = new Wrapper<TContext>(context);
-
-            var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
-                    (left, wrapper) => leftMap(left, wrapper),
-                    (right, wrapper) => rightMap(right, wrapper),
-                    ref context);
-            return result;
-            //// TODO make the project safe again
-
-            /*//// TODO https://stackoverflow.com/a/61381175
-            unsafe
-            {
-                var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
-                    (left, wrapper) => leftMap(left, wrapper),
-                    (right, wrapper) => rightMap(right, wrapper),
-                    ref context);
-
-                //// TODO what could happen is `apply2` sets `context` to something that is allocated in the `apply2` stack frame; then, we when return from `apply2`, `apply3` will now have access to something allocated in the popped `apply2` stack frame //// TODO this isn't accurate; if `apply2` sets `context` to something, it will use the memory from the `apply3` stackframe to store that data
-
-#pragma warning disable CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
-                return result;
-#pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope*/
-        }
-
-        private static TResult Apply2<TEither, TLeft, TRight, TContext, TResult>(
-            this TEither either,
-            Func<TLeft, TContext, TResult> leftMap,
-            Func<TRight, TContext, TResult> rightMap,
+            SomeMap<TLeft, TContext, TResult> leftMap,
+            SomeMap<TRight, TContext, TResult> rightMap,
             ref TContext context)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
@@ -1002,38 +965,9 @@ namespace Fx.Either
             where TContext : allows ref struct
         {
             var future = either.ApplyAsync<TResult, TContext, Realizable<TResult>>(
-                (TLeft left, ref TContext context) => Realizable.FromResult(leftMap(left, context)),
-                (TRight right, ref TContext context) => Realizable.FromResult(rightMap(right, context)),
+                (TLeft left, ref TContext context) => Realizable.FromResult(leftMap(left, ref context)),
+                (TRight right, ref TContext context) => Realizable.FromResult(rightMap(right, ref context)),
                 ref context);
-
-            /*future = future.ContinueWith(
-                _ => _,
-                exception =>
-                {
-                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it... //// TODO alternatively, don't use the "generation" exceptions and instead use the "map" exceptions in your `ieither` implementations
-
-                    if (exception is LeftGenerationException leftGenerationException)
-                    {
-                        throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
-                    }
-
-                    if (exception is RightGenerationException rightGenerationException)
-                    {
-                        throw new RightMapException(rightGenerationException.InnerException!); //// TODO
-                    }
-
-                    throw exception;
-                },
-                _ => throw _);
-
-            if (future.AsEither.Decompose(out var result, out var task))
-            {
-                return result;
-            }
-            else
-            {
-                return task.ConfigureAwait(false).GetAwaiter().GetResult();
-            }*/
 
             if (future.ContinueWith(
                 _ => _,
@@ -1062,6 +996,10 @@ namespace Fx.Either
                 return task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
+
+
+
+
 
 
 

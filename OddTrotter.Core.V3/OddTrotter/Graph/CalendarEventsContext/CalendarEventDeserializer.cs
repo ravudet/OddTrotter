@@ -92,11 +92,11 @@
             id.Apply( //// TODO you need a synchronous overload for  left, right, context; you also need to have overloads that use "actions"
                 (value, ref state) =>
                 {
-                    calendarEventBuilder.Id = value;
+                    state.Item1.Id = value;
                 },
                 (exception, ref state) =>
                 {
-                    validationErrors.Add(exception);
+                    state.Item2.Add(exception);
                 },
                 ref state);
         }
