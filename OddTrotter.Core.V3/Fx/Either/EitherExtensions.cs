@@ -323,6 +323,56 @@ namespace Fx.Either
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+        public static async ITask<IEither<TLeftSource, TRightResult>> SelectRight<TLeftSource, TRightSource, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TRightSource, Task<TRightResult>> rightMap)
+            where TRightSource : allows ref struct
+        {
+            return await either.SelectAsync(
+                left => Task.FromResult(left).ToTaskWrapper(),
+                right => rightMap(right).ToTaskWrapper())
+                .ConfigureAwait(false);
+        }
+
+        public static IEither<TLeftSource, TRightResult> SelectRight<TLeftSource, TRightSource, TRightResult>(
+            this IEither<TLeftSource, TRightSource> either,
+            Func<TRightSource, TRightResult> rightMap)
+            where TRightSource : allows ref struct
+        {
+            return either.SelectRight(
+                right => Task.FromResult(rightMap(right)))
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public static async ITask<IEither<TLeft, TRight>> SelectManyRight<TLeft, TRight>(
             this ITask<IEither<TLeft, IEither<TLeft, TRight>>> either)
         {
