@@ -994,24 +994,16 @@ namespace Fx.Either
             this TEither either,
             Func<TLeft, TContext, TResult> leftMap,
             Func<TRight, TContext, TResult> rightMap,
-            ref Wrapper<TContext> context)
+            ref TContext context)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            Span<byte> bytes;
-            unsafe
-            {
-                bytes = stackalloc byte[100];
-            }
-
-            context.Bytes = bytes;
-
-            var future = either.ApplyAsync<TResult, Wrapper<TContext>, Realizable<TResult>>(
-                (TLeft left, ref Wrapper<TContext> context) => Realizable.FromResult(leftMap(left, context.Value)),
-                (TRight right, ref Wrapper<TContext> context) => Realizable.FromResult(rightMap(right, context.Value)),
+            var future = either.ApplyAsync<TResult, TContext, Realizable<TResult>>(
+                (TLeft left, ref TContext context) => Realizable.FromResult(leftMap(left, context)),
+                (TRight right, ref TContext context) => Realizable.FromResult(rightMap(right, context)),
                 ref context);
 
             /*future = future.ContinueWith(
