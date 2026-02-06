@@ -989,7 +989,6 @@ namespace Fx.Either
                 return result;
 #pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope*/
         }
-        }
 
         private static TResult Apply2<TEither, TLeft, TRight, TContext, TResult>(
             this TEither either,
