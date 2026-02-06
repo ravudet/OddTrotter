@@ -134,8 +134,15 @@
 
     internal sealed class OdataObject
     {
-        private OdataObject()
+        public OdataObject(
+            IEnumerable<OdataProperty> properties,
+            IEnumerable<ControlInformation> controlInformation)
         {
+            Properties = properties;
+            ControlInformation = controlInformation;
         }
+
+        public IEnumerable<OdataProperty> Properties { get; }
+        public IEnumerable<ControlInformation> ControlInformation { get; }
     }
 }

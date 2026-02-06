@@ -11,7 +11,7 @@
 
         public CalendarEvent Deserialize(OdataObject odataObject)
         {
-            
+            odataObject.
         }
     }
 }
