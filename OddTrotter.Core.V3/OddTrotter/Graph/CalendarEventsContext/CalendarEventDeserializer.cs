@@ -72,19 +72,24 @@
                 @string => Either.Right<DeserializationException>().Left(@string.Value),
                 @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
-            var startValue = startProperty!.Apply(
-                @string => Either.Right<DeserializationException>().Left(@string.Value),
-                @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
-            var start = startValue
+            var start = startProperty!
+                .Apply(
+                    @string => Either.Right<DeserializationException>().Left(@string.Value),
+                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    colleciton => Either.Left<string>().Right(new DeserializationException("TODO")))
                 .SelectLeft(@string => @string
                     .Try(DateTimeOffset.Parse)
                     .SelectRight(exception => new DeserializationException("TODO", exception)))
                 .SelectManyLeft();
-            var isCancelled = isCancelledProperty!.Apply(
-                @string => Either.Right<DeserializationException>().Left(@string.Value),
-                @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
+            var isCancelled = isCancelledProperty!
+                .Apply(
+                    @string => Either.Right<DeserializationException>().Left(@string.Value),
+                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    colleciton => Either.Left<string>().Right(new DeserializationException("TODO")))
+                .SelectLeft(@string => @string
+                    .Try(bool.Parse)
+                    .SelectRight(exception => new DeserializationException("TODO", exception)))
+                .SelectManyLeft();
 
             //// TODO do you want to do *all* validations before returning? for example, should you validate the *existing* properties even if some of them are missing, that way you give the most comprehensive error result?
             
@@ -99,6 +104,53 @@
                     state.Item2.Add(exception);
                 },
                 ref state);
+            subject.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.Subject = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
+            body.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.Body = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
+            start.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.Start = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
+            isCancelled.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.IsCancelled = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
+
+            if (state.Item2.Any())
+            {
+                throw new DeserializationException("TODO", new AggregateException(state.Item2));
+            }
+
+            return state.Item1.Build();
         }
 
         private sealed class CalendarEventBuilder
@@ -161,20 +213,6 @@
             }
 
             return Either.Right<Exception>().Left(result);
-        }
-
-        public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Try<TValue, TResult> @try)
-        {
-            ArgumentNullException.ThrowIfNull(@try);
-
-            if (@try(value, out var output))
-            {
-                return Either.Right<Nothing>().Left(output);
-            }
-            else
-            {
-                return Either.Left<TResult>().Right(new Nothing());
-            }
         }
     }
 }
