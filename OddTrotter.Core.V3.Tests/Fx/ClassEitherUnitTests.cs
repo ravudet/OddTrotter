@@ -40,6 +40,7 @@
 
 
     //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
+    //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO you implemented the odata interfaces, in service of the next TODO item; you now need to do the graph related stuff
 
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
