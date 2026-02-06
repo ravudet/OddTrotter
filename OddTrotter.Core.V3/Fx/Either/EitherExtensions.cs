@@ -9,6 +9,8 @@ namespace Fx.Either
     using Fx.Either.Mixins;
     using Fx.Realizable;
 
+    using static Fx.Either.EitherExtensions;
+
     public static class EitherExtensions
     {
 
@@ -551,6 +553,8 @@ namespace Fx.Either
         //// realizable
         //// task
         //// }
+        //// TODO you didn't include synchronous overloads
+        //// TODO you didn't include the context parameter (which may or may not be `ref`)
         ////
         //// TODO and maybe also for `either` (because the caller might be getting an `ieither` from an async method, not just from our extensions
         //// TODO "overload" means a change in the number of parameters, but "variant" means fiddling with the shape of each parameter
@@ -900,6 +904,146 @@ namespace Fx.Either
 
 
 
+
+
+
+
+
+
+
+
+
+
+        public static TResult Apply<TLeft, TRight, TContext, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            return either.TypeHolder().Apply(leftMap, rightMap, context);
+        }
+
+        public static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
+            this TypeHolder<TEither, TLeft, TRight> either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            return either.Self.Apply(leftMap, rightMap, context);
+        }
+
+        private readonly ref struct Wrapper<T>
+            where T : allows ref struct
+        {
+            public Wrapper(T value)
+            {
+                Value = value;
+            }
+
+            public T Value { get; }
+        }
+
+        public static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
+            this TEither either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            //// TODO https://stackoverflow.com/a/61381175
+            var result = either.Apply<TEither, TLeft, TRight, TContext, TResult>(
+                (left, wrapper) => leftMap(left, wrapper), 
+                (right, wrapper) => rightMap(right, wrapper),
+                ref context);
+
+            return result;
+        }
+
+        private static TResult Apply<TEither, TLeft, TRight, TContext, TResult>(
+            this TEither either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            [UnscopedRef] ref TContext context)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            var future = either.ApplyAsync<TResult, TContext, Realizable<TResult>>(
+                (TLeft left, ref TContext context) => Realizable.FromResult(leftMap(left, context)),
+                (TRight right, ref TContext context) => Realizable.FromResult(rightMap(right, context)),
+                ref context);
+
+            /*future = future.ContinueWith(
+                _ => _,
+                exception =>
+                {
+                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it... //// TODO alternatively, don't use the "generation" exceptions and instead use the "map" exceptions in your `ieither` implementations
+
+                    if (exception is LeftGenerationException leftGenerationException)
+                    {
+                        throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
+                    }
+
+                    if (exception is RightGenerationException rightGenerationException)
+                    {
+                        throw new RightMapException(rightGenerationException.InnerException!); //// TODO
+                    }
+
+                    throw exception;
+                },
+                _ => throw _);
+
+            if (future.AsEither.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.ConfigureAwait(false).GetAwaiter().GetResult();
+            }*/
+
+            if (future.ContinueWith(
+                _ => _,
+                exception =>
+                {
+                    //// TODO share this exception logic? you used it in `select` above; i think ever non-async variant will need it... //// TODO alternatively, don't use the "generation" exceptions and instead use the "map" exceptions in your `ieither` implementations
+
+                    if (exception is LeftGenerationException leftGenerationException)
+                    {
+                        throw new LeftMapException(leftGenerationException.InnerException!); //// TODO
+                    }
+
+                    if (exception is RightGenerationException rightGenerationException)
+                    {
+                        throw new RightMapException(rightGenerationException.InnerException!); //// TODO
+                    }
+
+                    throw exception;
+                },
+                _ => throw _).AsEither.Decompose(out var result, out var task))
+            {
+                return result;
+            }
+            else
+            {
+                return task.ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+        }
 
 
 
