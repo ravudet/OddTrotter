@@ -51,7 +51,13 @@
                 missingProperties.Add(isCancelledPropertyName);
             }
 
+            if (missingProperties.Any())
+            {
+                throw new DeserializationException("TODO");
+            }
 
+            return new CalendarEvent(
+                )
         }
 
         private bool TryGetProperty(OdataObject odataObject, string propertyName, [MaybeNullWhen(false)] out OdataPropertyValue odataPropertyValue)

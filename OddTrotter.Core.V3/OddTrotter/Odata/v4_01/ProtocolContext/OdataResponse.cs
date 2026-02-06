@@ -107,6 +107,29 @@
         {
         }
 
+        internal TResult Apply<TResult>(
+            Func<OdataPropertyValue.String, TResult> stringMap,
+            Func<OdataPropertyValue.Object, TResult> objectMap,
+            Func<OdataPropertyValue.Collection, TResult> collectionMap)
+        {
+            if (this is OdataPropertyValue.String @string)
+            {
+                return stringMap(@string);
+            }
+            else if (this is OdataPropertyValue.Object @object)
+            {
+                return objectMap(@object);
+            }
+            else if (this is OdataPropertyValue.Collection collection)
+            {
+                return collectionMap(collection);
+            }
+            else
+            {
+                throw new Exception("TODO visitor");
+            }
+        }
+
         public sealed class String : OdataPropertyValue
         {
             public String(string value)
