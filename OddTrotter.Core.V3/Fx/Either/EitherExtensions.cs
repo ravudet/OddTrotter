@@ -941,7 +941,7 @@ namespace Fx.Either
             return either.Self.Apply3(leftMap, rightMap, context);
         }
 
-        private readonly ref struct Wrapper<T>
+        private ref struct Wrapper<T>
             where T : allows ref struct
         {
             public Wrapper(T value)
@@ -950,6 +950,8 @@ namespace Fx.Either
             }
 
             public T Value { get; }
+
+            public Span<byte> Bytes { get; set; }
         }
 
         public static TResult Apply3<TEither, TLeft, TRight, TContext, TResult>(
@@ -964,15 +966,23 @@ namespace Fx.Either
             where TContext : allows ref struct
         {
 
+            var wrapper = new Wrapper<TContext>(context);
+
+            var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
+                    (left, wrapper) => leftMap(left, wrapper),
+                    (right, wrapper) => rightMap(right, wrapper),
+                    ref wrapper);
+            return result;
+
             //// TODO https://stackoverflow.com/a/61381175
-            unsafe
+            unsafe //// TODO make the project safe again
             {
                 var result = either.Apply2<TEither, TLeft, TRight, TContext, TResult>(
                     (left, wrapper) => leftMap(left, wrapper),
                     (right, wrapper) => rightMap(right, wrapper),
                     ref context);
 
-                //// TODO what could happen is `apply2` sets `context` to something that is allocated in the `apply2` stack frame; then, we when return from `apply2`, `apply3` will now have access to something allocated in the popped `apply2` stack frame
+                //// TODO what could happen is `apply2` sets `context` to something that is allocated in the `apply2` stack frame; then, we when return from `apply2`, `apply3` will now have access to something allocated in the popped `apply2` stack frame //// TODO this isn't accurate; if `apply2` sets `context` to something, it will use the memory from the `apply3` stackframe to store that data
 
 #pragma warning disable CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
                 return result;
@@ -984,16 +994,24 @@ namespace Fx.Either
             this TEither either,
             Func<TLeft, TContext, TResult> leftMap,
             Func<TRight, TContext, TResult> rightMap,
-            ref TContext context)
+            ref Wrapper<TContext> context)
             where TEither : IEither<TLeft, TRight>, allows ref struct
             where TLeft : allows ref struct
             where TRight : allows ref struct
             where TResult : allows ref struct
             where TContext : allows ref struct
         {
-            var future = either.ApplyAsync<TResult, TContext, Realizable<TResult>>(
-                (TLeft left, ref TContext context) => Realizable.FromResult(leftMap(left, context)),
-                (TRight right, ref TContext context) => Realizable.FromResult(rightMap(right, context)),
+            Span<byte> bytes;
+            unsafe
+            {
+                bytes = stackalloc byte[100];
+            }
+
+            context.Bytes = bytes;
+
+            var future = either.ApplyAsync<TResult, Wrapper<TContext>, Realizable<TResult>>(
+                (TLeft left, ref Wrapper<TContext> context) => Realizable.FromResult(leftMap(left, context.Value)),
+                (TRight right, ref Wrapper<TContext> context) => Realizable.FromResult(rightMap(right, context.Value)),
                 ref context);
 
             /*future = future.ContinueWith(
