@@ -28,6 +28,10 @@
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
+            var page = await EvaluatePage(this.strongConventionContext, this.uri, this.accessToken);
+            page.Concat(EvaluatePage(this.strongConventionContext, this.uri, this.accessToken));
+
+
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
 
 
@@ -63,7 +67,7 @@
                 throw new ContextException("TODO", strongConventionException);
             }
 
-            //// TODO do you want to try making the interface more general?
+            if (getCollectionResponse)
         }
     }
 
@@ -71,7 +75,7 @@
     {
         internal static IQueryResult<TElement, TException> Concat<TElement, TException>(
             this IQueryResult<TElement, TException> queryResult,
-            Task<IQueryResult<TException, TException>> next)
+            Task<IQueryResult<TElement, TException>> next)
         {
 
         }
