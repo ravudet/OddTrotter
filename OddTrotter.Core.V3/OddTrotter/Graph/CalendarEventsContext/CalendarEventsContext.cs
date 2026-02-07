@@ -28,31 +28,10 @@
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
-                this.uri.ToString(),
-                new[]
-                {
-                    new HttpHeader("Authorization", this.accessToken),
-                });
-            StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
-            try
-            {
-                getCollectionResponse = await this.strongConventionContext.GetCollection(getCollectionRequest).ConfigureAwait(false);
-            }
-            catch (StrongConventionContext.ReadException readException)
-            {
-                throw new ReadException("TODO", readException);
-            }
-            catch (StrongConventionContext.WriteException writeException)
-            {
-                throw new WriteException("TODO", writeException);
-            }
-            catch (StrongConventionContext.StrongConventionException strongConventionException)
-            {
-                throw new ContextException("TODO", strongConventionException);
-            }
+            //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
 
-            //// TODO do you want to try making the interface more general?
+
+            //// TODO do you want to try making the interface more general by using type parameters?
         }
 
         private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
@@ -85,6 +64,16 @@
             }
 
             //// TODO do you want to try making the interface more general?
+        }
+    }
+
+    internal static class Extensions2
+    {
+        internal static IQueryResult<TElement, TException> Concat<TElement, TException>(
+            this IQueryResult<TElement, TException> queryResult,
+            Task<IQueryResult<TException, TException>> next)
+        {
+
         }
     }
 }
