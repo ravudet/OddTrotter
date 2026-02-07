@@ -54,5 +54,37 @@
 
             //// TODO do you want to try making the interface more general?
         }
+
+        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
+            StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
+            Uri uri, 
+            string accessToken)
+        {
+            var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
+                uri.ToString(),
+                new[]
+                {
+                    new HttpHeader("Authorization", accessToken),
+                });
+            StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
+            try
+            {
+                getCollectionResponse = await strongConventionContext.GetCollection(getCollectionRequest).ConfigureAwait(false);
+            }
+            catch (StrongConventionContext.ReadException readException)
+            {
+                throw new ReadException("TODO", readException);
+            }
+            catch (StrongConventionContext.WriteException writeException)
+            {
+                throw new WriteException("TODO", writeException);
+            }
+            catch (StrongConventionContext.StrongConventionException strongConventionException)
+            {
+                throw new ContextException("TODO", strongConventionException);
+            }
+
+            //// TODO do you want to try making the interface more general?
+        }
     }
 }
