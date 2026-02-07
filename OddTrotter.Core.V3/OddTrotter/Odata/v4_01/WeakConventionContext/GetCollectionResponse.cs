@@ -47,16 +47,18 @@
 
     internal sealed class Success
     {
-        internal Success(string httpStatusCode, IEnumerable<HttpHeader> headers, IEnumerable<CollectionElement> elements)
+        internal Success(string httpStatusCode, IEnumerable<HttpHeader> headers, IEnumerable<CollectionElement> elements, string? nextLink)
         {
             HttpStatusCode = httpStatusCode;
             Headers = headers;
             Elements = elements;
+            NextLink = nextLink;
         }
 
         public string HttpStatusCode { get; }
         public IEnumerable<HttpHeader> Headers { get; }
         public IEnumerable<CollectionElement> Elements { get; }
+        public string? NextLink { get; }
     }
 
     internal sealed class CollectionElement

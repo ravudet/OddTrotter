@@ -81,7 +81,10 @@
 
                                     return new CollectionElement<T>(
                                         Either.Right<DeserializationError>().Left(deserialized));
-                                }));
+                                }),
+                        success
+                            .Value
+                            .NextLink);
                 },
                 failure => new GetCollectionResponse<T>.Failure());
         }

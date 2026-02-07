@@ -14,12 +14,15 @@
 
         internal sealed class Success : GetCollectionResponse<T>
         {
-            public Success(IEnumerable<CollectionElement<T>> elements)
+            public Success(IEnumerable<CollectionElement<T>> elements, string? nextLink)
             {
                 this.Elements = elements;
+                NextLink = nextLink;
             }
 
             internal IEnumerable<CollectionElement<T>> Elements { get; }
+
+            internal string? NextLink { get; }
         }
 
         internal sealed class Failure : GetCollectionResponse<T>

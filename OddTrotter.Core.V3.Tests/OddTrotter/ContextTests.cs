@@ -29,6 +29,10 @@
                 var strongConventionContext = new StrongConventionContext<Graph.CalendarEventsContext.CalendarEvent>(
                     weakConventionContext,
                     calendarEventDeserializer);
+                var calendarEventsContext = new OddTrotter.Graph.CalendarEventsContext.CalendarEventsContext(
+                    strongConventionContext, 
+                    new Uri("https://graph.microsoft.com/v1.0/me/calendar/events"), 
+                    "TODO");
             }
         }
     }

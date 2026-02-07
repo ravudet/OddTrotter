@@ -7,24 +7,52 @@
     using Fx.QueryContext;
 
     using OddTrotter.Calendar;
-    using OddTrotter.Odata.v4_01.StrongConventionContext;
+
+    using StrongConventionContext = OddTrotter.Odata.v4_01.StrongConventionContext;
 
     internal sealed class CalendarEventsContext : ICalendarEventsContext
     {
-        private readonly IStrongConventionContext<CalendarEvent> strongConventionContext;
+        private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri uri;
+        private readonly string accessToken;
 
-        internal CalendarEventsContext(IStrongConventionContext<CalendarEvent> strongConventionContext, Uri uri)
+        internal CalendarEventsContext(
+            StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
+            Uri uri,
+            string accessToken)
         {
             this.strongConventionContext = strongConventionContext;
             this.uri = uri;
+            this.accessToken = accessToken;
         }
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            var getCollectionRequest = new GetCollectionRequest<CalendarEvent>(this.uri.ToString(), System.Linq.Enumerable.Empty<HttpHeader>()); //// TODO add access token
+            var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
+                this.uri.ToString(),
+                new[]
+                {
+                    new HttpHeader("Authorization", this.accessToken),
+                });
+            StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
+            try
+            {
+                getCollectionResponse = await this.strongConventionContext.GetCollection(getCollectionRequest).ConfigureAwait(false);
+            }
+            catch (StrongConventionContext.ReadException readException)
+            {
+                throw new ReadException("TODO", readException);
+            }
+            catch (StrongConventionContext.WriteException writeException)
+            {
+                throw new WriteException("TODO", writeException);
+            }
+            catch (StrongConventionContext.StrongConventionException strongConventionException)
+            {
+                throw new ContextException("TODO", strongConventionException);
+            }
 
-            var getCollectionResponse = await this.strongConventionContext.GetCollection(getCollectionRequest).ConfigureAwait(false);
+            //// TODO do you want to try making the interface more general?
         }
     }
 }
