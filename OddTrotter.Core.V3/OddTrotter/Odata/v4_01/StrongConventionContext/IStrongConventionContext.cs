@@ -1,5 +1,6 @@
 ﻿namespace OddTrotter.Odata.v4_01.StrongConventionContext
 {
+    using System.Net.Http;
     using System.Threading.Tasks;
 
     /// <summary>
