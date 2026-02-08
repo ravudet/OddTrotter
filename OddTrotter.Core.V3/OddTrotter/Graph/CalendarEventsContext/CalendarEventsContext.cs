@@ -1,7 +1,11 @@
 ﻿namespace OddTrotter.Graph.CalendarEventsContext
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using System.Threading.Tasks;
+    using System.Xml.Schema;
 
     using Fx.Either;
     using Fx.QueryContext;
@@ -67,12 +71,30 @@
                 throw new ContextException("TODO", strongConventionException);
             }
 
-            if (getCollectionResponse)
+            var graphCalendarEvents = getCollectionResponse.Apply(
+                success =>
+                {
+                    return success
+                        .Elements
+                        .Select(element => element
+                            .Element
+                            .SelectRight(deserializationError => 
+                                new CalendarEventTranslationException("TODO", deserializationError.Exception)));
+                },
+                failure => throw new ContextException("TODO"));
         }
     }
 
     internal static class Extensions2
     {
+        internal static IQueryResult<TElement, TException> ToQueryResult<TElement, TException>(
+            this IEnumerable<TElement> enumerable)
+        {
+
+        }
+
+        private sealed class QueryResult
+
         internal static IQueryResult<TElement, TException> Concat<TElement, TException>(
             this IQueryResult<TElement, TException> queryResult,
             Task<IQueryResult<TElement, TException>> next)
