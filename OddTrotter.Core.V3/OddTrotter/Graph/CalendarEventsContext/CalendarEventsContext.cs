@@ -71,15 +71,23 @@
                 throw new ContextException("TODO", strongConventionException);
             }
 
-            var graphCalendarEvents = getCollectionResponse.Apply(
+            return getCollectionResponse.Apply(
                 success =>
                 {
-                    return success
+                    var graphCalendarEvents = success
                         .Elements
                         .Select(element => element
                             .Element
-                            .SelectRight(deserializationError => 
-                                new CalendarEventTranslationException("TODO", deserializationError.Exception)));
+                            .SelectRight(deserializationError =>
+                                new CalendarEventTranslationException("TODO", deserializationError.Exception)))
+                        .ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+
+                    if (success.NextLink != null)
+                    {
+                        graphCalendarEvents = graphCalendarEvents.Concat(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken));
+                    }
+
+                    return graphCalendarEvents;
                 },
                 failure => throw new ContextException("TODO"));
         }
@@ -90,10 +98,36 @@
         internal static IQueryResult<TElement, TException> ToQueryResult<TElement, TException>(
             this IEnumerable<TElement> enumerable)
         {
-
+            return new QueryResult<TElement, TException>(enumerable);
         }
 
-        private sealed class QueryResult
+        private sealed class QueryResult<TElement, TException> : IQueryResult<TElement, TException>
+        {
+            private readonly IEnumerable<TElement> enumerable;
+
+            public QueryResult(IEnumerable<TElement> enumerable)
+            {
+                this.enumerable = enumerable;
+            }
+
+            public IQueryResultNode<TElement, TException> Nodes
+            {
+                get
+                {
+                }
+            }
+
+            private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
+            {
+                public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
 
         internal static IQueryResult<TElement, TException> Concat<TElement, TException>(
             this IQueryResult<TElement, TException> queryResult,
