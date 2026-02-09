@@ -5,10 +5,12 @@
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Xml.Linq;
     using System.Xml.Schema;
 
     using Fx.Either;
     using Fx.QueryContext;
+    using Fx.Realizable;
 
     using OddTrotter.Calendar;
 
@@ -124,16 +126,17 @@
             {
                 get
                 {
+                    return new QueryResultNode(this.enumerable.GetEnumerator()); //// TODO disposable
                 }
             }
 
             private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
             {
-                private readonly IEnumerable<TElement> enumerable;
+                private readonly IEnumerator<TElement> enumerator;
 
-                public QueryResultNode(IEnumerable<TElement> enumerable)
+                public QueryResultNode(IEnumerator<TElement> enumerator)
                 {
-                    this.enumerable = enumerable;
+                    this.enumerator = enumerator;
                 }
 
                 public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
@@ -141,7 +144,44 @@
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
                 {
-                    throw new NotImplementedException();
+                    RefEither<IElement<TElement, TException>, IEither<IError<TException>, IEmpty>> either;
+                    if (this.enumerator.MoveNext())
+                    {
+                        either = RefEither.Right<IEither<IError<TException>, IEmpty>>().Left((IElement<TElement, TException>)new Element(this.enumerator.Current, this.enumerator)); //// TODO shouldn't need the cast
+                    }
+                    else
+                    {
+                        either = RefEither.Left<IElement<TElement, TException>>().Right((IEither<IError<TException>, IEmpty>)Either.Left<IError<TException>>().Right(Empty.Instance)); //// TODO shouldn't need the cast
+                    }
+
+                    return either.ApplyAsync(leftMap, rightMap, ref context);
+                }
+
+                private sealed class Element : IElement<TElement, TException>
+                {
+                    private readonly IEnumerator<TElement> enumerator;
+
+                    public Element(TElement value, IEnumerator<TElement> enumerator)
+                    {
+                        Value = value;
+                        this.enumerator = enumerator;
+                    }
+
+                    public TElement Value { get; }
+
+                    public IQueryResultNode<TElement, TException> Next()
+                    {
+                        return new QueryResultNode(this.enumerator);
+                    }
+                }
+
+                private sealed class Empty : IEmpty
+                {
+                    private Empty()
+                    {
+                    }
+
+                    public static Empty Instance { get; } = new Empty();
                 }
             }
         }

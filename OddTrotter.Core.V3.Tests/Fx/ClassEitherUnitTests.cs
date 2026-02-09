@@ -45,6 +45,7 @@
     //// TODO you implemented the odata interfaces, in service of the next TODO item; you now need to do the graph related stuff
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
     //// TODO remove anything under oddtrotter in v3 that is dead code
+    //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff? that's how you will know that the next item is done
 
     //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?

@@ -115,8 +115,6 @@ namespace Fx.Either
                 {
                     return Realizable.FromException<TResult>(new LeftGenerationException(exception));
                 }
-
-                
             }
 
             protected internal override Realizable<TResult> Accept(Right node, ref TContext context)
