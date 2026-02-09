@@ -190,7 +190,88 @@
             this IQueryResult<TElement, TException> queryResult,
             Task<IQueryResult<TElement, TException>> next)
         {
+            return new ConcatQueryResult<TElement, TException>(queryResult, next);
+        }
 
+        private sealed class ConcatQueryResult<TElement, TException> : IQueryResult<TElement, TException>
+        {
+            private readonly IQueryResult<TElement, TException> queryResult;
+            private readonly Task<IQueryResult<TElement, TException>> next;
+
+            public ConcatQueryResult(
+                IQueryResult<TElement, TException> queryResult,
+                Task<IQueryResult<TElement, TException>> next)
+            {
+                this.queryResult = queryResult;
+                this.next = next;
+            }
+
+            public IQueryResultNode<TElement, TException> Nodes
+            {
+                get
+                {
+                    return new QueryResultNode(this.queryResult.Nodes, this.next);
+                }
+            }
+
+            private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
+            {
+                private readonly IQueryResultNode<TElement, TException> queryResultNode;
+                private readonly Task<IQueryResult<TElement, TException>> next;
+
+                public QueryResultNode(
+                    IQueryResultNode<TElement, TException> queryResultNode,
+                    Task<IQueryResult<TElement, TException>> next)
+                {
+                    this.queryResultNode = queryResultNode;
+                    this.next = next;
+                }
+
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    return queryResultNode
+                        .ApplyAsync<TResult, TContext, TContinuable>( //// TODO why doesn't type inference work?
+                            (element, ref context) => leftMap(new FirstElement(element, this.next), ref context),
+                            (terminal, ref context) => rightMap(terminal, ref context), //// TODO you need to continue by traversing `next`
+                            ref context);
+                }
+
+                private sealed class FirstElement : IElement<TElement, TException>
+                {
+                    private readonly IElement<TElement, TException> element;
+                    private readonly Task<IQueryResult<TElement, TException>> next;
+
+                    public FirstElement(
+                        IElement<TElement, TException> element,
+                        Task<IQueryResult<TElement, TException>> next)
+                    {
+                        this.element = element;
+                        this.next = next;
+                    }
+
+                    public TElement Value
+                    {
+                        get
+                        {
+                            return this.element.Value;
+                        }
+                    }
+
+                    public IQueryResultNode<TElement, TException> Next()
+                    {
+                        //// TODO you don't account for `this.element.next` returning an error
+                        return new QueryResultNode(this.element.Next(), this.next);
+                    }
+                }
+
+                private sealed class SecondElement : IElement<TElement, TException>
+                {
+                    public SecondElement()
+                }
+            }
         }
     }
 }
