@@ -32,8 +32,7 @@
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            var page = await EvaluatePage(this.strongConventionContext, this.uri, this.accessToken);
-            page.Concat(EvaluatePage(this.strongConventionContext, this.uri, this.accessToken));
+            return await EvaluatePage(this.strongConventionContext, this.uri, this.accessToken, true);
 
 
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
@@ -98,7 +97,7 @@
                     }
                     else
                     {
-                        Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
                     }
                 });
         }
