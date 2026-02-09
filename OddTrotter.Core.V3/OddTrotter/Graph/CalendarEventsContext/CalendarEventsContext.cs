@@ -129,6 +129,13 @@
 
             private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
             {
+                private readonly IEnumerable<TElement> enumerable;
+
+                public QueryResultNode(IEnumerable<TElement> enumerable)
+                {
+                    this.enumerable = enumerable;
+                }
+
                 public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
