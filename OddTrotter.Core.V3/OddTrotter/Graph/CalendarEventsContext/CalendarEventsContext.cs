@@ -45,7 +45,8 @@
         private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri uri, 
-            string accessToken)
+            string accessToken,
+            bool throwOnFailureResponse)
         {
             var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
                 uri.ToString(),
@@ -84,12 +85,22 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken));
+                        graphCalendarEvents = graphCalendarEvents.Concat(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
                     }
 
                     return graphCalendarEvents;
                 },
-                failure => throw new ContextException("TODO"));
+                failure =>
+                {
+                    if (throwOnFailureResponse)
+                    {
+                        throw new ContextException("TODO");
+                    }
+                    else
+                    {
+                        Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+                    }
+                });
         }
     }
 
