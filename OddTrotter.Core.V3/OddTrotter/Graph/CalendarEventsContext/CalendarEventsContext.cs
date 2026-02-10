@@ -191,6 +191,7 @@
             this IQueryResult<TElement, TException> queryResult,
             Task<IQueryResult<TElement, TException>> next)
         {
+            //// TODO in a previous iteration, you took several overloads to aggregate the possible terminal errors; but you *could* have one aggregator that takes two `optional<texception>` parameters
             return new ConcatQueryResult<TElement, TException>(queryResult, next);
         }
 
