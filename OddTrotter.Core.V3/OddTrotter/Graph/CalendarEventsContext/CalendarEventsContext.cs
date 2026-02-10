@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Xml.Linq;
     using System.Xml.Schema;
@@ -232,11 +233,45 @@
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
                 {
-                    return queryResultNode
-                        .ApplyAsync<TResult, TContext, TContinuable>( //// TODO why doesn't type inference work?
-                            (element, ref context) => leftMap(new FirstElement(element, this.next), ref context),
-                            (terminal, ref context) => rightMap(terminal, ref context), //// TODO you need to continue by traversing `next`
+                    var realizable = queryResultNode
+                        .ApplyAsync<TContinuable, TContext, Realizable<TContinuable>>( //// TODO why doesn't type inference work?
+                            (element, ref context) => Realizable.FromResult(leftMap(new FirstElement(element, this.next), ref context)),
+                            (terminal, ref context) =>
+                            {
+                                return this
+                                    .next
+                                    .ToTaskWrapper()
+                                    .ContinueWith(
+                                        nextQueryResult =>
+                                        {
+                                            unsafe
+                                            {
+                                                var fakeContext = default(TContext)!;
+                                                ref TContext toPass = ref Unsafe.AsRef(ref fakeContext); //// TODO use the real context here...
+
+                                                //// TODO you shouldn't need to decompose
+                                                if (nextQueryResult.Nodes.Decompose(out var left, out var right))
+                                                {
+                                                    return leftMap(left, ref toPass);
+                                                }
+                                                else
+                                                {
+                                                    return rightMap(right, ref toPass);
+                                                }
+                                            }
+                                        },
+                                        _ => throw _,
+                                        _ => throw _);
+                            },
                             ref context);
+
+                    //// TODO it really feels like a tcontinuable should be adaptable to a realizable as an extension or something
+                    return realizable
+                        .ContinueWith(
+                            continuable => continuable.ContinueWith(_ => _, _ => throw _, _ => throw _),
+                            _ => throw _,
+                            _ => throw _)
+                        .Unwrap();
                 }
 
                 private sealed class FirstElement : IElement<TElement, TException>
@@ -265,11 +300,6 @@
                         //// TODO you don't account for `this.element.next` returning an error
                         return new QueryResultNode(this.element.Next(), this.next);
                     }
-                }
-
-                private sealed class SecondElement : IElement<TElement, TException>
-                {
-                    public SecondElement()
                 }
             }
         }
