@@ -8,6 +8,8 @@
     using Fx.QueryContext;
     using Fx.QueryContext.Mixins;
 
+    using Graph = OddTrotter.Graph.CalendarEventsContext;
+
     public sealed class CalendarEventsContext : 
         IQueryContext
             <

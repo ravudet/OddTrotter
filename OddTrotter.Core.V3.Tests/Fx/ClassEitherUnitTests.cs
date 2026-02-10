@@ -43,6 +43,9 @@
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item; you now need to do the graph related stuff
+        //// TODO you have "done" graph.CalendarEventsContext, but you need the filter option stuff too
+        //// TODO then you need to do the calendar events *source*
+        //// TODO then you need to do the odd trotter context
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
     //// TODO remove anything under oddtrotter in v3 that is dead code
     //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff? that's how you will know that the next item is done

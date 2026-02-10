@@ -2,12 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using System.Xml.Linq;
-    using System.Xml.Schema;
 
     using Fx.Either;
     using Fx.QueryContext;
@@ -54,7 +51,7 @@
                 uri.ToString(),
                 new[]
                 {
-                    new HttpHeader("Authorization", accessToken),
+                    new HttpHeader("Authorization", accessToken), //// TODO i think you need an exception specifically for this 
                 });
             StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
             try
