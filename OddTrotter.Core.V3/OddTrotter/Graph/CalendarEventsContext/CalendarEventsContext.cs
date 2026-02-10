@@ -17,22 +17,22 @@
     internal sealed class CalendarEventsContext : ICalendarEventsContext
     {
         private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
-        private readonly Uri uri;
+        private readonly Uri calendarRoot;
         private readonly string accessToken;
 
         internal CalendarEventsContext(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
-            Uri uri,
+            Uri calendarRoot,
             string accessToken)
         {
             this.strongConventionContext = strongConventionContext;
-            this.uri = uri;
+            this.calendarRoot = calendarRoot;
             this.accessToken = accessToken;
         }
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            return await EvaluatePage(this.strongConventionContext, this.uri, this.accessToken, true);
+            return await EvaluatePage(this.strongConventionContext, this.calendarRoot, this.accessToken, true);
 
 
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
