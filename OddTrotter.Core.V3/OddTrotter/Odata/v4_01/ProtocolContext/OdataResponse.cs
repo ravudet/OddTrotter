@@ -121,6 +121,7 @@
             Func<OdataPropertyValue.String, TResult> stringMap,
             Func<OdataPropertyValue.Object, TResult> objectMap,
             Func<OdataPropertyValue.Collection, TResult> collectionMap)
+            where TResult : allows ref struct
         {
             if (this is OdataPropertyValue.String @string)
             {

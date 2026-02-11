@@ -22,6 +22,27 @@
 
         public BodyStructure Deserialize(OdataObject odataObject)
         {
+            var missingProperties = new List<string>();
+
+            const string contentPropertyName = "content";
+            if (this.TryGetProperty(odataObject, contentPropertyName, out var contentProperty))
+            {
+                var content = contentProperty.Apply(
+                    @string => Either.Right<DeserializationException>().Left(@string.Value),
+                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    collection => Either.Left<string>().Right(new DeserializationException("TODO")));
+
+                var contentValue = content.throwright //// TODO implement this
+            }
+            else
+            {
+                missingProperties.Add(contentPropertyName);
+            }
+
+            if (missingProperties.Any())
+            {
+                throw new DeserializationException("TODO");
+            }
         }
 
         private bool TryGetProperty(OdataObject odataObject, string propertyName, [MaybeNullWhen(false)] out OdataPropertyValue odataPropertyValue)
@@ -93,7 +114,7 @@
             }
 
             var id = idProperty!.Apply(
-                @string => Either.Right<DeserializationException>().Left(@string.Value),
+                @string => Either.Right<DeserializationException>().Left(@string.Value), //// TODO can you use `refeither` for this?
                 @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var subject = subjectProperty!.Apply(
@@ -101,9 +122,9 @@
                 @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var body = bodyProperty!.Apply(
-                @string => Either.Left<string>().Right(new DeserializationException("TODO")),
-                @object => @object.Try(this.bodyStructureDeserializer.Deserialize),
-                colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
+                @string => Either.Left<BodyStructure>().Right(new DeserializationException("TODO")),
+                @object => @object.Try(_ => this.bodyStructureDeserializer.Deserialize(_.Value)),
+                colleciton => Either.Left<BodyStructure>().Right(new DeserializationException("TODO")));
             var start = startProperty!
                 .Apply(
                     @string => Either.Right<DeserializationException>().Left(@string.Value),
