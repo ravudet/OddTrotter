@@ -11,6 +11,14 @@
     using OddTrotter.Odata.v4_01.StrongConventionContext;
     using OddTrotter.Odata.v4_01.WeakConventionContext;
 
+    internal sealed class BodyStructureDeserializer : IDeserializer<BodyStructure>
+    {
+        public BodyStructure Deserialize(OdataObject odataObject)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal sealed class CalendarEventDeserializer : IDeserializer<CalendarEvent>
     {
         private readonly IEqualityComparer<string> propertyNameComparer;
@@ -68,8 +76,8 @@
                 @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var body = bodyProperty!.Apply(
-                @string => Either.Right<DeserializationException>().Left(@string.Value),
-                @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                @string => Either.Left<string>().Right(new DeserializationException("TODO")),
+                @object => ,
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var start = startProperty!
                 .Apply(
@@ -158,9 +166,9 @@
 
             public string? Subject { get; set; }
 
-            public string? Body { get; set; }
+            public BodyStructure? Body { get; set; }
 
-            public DateTimeOffset? Start { get; set; }
+            public TimeStructure? Start { get; set; }
 
             public bool? IsCancelled { get; set; }
 
@@ -176,7 +184,7 @@
                     this.Id,
                     this.Subject,
                     this.Body,
-                    this.Start.Value,
+                    this.Start,
                     this.IsCancelled.Value);
             }
         }

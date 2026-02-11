@@ -152,6 +152,12 @@
 
         public sealed class Object : OdataPropertyValue
         {
+            public Object(OdataObject value)
+            {
+                Value = value;
+            }
+
+            public OdataObject Value { get; }
         }
 
         public sealed class Collection : OdataPropertyValue

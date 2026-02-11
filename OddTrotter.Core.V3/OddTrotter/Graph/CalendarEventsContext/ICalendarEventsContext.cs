@@ -20,6 +20,8 @@
         /// <exception cref="ContextException">Thrown if the underlying response payload is not valid OData or does not represent a collection response</exception>
         Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
 
+        //// TODO you're really avoiding doing the `select` stuff because of the type system issues (like, what should the "not present" properties look like in the return value? and should the client be expected to check that stuff? (i.e. can you strongly type it somehow))
+
         TCalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
 
         TCalendarEventsContext Top(int top);

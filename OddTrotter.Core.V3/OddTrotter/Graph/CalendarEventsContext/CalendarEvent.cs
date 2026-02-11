@@ -4,7 +4,7 @@
 
     internal sealed class CalendarEvent
     {
-        public CalendarEvent(string id, string subject, string body, DateTimeOffset start, bool isCancelled)
+        public CalendarEvent(string id, string subject, BodyStructure body, TimeStructure start, bool isCancelled)
         {
             ArgumentNullException.ThrowIfNull(id);
             ArgumentNullException.ThrowIfNull(subject);
@@ -21,10 +21,59 @@
 
         public string Subject { get; }
 
-        public string Body { get; }
+        public TimeStructure Start { get; set; }
 
-        public DateTimeOffset Start { get; }
+        public BodyStructure Body { get; set; }
 
         public bool IsCancelled { get; }
+    }
+
+    internal sealed class BodyStructure
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="content"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="content"/> is <see langword="null"/></exception>
+        public BodyStructure(string content)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            this.Content = content;
+        }
+
+        public string Content { get; set; }
+    }
+
+    internal sealed class TimeStructure
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <param name="timeZone"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="dateTime"/> or <paramref name="timeZone"/> is <see langword="null"/></exception>
+        public TimeStructure(string dateTime, string timeZone)
+        {
+            if (dateTime == null)
+            {
+                throw new ArgumentNullException(nameof(dateTime));
+            }
+
+            if (timeZone == null)
+            {
+                throw new ArgumentNullException(nameof(timeZone));
+            }
+
+            this.DateTime = dateTime;
+            this.TimeZone = timeZone;
+        }
+
+        public string DateTime { get; set; }
+
+        public string TimeZone { get; set; }
     }
 }
