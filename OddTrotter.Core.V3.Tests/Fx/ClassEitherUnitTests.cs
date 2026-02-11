@@ -47,6 +47,7 @@
         //// TODO then you need to do the calendar events *source*
         //// TODO then you need to do the odd trotter context
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
+    //// TODO actually do a mock test in `contexttests`
     //// TODO remove anything under oddtrotter in v3 that is dead code
     //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff? that's how you will know that the next item is done
 
