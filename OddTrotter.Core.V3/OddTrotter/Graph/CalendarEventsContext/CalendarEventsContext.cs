@@ -142,7 +142,7 @@
         {
             this.strongConventionContext = strongConventionContext;
             this.calendarRoot = calendarRoot;
-            this.accessToken = accessToken;
+            this.accessToken = accessToken; //// TODO access token really should be baked into `strongConventionContext`, especially to abstract things like token expiration
         }
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
