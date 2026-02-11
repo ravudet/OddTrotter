@@ -165,12 +165,12 @@
                 {
                     new HttpHeader("Authorization", accessToken), //// TODO i think you need an exception specifically for this, you can do something like this to accomplish that:
                     /*
-                    internal interface IGraphVersion : ICalendarEventsContext
+                    internal interface IGraphVersion : IStrongConventionContext
     {
 #pragma warning disable CS0108 // Member hides inherited member; missing new keyword
         /// <inheritdoc cref="ICalendarEventsContext.Evaluate"/>
         /// <exception cref="System.IO.IOException"></exception>
-        Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
+        ... GetCollection();
 #pragma warning restore CS0108 // Member hides inherited member; missing new keyword
     }
                     */
