@@ -238,6 +238,32 @@
         {
             throw new NotImplementedException();
         }
+
+        internal static Expression<Func<CalendarEvent, bool>> TypeEqualsSingleInstance { get; } = calendarEvent => true; //// TODO how should you handle the fact that `calendarEvent/type` won't get selected? it still needs to be a property on `graphcalendarevent` so that you can write this expression
+
+        internal static Expression<Func<CalendarEvent, bool>> StartTimeGreaterThan(DateTime dateTime)
+        {
+            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(StartTimeGreaterThan) + dateTime.Ticks.ToString());
+            foo.Update(foo.Body, new[] { ticks });
+
+            return foo;
+        }
+
+        internal static Expression<Func<CalendarEvent, bool>> EndTimeLessThan(DateTime dateTime)
+        {
+            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(EndTimeLessThan) + dateTime.Ticks.ToString());
+            foo.Update(foo.Body, new[] { ticks });
+
+            return foo;
+        }
+
+        internal static Expression<Func<CalendarEvent, bool>> IsCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == true;
+
+        internal static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == false;
+
+        internal static Expression<Func<CalendarEvent, string>> StartTime { get; } = calendarEvent => calendarEvent.Start.DateTime;
     }
 
     internal static class Extensions2
