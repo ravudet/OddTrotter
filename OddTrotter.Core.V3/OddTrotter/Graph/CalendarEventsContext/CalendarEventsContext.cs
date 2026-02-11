@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -128,7 +129,7 @@
     }
 
 
-    internal sealed class CalendarEventsContext : ICalendarEventsContext
+    internal sealed class CalendarEventsContext : ICalendarEventsContext<CalendarEventsContext>
     {
         private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri calendarRoot;
@@ -221,6 +222,21 @@
                         return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference //// TODO put the failure in there
                     }
                 });
+        }
+
+        public CalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CalendarEventsContext Top(int top)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy)
+        {
+            throw new NotImplementedException();
         }
     }
 
