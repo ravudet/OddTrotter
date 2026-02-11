@@ -22,6 +22,7 @@
     
     /// <summary>
     /// TODO does this implementation still work when query parameters are added to the interface?
+    /// TODO plus, does the interface even make sense? not every collection supports every query parameter, and that's not *really* known until you make the network call
     /// </summary>
     /// <typeparam name="TElement"></typeparam>
     /// <typeparam name="TTranslationException"></typeparam>
