@@ -13,18 +13,43 @@
 
     internal sealed class BodyStructureDeserializer : IDeserializer<BodyStructure>
     {
+        private readonly IEqualityComparer<string> propertyNameComparer;
+
+        public BodyStructureDeserializer(IEqualityComparer<string> propertyNameComparer)
+        {
+            this.propertyNameComparer = propertyNameComparer;
+        }
+
         public BodyStructure Deserialize(OdataObject odataObject)
         {
-            throw new NotImplementedException();
+        }
+
+        private bool TryGetProperty(OdataObject odataObject, string propertyName, [MaybeNullWhen(false)] out OdataPropertyValue odataPropertyValue)
+        {
+            var properties = odataObject.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, propertyName));
+            if (properties.TrySingle(out var property))
+            {
+                odataPropertyValue = property.Value;
+                return true;
+            }
+            else
+            {
+                odataPropertyValue = default;
+                return false;
+            }
         }
     }
 
     internal sealed class CalendarEventDeserializer : IDeserializer<CalendarEvent>
     {
+        private readonly IDeserializer<BodyStructure> bodyStructureDeserializer;
         private readonly IEqualityComparer<string> propertyNameComparer;
 
-        public CalendarEventDeserializer(IEqualityComparer<string> propertyNameComparer)
+        public CalendarEventDeserializer(
+            IDeserializer<BodyStructure> bodyStructureDeserializer, 
+            IEqualityComparer<string> propertyNameComparer)
         {
+            this.bodyStructureDeserializer = bodyStructureDeserializer;
             this.propertyNameComparer = propertyNameComparer;
         }
 
@@ -77,7 +102,7 @@
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var body = bodyProperty!.Apply(
                 @string => Either.Left<string>().Right(new DeserializationException("TODO")),
-                @object => ,
+                @object => @object.Try(this.bodyStructureDeserializer.Deserialize),
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var start = startProperty!
                 .Apply(
