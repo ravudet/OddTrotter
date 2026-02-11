@@ -73,6 +73,16 @@
         {
         }
 
+        internal sealed class NextLink : ControlInformation
+        {
+            public NextLink(string url)
+            {
+                Url = url;
+            }
+
+            public string Url { get; }
+        }
+
         internal sealed class Unknown : ControlInformation
         {
             public Unknown(string name, string value)

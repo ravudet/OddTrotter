@@ -58,7 +58,7 @@
         public string HttpStatusCode { get; }
         public IEnumerable<HttpHeader> Headers { get; }
         public IEnumerable<CollectionElement> Elements { get; }
-        public string? NextLink { get; }
+        public string? NextLink { get; } //// TODO i don't think the nextlink is ever actually allowed to be `null`, it's either present or it isn't, so maybe represent this differently here
     }
 
     internal sealed class CollectionElement

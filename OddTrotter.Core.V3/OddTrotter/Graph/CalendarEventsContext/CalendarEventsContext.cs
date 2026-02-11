@@ -19,7 +19,13 @@
     {
         ITask<IQueryResult<IEither<TElement, TTranslationException>, TPagingException>> Evaluate();
     }
-
+    
+    /// <summary>
+    /// TODO does this implementation still work when query parameters are added to the interface?
+    /// </summary>
+    /// <typeparam name="TElement"></typeparam>
+    /// <typeparam name="TTranslationException"></typeparam>
+    /// <typeparam name="TPagingException"></typeparam>
     internal sealed class CollectionContext<TElement, TTranslationException, TPagingException> : ICollectionContext<TElement, TTranslationException, TPagingException>
     {
         private readonly StrongConventionContext.IStrongConventionContext<TElement> strongConventionContext;

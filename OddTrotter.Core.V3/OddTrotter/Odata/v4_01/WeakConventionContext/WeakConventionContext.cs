@@ -6,6 +6,8 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using OddTrotter.Odata.v4_01.ProtocolContext;
+
     using Protocol = OddTrotter.Odata.v4_01.ProtocolContext;
 
     internal sealed class WeakConventionContext : IWeakConventionContext
@@ -68,12 +70,22 @@
                         throw new WeakConventionException("TODO");
                     }
 
+                    var nextLinks = success.Value.ControlInformation.OfType<ControlInformation.NextLink>();
+                    string? nextLink = null;
+                    if (nextLinks.TryFirst(out var nextLinkControlInformation))
+                    {
+                        //// TODO do you want to surface an error if there is more than 1?
+                        nextLink = nextLinkControlInformation.Url;
+                    }
+
+
                     return new GetCollectionResponse.Success(
                         new Success(
                             success.Value.HttpStatusCode,
                             success.Value.Headers,
                             collection.Elements.Select(
-                                element => new CollectionElement(element))));
+                                element => new CollectionElement(element)),
+                            nextLink));
                 },
                 failure => new GetCollectionResponse.Failure());
         }
@@ -86,6 +98,20 @@
             try
             {
                 value = source.Single();
+                return true;
+            }
+            catch
+            {
+                value = default;
+                return false;
+            }
+        }
+
+        public static bool TryFirst<T>(this IEnumerable<T> source, [MaybeNullWhen(false)] out T value)
+        {
+            try
+            {
+                value = source.First();
                 return true;
             }
             catch
