@@ -18,34 +18,4 @@
         /// <exception cref="ContextException">Thrown if the underlying response payload is not valid OData or does not represent a collection response</exception>
         Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
     }
-
-
-
-
-
-    internal interface IGraphVersion : ICalendarEventsContext
-    {
-#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
-        /// <inheritdoc cref="ICalendarEventsContext.Evaluate"/>
-        /// <exception cref="System.IO.IOException"></exception>
-        Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
-#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
-    }
-
-    internal sealed class GraphVersion : IGraphVersion
-    {
-        private readonly IGraphVersion graphVersion;
-        private readonly ICalendarEventsContext nonGraph;
-
-        public GraphVersion(IGraphVersion graphVersion, ICalendarEventsContext nonGraph)
-        {
-            this.graphVersion = graphVersion;
-            this.nonGraph = nonGraph;
-        }
-
-        public Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
-        {
-            this.nonGraph.Evaluate()
-        }
-    }
 }

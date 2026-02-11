@@ -51,7 +51,17 @@
                 uri.ToString(),
                 new[]
                 {
-                    new HttpHeader("Authorization", accessToken), //// TODO i think you need an exception specifically for this 
+                    new HttpHeader("Authorization", accessToken), //// TODO i think you need an exception specifically for this, you can do something like this to accomplish that:
+                    /*
+                    internal interface IGraphVersion : ICalendarEventsContext
+    {
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+        /// <inheritdoc cref="ICalendarEventsContext.Evaluate"/>
+        /// <exception cref="System.IO.IOException"></exception>
+        Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
+    }
+                    */
                 });
             StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
             try
@@ -97,7 +107,7 @@
                     }
                     else
                     {
-                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference //// TODO put the failure in there
                     }
                 });
         }
