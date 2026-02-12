@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Security;
 
     using Fx.Either;
     
@@ -73,29 +74,70 @@
             var dateTimePropertyName = "dateTime";
             if (this.TryGetProperty(odataObject, dateTimePropertyName, out var dateTimeProperty))
             {
-                var dateTimePropertyValue = dateTimeProperty.Apply(
-                    @string => Either.Right<DeserializationException>().Left(@string.Value),
-                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                    collection => Either.Left<string>().Right(new DeserializationException("TODO")));
-
-
-                dateTimePropertyValue.Apply(
-                    (value, ref state) =>
-                    {
-                        state.Builder.DateTime = value;
-                    },
-                    (exception, ref state) =>
-                    {
-                        state.Errors.Add(exception);
-                    },
-                    ref state);
+                dateTimeProperty
+                    .Apply(
+                        @string => Either.Right<DeserializationException>().Left(@string.Value),
+                        @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                        collection => Either.Left<string>().Right(new DeserializationException("TODO")))
+                    .Apply(
+                        (value, ref state) =>
+                        {
+                            state.Builder.DateTime = value;
+                        },
+                        (exception, ref state) =>
+                        {
+                            state.Errors.Add(exception);
+                        },
+                        ref state);
             }
             else
             {
                 missingProperties.Add(dateTimePropertyName);
             }
 
-            throw new Exception("tODO");
+            var timeZonePropertyName = "timeZone";
+            if (this.TryGetProperty(odataObject, timeZonePropertyName, out var timeZoneProperty))
+            {
+                timeZoneProperty
+                    .Apply(
+                        @string => Either.Right<DeserializationException>().Left(@string.Value),
+                        @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                        collection => Either.Left<string>().Right(new DeserializationException("TODO")))
+                    .Apply(
+                        (value, ref state) =>
+                        {
+                            state.Builder.TimeZone = value;
+                        },
+                        (exception, ref state) =>
+                        {
+                            state.Errors.Add(exception);
+                        },
+                        ref state);
+            }
+            else
+            {
+                missingProperties.Add(timeZonePropertyName);
+            }
+
+            string? error = null;
+            if (missingProperties.Any())
+            {
+                error = string.Concat(error, $"The following properties were missing: {string.Join(", ", missingProperties)}. ");
+            }
+
+            if (state.Errors.Any())
+            {
+                error = string.Concat(error, $"The following validation errors occurred: {string.Join("; ", state.Errors)}.");
+            }
+
+            if (error == null)
+            {
+                return state.Builder.Build();
+            }
+            else
+            {
+                throw new DeserializationException(error);
+            }
         }
 
         private ref struct DeserializationState
