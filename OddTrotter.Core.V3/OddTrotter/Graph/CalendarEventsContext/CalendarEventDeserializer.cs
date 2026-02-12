@@ -68,6 +68,8 @@
 
         public TimeStructure Deserialize(OdataObject odataObject)
         {
+            //// TODO all deserializers should mimic this pattern
+
             var missingProperties = new List<string>();
             var state = new DeserializationState();
 
