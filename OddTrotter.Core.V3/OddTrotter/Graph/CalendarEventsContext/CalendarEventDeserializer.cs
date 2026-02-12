@@ -142,20 +142,11 @@
                 colleciton => Either.Left<BodyStructure>().Right(new DeserializationException("TODO")));
             var start = startProperty!
                 .Apply(
-                    @string => Either.Right<DeserializationException>().Left(@string.Value),
-                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                    colleciton => Either.Left<string>().Right(new DeserializationException("TODO")))
-                .SelectLeft(@string => @string
-                    .Try(DateTimeOffset.Parse)
-                    .SelectRight(exception => new DeserializationException("TODO", exception)))
-                .SelectManyLeft();
-
-            startProperty!
-                .Apply(
-                    @string => Either.Left<string>().Right(new DeserializationException("TODO")),
-                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                    collection => Either.Left<string>().Right(new DeserializationException("TODO")));
-
+                    @string => Either.Left<TimeStructure>().Right(new DeserializationException("TODO")),
+                    @object => @object
+                        .Try(_ => this.timeStructureDeserializer.Deserialize(_.Value))
+                        .SelectRight(exception => exception is DeserializationException deserializationException ? deserializationException : new DeserializationException("TODO", exception)),
+                    collection => Either.Left<TimeStructure>().Right(new DeserializationException("TODO")));
             var isCancelled = isCancelledProperty!
                 .Apply(
                     @string => Either.Right<DeserializationException>().Left(@string.Value),
