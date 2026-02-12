@@ -136,7 +136,9 @@
                 colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
             var body = bodyProperty!.Apply(
                 @string => Either.Left<BodyStructure>().Right(new DeserializationException("TODO")),
-                @object => @object.Try(_ => this.bodyStructureDeserializer.Deserialize(_.Value)),
+                @object => @object
+                    .Try(_ => this.bodyStructureDeserializer.Deserialize(_.Value))
+                    .SelectRight(exception => exception is DeserializationException deserializationException ? deserializationException : new DeserializationException("TODO", exception)),
                 colleciton => Either.Left<BodyStructure>().Right(new DeserializationException("TODO")));
             var start = startProperty!
                 .Apply(
@@ -147,6 +149,13 @@
                     .Try(DateTimeOffset.Parse)
                     .SelectRight(exception => new DeserializationException("TODO", exception)))
                 .SelectManyLeft();
+
+            startProperty!
+                .Apply(
+                    @string => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    collection => Either.Left<string>().Right(new DeserializationException("TODO")));
+
             var isCancelled = isCancelledProperty!
                 .Apply(
                     @string => Either.Right<DeserializationException>().Left(@string.Value),
@@ -279,6 +288,8 @@
             }
 
             return Either.Right<Exception>().Left(result);
+
+            //// TODO there's a possibly interesting pattern for this extension (and maybe others like it); you could return a concrete type here that implements `ieither<tresult, exception` and does exactly what this method does; no changes would happen for any current use cases; but then in that concrete type, you could have an additional method that takes a `texception` type parameter and adapts the `exception` from this method into a `texception`; this could be useful for cases where the caller *knows* what `totry` will throw and would prevent them from having to call  `.try().selectright(exception => ...)`
         }
     }
 }
