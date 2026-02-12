@@ -67,7 +67,78 @@
 
         public TimeStructure Deserialize(OdataObject odataObject)
         {
-            throw new NotImplementedException();
+            var missingProperties = new List<string>();
+            var state = new DeserializationState();
+
+            var dateTimePropertyName = "dateTime";
+            if (this.TryGetProperty(odataObject, dateTimePropertyName, out var dateTimeProperty))
+            {
+                var dateTimePropertyValue = dateTimeProperty.Apply(
+                    @string => Either.Right<DeserializationException>().Left(@string.Value),
+                    @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                    collection => Either.Left<string>().Right(new DeserializationException("TODO")));
+
+
+                dateTimePropertyValue.Apply(
+                    (value, ref state) =>
+                    {
+                        state.Builder.DateTime = value;
+                    },
+                    (exception, ref state) =>
+                    {
+                        state.Errors.Add(exception);
+                    },
+                    ref state);
+            }
+            else
+            {
+                missingProperties.Add(dateTimePropertyName);
+            }
+
+            throw new Exception("tODO");
+        }
+
+        private ref struct DeserializationState
+        {
+            public DeserializationState()
+            {
+                this.Builder = new TimeStructureBuilder();
+                this.Errors = new List<DeserializationException>();
+            }
+
+            public TimeStructureBuilder Builder;
+
+            public List<DeserializationException> Errors;
+        }
+
+        private ref struct TimeStructureBuilder
+        {
+            public string? DateTime { get; set; }
+
+            public string? TimeZone { get; set; }
+
+            public TimeStructure Build()
+            {
+                ArgumentNullException.ThrowIfNull(this.DateTime);
+                ArgumentNullException.ThrowIfNull(this.TimeZone);
+
+                return new TimeStructure(this.DateTime, this.TimeZone);
+            }
+        }
+
+        private bool TryGetProperty(OdataObject odataObject, string propertyName, [MaybeNullWhen(false)] out OdataPropertyValue odataPropertyValue)
+        {
+            var properties = odataObject.Properties.Where(property => this.propertyNameComparer.Equals(property.Name, propertyName));
+            if (properties.TrySingle(out var property))
+            {
+                odataPropertyValue = property.Value;
+                return true;
+            }
+            else
+            {
+                odataPropertyValue = default;
+                return false;
+            }
         }
     }
 

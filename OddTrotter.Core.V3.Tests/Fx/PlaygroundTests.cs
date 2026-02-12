@@ -1,12 +1,15 @@
 ﻿namespace Fx
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
     using System.Net.Sockets;
     using System.Threading.Tasks;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using OddTrotter.Odata.v4_01.StrongConventionContext;
 
     [TestClass]
     public sealed class PlaygroundTests
@@ -58,6 +61,76 @@
                     }
                 }
             }
+        }
+
+        [TestMethod]
+        public void IntermediateStruct()
+        {
+            var builder = new TimeStructureBuilder();
+            var state = new DeserializationState(ref builder);
+            IntermediateStructHelper(ref state);
+
+            Assert.AreEqual("asdf", state.Builder.DateTime);
+
+            var timeStructure = state.Builder.Build();
+
+            Assert.AreEqual("asdf", timeStructure.DateTime);
+        }
+
+        private static void IntermediateStructHelper(ref DeserializationState state)
+        {
+            state.Builder.DateTime = "asdf";
+
+            state.Builder.Another.Value = 1234;
+
+            var builder = state.Builder;
+
+            builder.Another.Value = 1234;
+
+            state.Builder.TimeZone = "qwer";
+        }
+
+        private ref struct DeserializationState
+        {
+            private readonly ref TimeStructureBuilder timeStructureBuilder;
+
+            public DeserializationState(ref TimeStructureBuilder timeStructureBuilder)
+            {
+                this.Errors = new List<DeserializationException>();
+                this.timeStructureBuilder = ref timeStructureBuilder; //// TODO the trick here is that `timestructurebuilder` is *not* a `ref struct`; can you use this to do your linked list thing?
+            }
+
+            public ref TimeStructureBuilder Builder
+            {
+                get
+                {
+                    return ref this.timeStructureBuilder;
+                }
+            }
+
+            public List<DeserializationException> Errors { get; set; }
+        }
+
+        private struct TimeStructureBuilder
+        {
+            public string? DateTime { get; set; }
+
+            public string? TimeZone { get; set; }
+
+            public Another Another;
+
+            public OddTrotter.Graph.CalendarEventsContext.TimeStructure Build()
+            {
+                ArgumentNullException.ThrowIfNull(this.DateTime);
+                ArgumentNullException.ThrowIfNull(this.TimeZone);
+
+                return new OddTrotter.Graph.CalendarEventsContext.TimeStructure(this.DateTime, this.TimeZone);
+            }
+        }
+
+        private struct Another
+        {
+            public int? Value { get; set; }
         }
     }
 }

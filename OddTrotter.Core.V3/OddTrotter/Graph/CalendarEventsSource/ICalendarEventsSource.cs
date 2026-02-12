@@ -6,4 +6,8 @@
     {
         ICalendarEventsContext GenerateGetRequest();
     }
+
+    internal interface ICalendarEventsContext : ICalendarEventsContext<ICalendarEventsContext>
+    {
+    }
 }
