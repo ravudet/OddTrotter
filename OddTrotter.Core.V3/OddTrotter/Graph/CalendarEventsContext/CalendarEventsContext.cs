@@ -135,14 +135,33 @@
         private readonly Uri calendarRoot;
         private readonly string accessToken;
 
+        private readonly string? filter;
+        private readonly string? orderBy;
+        private readonly string? top;
+
+        internal CalendarEventsContext(
+            StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext,
+            Uri calendarRoot,
+            string accessToken)
+            : this(strongConventionContext, calendarRoot, accessToken, null, null, null)
+        {
+        }
+
         internal CalendarEventsContext(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri calendarRoot,
-            string accessToken)
+            string accessToken,
+            string? filter,
+            string? orderBy,
+            string? top)
         {
             this.strongConventionContext = strongConventionContext;
             this.calendarRoot = calendarRoot;
             this.accessToken = accessToken; //// TODO access token really should be baked into `strongConventionContext`, especially to abstract things like token expiration
+
+            this.filter = filter;
+            this.orderBy = orderBy;
+            this.top = top;
         }
 
         public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
@@ -226,17 +245,118 @@
 
         public CalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter)
         {
-            throw new NotImplementedException();
+            string? filterExpression = null;
+            if (filter == TypeEqualsSingleInstance)
+            {
+                filterExpression = "type eq 'singleInstance'";
+            }
+            else if (filter == IsCancelled)
+            {
+                filterExpression = "isCancelled eq true";
+            }
+            else if (filter == IsNotCancelled)
+            {
+                filterExpression = "isCancelled eq false";
+            }
+            else if (filter.Parameters.Count == 1)
+            {
+                var parameterName = filter.Parameters[0].Name;
+                if (parameterName != null)
+                {
+                    if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
+                    {
+                        if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
+                        {
+                            var startTime = new DateTime(startTimeTicks);
+                            filterExpression = $"start/dateTime gt '{startTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000000")}'"; //// TODO does touniversal time mess up if you're already in utc?
+                        }
+                    }
+                    else if (parameterName.StartsWith(nameof(EndTimeLessThan)))
+                    {
+                        if (long.TryParse(parameterName.Substring(nameof(EndTimeLessThan).Length), out var endTimeTicks))
+                        {
+                            var endTime = new DateTime(endTimeTicks);
+                            filterExpression = $"end/dateTime lt '{endTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000000")}'";
+                        }
+                    }
+                }
+            }
+
+            if (filterExpression == null)
+            {
+                throw new NotImplementedException("TODO");
+            }
+
+            if (this.filter == null)
+            {
+                return new CalendarEventsContext(
+                    this.strongConventionContext,
+                    this.calendarRoot,
+                    this.accessToken,
+                    filterExpression,
+                    this.orderBy,
+                    this.top);
+            }
+            else
+            {
+                return new CalendarEventsContext(
+                    this.strongConventionContext,
+                    this.calendarRoot,
+                    this.accessToken,
+                    this.filter + " and " + filterExpression,
+                    this.orderBy,
+                    this.top);
+            }
         }
 
         public CalendarEventsContext Top(int top)
         {
-            throw new NotImplementedException();
+            if (this.top != null)
+            {
+                throw new Exception("TODO invalidoperationexception");
+            }
+
+            return new CalendarEventsContext(
+                this.strongConventionContext,
+                this.calendarRoot,
+                this.accessToken,
+                this.filter,
+                this.orderBy,
+                top.ToString());
         }
 
         public CalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy)
         {
-            throw new NotImplementedException();
+            string orderByExpression;
+            if (orderBy is Expression<Func<CalendarEvent, string>> asString && asString == StartTime)
+            {
+                orderByExpression = "start/dateTime";
+            }
+            else
+            {
+                throw new NotImplementedException("TODO");
+            }
+
+            if (this.orderBy == null)
+            {
+                return new CalendarEventsContext(
+                    this.strongConventionContext,
+                    this.calendarRoot,
+                    this.accessToken,
+                    this.filter,
+                    orderByExpression,
+                    this.top);
+            }
+            else
+            {
+                return new CalendarEventsContext(
+                    this.strongConventionContext,
+                    this.calendarRoot,
+                    this.accessToken,
+                    this.filter,
+                    this.orderBy + "," + orderByExpression,
+                    this.top);
+            }
         }
 
         internal static Expression<Func<CalendarEvent, bool>> TypeEqualsSingleInstance { get; } = calendarEvent => true; //// TODO how should you handle the fact that `calendarEvent/type` won't get selected? it still needs to be a property on `graphcalendarevent` so that you can write this expression
