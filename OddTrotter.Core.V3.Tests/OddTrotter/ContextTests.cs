@@ -7,6 +7,7 @@
 
     using OddTrotter.Calendar;
     using OddTrotter.Graph.CalendarEventsContext;
+    using OddTrotter.Graph.CalendarEventsSource;
     using OddTrotter.Odata.v4_01.ProtocolContext;
     using OddTrotter.Odata.v4_01.Reader.RequestReader;
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
@@ -37,6 +38,7 @@
                     strongConventionContext, 
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar/events"), 
                     "TODO");
+                var calendarEventsSource = new CalendarEventsSource(calendarEventsContext);
             }
         }
     }

@@ -2,12 +2,9 @@
 {
     using OddTrotter.Graph.CalendarEventsContext;
 
-    internal interface ICalendarEventsSource
+    internal interface ICalendarEventsSource<TGetContext>
+        where TGetContext : ICalendarEventsContext<TGetContext>
     {
-        ICalendarEventsContext GenerateGetRequest();
-    }
-
-    internal interface ICalendarEventsContext : ICalendarEventsContext<ICalendarEventsContext>
-    {
+        TGetContext GenerateGetRequest();
     }
 }

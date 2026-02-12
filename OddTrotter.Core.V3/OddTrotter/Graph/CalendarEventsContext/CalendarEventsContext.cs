@@ -147,7 +147,7 @@
         {
         }
 
-        internal CalendarEventsContext(
+        private CalendarEventsContext(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri calendarRoot,
             string accessToken,
