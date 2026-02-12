@@ -22,8 +22,6 @@
 
         public BodyStructure Deserialize(OdataObject odataObject)
         {
-            var missingProperties = new List<string>();
-
             const string contentPropertyName = "content";
             if (this.TryGetProperty(odataObject, contentPropertyName, out var contentProperty))
             {
@@ -32,14 +30,11 @@
                     @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                     collection => Either.Left<string>().Right(new DeserializationException("TODO")));
 
-                var contentValue = content.throwright //// TODO implement this
+                var contentValue = content.ThrowRight();
+
+                return new BodyStructure(contentValue);
             }
             else
-            {
-                missingProperties.Add(contentPropertyName);
-            }
-
-            if (missingProperties.Any())
             {
                 throw new DeserializationException("TODO");
             }
@@ -61,16 +56,34 @@
         }
     }
 
+    internal sealed class TimeStructureDeserializer : IDeserializer<TimeStructure>
+    {
+        private readonly IEqualityComparer<string> propertyNameComparer;
+
+        public TimeStructureDeserializer(IEqualityComparer<string> propertyNameComparer)
+        {
+            this.propertyNameComparer = propertyNameComparer;
+        }
+
+        public TimeStructure Deserialize(OdataObject odataObject)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal sealed class CalendarEventDeserializer : IDeserializer<CalendarEvent>
     {
         private readonly IDeserializer<BodyStructure> bodyStructureDeserializer;
+        private readonly IDeserializer<TimeStructure> timeStructureDeserializer;
         private readonly IEqualityComparer<string> propertyNameComparer;
 
         public CalendarEventDeserializer(
             IDeserializer<BodyStructure> bodyStructureDeserializer, 
+            IDeserializer<TimeStructure> timeStructureDeserializer,
             IEqualityComparer<string> propertyNameComparer)
         {
             this.bodyStructureDeserializer = bodyStructureDeserializer;
+            this.timeStructureDeserializer = timeStructureDeserializer;
             this.propertyNameComparer = propertyNameComparer;
         }
 

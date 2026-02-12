@@ -536,6 +536,54 @@ namespace Fx.Either
 
 
 
+
+        public static TLeft ThrowRight<TLeft, TRight>(this IEither<TLeft, TRight> either) where TRight : Exception
+        {
+            ArgumentNullException.ThrowIfNull(either);
+
+            try
+            {
+                return either.CoalesceRight(right => throw right);
+            }
+            catch (RightMapException rightMapException)
+            {
+                throw rightMapException.InnerException!; //// TODO null inner exception
+            }
+        }
+
+        public static TLeft CoalesceRight<TLeft, TRight>(this IEither<TLeft, TRight> either, Func<TRight, TLeft> coalescer)
+        {
+            ArgumentNullException.ThrowIfNull(either);
+            ArgumentNullException.ThrowIfNull(coalescer);
+
+            return either.Apply(left => left, coalescer);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //// TODO this maybe should be documented somewhere, but you have these variants:
         //// {
         //// teither
