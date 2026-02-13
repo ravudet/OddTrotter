@@ -39,11 +39,11 @@
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar/events"), 
                     "TODO");
                 var accessToken = "TODO";
-                var calendarEventsSource = new CalendarEventsSource(
+                var calendarSource = new CalendarSource(
                     strongConventionContext,
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar"),
                     accessToken);
-                var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(graphCalendarEventsContext);
+                var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(calendarSource);
             }
         }
     }
