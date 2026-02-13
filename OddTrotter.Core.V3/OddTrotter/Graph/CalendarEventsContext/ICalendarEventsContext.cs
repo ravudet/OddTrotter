@@ -28,4 +28,8 @@
 
         TCalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy);
     }
+
+    internal interface ICalendarEventsContext : ICalendarEventsContext<ICalendarEventsContext>
+    {
+    }
 }

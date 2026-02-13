@@ -10,7 +10,7 @@
 
     using Graph = OddTrotter.Graph.CalendarEventsContext;
 
-    public sealed class CalendarEventsContext : 
+    internal sealed class CalendarEventsContext : 
         IQueryContext
             <
                 IEither
@@ -33,8 +33,11 @@
                 CalendarEventsContext
             >
     {
-        private CalendarEventsContext()
+        private readonly Graph.ICalendarEventsContext calendarEventsContext;
+
+        internal CalendarEventsContext(Graph.ICalendarEventsContext calendarEventsContext)
         {
+            this.calendarEventsContext = calendarEventsContext;
         }
 
         public ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()

@@ -129,7 +129,9 @@
     }
 
 
-    internal sealed class CalendarEventsContext : ICalendarEventsContext<CalendarEventsContext>
+    internal sealed class CalendarEventsContext : 
+        ICalendarEventsContext<CalendarEventsContext>, 
+        ICalendarEventsContext //// TODO why did you have to implement this as well? why doesn't covariance work?
     {
         private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri calendarRoot;
@@ -377,6 +379,21 @@
             foo.Update(foo.Body, new[] { ticks });
 
             return foo;
+        }
+
+        ICalendarEventsContext ICalendarEventsContext<ICalendarEventsContext>.Filter(Expression<Func<CalendarEvent, bool>> filter)
+        {
+            return Filter(filter);
+        }
+
+        ICalendarEventsContext ICalendarEventsContext<ICalendarEventsContext>.Top(int top)
+        {
+            return Top(top);
+        }
+
+        ICalendarEventsContext ICalendarEventsContext<ICalendarEventsContext>.OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy)
+        {
+            return OrderBy(orderBy);
         }
 
         internal static Expression<Func<CalendarEvent, bool>> IsCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == true;
