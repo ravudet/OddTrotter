@@ -33,17 +33,18 @@
                 CalendarEventsContext
             >
     {
-        private readonly Graph.ICalendarEventsContext calendarEventsContext;
+        private readonly Graph.ICalendarSource calendarSource;
 
-        internal CalendarEventsContext(Graph.ICalendarEventsContext calendarEventsContext)
+        internal CalendarEventsContext(Graph.ICalendarSource calendarSource)
         {
-            this.calendarEventsContext = calendarEventsContext;
+            this.calendarSource = calendarSource;
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
+            var queryResult = await this.calendarSource.Events().Get().Evaluate().ConfigureAwait(false);
+
             //// TODO you should be combining instance and series events here
-            var queryResult = await this.calendarEventsContext.Evaluate().ConfigureAwait(false);
             return queryResult
                 .Select(element => element
                     .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
