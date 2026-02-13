@@ -8,6 +8,13 @@
     using Fx.Either;
     using Fx.QueryContext;
 
+    using OddTrotter.Graph.CalendarEventsSource;
+
+    internal interface ICalendarSource
+    {
+        ICalendarEventsSource Events();
+    }
+
     internal interface ICalendarEventsContext<out TCalendarEventsContext> where TCalendarEventsContext : ICalendarEventsContext<TCalendarEventsContext>
     {
         /// <summary>

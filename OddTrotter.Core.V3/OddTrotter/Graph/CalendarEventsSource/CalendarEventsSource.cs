@@ -7,11 +7,6 @@
     using OddTrotter.Graph.CalendarEventsContext;
     using OddTrotter.Odata.v4_01.StrongConventionContext;
 
-    internal interface ICalendarSource
-    {
-        ICalendarEventsSource Events();
-    }
-
     internal sealed class CalendarSource : ICalendarSource
     {
         private readonly IStrongConventionContext<CalendarEvent> strongConventionContext;
