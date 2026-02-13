@@ -42,6 +42,7 @@
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
+            //// TODO you should be combining instance and series events here
             var queryResult = await this.calendarEventsContext.Evaluate().ConfigureAwait(false);
             return queryResult
                 .Select(element => element
