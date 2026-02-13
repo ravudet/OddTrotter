@@ -2,9 +2,15 @@
 {
     using System;
 
-    public sealed class CalendarEventTranslationException : Exception
+    internal sealed class CalendarEventTranslationException : Exception
     {
-        private CalendarEventTranslationException()
+        public CalendarEventTranslationException(string message)
+            : base(message)
+        {
+        }
+
+        public CalendarEventTranslationException(string message, Exception exception)
+            : base(message, exception)
         {
         }
     }

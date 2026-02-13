@@ -40,9 +40,38 @@
             this.calendarEventsContext = calendarEventsContext;
         }
 
-        public ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
+        public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            throw new System.NotImplementedException();
+            var queryResult = await this.calendarEventsContext.Evaluate().ConfigureAwait(false);
+            return queryResult
+                .Select(element => element
+                    .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
+                    .SelectLeft(calendarEvent => CalendarEventsContext.Translate(calendarEvent))
+                    .SelectManyLeft())
+                .SelectError(pagingException => new PagingException("TODO", pagingException));
+        }
+
+        private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)
+        {
+            DateTimeOffset start;
+            try
+            {
+                start = DateTimeOffset.Parse(calendarEvent.Start.DateTime);
+            }
+            catch (Exception exception)
+            {
+                return Either.Left<CalendarEvent>().Right(new CalendarEventTranslationException("tODO", exception));
+            }
+
+            return Either
+                .Right<CalendarEventTranslationException>()
+                .Left(
+                    new CalendarEvent(
+                        calendarEvent.Id,
+                        calendarEvent.Subject, 
+                        calendarEvent.Body.Content,
+                        start, 
+                        calendarEvent.IsCancelled));
         }
 
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)

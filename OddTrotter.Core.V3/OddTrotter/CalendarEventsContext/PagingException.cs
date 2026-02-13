@@ -2,9 +2,15 @@
 {
     using System;
 
-    public sealed class PagingException : Exception
+    internal sealed class PagingException : Exception
     {
-        private PagingException()
+        public PagingException(string message)
+            : base(message)
+        {
+        }
+
+        public PagingException(string message, Exception exception)
+            : base(message, exception)
         {
         }
     }
