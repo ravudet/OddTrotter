@@ -92,7 +92,33 @@
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
         {
+            var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
+        }
 
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries()
+        {
+        }
+
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeriesWithinTimeSlice()
+        {
+        }
+
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEventMasters()
+        {
+            var context = this
+                .calendarSource
+                .Events()
+                .Get()
+                .Filter(calendarEvent => calendarEvent.Type == "seriesMaster")
+                .OrderBy(calendarEvent => calendarEvent.Start.DateTime)
+                .Top(this.pageSize);
+
+            if (this.isCancelled.HasValue)
+            {
+                context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
+            }
+
+            return await context.Evaluate().ConfigureAwait(false);
         }
 
         private static IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> Translate(IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> graphQueryResult)
