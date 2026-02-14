@@ -34,10 +34,13 @@
             >
     {
         private readonly Graph.ICalendarSource calendarSource;
+        private readonly DateTime startTime;
+        private readonly uint pageSize;
 
-        internal CalendarEventsContext(Graph.ICalendarSource calendarSource)
+        internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
         {
             this.calendarSource = calendarSource;
+            this.startTime = startTime;
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
@@ -63,6 +66,15 @@
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstanceEvents()
         {
+            var context = this
+                .calendarSource
+                .Events()
+                .Get()
+                .Filter(calendarEvent => calendarEvent.Type == "singleInstance")
+                .Filter(calendarEvent => calendarEvent.Start.DateTime > this.startTime) //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                .Top(this.pageSize)
+                .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
+
         }
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()

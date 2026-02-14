@@ -31,7 +31,7 @@
 
         TCalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
 
-        TCalendarEventsContext Top(int top);
+        TCalendarEventsContext Top(uint top);
 
         TCalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy);
     }
