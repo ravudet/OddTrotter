@@ -29,6 +29,8 @@
         public bool IsCancelled { get; }
 
         public string Type { get; }
+
+        public TimeStructure End { get; set; }
     }
 
     internal sealed class BodyStructure

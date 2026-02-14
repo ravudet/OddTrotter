@@ -35,7 +35,9 @@
     {
         private readonly Graph.ICalendarSource calendarSource;
         private readonly DateTime startTime;
-        private readonly uint pageSize;
+        private readonly uint pageSize; //// TODO add settings
+        private readonly bool? isCancelled; //// TODO implement `where`
+        private readonly DateTime? endTime; //// TODO implement `where`
 
         internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
         {
@@ -75,6 +77,17 @@
                 .Top(this.pageSize)
                 .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
 
+            if (this.endTime != null)
+            {
+                context = context.Filter(calendarEvent => calendarEvent.End.DateTime < this.endTime.Value);
+            }
+
+            if (this.isCancelled.HasValue)
+            {
+                context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
+            }
+
+            return await context.Evaluate().ConfigureAwait(false);
         }
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
