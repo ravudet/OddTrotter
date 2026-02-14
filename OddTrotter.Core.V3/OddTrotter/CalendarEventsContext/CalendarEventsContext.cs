@@ -42,10 +42,37 @@
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            var queryResult = await this.calendarSource.Events().Get().Evaluate().ConfigureAwait(false);
+            var events = await this.GetEvents().ConfigureAwait(false);
+            return Translate(events);
+        }
 
-            //// TODO you should be combining instance and series events here
-            return queryResult
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetEvents()
+        {
+            var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
+            var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
+
+            return instanceEvents.Concat(
+                seriesEvents,
+                firstError => firstError,
+                secondError => secondError,
+                (firstError, secondError) =>
+                    new Graph.PagingException(
+                            "TODO an error occurred while paging both instances events and series events",
+                            new AggregateException(firstError, secondError)));
+        }
+
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstanceEvents()
+        {
+        }
+
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
+        {
+
+        }
+
+        private static IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> Translate(IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> graphQueryResult)
+        {
+            return graphQueryResult
                 .Select(element => element
                     .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
                     .SelectLeft(calendarEvent => CalendarEventsContext.Translate(calendarEvent))
