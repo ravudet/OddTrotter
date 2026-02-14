@@ -62,5 +62,71 @@
                 }
             }
         }
+
+        /*public static void Foo(Calendar<INetwork> calendarProvider)
+        {
+            calendarProvider.Events.Case
+        }
+
+        public class Calendar<T>
+            where T : ICase
+        {
+            public StringValue<T> Id { get; }
+
+            public IOdataCollection<T, CalendarEvent<T>> Events { get; }
+        }
+
+        public class CalendarEvent<T>
+            where T : ICase
+        {
+            public StringValue<T> Id { get; }
+
+            public BoolValue<T> IsCanceled { get; }
+
+            public DateTimeValue<T> Start { get; }
+
+            public IOdataCollection<T, CalendarEvent<T>> Instances { get; }
+        }
+
+        public class StringValue<T>
+            where T : ICase
+        {
+            T Case { get; }
+        }
+
+        public class DateTimeValue<T>
+            where T : ICase
+        {
+            T Case { get; }
+        }
+
+        public class BoolValue<T>
+            where T : ICase
+        {
+            T Case { get; }
+        }
+
+        public interface IOdataCollection<TCase, out TElement>
+            where TCase : ICase
+        {
+            TCase Case { get; }
+        }
+
+        public interface ISingleValue<T>
+        {
+            T Value { get; }
+        }
+
+        public interface ICase
+        {
+        }
+
+        public interface INetwork : ICase
+        {
+        }
+
+        public interface IMemory : ICase
+        {
+        }*/
     }
 }
