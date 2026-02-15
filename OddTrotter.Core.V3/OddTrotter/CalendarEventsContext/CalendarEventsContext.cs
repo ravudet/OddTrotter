@@ -160,12 +160,11 @@
                                             Either
                                                 .Right<Either<Graph.CalendarEventTranslationException, Graph.PagingException>>()
                                                 .Left(seriesTranslationError)))))
-                /*.TrySelect(
-                    (IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException> seriesMasterPlusPontentialFirstInstanceOrTranslationError, out seriesMasterWithInstanceOrError) =>
+                .TrySelect(
+                    (IEither<IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>>, Nothing> potentialSeriesMasterPlusFirstInstanceOrError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>> seriesMasterWithInstanceOrError) =>
                     {
-                        seriesMasterPlusPontentialFirstInstanceOrTranslationError.Apply(
-                            )
-                    }*/
+                        return potentialSeriesMasterPlusFirstInstanceOrError.TryGetLeft(out seriesMasterWithInstanceOrError);
+                    });
                             
                 /*.Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError

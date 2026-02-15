@@ -960,6 +960,46 @@ namespace Fx.Either
 
 
 
+        public static bool TryGetLeft<TLeft, TRight>(
+            this IEither<TLeft, TRight> either,
+            [MaybeNullWhen(false)] out TLeft left)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.Decompose(out left, out _);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public delegate void SomeAction<in TValue, TContext>(TValue value, ref TContext context) //// TODO fix this name
             where TValue : allows ref struct
