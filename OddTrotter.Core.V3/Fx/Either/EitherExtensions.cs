@@ -1095,6 +1095,38 @@ namespace Fx.Either
 
 
 
+        public static Realizable<TResult> Apply<TLeft, TRight, TResult>(
+            this ITask<IEither<TLeft, TRight>> either,
+            Func<TLeft, TResult> leftMap,
+            Func<TRight, TResult> rightMap)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+        {
+            return either.ContinueWith(
+                either => either.Apply(leftMap, rightMap),
+                _ => throw _,
+                _ => throw _);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

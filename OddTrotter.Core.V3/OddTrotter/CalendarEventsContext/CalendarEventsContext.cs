@@ -1,12 +1,15 @@
 ﻿namespace OddTrotter.CalendarEventsContext
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.QueryContext;
     using Fx.QueryContext.Mixins;
+
+    using OddTrotter.Graph.CalendarEventsContext;
 
     using Graph = OddTrotter.Graph.CalendarEventsContext;
 
@@ -34,8 +37,9 @@
             >
     {
         private readonly Graph.ICalendarSource calendarSource;
-        private readonly DateTime startTime;
+        private readonly DateTime startTime; //// TODO should you also add this to settings, defaulting to `now`?
         private readonly uint pageSize; //// TODO add settings
+        private readonly TimeSpan firstInstanceInSeriesLookahead; //// TODO settings
         private readonly bool? isCancelled; //// TODO implement `where`
         private readonly DateTime? endTime; //// TODO implement `where`
 
@@ -82,7 +86,7 @@
                 context = context.Filter(calendarEvent => calendarEvent.End.DateTime < this.endTime.Value);
             }
 
-            if (this.isCancelled.HasValue)
+            if (this.isCancelled != null)
             {
                 context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
             }
@@ -93,14 +97,119 @@
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
         {
             var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
+            var mastersWithInstances = seriesEventMasters
+                .Select(
+                    async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
+                        .SelectLeft(
+                            async seriesMaster =>
+                            {
+                                var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
+                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()));
+                            })
+                        .ConfigureAwait(false))
+                .Select(
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, ieither<seriespagingerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
+                        .Apply(
+                            seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
+                                .PotentialFirstInstance
+                                .Apply(
+                                    potentialFirstInstanceOrError => potentialFirstInstanceOrError
+                                        .Apply(
+                                            firstInstanceOrError => 
+                                                Either
+                                                    .Right<Nothing>()
+                                                    .Left(
+                                                        firstInstanceOrError
+                                                            .Apply(
+                                                                firstInstance => 
+                                                                    Either
+                                                                        .Right<Either<Graph.CalendarEventTranslationException, Either<Graph.CalendarEventTranslationException, Either<Graph.PagingException, Graph.PagingException>>>>()
+                                                                        .Left(
+                                                                            (
+                                                                                SeriesMaster: seriesMasterPlusPotentialFirstInstance.SeriesMaster, 
+                                                                                FirstInstance: firstInstance
+                                                                            )),
+                                                                instanceTranslationError =>
+                                                                    Either
+                                                                        .Left<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance)>()
+                                                                        .Right(
+                                                                            Either
+                                                                                .Left<Graph.CalendarEventTranslationException>()
+                                                                                .Right(
+                                                                                    Either
+                                                                                        .Right<Either<Graph.PagingException, Graph.PagingException>>()
+                                                                                        .Left(instanceTranslationError))))),
+                                            nothing => 
+                                                    
+                                        )
+                /*.TrySelect(
+                    (IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException> seriesMasterPlusPontentialFirstInstanceOrTranslationError, out seriesMasterWithInstanceOrError) =>
+                    {
+                        seriesMasterPlusPontentialFirstInstanceOrTranslationError.Apply(
+                            )
+                    }*/
+                            
+                /*.Select(
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
+                        .Apply(
+                            seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
+                                .PotentialFirstInstance
+                                .Apply(
+                                    firstInstanceOrDefault => firstInstanceOrDefault
+                                        .Decompose(out var firstInstance, out var nothing) ?
+                                            Either
+                                                .Right<Nothing>()
+                                                .Left(
+                                                    Either
+                                                        .Right<Graph.CalendarEventTranslationException>()
+                                                        .Left()*/
+                    /*.TrySelect
+                        <
+                            IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>,
+                            Graph.PagingException,
+                            IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>
+                        >(
+                        (IEither<IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>, Nothing> seriesMasterPlusPontentialFirstInstanceOrTranslationError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException> seriesMasterWithInstance) =>
+                            seriesMasterPlusPontentialFirstInstanceOrTranslationError.Decompose(out seriesMasterWithInstance, out _))*/
+
+            return mastersWithInstances;
         }
 
-        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries()
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries(string seriesMasterId)
         {
+            var pageStartTime = this.startTime;
+            var pageEndTime = pageStartTime + this.firstInstanceInSeriesLookahead;
+            if (this.endTime != null && this.endTime.Value < pageEndTime)
+            {
+                pageEndTime = this.endTime.Value;
+            }
+
+            return await this.GetInstancesInSeries(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
         }
 
-        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeriesWithinTimeSlice()
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
+            var initial = await GetInstancesInSeriesWithinTimeSlice(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
+
+            var newPageStartTime = this.startTime;
+            var newPageEndTime = newPageStartTime + this.firstInstanceInSeriesLookahead;
+            if (this.endTime != null && this.endTime.Value < newPageEndTime)
+            {
+                newPageEndTime = this.endTime.Value;
+            }
+
+            return initial.Concat(this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime));
+        }
+
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        {
+            var context = this.calendarSource.Events().Get(seriesMasterId).Instances(pageStartTime, pageEndTime).Get();
+            if (this.isCancelled != null)
+            {
+                context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
+            }
+
+            return await context.Evaluate().ConfigureAwait(false);
         }
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEventMasters()
@@ -157,6 +266,15 @@
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    internal static class Extensions
+    {
+        internal static IQueryResult<TResult, TError> Select<TValue, TError, TResult>(
+            this IQueryResult<TValue, TError> queryResult,
+            Func<TValue, Task<TResult>> selector)
+        {
         }
     }
 }
