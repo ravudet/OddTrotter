@@ -330,7 +330,7 @@
         public CalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy)
         {
             string orderByExpression;
-            if (orderBy is Expression<Func<CalendarEvent, string>> asString && asString == StartTime)
+            if (orderBy is Expression<Func<CalendarEvent, DateTime>> asString && asString == StartTime)
             {
                 orderByExpression = "start/dateTime";
             }
