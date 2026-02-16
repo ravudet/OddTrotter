@@ -109,7 +109,7 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
+                        graphCalendarEvents = graphCalendarEvents.Concat2(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
                     }
 
                     return graphCalendarEvents;
@@ -227,7 +227,7 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
+                        graphCalendarEvents = graphCalendarEvents.Concat2(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
                     }
 
                     return graphCalendarEvents;
@@ -484,7 +484,7 @@
             }
         }
 
-        internal static IQueryResult<TElement, TException> Concat<TElement, TException>(
+        internal static IQueryResult<TElement, TException> Concat2<TElement, TException>(
             this IQueryResult<TElement, TException> queryResult,
             Task<IQueryResult<TElement, TException>> next)
         {

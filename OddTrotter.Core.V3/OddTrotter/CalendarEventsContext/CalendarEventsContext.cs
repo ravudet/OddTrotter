@@ -3,11 +3,13 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq.Expressions;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.QueryContext;
     using Fx.QueryContext.Mixins;
+    using Fx.Realizable;
 
     using OddTrotter.Graph.CalendarEventsContext;
 
@@ -209,7 +211,7 @@
                 newPageEndTime = this.endTime.Value;
             }
 
-            return initial.Concat(this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime));
+            return initial.Concat2(this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime));
         }
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
@@ -253,7 +255,7 @@
 
         private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)
         {
-            DateTimeOffset start;
+            /*DateTimeOffset start;
             try
             {
                 start = DateTimeOffset.Parse(calendarEvent.Start.DateTime);
@@ -261,7 +263,7 @@
             catch (Exception exception)
             {
                 return Either.Left<CalendarEvent>().Right(new CalendarEventTranslationException("tODO", exception));
-            }
+            }*/
 
             return Either
                 .Right<CalendarEventTranslationException>()
@@ -270,7 +272,7 @@
                         calendarEvent.Id,
                         calendarEvent.Subject, 
                         calendarEvent.Body.Content,
-                        start, 
+                        calendarEvent.Start.DateTime, 
                         calendarEvent.IsCancelled));
         }
 
@@ -286,6 +288,97 @@
             this IQueryResult<TValue, TError> queryResult,
             Func<TValue, Task<TResult>> selector)
         {
+            return new SelectQueryResult<TValue, TError, TResult>(queryResult, selector);
+        }
+
+        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
+        {
+            private readonly IQueryResult<TValue, TError> queryResult;
+            private readonly Func<TValue, Task<TResult>> selector;
+
+            public SelectQueryResult(
+                IQueryResult<TValue, TError> queryResult,
+                Func<TValue, Task<TResult>> selector)
+            {
+                this.queryResult = queryResult;
+                this.selector = selector;
+            }
+
+            public IQueryResultNode<TResult, TError> Nodes
+            {
+                get
+                {
+                    return new QueryResultNode(this.queryResult.Nodes, this.selector);
+                }
+            }
+
+            private sealed class QueryResultNode : IQueryResultNode<TResult, TError>
+            {
+                private readonly IQueryResultNode<TValue, TError> queryResult;
+                private readonly Func<TValue, Task<TResult>> selector;
+
+                public QueryResultNode(
+                    IQueryResultNode<TValue, TError> queryResult,
+                    Func<TValue, Task<TResult>> selector)
+                {
+                    this.queryResult = queryResult;
+                    this.selector = selector;
+                }
+
+                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
+                    where TResult1 : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult1>, allows ref struct
+                {
+                    if (this.queryResult.Decompose(out var element, out var terminal)) //// TODO you shouldn't need to use decompose
+                    {
+                        return this.selector(element.Value)
+                            .ToTaskWrapper()
+                            .ContinueWith(
+                                selected => new Element(selected, element, this.selector),
+                                _ => throw _,
+                                _ => throw _)
+                            .ContinueWith(
+                                element =>
+                                {
+                                    var fakeContext = default(TContext)!;
+                                    ref TContext toPass = ref Unsafe.AsRef(ref fakeContext); //// TODO use the real context here...
+
+                                    return leftMap(element, ref toPass).ContinueWith(_ => _, _ => throw _, _ => throw _);
+                                },
+                                _ => throw _,
+                                _ => throw _)
+                            .Unwrap();
+                    }
+                    else
+                    {
+                        return rightMap(terminal, ref context).ContinueWith(_ => _, _ => throw _, _ => throw _);
+                    }
+                }
+
+                private sealed class Element : IElement<TResult, TError>
+                {
+                    private readonly IElement<TValue, TError> element;
+                    private readonly Func<TValue, Task<TResult>> selector;
+
+                    public Element(
+                        TResult value,
+                        IElement<TValue, TError> element,
+                        Func<TValue, Task<TResult>> selector)
+                    {
+                        Value = value;
+                        this.element = element;
+                        this.selector = selector;
+                    }
+
+                    public TResult Value { get; }
+
+                    public IQueryResultNode<TResult, TError> Next()
+                    {
+                        return new QueryResultNode(this.element.Next(), this.selector);
+                    }
+                }
+            }
         }
     }
 }
