@@ -58,8 +58,8 @@
         private readonly DateTime startTime; //// TODO should you also add this to settings, defaulting to `now`?
         private readonly uint pageSize;
         private readonly TimeSpan firstInstanceInSeriesLookahead;
-        private readonly bool? isCancelled; //// TODO implement `where`
-        private readonly DateTime? endTime; //// TODO implement `where`
+        private readonly bool? isCancelled;
+        private readonly DateTime? endTime;
 
         internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
             : this(calendarSource, startTime, CalendarEventsContextSettings.Default)
@@ -91,6 +91,11 @@
             this.firstInstanceInSeriesLookahead = firstInstanceInSeriesLookahead;
             this.isCancelled = isCancelled;
             this.endTime = endTime;
+        }
+
+        private sealed class QueryResult : IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>
+        {
+            public IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> Nodes => throw new NotImplementedException();
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
