@@ -43,7 +43,7 @@
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item; you now need to do the graph related stuff
-        //// TODO calendar events source needs to get the collection, or get a single, and the single needs to be able to get the single, or get the instances if it's a master
+        //// TODO you added filtering to the odd trotter context, but you need to actually do the "improved" filtering, where you notice that the predicate is based only on properties that are present in the series masters, and in those cases, treat the predicate different by applying it to the series masters before retrieving the first instances
         //// TODO then you need to do the odd trotter context
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
     //// TODO actually do a mock test in `contexttests`
