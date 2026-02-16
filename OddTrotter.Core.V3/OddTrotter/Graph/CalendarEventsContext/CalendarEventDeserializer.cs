@@ -81,6 +81,9 @@
                         @string => Either.Right<DeserializationException>().Left(@string.Value),
                         @object => Either.Left<string>().Right(new DeserializationException("TODO")),
                         collection => Either.Left<string>().Right(new DeserializationException("TODO")))
+                    .SelectLeft(
+                        @string => @string.Try(DateTime.Parse).SelectRight(exception => new DeserializationException("TODO", exception)))
+                    .SelectManyLeft()
                     .Apply(
                         (value, ref state) =>
                         {
@@ -157,7 +160,7 @@
 
         private ref struct TimeStructureBuilder
         {
-            public string? DateTime { get; set; }
+            public DateTime? DateTime { get; set; }
 
             public string? TimeZone { get; set; }
 
@@ -166,7 +169,7 @@
                 ArgumentNullException.ThrowIfNull(this.DateTime);
                 ArgumentNullException.ThrowIfNull(this.TimeZone);
 
-                return new TimeStructure(this.DateTime, this.TimeZone);
+                return new TimeStructure(this.DateTime.Value, this.TimeZone);
             }
         }
 
