@@ -85,6 +85,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<IEnumerable<WhitespaceToken>>> task;
+
         public WhitespaceReader(
             PeekableStream stream,
             byte[] buffer,
@@ -95,9 +97,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<IEnumerable<WhitespaceToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<IEnumerable<WhitespaceToken>> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<IEnumerable<WhitespaceToken>> GetValue2()
         {
             return await this.GetValueImpl().ToTask().ConfigureAwait(false);
         }
