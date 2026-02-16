@@ -100,7 +100,15 @@
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
             var events = await this.GetEvents().ConfigureAwait(false);
-            return Translate(events);
+            var translatedEvents = Translate(events);
+            if (where != null)
+            { 
+                translatedEvents = translatedEvents
+                    .Where(
+                        calendarEventOrError => calendarEventOrError.Apply(calendarEvent => this.where(calendarEvent), error => true));
+            }
+
+            return translatedEvents;
         }
 
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetEvents()
