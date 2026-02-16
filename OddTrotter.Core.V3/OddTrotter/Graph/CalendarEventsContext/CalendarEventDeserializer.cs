@@ -239,6 +239,18 @@
                 missingProperties.Add(isCancelledPropertyName);
             }
 
+            const string typePropertyName = "type";
+            if (!this.TryGetProperty(odataObject, typePropertyName, out var typeProperty))
+            {
+                missingProperties.Add(typePropertyName);
+            }
+
+            const string endPropertyName = "end";
+            if (!this.TryGetProperty(odataObject, endPropertyName, out var endProperty))
+            {
+                missingProperties.Add(endPropertyName);
+            }
+
             if (missingProperties.Any())
             {
                 throw new DeserializationException("TODO");
@@ -274,9 +286,20 @@
                     .Try(bool.Parse)
                     .SelectRight(exception => new DeserializationException("TODO", exception)))
                 .SelectManyLeft();
+            var type = typeProperty!.Apply(
+                @string => Either.Right<DeserializationException>().Left(@string.Value),
+                @object => Either.Left<string>().Right(new DeserializationException("TODO")),
+                colleciton => Either.Left<string>().Right(new DeserializationException("TODO")));
+            var end = endProperty!
+                .Apply(
+                    @string => Either.Left<TimeStructure>().Right(new DeserializationException("TODO")),
+                    @object => @object
+                        .Try(_ => this.timeStructureDeserializer.Deserialize(_.Value))
+                        .SelectRight(exception => exception is DeserializationException deserializationException ? deserializationException : new DeserializationException("TODO", exception)),
+                    collection => Either.Left<TimeStructure>().Right(new DeserializationException("TODO")));
 
             //// TODO do you want to do *all* validations before returning? for example, should you validate the *existing* properties even if some of them are missing, that way you give the most comprehensive error result?
-            
+
             var state = (new CalendarEventBuilder(), new List<DeserializationException>());
             id.Apply(
                 (value, ref state) =>
@@ -328,6 +351,26 @@
                     state.Item2.Add(exception);
                 },
                 ref state);
+            type.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.Type = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
+            end.Apply(
+                (value, ref state) =>
+                {
+                    state.Item1.End = value;
+                },
+                (exception, ref state) =>
+                {
+                    state.Item2.Add(exception);
+                },
+                ref state);
 
             if (state.Item2.Any())
             {
@@ -349,6 +392,10 @@
 
             public bool? IsCancelled { get; set; }
 
+            public string? Type { get; set; }
+
+            public TimeStructure? End { get; set; }
+
             public CalendarEvent Build()
             {
                 ArgumentNullException.ThrowIfNull(this.Id);
@@ -356,13 +403,17 @@
                 ArgumentNullException.ThrowIfNull(this.Body);
                 ArgumentNullException.ThrowIfNull(this.Start);
                 ArgumentNullException.ThrowIfNull(this.IsCancelled);
+                ArgumentNullException.ThrowIfNull(this.Type);
+                ArgumentNullException.ThrowIfNull(this.End);
                 
                 return new CalendarEvent(
                     this.Id,
                     this.Subject,
                     this.Body,
                     this.Start,
-                    this.IsCancelled.Value);
+                    this.IsCancelled.Value,
+                    this.Type,
+                    this.End);
             }
         }
         
