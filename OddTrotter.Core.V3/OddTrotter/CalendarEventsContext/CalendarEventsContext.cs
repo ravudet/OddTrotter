@@ -356,7 +356,6 @@
                 return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime, this.where);
             }
 
-            
             var compiledPredicate = predicate.Compile();
             return new CalendarEventsContext(
                 this.calendarSource,
