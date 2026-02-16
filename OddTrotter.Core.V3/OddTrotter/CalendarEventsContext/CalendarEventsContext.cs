@@ -74,6 +74,7 @@
                   settings.PageSize,
                   settings.FirstInstanceInSeriesLookahead,
                   null,
+                  null,
                   null)
         {
         }
