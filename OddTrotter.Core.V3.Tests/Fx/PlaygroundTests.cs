@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq.Expressions;
     using System.Net.Http;
     using System.Net.Sockets;
     using System.Threading.Tasks;
@@ -128,5 +130,19 @@
         public interface IMemory : ICase
         {
         }*/
+
+        [TestMethod]
+        public void ParsePredicate()
+        {
+            TryTranslateToSeriesMaster(calendarEvent => calendarEvent.Subject == "todo list", out var translated);
+        }
+
+        private static bool TryTranslateToSeriesMaster(Expression<Func<OddTrotter.CalendarEventsContext.CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool> seriesMasterPredicate)
+        {
+
+
+            seriesMasterPredicate = default;
+            return false;
+        }
     }
 }
