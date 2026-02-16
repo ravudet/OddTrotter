@@ -15,6 +15,22 @@
 
     using Graph = OddTrotter.Graph.CalendarEventsContext;
 
+    internal sealed class CalendarEventsContextSettings
+    {
+        private CalendarEventsContextSettings(uint pageSize, TimeSpan firstInstanceInSeriesLookahead)
+        {
+            PageSize = pageSize;
+            FirstInstanceInSeriesLookahead = firstInstanceInSeriesLookahead;
+        }
+
+        public static CalendarEventsContextSettings Default { get; } = new CalendarEventsContextSettings(
+            10,
+            TimeSpan.FromDays(14));
+
+        public uint PageSize { get; }
+        public TimeSpan FirstInstanceInSeriesLookahead { get; }
+    }
+
     internal sealed class CalendarEventsContext : 
         IQueryContext
             <
@@ -40,15 +56,41 @@
     {
         private readonly Graph.ICalendarSource calendarSource;
         private readonly DateTime startTime; //// TODO should you also add this to settings, defaulting to `now`?
-        private readonly uint pageSize; //// TODO add settings
-        private readonly TimeSpan firstInstanceInSeriesLookahead; //// TODO settings
+        private readonly uint pageSize;
+        private readonly TimeSpan firstInstanceInSeriesLookahead;
         private readonly bool? isCancelled; //// TODO implement `where`
         private readonly DateTime? endTime; //// TODO implement `where`
 
         internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
+            : this(calendarSource, startTime, CalendarEventsContextSettings.Default)
+        {
+        }
+
+        internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime, CalendarEventsContextSettings settings)
+            : this(
+                  calendarSource,
+                  startTime,
+                  settings.PageSize,
+                  settings.FirstInstanceInSeriesLookahead,
+                  null,
+                  null)
+        {
+        }
+
+        private CalendarEventsContext(
+            Graph.ICalendarSource calendarSource, 
+            DateTime startTime,
+            uint pageSize,
+            TimeSpan firstInstanceInSeriesLookahead,
+            bool? isCancelled,
+            DateTime? endTime)
         {
             this.calendarSource = calendarSource;
             this.startTime = startTime;
+            this.pageSize = pageSize;
+            this.firstInstanceInSeriesLookahead = firstInstanceInSeriesLookahead;
+            this.isCancelled = isCancelled;
+            this.endTime = endTime;
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
