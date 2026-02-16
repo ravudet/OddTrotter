@@ -321,8 +321,34 @@
 
         public CalendarEventsContext Where(Expression<Func<CalendarEvent, bool>> predicate)
         {
-            throw new NotImplementedException();
+            if (object.ReferenceEquals(predicate, StartLessThanNow))
+            {
+                var now = DateTime.UtcNow;
+                if (this.endTime != null && this.endTime < now)
+                {
+                    // we logically can see that this will always happen (they can only call set `endTime` to `DateTime.UtcNow`, so `now` will always been more in the future than `endTime`) 
+                    return this;
+                }
+
+                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.isCancelled, now);
+            }
+            else if (object.ReferenceEquals(predicate, IsNotCancelled))
+            {
+                if (this.isCancelled != null)
+                {
+                    // the caller can only provide `IsNotCancelled` right now, so if `isCancelled` is already set, it won't be changing
+                    return this;
+                }
+
+                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime);
+            }
+
+            throw new NotImplementedException("TODO");
         }
+
+        public static Expression<Func<CalendarEvent, bool>> StartLessThanNow { get; } = calendarEvent => calendarEvent.Start < DateTime.UtcNow; //// TODO will "now" constantly change?
+
+        public static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => !calendarEvent.IsCancelled;
     }
 
     internal static class Extensions
