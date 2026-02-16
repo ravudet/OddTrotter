@@ -4,7 +4,7 @@
 
     internal sealed class CalendarEvent
     {
-        public CalendarEvent(string id, string subject, BodyStructure body, TimeStructure start, bool isCancelled, string type)
+        public CalendarEvent(string id, string subject, BodyStructure body, TimeStructure start, bool isCancelled, string type, TimeStructure end)
         {
             ArgumentNullException.ThrowIfNull(id);
             ArgumentNullException.ThrowIfNull(subject);
@@ -16,6 +16,7 @@
             this.Start = start;
             this.IsCancelled = isCancelled;
             Type = type;
+            End = end;
         }
 
         public string Id { get; }
@@ -63,11 +64,6 @@
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="dateTime"/> or <paramref name="timeZone"/> is <see langword="null"/></exception>
         public TimeStructure(DateTime dateTime, string timeZone)
         {
-            if (dateTime == null)
-            {
-                throw new ArgumentNullException(nameof(dateTime));
-            }
-
             if (timeZone == null)
             {
                 throw new ArgumentNullException(nameof(timeZone));
