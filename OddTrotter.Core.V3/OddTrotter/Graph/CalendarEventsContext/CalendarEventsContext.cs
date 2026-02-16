@@ -400,7 +400,7 @@
 
         internal static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == false;
 
-        internal static Expression<Func<CalendarEvent, string>> StartTime { get; } = calendarEvent => calendarEvent.Start.DateTime;
+        internal static Expression<Func<CalendarEvent, DateTime>> StartTime { get; } = calendarEvent => calendarEvent.Start.DateTime;
     }
 
     internal static class Extensions2
