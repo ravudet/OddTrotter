@@ -176,7 +176,8 @@
                                 seriesMasterPlusInstance.SeriesMaster.Body,
                                 seriesMasterPlusInstance.FirstInstance.Start,
                                 seriesMasterPlusInstance.SeriesMaster.IsCancelled,
-                                seriesMasterPlusInstance.SeriesMaster.Type))
+                                seriesMasterPlusInstance.SeriesMaster.Type,
+                                seriesMasterPlusInstance.FirstInstance.End))
                         .SelectRight(
                             errors => errors.SelectManyRight())
                         .SelectRight(
