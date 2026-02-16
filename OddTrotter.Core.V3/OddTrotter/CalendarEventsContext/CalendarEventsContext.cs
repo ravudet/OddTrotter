@@ -61,6 +61,7 @@
         private readonly bool? isCancelled;
         private readonly DateTime? endTime;
         private readonly Func<CalendarEvent, bool>? where;
+        private readonly Func<Graph.CalendarEvent, bool>? seriesMasterPredicate;
 
         internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
             : this(calendarSource, startTime, CalendarEventsContextSettings.Default)
@@ -75,6 +76,7 @@
                   settings.FirstInstanceInSeriesLookahead,
                   null,
                   null,
+                  null,
                   null)
         {
         }
@@ -86,7 +88,8 @@
             TimeSpan firstInstanceInSeriesLookahead,
             bool? isCancelled,
             DateTime? endTime,
-            Func<CalendarEvent, bool>? where)
+            Func<CalendarEvent, bool>? where,
+            Func<Graph.CalendarEvent, bool>? seriesMasterPredicate)
         {
             this.calendarSource = calendarSource;
             this.startTime = startTime;
@@ -95,6 +98,7 @@
             this.isCancelled = isCancelled;
             this.endTime = endTime;
             this.where = where;
+            this.seriesMasterPredicate = seriesMasterPredicate;
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
@@ -153,6 +157,16 @@
         private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
         {
             var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
+            if (this.seriesMasterPredicate != null)
+            {
+                seriesEventMasters = seriesEventMasters
+                    .Where(
+                        seriesEventMasterOrError => seriesEventMasterOrError
+                            .Apply(
+                                seriesEventMaster => this.seriesMasterPredicate(seriesEventMaster),
+                                error => true));
+            }
+
             var mastersWithInstances = seriesEventMasters
                 .SelectAsync(
                     async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
@@ -343,7 +357,7 @@
                 }
 
                 return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.isCancelled, now,
-                    this.where);
+                    this.where, this.seriesMasterPredicate);
             }
             else if (object.ReferenceEquals(predicate, IsNotCancelled))
             {
@@ -353,7 +367,20 @@
                     return this;
                 }
 
-                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime, this.where);
+                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime, this.where, this.seriesMasterPredicate);
+            }
+
+            if (TryTranslateToSeriesMaster(predicate, out var seriesMasterPredicate))
+            {
+                return new CalendarEventsContext(
+                    this.calendarSource,
+                    this.startTime,
+                    this.pageSize,
+                    this.firstInstanceInSeriesLookahead,
+                    this.isCancelled,
+                    this.endTime,
+                    this.where,
+                    this.seriesMasterPredicate == null ? seriesMasterPredicate : calendarEvent => this.seriesMasterPredicate(calendarEvent) && seriesMasterPredicate(calendarEvent));
             }
 
             var compiledPredicate = predicate.Compile();
@@ -364,7 +391,13 @@
                 this.firstInstanceInSeriesLookahead,
                 this.isCancelled,
                 this.endTime,
-                this.where == null ? compiledPredicate : calendarEvent => this.where(calendarEvent) && compiledPredicate(calendarEvent));
+                this.where == null ? compiledPredicate : calendarEvent => this.where(calendarEvent) && compiledPredicate(calendarEvent),
+                this.seriesMasterPredicate);
+        }
+
+        private static bool TryTranslateToSeriesMaster(Expression<Func<CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<Graph.CalendarEvent, bool> seriesMasterPredicate)
+        {
+
         }
 
         public static Expression<Func<CalendarEvent, bool>> StartLessThanNow { get; } = calendarEvent => calendarEvent.Start < DateTime.UtcNow; //// TODO will "now" constantly change?
