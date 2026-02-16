@@ -60,6 +60,7 @@
         private readonly TimeSpan firstInstanceInSeriesLookahead;
         private readonly bool? isCancelled;
         private readonly DateTime? endTime;
+        private readonly Func<CalendarEvent, bool>? where;
 
         internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
             : this(calendarSource, startTime, CalendarEventsContextSettings.Default)
@@ -83,7 +84,8 @@
             uint pageSize,
             TimeSpan firstInstanceInSeriesLookahead,
             bool? isCancelled,
-            DateTime? endTime)
+            DateTime? endTime,
+            Func<CalendarEvent, bool>? where)
         {
             this.calendarSource = calendarSource;
             this.startTime = startTime;
@@ -91,6 +93,7 @@
             this.firstInstanceInSeriesLookahead = firstInstanceInSeriesLookahead;
             this.isCancelled = isCancelled;
             this.endTime = endTime;
+            this.where = where;
         }
 
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
@@ -330,7 +333,8 @@
                     return this;
                 }
 
-                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.isCancelled, now);
+                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, this.isCancelled, now,
+                    this.where);
             }
             else if (object.ReferenceEquals(predicate, IsNotCancelled))
             {
@@ -340,10 +344,19 @@
                     return this;
                 }
 
-                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime);
+                return new CalendarEventsContext(this.calendarSource, this.startTime, this.pageSize, this.firstInstanceInSeriesLookahead, false, this.endTime, this.where);
             }
 
-            throw new NotImplementedException("TODO");
+            
+            var compiledPredicate = predicate.Compile();
+            return new CalendarEventsContext(
+                this.calendarSource,
+                this.startTime,
+                this.pageSize,
+                this.firstInstanceInSeriesLookahead,
+                this.isCancelled,
+                this.endTime,
+                this.where == null ? compiledPredicate : calendarEvent => this.where(calendarEvent) && compiledPredicate(calendarEvent));
         }
 
         public static Expression<Func<CalendarEvent, bool>> StartLessThanNow { get; } = calendarEvent => calendarEvent.Start < DateTime.UtcNow; //// TODO will "now" constantly change?
