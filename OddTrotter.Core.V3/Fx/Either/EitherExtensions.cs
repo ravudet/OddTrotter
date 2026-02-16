@@ -559,7 +559,12 @@ namespace Fx.Either
             return either.Apply(left => left, coalescer);
         }
 
+        public static TValue Coalesce<TValue>(this IEither<TValue, TValue> either)
+        {
+            ArgumentNullException.ThrowIfNull(either);
 
+            return either.CoalesceRight(right => right);
+        }
 
 
 

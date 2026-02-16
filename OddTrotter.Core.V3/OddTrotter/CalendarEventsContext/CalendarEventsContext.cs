@@ -98,7 +98,7 @@
         {
             var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
             var mastersWithInstances = seriesEventMasters
-                .Select(
+                .SelectAsync(
                     async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
                         .SelectLeft(
                             async seriesMaster =>
@@ -164,29 +164,24 @@
                     (IEither<IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>>, Nothing> potentialSeriesMasterPlusFirstInstanceOrError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>> seriesMasterWithInstanceOrError) =>
                     {
                         return potentialSeriesMasterPlusFirstInstanceOrError.Decompose(out seriesMasterWithInstanceOrError, out _);
-                    });
-            /*.Select(
-                seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
-                    .Apply(
-                        seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
-                            .PotentialFirstInstance
-                            .Apply(
-                                firstInstanceOrDefault => firstInstanceOrDefault
-                                    .Decompose(out var firstInstance, out var nothing) ?
-                                        Either
-                                            .Right<Nothing>()
-                                            .Left(
-                                                Either
-                                                    .Right<Graph.CalendarEventTranslationException>()
-                                                    .Left()*/
-            /*.TrySelect
-                <
-                    IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>,
-                    Graph.PagingException,
-                    IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>
-                >(
-                (IEither<IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException>, Nothing> seriesMasterPlusPontentialFirstInstanceOrTranslationError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, IEither<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> Instance), Graph.CalendarEventTranslationException> seriesMasterWithInstance) =>
-                    seriesMasterPlusPontentialFirstInstanceOrTranslationError.Decompose(out seriesMasterWithInstance, out _))*/
+                    })
+                .Select(
+                    seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
+                        .SelectLeft(
+                            seriesMasterPlusInstance => new Graph.CalendarEvent(
+                                seriesMasterPlusInstance.SeriesMaster.Id,
+                                seriesMasterPlusInstance.SeriesMaster.Subject,
+                                seriesMasterPlusInstance.SeriesMaster.Body,
+                                seriesMasterPlusInstance.FirstInstance.Start,
+                                seriesMasterPlusInstance.SeriesMaster.IsCancelled,
+                                seriesMasterPlusInstance.SeriesMaster.Type))
+                        .SelectRight(
+                            errors => errors.SelectManyRight())
+                        .SelectRight(
+                            translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
+                                .SelectRight(
+                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO", instancePagingError))
+                                .Coalesce()));
 
             return mastersWithInstances;
         }
@@ -287,7 +282,7 @@
 
     internal static class Extensions
     {
-        internal static IQueryResult<TResult, TError> Select<TValue, TError, TResult>(
+        internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
             this IQueryResult<TValue, TError> queryResult,
             Func<TValue, Task<TResult>> selector)
         {
