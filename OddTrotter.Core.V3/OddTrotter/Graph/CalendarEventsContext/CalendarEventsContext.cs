@@ -311,7 +311,7 @@
             }
         }
 
-        public CalendarEventsContext Top(int top)
+        public CalendarEventsContext Top(uint top)
         {
             if (this.top != null)
             {
@@ -386,7 +386,7 @@
             return Filter(filter);
         }
 
-        ICalendarEventsContext ICalendarEventsContext<ICalendarEventsContext>.Top(int top)
+        ICalendarEventsContext ICalendarEventsContext<ICalendarEventsContext>.Top(uint top)
         {
             return Top(top);
         }
