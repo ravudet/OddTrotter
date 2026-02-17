@@ -134,15 +134,61 @@
         [TestMethod]
         public void ParsePredicate()
         {
-            TryTranslateToSeriesMaster(calendarEvent => calendarEvent.Subject == "todo list", out var translated);
+            Assert.IsTrue(TryTranslateToSeriesMaster(calendarEvent => calendarEvent.Subject == "todo list", out var translated));
         }
 
         private static bool TryTranslateToSeriesMaster(Expression<Func<OddTrotter.CalendarEventsContext.CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool> seriesMasterPredicate)
         {
+            var calendarEventParameter = predicate.Parameters[0];
 
+            var visitor = new ExpressionVisitor(calendarEventParameter);
+            var translatedBody = visitor.Visit(predicate);
 
-            seriesMasterPredicate = default;
-            return false;
+            Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>> translated = calendarEvent => true;
+            var translatedcalendarEventParameter = Expression.Parameter(typeof(OddTrotter.Graph.CalendarEventsContext.CalendarEvent), calendarEventParameter.Name);
+            translated.Update(translatedBody, new[] { translatedcalendarEventParameter });
+
+            seriesMasterPredicate = translated.Compile();
+
+            return visitor.ApplicableToSeriesMaster;
+        }
+
+        private sealed class ExpressionVisitor : System.Linq.Expressions.ExpressionVisitor
+        {
+            private readonly ParameterExpression calendarEventParamter;
+
+            public ExpressionVisitor(ParameterExpression calendarEventParamter)
+            {
+                this.calendarEventParamter = calendarEventParamter;
+
+                this.ApplicableToSeriesMaster = false;
+            }
+
+            public bool ApplicableToSeriesMaster { get; private set; }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                
+
+                return base.VisitParameter(node);
+            }
+
+            protected override Expression VisitMember(MemberExpression node)
+            {
+                if (object.ReferenceEquals(node.Expression, this.calendarEventParamter))
+                {
+                    if (string.Equals(node.Member.Name, "Subject", StringComparison.Ordinal) ||
+                        string.Equals(node.Member.Name, "Id", StringComparison.Ordinal) ||
+                        string.Equals(node.Member.Name, "Body", StringComparison.Ordinal) ||
+                        string.Equals(node.Member.Name, "IsCancelled", StringComparison.Ordinal) ||
+                        string.Equals(node.Member.Name, "Type", StringComparison.Ordinal))
+                    {
+                        this.ApplicableToSeriesMaster = true;
+                    }
+                }
+
+                return base.VisitMember(node);
+            }
         }
     }
 }
