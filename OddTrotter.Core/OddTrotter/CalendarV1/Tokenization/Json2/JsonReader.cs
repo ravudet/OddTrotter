@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -350,6 +351,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<FalseToken>> task;
+
         public FalseReader(
             PeekableStream stream,
             byte[] buffer,
@@ -360,9 +363,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<FalseToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<FalseToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<FalseToken> GetValue2()
         {
             foreach (var @char in "false")
             {
@@ -395,6 +405,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<NullToken>> task;
+        
         public NullReader(
             PeekableStream stream,
             byte[] buffer,
@@ -405,9 +417,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<NullToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<NullToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<NullToken> GetValue2()
         {
             foreach (var @char in "null")
             {
@@ -440,6 +459,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<TrueToken>> task;
+
         public TrueReader(
             PeekableStream stream,
             byte[] buffer,
@@ -450,9 +471,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task   = new Task<ITask<TrueToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<TrueToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<TrueToken> GetValue2()
         {
             foreach (var @char in "true")
             {
@@ -532,6 +560,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ObjectStartToken>> task;
+
         public ObjectStartReader(
             PeekableStream stream,
             byte[] buffer,
@@ -542,9 +572,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ObjectStartToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ObjectStartToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ObjectStartToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '{').ConfigureAwait(false);
             return ObjectStartToken.Instance;
@@ -801,6 +838,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ColonToken>> task;
+
         public ColonReader(
             PeekableStream stream,
             byte[] buffer,
@@ -811,9 +850,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ColonToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ColonToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ColonToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ':').ConfigureAwait(false);
             return ColonToken.Instance;
