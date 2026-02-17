@@ -1145,6 +1145,13 @@ namespace Fx.Either
 
 
 
+        public static bool TryGetLeft<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left)
+        {
+            return either.Decompose(out left, out _);
+        }
+
+
+
 
 
 

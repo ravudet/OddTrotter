@@ -412,6 +412,7 @@
         internal static IQueryResult<TValue, TError> TrySelect<TValue, TError>(
             this IQueryResult<IEither<TValue, Nothing>, TError> queryResult)
         {
+            return queryResult.TrySelect<IEither<TValue, Nothing>, TError, TValue>((either, [MaybeNullWhen(false)] out left) => either.TryGetLeft(out left));
         }
 
         internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
