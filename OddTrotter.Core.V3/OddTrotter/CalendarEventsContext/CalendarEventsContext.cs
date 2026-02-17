@@ -173,6 +173,7 @@
                         .SelectLeft(
                             async seriesMaster =>
                             {
+                                //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever first a non-error instance
                                 var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
                                 return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()));
                             })
@@ -230,11 +231,12 @@
                                             Either
                                                 .Right<Either<Graph.CalendarEventTranslationException, Graph.PagingException>>()
                                                 .Left(seriesTranslationError)))))
-                .TrySelect( //// TODO any way to get type inference here?
+                /*.TrySelect( //// TODO any way to get type inference here?
                     (IEither<IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>>, Nothing> potentialSeriesMasterPlusFirstInstanceOrError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>> seriesMasterWithInstanceOrError) =>
                     {
                         return potentialSeriesMasterPlusFirstInstanceOrError.Decompose(out seriesMasterWithInstanceOrError, out _);
-                    })
+                    })*/
+                .TrySelect()
                 .Select(
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
                         .SelectLeft(
@@ -407,6 +409,11 @@
 
     internal static class Extensions
     {
+        internal static IQueryResult<TValue, TError> TrySelect<TValue, TError>(
+            this IQueryResult<IEither<TValue, Nothing>, TError> queryResult)
+        {
+        }
+
         internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
             this IQueryResult<TValue, TError> queryResult,
             Func<TValue, Task<TResult>> selector)
