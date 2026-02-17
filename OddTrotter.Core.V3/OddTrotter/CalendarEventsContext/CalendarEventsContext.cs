@@ -399,8 +399,17 @@
 
         private static bool TryTranslateToSeriesMaster(Expression<Func<CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<Graph.CalendarEvent, bool> seriesMasterPredicate)
         {
+            if (object.ReferenceEquals(predicate, SubjectIsTodoList))
+            {
+                seriesMasterPredicate = calendarEvent => calendarEvent.Subject == "todo list";
+                return true;
+            }
 
+            seriesMasterPredicate = default;
+            return false;
         }
+
+        public static Expression<Func<CalendarEvent, bool>> SubjectIsTodoList { get; } = calendarEvent => calendarEvent.Subject == "todo list";
 
         public static Expression<Func<CalendarEvent, bool>> StartLessThanNow { get; } = calendarEvent => calendarEvent.Start < DateTime.UtcNow; //// TODO will "now" constantly change?
 
