@@ -120,8 +120,9 @@
             //// TODO consolidate the `readtoend` implementations
             //// TODO it feels like the readtoend implementations are *too* consolidated...
             //// TODO all of your `move` implementations when a `getvalue` is present will read the value a second time if it's already been read once
+            //// TODO remember to add the `start` calls in the `getvalue` methods
             //// TODO implement buffers for readers
-            //// TODO change reader interface so that async is only used when the buffer is expended
+            //// TODO change reader interface so that async is only used when the buffer is expanded
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
 
             var data =

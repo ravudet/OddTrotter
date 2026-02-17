@@ -926,6 +926,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<CommaToken>> task;
+
         public CommaReader(
             PeekableStream stream,
             byte[] buffer,
@@ -936,9 +938,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<CommaToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<CommaToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<CommaToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ',').ConfigureAwait(false);
             return CommaToken.Instance;
@@ -967,6 +976,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ObjectEndToken>> task;
+
         public ObjectEndReader(
             PeekableStream stream,
             byte[] buffer,
@@ -977,9 +988,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ObjectEndToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ObjectEndToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ObjectEndToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '}').ConfigureAwait(false);
             return ObjectEndToken.Instance;
@@ -1056,6 +1074,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ArrayStartToken>> task;
+
         public ArrayStartReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1066,9 +1086,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ArrayStartToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ArrayStartToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ArrayStartToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '[').ConfigureAwait(false);
             return ArrayStartToken.Instance;
@@ -1318,6 +1345,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ArrayEndToken>> task;
+
         public ArrayEndReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1328,9 +1357,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ArrayEndToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ArrayEndToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ArrayEndToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ']').ConfigureAwait(false);
             return ArrayEndToken.Instance;
@@ -1402,6 +1438,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<SignToken>> task;
+
         public SignReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1412,9 +1450,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<SignToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<SignToken> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<SignToken> GetValue2()
         {
             var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
             if (peeked != '-')
@@ -1465,6 +1510,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<IEnumerable<DigitToken>>> task;
+
         public IntReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1475,9 +1522,16 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<IEnumerable<DigitToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<IEnumerable<DigitToken>> GetValue()
+        {
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<IEnumerable<DigitToken>> GetValue2()
         {
             return await this.GetValueImpl().ToTask().ConfigureAwait(false);
         }
@@ -1547,6 +1601,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<FracToken>> task;
+
         public FracReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1557,9 +1613,15 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<FracToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<FracToken> GetValue()
+        {
+        }
+
+        private async ITask<FracToken> GetValue2()
         {
             var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
             if (peeked == null || peeked.Value != '.')
