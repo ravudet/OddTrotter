@@ -150,7 +150,7 @@
 
             seriesMasterPredicate = translated.Compile();
 
-            return visitor.ApplicableToSeriesMaster;
+            return visitor.ApplicableToSeriesMaster; //// TODO maybe this should return the non-compiled version?
         }
 
         private sealed class ExpressionVisitor : System.Linq.Expressions.ExpressionVisitor
