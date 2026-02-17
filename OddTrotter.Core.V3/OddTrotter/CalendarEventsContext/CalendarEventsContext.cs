@@ -415,6 +415,11 @@
             return queryResult.TrySelect<IEither<TValue, Nothing>, TError, TValue>((either, [MaybeNullWhen(false)] out left) => either.TryGetLeft(out left));
         }
 
+        public static bool TryGetLeft<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left)
+        {
+            return either.Decompose(out left, out _);
+        }
+
         internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
             this IQueryResult<TValue, TError> queryResult,
             Func<TValue, Task<TResult>> selector)
