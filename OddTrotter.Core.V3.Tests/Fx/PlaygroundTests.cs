@@ -142,7 +142,7 @@
             var calendarEventParameter = predicate.Parameters[0];
 
             var visitor = new ExpressionVisitor(calendarEventParameter);
-            var translatedBody = visitor.Visit(predicate);
+            var translatedBody = visitor.Visit(predicate.Body);
 
             Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>> translated = calendarEvent => true;
             var translatedcalendarEventParameter = Expression.Parameter(typeof(OddTrotter.Graph.CalendarEventsContext.CalendarEvent), calendarEventParameter.Name);
