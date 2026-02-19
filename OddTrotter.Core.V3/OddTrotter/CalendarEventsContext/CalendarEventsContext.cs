@@ -399,6 +399,7 @@
 
         private static bool TryTranslateToSeriesMaster(Expression<Func<CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<Graph.CalendarEvent, bool> seriesMasterPredicate)
         {
+            //// TODO you have a sample of this in `playgroundtests.ParsePredicate`
             if (object.ReferenceEquals(predicate, SubjectIsTodoList))
             {
                 seriesMasterPredicate = calendarEvent => calendarEvent.Subject == "todo list";
