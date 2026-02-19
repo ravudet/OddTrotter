@@ -135,6 +135,38 @@
         public void ParsePredicate()
         {
             Assert.IsTrue(TryTranslateToSeriesMaster(calendarEvent => calendarEvent.Subject == "todo list", out var translated));
+
+            var graphCalendarEvent = new OddTrotter.Graph.CalendarEventsContext.CalendarEvent(
+                "id",
+                "subject",
+                new OddTrotter.Graph.CalendarEventsContext.BodyStructure(
+                    "content"),
+                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                    DateTime.Parse("2026-02-19"),
+                    "UTC"),
+                false,
+                "series",
+                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                    DateTime.Parse("2026-02-19"),
+                    "UTC"));
+
+            Assert.IsFalse(translated(graphCalendarEvent));
+
+            graphCalendarEvent = new OddTrotter.Graph.CalendarEventsContext.CalendarEvent(
+                "id",
+                "todo list",
+                new OddTrotter.Graph.CalendarEventsContext.BodyStructure(
+                    "content"),
+                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                    DateTime.Parse("2026-02-19"),
+                    "UTC"),
+                false,
+                "series",
+                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                    DateTime.Parse("2026-02-19"),
+                    "UTC"));
+
+            Assert.IsTrue(translated(graphCalendarEvent));
         }
 
         private static bool TryTranslateToSeriesMaster(Expression<Func<OddTrotter.CalendarEventsContext.CalendarEvent, bool>> predicate, [MaybeNullWhen(false)] out Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool> seriesMasterPredicate)
@@ -146,11 +178,16 @@
             var translatedBody = visitor.Visit(predicate.Body);
 
             Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>> translated = calendarEvent => true;
-            translated.Update(translatedBody, new[] { translatedcalendarEventParameter });
+            translated = translated.Update(translatedBody, new[] { translated.Parameters[0] }); //// new[] { translatedcalendarEventParameter });
+
+            var lambda = Expression.Lambda<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>>(translatedBody, translatedcalendarEventParameter);
+            translated = lambda;
+
+            
 
             seriesMasterPredicate = translated.Compile();
 
-            return visitor.ApplicableToSeriesMaster; //// TODO maybe this should return the non-compiled version?
+            return visitor.ApplicableToSeriesMaster; //// TODO maybe this should return the non-compiled version? //// TODO if you don't compile, you don't get error handling on the new predicate
         }
 
         private sealed class ExpressionVisitor : System.Linq.Expressions.ExpressionVisitor
@@ -169,12 +206,14 @@
 
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                if (object.ReferenceEquals(node, this.originalCalendarEventParamter))
+                return this.translatedCalendarEventExpression;
+
+                /*if (object.ReferenceEquals(node, this.originalCalendarEventParamter))
                 {
                     return this.translatedCalendarEventExpression;
                 }
 
-                return base.VisitParameter(node);
+                return base.VisitParameter(node);*/
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -183,6 +222,8 @@
                 {
                     if (ExpressionVisitor.SeriesMasterAdapters.TryGetValue(node.Member.Name, out var expression))
                     {
+                        expression = this.Visit(expression);
+
                         this.ApplicableToSeriesMaster = true;
                         return expression;
                     }
