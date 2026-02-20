@@ -186,13 +186,16 @@
                         .Foo3()
                         .Foo2()
                         .Foo3()
-                        .SelectRight(_ => _.SelectRight(right => right.Foo5()))
-                        .SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
+                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Foo3()))
+                        ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
                         .Foo4()
-                        .SelectLeft(_ => _.SelectManyRight())
-                        .Foo3())
                         .Foo4()
-                        .Foo4())
+                        .Foo4()
+                        ////.SelectLeft(_ => _.SelectManyRight())
+                        ////.Foo3())
+                        ////.Foo4()
+                        ////.Foo4()
+                        )
                 /*.Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
                         .Apply(
@@ -255,6 +258,7 @@
                 .Select(
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
                         .Foo3()
+                        .Foo3()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
@@ -264,8 +268,9 @@
                                 seriesMasterPlusInstance.Item1.IsCancelled,
                                 seriesMasterPlusInstance.Item1.Type,
                                 seriesMasterPlusInstance.Item2.End))
-                        /*.SelectLeft(
-                            errors => errors.SelectManyRight())*/
+                        .SelectRight(_ => _.SelectRight(_ => _.Foo5()))
+                        .SelectRight(
+                            errors => errors.SelectManyRight())
                         .SelectRight(
                             translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
                                 .SelectRight(
