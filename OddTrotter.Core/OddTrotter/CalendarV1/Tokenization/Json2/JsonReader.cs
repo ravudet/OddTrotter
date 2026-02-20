@@ -369,6 +369,14 @@
 
         public async ITask<FalseToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -423,6 +431,14 @@
 
         public async ITask<NullToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -477,6 +493,14 @@
 
         public async ITask<TrueToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -578,6 +602,14 @@
 
         public async ITask<ObjectStartToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -856,6 +888,14 @@
 
         public async ITask<ColonToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -944,6 +984,14 @@
 
         public async ITask<CommaToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -994,6 +1042,14 @@
 
         public async ITask<ObjectEndToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -1092,6 +1148,14 @@
 
         public async ITask<ArrayStartToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -1363,6 +1427,14 @@
 
         public async ITask<ArrayEndToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -1456,6 +1528,14 @@
 
         public async ITask<SignToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -1528,6 +1608,14 @@
 
         public async ITask<IEnumerable<DigitToken>> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -1619,6 +1707,15 @@
 
         public async ITask<FracToken> GetValue()
         {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async ITask<FracToken> GetValue2()
@@ -1773,6 +1870,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<EToken>> task;
+
         public EReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1783,9 +1882,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<EToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<EToken> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<EToken> GetValue2()
         {
             var read = await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
             if (read == 0)
@@ -1825,6 +1939,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<ExpSignToken>> task;
+
         public ExpSignReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1835,9 +1951,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<ExpSignToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<ExpSignToken> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<ExpSignToken> GetValue2()
         {
             var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
             if (peeked == '+')
@@ -1905,6 +2036,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<IEnumerable<DigitToken>>> task;
+
         public DigitsReader(
             PeekableStream stream,
             byte[] buffer,
@@ -1915,9 +2048,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<IEnumerable<DigitToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<IEnumerable<DigitToken>> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<IEnumerable<DigitToken>> GetValue2()
         {
             return await this.GetValueImpl().ToTask().ConfigureAwait(false);
         }
@@ -2004,6 +2152,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<StringDelimiterToken>> task;
+
         public StringDelimiterReader(
             PeekableStream stream,
             byte[] buffer,
@@ -2014,9 +2164,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<StringDelimiterToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<StringDelimiterToken> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<StringDelimiterToken> GetValue2()
         {
             await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '"').ConfigureAwait(false);
             return StringDelimiterToken.Instance;
@@ -2045,6 +2210,8 @@
         private readonly int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
+        private readonly Task<ITask<IEnumerable<CharToken>>> task;
+
         public CharsReader(
             PeekableStream stream,
             byte[] buffer,
@@ -2055,9 +2222,24 @@
             this.buffer = buffer;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.task = new Task<ITask<IEnumerable<CharToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
         public async ITask<IEnumerable<CharToken>> GetValue()
+        {
+            try
+            {
+                this.task.Start();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async ITask<IEnumerable<CharToken>> GetValue2()
         {
             return await this.GetValueImpl().ToTask().ConfigureAwait(false);
         }
