@@ -175,18 +175,18 @@
                             {
                                 //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever first a non-error instance
                                 var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()).AsEither2());
+                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()).SelectLeft(_ => _.AsEither())); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
                             })
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
-                        .Foo2()
+                        .Foo2() //// TODO you need to rename these extensions
                         .Foo3()
                         .Foo2()
                         .Foo3()
                         .Foo2()
                         .Foo3()
-                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Foo3()))
+                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Foo3())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
                         ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
                         .Foo4()
                         .Foo4()
