@@ -384,7 +384,7 @@
         {
             foreach (var @char in "false")
             {
-                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char).ConfigureAwait(false);
+                await Helpers.ReadChar(this.stream, this.buffer, , this.validBytes, @char).ConfigureAwait(false);
             }
 
             return FalseToken.Instance;
@@ -2320,6 +2320,28 @@
 
     public static class Helpers
     {
+        public static async Task<(int CurrentByteIndex, int ValidBytes)> ReadChar(Stream stream, byte[] buffer, int currentByteIndex, int validBytes, char character)
+        {
+            if (currentByteIndex >= validBytes)
+            {
+                validBytes = await stream.ReadAsync(buffer, 0, buffer.Length);
+                currentByteIndex = 0;
+
+            }
+
+            ReadChar(buffer, currentByteIndex, validBytes, character);
+
+            return (currentByteIndex, validBytes);
+        }
+
+        private static void ReadChar(byte[] buffer, int currentByteIndex, int validBytes, char character)
+        {
+            if (buffer[currentByteIndex] != character)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+        }
+
         public static async Task ReadChar(Stream stream, byte[] buffer, int validBytes, char character)
         {
             var read = await stream.ReadAsync(buffer, 0, validBytes).ConfigureAwait(false);
