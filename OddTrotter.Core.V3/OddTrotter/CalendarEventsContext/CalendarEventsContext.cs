@@ -175,14 +175,25 @@
                             {
                                 //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever first a non-error instance
                                 var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()));
+                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()).AsEither2());
                             })
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
                         .Foo2()
+                        .Foo3()
+                        .Foo2()
+                        .Foo3()
+                        .Foo2()
+                        .Foo3()
+                        .SelectRight(_ => _.SelectRight(right => right.Foo5()))
+                        .SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
+                        .Foo4()
+                        .SelectLeft(_ => _.SelectManyRight())
                         .Foo3())
-                .Select(
+                        .Foo4()
+                        .Foo4())
+                /*.Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
                         .Apply(
                             seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
@@ -234,7 +245,7 @@
                                         .Right(
                                             Either
                                                 .Right<Either<Graph.CalendarEventTranslationException, Graph.PagingException>>()
-                                                .Left(seriesTranslationError)))))
+                                                .Left(seriesTranslationError)))))*/
                 /*.TrySelect( //// TODO any way to get type inference here?
                     (IEither<IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>>, Nothing> potentialSeriesMasterPlusFirstInstanceOrError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>> seriesMasterWithInstanceOrError) =>
                     {
@@ -243,17 +254,18 @@
                 .TrySelect()
                 .Select(
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
+                        .Foo3()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
-                                seriesMasterPlusInstance.SeriesMaster.Id,
-                                seriesMasterPlusInstance.SeriesMaster.Subject,
-                                seriesMasterPlusInstance.SeriesMaster.Body,
-                                seriesMasterPlusInstance.FirstInstance.Start,
-                                seriesMasterPlusInstance.SeriesMaster.IsCancelled,
-                                seriesMasterPlusInstance.SeriesMaster.Type,
-                                seriesMasterPlusInstance.FirstInstance.End))
-                        .SelectRight(
-                            errors => errors.SelectManyRight())
+                                seriesMasterPlusInstance.Item1.Id,
+                                seriesMasterPlusInstance.Item1.Subject,
+                                seriesMasterPlusInstance.Item1.Body,
+                                seriesMasterPlusInstance.Item2.Start,
+                                seriesMasterPlusInstance.Item1.IsCancelled,
+                                seriesMasterPlusInstance.Item1.Type,
+                                seriesMasterPlusInstance.Item2.End))
+                        /*.SelectLeft(
+                            errors => errors.SelectManyRight())*/
                         .SelectRight(
                             translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
                                 .SelectRight(
@@ -423,6 +435,35 @@
 
     internal static class Extensions
     {
+        internal static IEither<TRight, TLeft> Foo5<TLeft, TRight>(
+            this IEither<TLeft, TRight> either)
+        {
+            return either.Apply(
+                left => Either.Left<TRight>().Right(left),
+                right => Either.Right<TLeft>().Left(right));
+        }
+
+        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Foo4<TLeft, TLeftInner, TRightInner>(
+            this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
+        {
+            return either.Apply(
+                left => Either.Right<TRightInner>().Left(Either.Right<TLeftInner>().Left(left)),
+                right => right.Apply(
+                    leftInner => Either.Right<TRightInner>().Left(Either.Left<TLeft>().Right(leftInner)),
+                    rightInner => Either.Left<Either<TLeft, TLeftInner>>().Right(rightInner)));
+        }
+
+        internal static IEither<TLeft, TRight> AsEither<TLeft, TRight>(this IEither<TLeft, TRight> either)
+        {
+            return either;
+        }
+
+        internal static IEither<IEither<TLeftInner, TRightInner>, TRight> AsEither2<TLeftInner, TRightInner, TRight>(
+            this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
+        {
+            return either;
+        }
+
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
             this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
         {
