@@ -1308,6 +1308,7 @@ namespace Fx.Either
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            //// TODO system.tupleextensions calls this `deconstruct`
             return new DecomposeCastable<TLeft, TRight>(either).AsEither.Decompose(out left, out right);
         }
 

@@ -179,6 +179,10 @@
                             })
                         .ConfigureAwait(false))
                 .Select(
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
+                        .Foo2()
+                        .Foo3())
+                .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
                         .Apply(
                             seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
@@ -419,6 +423,34 @@
 
     internal static class Extensions
     {
+        internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
+            this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
+        {
+            return either.Apply(
+                left => left.Apply(
+                    leftInner => Either.Right<Either<TRightInner, TRight>>().Left(leftInner),
+                    rightInner => Either.Left<TLeftInner>().Right(Either.Right<TRight>().Left(rightInner))),
+                right => Either.Left<TLeftInner>().Right(Either.Left<TRightInner>().Right(right)));
+        }
+
+        internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> Foo2<TRight, TLeft1, TLeft2, TRightInner>(
+            this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
+        {
+            return either.Foo(
+                tuple => tuple
+                    .Item2
+                    .Apply(
+                        left => Either.Right<TRightInner>().Left((tuple.Item1, left)),
+                        right => Either.Left<(TLeft1, TLeft2)>().Right(right)));
+        }
+
+        internal static IEither<IEither<TLeftInner, TRightInner>, TRight> Foo<TLeft, TRight, TLeftInner, TRightInner>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, IEither<TLeftInner, TRightInner>> selector)
+        {
+            return either.SelectLeft(selector);
+        }
+
         internal static IQueryResult<TValue, TError> TrySelect<TValue, TError>(
             this IQueryResult<IEither<TValue, Nothing>, TError> queryResult)
         {
