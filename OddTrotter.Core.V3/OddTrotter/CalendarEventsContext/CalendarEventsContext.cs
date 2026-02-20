@@ -180,12 +180,15 @@
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and its left is the actual event and its right is the ieither of errors); can you somehow make this work?
-                        .Foo2() //// TODO you need to rename these extensions
+                        /*.Foo2() //// TODO you need to rename these extensions
                         .Foo3()
                         .Foo2()
                         .Foo3()
                         .Foo2()
-                        .Foo3()
+                        .Foo3()*/
+                        .Foo2Point5()
+                        .Foo2Point5()
+                        .Foo2Point5()
                         .SelectRight(_ => _.SelectRight(right => right.Foo5().Foo3())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
                         ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
                         .Foo4()
@@ -469,6 +472,12 @@
             return either;
         }
 
+        internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
+            this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
+        {
+            return either.Foo2().Foo3();
+        }
+
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
             this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
         {
@@ -482,12 +491,12 @@
         internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> Foo2<TRight, TLeft1, TLeft2, TRightInner>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
-            return either.Foo(
-                tuple => tuple
-                    .Item2
-                    .Apply(
-                        left => Either.Right<TRightInner>().Left((tuple.Item1, left)),
-                        right => Either.Left<(TLeft1, TLeft2)>().Right(right)));
+            return either
+                .Foo(
+                    tuple => tuple
+                        .Item2
+                        .SelectLeft(
+                            left => (tuple.Item1, left)));
         }
 
         internal static IEither<IEither<TLeftInner, TRightInner>, TRight> Foo<TLeft, TRight, TLeftInner, TRightInner>(
