@@ -1,6 +1,8 @@
 ﻿namespace OddTrotter.TodoList
 {
     using System;
+    using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -10,8 +12,9 @@
     using OddTrotter.CalendarEventsContext;
 
     internal sealed class TodoList<TCalendarEventsContext> : ITodoList<TodoListErrors>
-        where TCalendarEventsContext : IQueryContext<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
-        IWhereQueryContextMixin<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
+        where TCalendarEventsContext : 
+            IQueryContext<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
+            IWhereQueryContextMixin<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
     {
         private readonly TCalendarEventsContext calendarEventsContext;
 
@@ -29,6 +32,27 @@
                 .Where(calendarEvent => calendarEvent.Subject == "todo list");
 
 
+        }
+
+        private sealed class TodoListResultBuilder
+        {
+            public TodoListResultBuilder(DateTime lastRecordedEventTimeStamp)
+            {
+                this.TodoList = new StringBuilder();
+                this.TranslationErrors = new List<CalendarEventTranslationException>();
+                this.BodyParseErrors = new List<Exception>();
+                this.EndTimestamp = lastRecordedEventTimeStamp;
+            }
+
+            public StringBuilder TodoList { get; set; }
+
+            public DateTime EndTimestamp { get; set; }
+
+            public List<CalendarEventTranslationException> TranslationErrors { get; set; }
+
+            public List<Exception> BodyParseErrors { get; set; } //// TODO use the right tpye of elements
+
+            public PagingException? PagingError { get; set; }
         }
     }
 }
