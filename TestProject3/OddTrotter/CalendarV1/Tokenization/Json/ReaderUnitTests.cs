@@ -82,6 +82,20 @@
 
         }
 
+        public static async Task ReadToEnd11<TNextReader>(
+            this Json2.SubsequentMembersReader<TNextReader> subsequentMembersReader,
+            Func<TNextReader, Task> readToEnd)
+        {
+            await subsequentMembersReader.ReadToEnd9(
+                async whitespaceReader => await readToEnd(whitespaceReader),
+                async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4(
+                    async commaReader => await commaReader.ReadToEnd4(
+                        async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                            async memberReader => await memberReader.ReadToEnd10(
+                                async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
+                                    async nextReader => await readToEnd(nextReader)))))));
+        }
+
         public static async Task ReadToEnd10<TNextReader>(
             this Json2.MemberReader<TNextReader> memberReader,
             Func<TNextReader, Task> readToEnd)
@@ -96,14 +110,6 @@
                                         async whitespaceReader => await whitespaceReader.ReadToEnd4(
                                             async valueReader => await valueReader.ReadToEnd2(
                                                 async nextReader => await readToEnd(nextReader))))))))));
-        }
-
-        public static async Task ReadToEnd11<TNextReader>(
-            this Json2.SubsequentMembersReader<TNextReader> expReader,
-            Func<TNextReader, Task> noneReadToEnd,
-            Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> someReadToEnd)
-        {
-
         }
 
         public static async Task ReadToEnd2<TNextReader>(
@@ -147,17 +153,13 @@
                                             async nextReader => await readToEnd(nextReader))),
                                     async firstMemberReader => await firstMemberReader.ReadToEnd4(
                                         async memberReader => await memberReader.ReadToEnd10(
-                                            async subsequentMembersReader => await subsequentMembersReader.ReadToEnd9(
+                                            async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
                                                 async whitespaceReader => await whitespaceReader.ReadToEnd4(
                                                     async objectEndReader => await objectEndReader.ReadToEnd4(
-                                                        async nextReader => await readToEnd(nextReader))),
-                                                async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4(
-                                                    async commaReader => await commaReader.ReadToEnd4(
-                                                        async whitespaceReader => await whitespaceReader.ReadToEnd4(
-                                                            async ,
+                                                        async nextReader => await readToEnd(nextReader)))))))))),
                     async stringReader => await ReadToEnd4(
                         stringReader,
-                        async whitespaceReader => await ReadToEnd4(
+                        async  => await ReadToEnd4(
                             whitespaceReader,
                             nothing => Task.CompletedTask)),
                     async trueReader => await ReadToEnd4(
