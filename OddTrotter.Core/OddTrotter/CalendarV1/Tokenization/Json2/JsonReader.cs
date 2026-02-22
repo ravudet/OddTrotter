@@ -62,40 +62,45 @@
 
         private WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> MoveImpl()
         {
-            var validBytes = 1;
             return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
-                new PeekableStream(this.stream),
+                this.stream,
                 new byte[20], //// TODO parameterize
-                validBytes,
-                (stream, buffer, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
+                0,
+                0,
+                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
                     stream,
                     buffer,
+                    currentByteIndex,
                     validBytes,
-                    (nestedStream, nestedBuffer, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
                         nestedStream,
                         nestedBuffer,
+                        currentByteIndex,
                         nestedValidBytes,
-                        (_, _, _) => new Nothing())));
+                        (_, _, _, _) => new Nothing())));
         }
     }
 
     public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<IEnumerable<WhitespaceToken>>> task;
 
         public WhitespaceReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -124,23 +129,29 @@
         {
             while (true)
             {
-                var peeked = await stream.PeekAsync().ConfigureAwait(false);
-                if (peeked == null)
+                if (this.currentByteIndex >= this.validBytes)
                 {
+                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                    this.currentByteIndex = 0;
+                }
+
+                if (this.validBytes == 0)
+                {
+                    // no more bytes to read
                     yield break;
                 }
 
                 WhitespaceToken whitespace;
                 try
                 {
-                    whitespace = new WhitespaceToken(peeked.Value);
+                    whitespace = new WhitespaceToken(this.buffer[this.currentByteIndex]);
                 }
                 catch (Exception)
                 {
                     break;
                 }
 
-                await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                ++this.currentByteIndex;
                 yield return whitespace;
             }
         }
@@ -148,7 +159,7 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -175,38 +186,47 @@
 
     public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public ValueReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
 
         public async ITask<ValueToken<TNextReader>> Move()
         {
-            var peeked = await stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            switch ((char)peeked)
+            switch ((char)this.buffer[this.currentByteIndex])
             {
                 case 'f':
                     return new ValueToken<TNextReader>.False(
                         new FalseReader<TNextReader>(
                             this.stream,
                             this.buffer,
+                            this.currentByteIndex,
                             this.validBytes,
                             this.nextReaderFactory));
                 case 'n':
@@ -346,22 +366,24 @@
 
     public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        ////private int currentByteIndex;
+        private int currentByteIndex;
         private int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<FalseToken>> task;
 
         public FalseReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -385,17 +407,17 @@
         {
             foreach (var @char in "false")
             {
-                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char);
-                /*(this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);*/
+                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);
             }
 
+            ++this.currentByteIndex;
             return FalseToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
