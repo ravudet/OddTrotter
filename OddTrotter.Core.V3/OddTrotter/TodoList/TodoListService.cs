@@ -5,12 +5,15 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Xml.Linq;
 
     using Fx.Either;
     using Fx.QueryContext;
     using Fx.QueryContext.Mixins;
 
     using OddTrotter.CalendarEventsContext;
+
+    using static Fx.Either.EitherExtensions;
 
     internal sealed class TodoListService<TCalendarEventsContext> : ITodoListService<CalendarTodoListErrors>
         where TCalendarEventsContext : 
@@ -79,7 +82,7 @@
                 element =>
                 {
                     element.Value.Apply(
-                        (left, context) =>
+                        (left, ref context) =>
                         {
                             if (left.Start < context.EndTimestamp)
                             {
@@ -100,14 +103,14 @@
                             context.TodoList.AppendJoin(Environment.NewLine, parsedBody).AppendLine();
                             return new Nothing();
                         },
-                        (right, context) =>
+                        (right, ref context) =>
                         {
                             //// TODO do you want to stop recording the endtimestamp if a translation error occurred, or should the user be expected to handle it at that point? if the user is expected to handle it, it'd probably be good to put the errors in a more permanent storage so that a browser window mishap doesn't cause data loss
                             //// TODO i think you should let the user handle it because otherwise a calendar error will get them permanently stuck at a certain timestamp and they will need to actually go to the calendar event and fix it, instead of just checking that the error can be skipped and ignoring it, letting the next refresh remove it; you *will* want a way to persist the errors though for the browser mishap reason
                             context.TranslationErrors.Add(right);
                             return new Nothing();
                         },
-                        builder);
+                        ref builder);
 
                     return (element.Next(), true); //// TODO something is very wrong, because at some point `next` will need to get the next *page* and make a network call, but there's no task being used...
                 },
@@ -120,6 +123,26 @@
 
                     return (null!, false);
                 });
+        }
+
+        private static IEnumerable<string> ParseEventBody(string body)
+        {
+            //// TODO do you need to document anything here?
+            body = body.Replace("&nbsp;", string.Empty);
+
+            // the calendar api returns html bodies that are malformed xml; the head element contains a meta element that doesn't close
+            var bodyElement = "<body>";
+            var bodyCloseElement = "</body>";
+            body = $"<html>{body.Substring(0, body.IndexOf(bodyCloseElement)).Substring(body.IndexOf(bodyElement) + bodyElement.Length)}</html>";
+
+            var document = XDocument.Parse(body);
+            var links = document.Descendants("a").Reverse();
+            foreach (var link in links)
+            {
+                link.ReplaceWith(link.Value);
+            }
+
+            return document.Descendants("p").Select(element => element.Value);
         }
 
         private sealed class TodoListResultBuilder
@@ -141,6 +164,29 @@
             public List<Exception> BodyParseErrors { get; set; } //// TODO use the right tpye of elements
 
             public PagingException? PagingError { get; set; }
+        }
+    }
+
+    internal static partial class Extensions
+    {
+        internal static TResult Apply<TLeft, TRight, TContext, TResult>(
+            this IEither<TLeft, TRight> either,
+            Func<TLeft, TContext, TResult> leftMap,
+            Func<TRight, TContext, TResult> rightMap,
+            TContext context)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TResult : allows ref struct
+            where TContext : allows ref struct
+        {
+            if (either.Decompose(out var left, out var right)) //// TODO you shouldn't need `decompose` for this
+            {
+                return leftMap(left, context);
+            }
+            else
+            {
+                return rightMap(right, context);
+            }
         }
     }
 }

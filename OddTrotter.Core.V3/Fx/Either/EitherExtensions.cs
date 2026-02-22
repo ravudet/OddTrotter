@@ -20,10 +20,11 @@ namespace Fx.Either
 
 
 
-        private static TypeHolder<IEither<TLeft, TRight>, TLeft, TRight> TypeHolder<TLeft, TRight>(this IEither<TLeft, TRight> either)
+        internal static TypeHolder<IEither<TLeft, TRight>, TLeft, TRight> TypeHolder<TLeft, TRight>(this IEither<TLeft, TRight> either)
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            //// TODO this should be either private or public; most likely private, i think
             return new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(either);
         }
 
