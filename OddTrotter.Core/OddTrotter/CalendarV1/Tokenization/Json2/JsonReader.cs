@@ -348,7 +348,7 @@
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
-        private int currentByteIndex;
+        ////private int currentByteIndex;
         private int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
@@ -385,7 +385,8 @@
         {
             foreach (var @char in "false")
             {
-                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);
+                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char);
+                /*(this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);*/
             }
 
             return FalseToken.Instance;
