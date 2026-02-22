@@ -27,6 +27,8 @@
             var whitespaceReader = await reader.Move().ConfigureAwait(false);
             await whitespaceReader.ReadToEnd4(
                 async valueReader => await valueReader.ReadToEnd2(
+                    async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                        nothing => Task.CompletedTask)));
         }
 
         public static async Task ReadToEnd3<TNextReader>(
@@ -34,6 +36,19 @@
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> someReadToEnd)
         {
+            var arrayElementsToken = await arrayElementsReader.Move();
+            if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
+            {
+                await noneReadToEnd(none.Reader);
+            }
+            else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
+            {
+                await someReadToEnd(some.Reader);
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
         }
 
         public static async Task ReadToEnd5<TNextReader>(
@@ -41,7 +56,19 @@
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> moreReadToEnd)
         {
-
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move();
+            if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
+            {
+                await noneReadToEnd(none.Reader);
+            }
+            else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
+            {
+                await moreReadToEnd(more.Reader);
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
         }
 
         public static async Task ReadToEnd6<TNextReader>(
@@ -63,7 +90,19 @@
             Func<TNextReader, Task> absentReadToEnd,
             Func<Json2.EReader<ExpSignReader<DigitsReader<TNextReader>>>, Task> presentReadToEnd)
         {
-
+            var expToken = await expReader.Move();
+            if (expToken is ExpToken<TNextReader>.Absent absent)
+            {
+                await absentReadToEnd(absent.Reader);
+            }
+            else if (expToken is ExpToken<TNextReader>.Present present)
+            {
+                await presentReadToEnd(present.Reader);
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
         }
 
         public static async Task ReadToEnd8<TNextReader>(
@@ -157,14 +196,13 @@
                                                 async whitespaceReader => await whitespaceReader.ReadToEnd4(
                                                     async objectEndReader => await objectEndReader.ReadToEnd4(
                                                         async nextReader => await readToEnd(nextReader)))))))))),
-                    async stringReader => await ReadToEnd4(
-                        stringReader,
-                        async  => await ReadToEnd4(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async trueReader => await ReadToEnd4(
-                        trueReader,
-                        async whitespaceReader => await readToEnd(whitespaceReader)));
+                    async stringReader => await stringReader.ReadToEnd4(
+                        async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                            async charsReader => await charsReader.ReadToEnd4(
+                                async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                                    async nextReader => await readToEnd(nextReader))))),
+                    async trueReader => await trueReader.ReadToEnd4(
+                        async nextReader => await readToEnd(nextReader)));
         }
 
         public static async Task ReadToEnd1<TNextReader>(
