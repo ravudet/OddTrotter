@@ -7,7 +7,7 @@
 
     internal class CalendarTodoListErrors
     {
-        public CalendarTodoListErrors(
+        public CalendarTodoListErrors( //// TODO this whole type is wrong, look at the todo list service to find what the *types* are that you can service; you shouldn't lose overall fidelity (i.e. the UI should still have text that has useful and readable messages), but still not leak abstractions //// TODO this might mean that `todolistservice` is *not* "abstract" and just directly takes an instance of (the non-graph) `calendareventscontext` so that it knows directly what to do for each error
             string? brokenNextLink,
             IEnumerable<CalendarEvent> eventsWithoutStarts,
             IEnumerable<(CalendarEvent, Exception)> eventsWithStartParseFailures,
@@ -41,12 +41,6 @@
             EventsWithBodyParseFailures = eventsWithBodyParseFailures;
         }
 
-        /// <summary>
-        /// Gets the URI of one of three values:
-        /// 1. <see langword="null"/> if no errors occurred retrieve any of the data
-        /// 2. The URL of series master entity for which an error occurred while retrieving the instance events
-        /// 3. The URL of the nextLink for which an error occurred while retrieving the that URL's page
-        /// </summary>
         public string? BrokenNextLink { get; }
 
         public IEnumerable<CalendarEvent> EventsWithoutStarts { get; }
