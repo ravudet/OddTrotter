@@ -16,7 +16,7 @@
 
     public static class ReaderExtensions
     {
-        private static async Task ReadToEnd<TNextReader>(this Json2.IReader<TNextReader> currentReader, Func<TNextReader, Task> readToEnd)
+        private static async Task ReadToEnd4<TNextReader>(this Json2.IReader<TNextReader> currentReader, Func<TNextReader, Task> readToEnd)
         {
             var nextReader = await currentReader.Move().ConfigureAwait(false);
             await readToEnd(nextReader).ConfigureAwait(false);
@@ -25,46 +25,147 @@
         public static async Task ReadToEnd(this Json2.JsonReader reader)
         {
             var whitespaceReader = await reader.Move().ConfigureAwait(false);
-            await whitespaceReader.ReadToEnd(
-                async valueReader => await valueReader.ReadToEnd(
-                    async arrayReader => await ReadToEnd(
-                        arrayReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async falseReader => await ReadToEnd(
-                        falseReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async nullReader => await ReadToEnd(
-                        nullReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async numberReader => await ReadToEnd(
-                        numberReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async objectReader => await ReadToEnd(
-                        objectReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async stringReader => await ReadToEnd(
-                        stringReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask)),
-                    async trueReader => await ReadToEnd(
-                        trueReader,
-                        async whitespaceReader => await ReadToEnd(
-                            whitespaceReader,
-                            nothing => Task.CompletedTask))));
+            await whitespaceReader.ReadToEnd4(
+                async valueReader => await valueReader.ReadToEnd2(
         }
 
-        public static async Task ReadToEnd<TNextReader>(
+        public static async Task ReadToEnd3<TNextReader>(
+            this Json2.ArrayElementsReader<TNextReader> arrayElementsReader,
+            Func<TNextReader, Task> noneReadToEnd,
+            Func<Json2.ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> someReadToEnd)
+        {
+        }
+
+        public static async Task ReadToEnd5<TNextReader>(
+            this Json2.SubsequentArrayElementsReader<TNextReader> subsequentArrayElementsReader,
+            Func<TNextReader, Task> noneReadToEnd,
+            Func<Json2.SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> moreReadToEnd)
+        {
+
+        }
+
+        public static async Task ReadToEnd6<TNextReader>(
+            this Json2.SubsequentArrayElementsReader<TNextReader> subsequentArrayElementsReader,
+            Func<TNextReader, Task> readToEnd)
+        {
+            await subsequentArrayElementsReader.ReadToEnd5(
+                async nextReader => await readToEnd(nextReader),
+                async subsequentArrayElementReader => await subsequentArrayElementReader.ReadToEnd4(
+                    async commaReader => await commaReader.ReadToEnd4(
+                        async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                            async arrayElementReader => await arrayElementReader.ReadToEnd4(
+                                async valueReader => await valueReader.ReadToEnd2(
+                                    async subsequentArrayElementsReader => await subsequentArrayElementsReader.ReadToEnd6(readToEnd)))))));
+        }
+
+        public static async Task ReadToEnd7<TNextReader>(
+            this Json2.ExpReader<TNextReader> expReader,
+            Func<TNextReader, Task> absentReadToEnd,
+            Func<Json2.EReader<ExpSignReader<DigitsReader<TNextReader>>>, Task> presentReadToEnd)
+        {
+
+        }
+
+        public static async Task ReadToEnd8<TNextReader>(
+            this Json2.MembersReader<TNextReader> expReader,
+            Func<TNextReader, Task> noneReadToEnd,
+            Func<Json2.FirstMemberReader<TNextReader>, Task> someReadToEnd)
+        {
+
+        }
+
+        public static async Task ReadToEnd9<TNextReader>(
+            this Json2.SubsequentMembersReader<TNextReader> expReader,
+            Func<TNextReader, Task> noneReadToEnd,
+            Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> someReadToEnd)
+        {
+
+        }
+
+        public static async Task ReadToEnd10<TNextReader>(
+            this Json2.MemberReader<TNextReader> memberReader,
+            Func<TNextReader, Task> readToEnd)
+        {
+            await memberReader.ReadToEnd4(
+                async stringReader => await stringReader.ReadToEnd4(
+                    async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                        async charsReader => await charsReader.ReadToEnd4(
+                            async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                                async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                    async colonReader => await colonReader.ReadToEnd4(
+                                        async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                            async valueReader => await valueReader.ReadToEnd2(
+                                                async nextReader => await readToEnd(nextReader))))))))));
+        }
+
+        public static async Task ReadToEnd11<TNextReader>(
+            this Json2.SubsequentMembersReader<TNextReader> expReader,
+            Func<TNextReader, Task> noneReadToEnd,
+            Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> someReadToEnd)
+        {
+
+        }
+
+        public static async Task ReadToEnd2<TNextReader>(
+            this Json2.ValueReader<TNextReader> valueReader,
+            Func<TNextReader, Task> readToEnd)
+        {
+            await valueReader.ReadToEnd1(
+                    async arrayReader => await arrayReader.ReadToEnd4(
+                        async arrayStartReader => await arrayStartReader.ReadToEnd4(
+                            async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                async arrayElementsReader => await arrayElementsReader.ReadToEnd3(
+                                    async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                        async arrayEndReader => await arrayEndReader.ReadToEnd4(
+                                            async nextReader => await readToEnd(nextReader))),
+                                    async arrayElementReader => await arrayElementReader.ReadToEnd4(
+                                        async valueReader => await valueReader.ReadToEnd2(
+                                            async subsequentArrayElementsReader => await subsequentArrayElementsReader.ReadToEnd6(
+                                                async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                                    async arrayEndReader => await arrayEndReader.ReadToEnd4(
+                                                        async nextReader => await readToEnd(nextReader)))))))))),
+                    async falseReader => await falseReader.ReadToEnd4(
+                        async nextReader => await readToEnd(nextReader)),
+                    async nullReader => await nullReader.ReadToEnd4(
+                        async nextReader => await readToEnd(nextReader)),
+                    async numberReader => await numberReader.ReadToEnd4(
+                        async signReader => await signReader.ReadToEnd4(
+                            async intReader => await intReader.ReadToEnd4(
+                                async fracReader => await fracReader.ReadToEnd4(
+                                    async expReader => await expReader.ReadToEnd7(
+                                        async nextReader => await readToEnd(nextReader),
+                                        async eReader => await eReader.ReadToEnd4(
+                                            async expSignReader => await expSignReader.ReadToEnd4(
+                                                async digitsReader => await digitsReader.ReadToEnd4(
+                                                    async nextReader => await readToEnd(nextReader))))))))),
+                    async objectReader => await objectReader.ReadToEnd4(
+                        async objectStartReader => await objectStartReader.ReadToEnd4(
+                            async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                async membersReader => await membersReader.ReadToEnd8(
+                                    async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                        async objectEndReader => await objectEndReader.ReadToEnd4(
+                                            async nextReader => await readToEnd(nextReader))),
+                                    async firstMemberReader => await firstMemberReader.ReadToEnd4(
+                                        async memberReader => await memberReader.ReadToEnd10(
+                                            async subsequentMembersReader => await subsequentMembersReader.ReadToEnd9(
+                                                async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                                    async objectEndReader => await objectEndReader.ReadToEnd4(
+                                                        async nextReader => await readToEnd(nextReader))),
+                                                async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4(
+                                                    async commaReader => await commaReader.ReadToEnd4(
+                                                        async whitespaceReader => await whitespaceReader.ReadToEnd4(
+                                                            async ,
+                    async stringReader => await ReadToEnd4(
+                        stringReader,
+                        async whitespaceReader => await ReadToEnd4(
+                            whitespaceReader,
+                            nothing => Task.CompletedTask)),
+                    async trueReader => await ReadToEnd4(
+                        trueReader,
+                        async whitespaceReader => await readToEnd(whitespaceReader)));
+        }
+
+        public static async Task ReadToEnd1<TNextReader>(
             this Json2.ValueReader<TNextReader> valueReader,
             Func<Json2.ArrayReader<TNextReader>, Task> arrayReadToEnd,
             Func<Json2.FalseReader<TNextReader>, Task> falseReadToEnd,

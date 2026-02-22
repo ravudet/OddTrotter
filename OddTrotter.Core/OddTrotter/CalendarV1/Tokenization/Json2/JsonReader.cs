@@ -65,7 +65,7 @@
             var validBytes = 1;
             return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
                 new PeekableStream(this.stream),
-                new byte[validBytes],
+                new byte[20], //// TODO parameterize
                 validBytes,
                 (stream, buffer, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
                     stream,
@@ -348,7 +348,8 @@
     {
         private readonly PeekableStream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
+        private int currentByteIndex;
+        private int validBytes;
         private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<FalseToken>> task;
@@ -384,7 +385,7 @@
         {
             foreach (var @char in "false")
             {
-                await Helpers.ReadChar(this.stream, this.buffer, , this.validBytes, @char).ConfigureAwait(false);
+                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);
             }
 
             return FalseToken.Instance;
