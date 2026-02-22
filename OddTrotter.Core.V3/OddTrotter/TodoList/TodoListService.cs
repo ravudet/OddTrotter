@@ -39,7 +39,7 @@
 
             var lastRecordedEventTimeStamp = DateTime.UtcNow; //// TODO use the correct timestamp
 
-            var builder = Convert(todoListEvents, lastRecordedEventTimeStamp);
+            var builder = await Convert(todoListEvents, lastRecordedEventTimeStamp).ConfigureAwait(false);
 
             var todoList = new TodoList(
                 builder.TodoList.ToString(),
@@ -59,27 +59,27 @@
             return result;
         }
 
-        private static TodoListResultBuilder Convert(IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static async Task<TodoListResultBuilder> Convert(IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
-            ConvertIterator(queryResult.Nodes, builder);
+            await ConvertIterator(await queryResult.GetNodes().ConfigureAwait(false), builder).ConfigureAwait(false);
 
             return builder;
         }
 
-        private static void ConvertIterator(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
+        private static async Task ConvertIterator(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
         {
             bool @continue;
-            while (((queryResultNode, @continue) = ConvertApply(queryResultNode, builder)).@continue)
+            while (((queryResultNode, @continue) = await ConvertApply(queryResultNode, builder).ConfigureAwait(false)).@continue)
             {
             }
         }
 
-        private static (IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>, bool) ConvertApply(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
+        private static async Task<(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>, bool)> ConvertApply(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
         {
-            return queryResultNode.Apply(
-                element =>
+            return await queryResultNode.Apply(
+                async element =>
                 {
                     element.Value.Apply(
                         (left, ref context) =>
@@ -112,17 +112,18 @@
                         },
                         ref builder);
 
-                    return (element.Next(), true); //// TODO something is very wrong, because at some point `next` will need to get the next *page* and make a network call, but there's no task being used...
+                    return (await element.Next().ConfigureAwait(false), true); //// TODO something is very wrong, because at some point `next` will need to get the next *page* and make a network call, but there's no task being used...
                 },
-                terminal =>
+                async terminal =>
                 {
                     if (terminal.TryGetLeft(out var error))
                     {
                         builder.PagingError = error.Value;
                     }
 
-                    return (null!, false);
-                });
+                    return await Task.FromResult(((IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>)null!, false)).ConfigureAwait(false);
+                })
+                .ConfigureAwait(false);
         }
 
         private static IEnumerable<string> ParseEventBody(string body)
