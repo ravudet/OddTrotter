@@ -13,7 +13,7 @@
     using OddTrotter.Odata.v4_01.Reader.RequestWriter;
     using OddTrotter.Odata.v4_01.StrongConventionContext;
     using OddTrotter.Odata.v4_01.WeakConventionContext;
-    using OddTrotter.TodoList;
+    using OddTrotter.TodoListService;
 
     [TestClass]
     public sealed class ContextTests
@@ -41,7 +41,7 @@
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar"),
                     accessToken);
                 var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(calendarSource, DateTime.UtcNow); //// TODO parameterize the timestamp
-                var todoList = new TodoList<OddTrotter.CalendarEventsContext.CalendarEventsContext>(calendarEventsContext);
+                var todoList = new TodoListService<OddTrotter.CalendarEventsContext.CalendarEventsContext>(calendarEventsContext);
 
 
             }

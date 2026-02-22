@@ -1,13 +1,13 @@
-﻿namespace OddTrotter.TodoList
+﻿namespace OddTrotter.TodoListService
 {
     using System;
     using System.Collections.Generic;
 
     using OddTrotter.CalendarEventsContext;
 
-    internal class TodoListErrors
+    internal class CalendarTodoListErrors
     {
-        public TodoListErrors(
+        public CalendarTodoListErrors(
             string? brokenNextLink,
             IEnumerable<CalendarEvent> eventsWithoutStarts,
             IEnumerable<(CalendarEvent, Exception)> eventsWithStartParseFailures,

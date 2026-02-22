@@ -1,58 +1,28 @@
-﻿namespace OddTrotter.TodoList
+﻿namespace OddTrotter.TodoListService
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Threading.Tasks;
-
-    using Fx.Either;
-    using Fx.QueryContext;
-    using Fx.QueryContext.Mixins;
-
-    using OddTrotter.CalendarEventsContext;
-
-    internal sealed class TodoList<TCalendarEventsContext> : ITodoList<TodoListErrors>
-        where TCalendarEventsContext : 
-            IQueryContext<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
-            IWhereQueryContextMixin<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
+    
+    public sealed class TodoList
     {
-        private readonly TCalendarEventsContext calendarEventsContext;
-
-        public TodoList(TCalendarEventsContext calendarEventsContext)
+        public TodoList(
+            string value,
+            DateTime startTimestamp,
+            DateTime endTimestamp)
         {
-            this.calendarEventsContext = calendarEventsContext;
-        }
-
-        public Task<(TodoListResult, TodoListErrors)> Retrieve()
-        {
-            var todoListEvents = this
-                .calendarEventsContext
-                .Where(calendarEvent => calendarEvent.Start < DateTime.UtcNow)
-                .Where(calendarEvent => calendarEvent.IsCancelled == false)
-                .Where(calendarEvent => calendarEvent.Subject == "todo list");
-
-
-        }
-
-        private sealed class TodoListResultBuilder
-        {
-            public TodoListResultBuilder(DateTime lastRecordedEventTimeStamp)
+            if (value == null)
             {
-                this.TodoList = new StringBuilder();
-                this.TranslationErrors = new List<CalendarEventTranslationException>();
-                this.BodyParseErrors = new List<Exception>();
-                this.EndTimestamp = lastRecordedEventTimeStamp;
+                throw new ArgumentNullException(nameof(value));
             }
 
-            public StringBuilder TodoList { get; set; }
-
-            public DateTime EndTimestamp { get; set; }
-
-            public List<CalendarEventTranslationException> TranslationErrors { get; set; }
-
-            public List<Exception> BodyParseErrors { get; set; } //// TODO use the right tpye of elements
-
-            public PagingException? PagingError { get; set; }
+            this.Value = value;
+            this.StartTimestamp = startTimestamp;
+            this.EndTimestamp = endTimestamp;
         }
+
+        public string Value { get; }
+
+        public DateTime StartTimestamp { get; }
+
+        public DateTime EndTimestamp { get; }
     }
 }
