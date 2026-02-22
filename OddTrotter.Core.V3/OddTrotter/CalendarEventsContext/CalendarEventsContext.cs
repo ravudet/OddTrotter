@@ -104,7 +104,12 @@
         public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
             var events = await this.GetEvents().ConfigureAwait(false);
-            var translatedEvents = Translate(events);
+            var translatedEvents = Translate(events) //// TODO add a `where` that takes in a `task<queryresult>`
+                .Where(
+                    calendarEventOrTranslationError => calendarEventOrTranslationError
+                        .Apply(
+                            calendarEvent => calendarEvent.Start > this.startTime, // there's a bug in the graph api; it treats gt as ge, so we need to do this extra check locally
+                            error => true));
             if (where != null)
             { 
                 translatedEvents = translatedEvents
