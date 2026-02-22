@@ -36,7 +36,7 @@
 
             var lastRecordedEventTimeStamp = DateTime.UtcNow; //// TODO use the correct timestamp
 
-            var builder = await Convert(todoListEvents, lastRecordedEventTimeStamp).ConfigureAwait(false);
+            var builder = Convert(todoListEvents, lastRecordedEventTimeStamp);
 
             var todoList = new TodoList(
                 builder.TodoList.ToString(),
@@ -49,10 +49,14 @@
                 Enumerable.Empty<CalendarEvent>(), //// TODO
                 Enumerable.Empty<(CalendarEvent, Exception)>() //// TODO
                 );
-            var result = new TodoListResult<CalendarTodoListErrors>()
+            var result = new TodoListResult<CalendarTodoListErrors>(
+                todoList,
+                errors);
+
+            return result;
         }
 
-        private static async Task<TodoListResultBuilder> Convert(IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static TodoListResultBuilder Convert(IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
