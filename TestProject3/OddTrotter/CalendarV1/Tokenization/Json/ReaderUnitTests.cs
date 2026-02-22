@@ -106,19 +106,43 @@
         }
 
         public static async Task ReadToEnd8<TNextReader>(
-            this Json2.MembersReader<TNextReader> expReader,
+            this Json2.MembersReader<TNextReader> membersReader,
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.FirstMemberReader<TNextReader>, Task> someReadToEnd)
         {
-
+            var membersToken = await membersReader.Move();
+            if (membersToken is MembersToken<TNextReader>.None none)
+            {
+                await noneReadToEnd(none.Reader);
+            }
+            else if (membersToken is MembersToken<TNextReader>.Some some)
+            {
+                await someReadToEnd(some.Reader);
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
         }
 
         public static async Task ReadToEnd9<TNextReader>(
-            this Json2.SubsequentMembersReader<TNextReader> expReader,
+            this Json2.SubsequentMembersReader<TNextReader> subsequentMembersReader,
             Func<TNextReader, Task> noneReadToEnd,
-            Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> someReadToEnd)
+            Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> moreReadToEnd)
         {
-
+            var subsequentMembersToken = await subsequentMembersReader.Move();
+            if (subsequentMembersToken is SubsequentMembersToken<TNextReader>.None none)
+            {
+                await noneReadToEnd(none.Reader);
+            }
+            else if (subsequentMembersToken is SubsequentMembersToken<TNextReader>.More more)
+            {
+                await moreReadToEnd(more.Reader);
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
         }
 
         public static async Task ReadToEnd11<TNextReader>(
