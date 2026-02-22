@@ -234,6 +234,7 @@
                         new NullReader<TNextReader>(
                             this.stream,
                             this.buffer,
+                            this.currentByteIndex,
                             this.validBytes,
                             this.nextReaderFactory));
                 case 't':
@@ -432,21 +433,24 @@
 
     public sealed class NullReader<TNextReader> : IReader<NullToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<NullToken>> task;
         
         public NullReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -470,16 +474,17 @@
         {
             foreach (var @char in "null")
             {
-                await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, @char).ConfigureAwait(false);
+                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, @char).ConfigureAwait(false);
             }
 
+            ++this.currentByteIndex;
             return NullToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
