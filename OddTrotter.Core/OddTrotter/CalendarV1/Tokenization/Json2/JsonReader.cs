@@ -793,6 +793,7 @@
                     (stream, buffer, currentByteIndex, validBytes) => new SubsequentMembersReader<TNextReader>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
                         this.nextReaderFactory))).ConfigureAwait(false);
         }
