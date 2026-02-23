@@ -83,9 +83,9 @@ namespace Fx.QueryContext
             return new SelectQueryResult<TValueSource, TError, TValueResult>(source, selector);
         }
 
-        private sealed class SelectQueryResult<TValueSource, TError, TValueResult> : IQueryResult<TValueResult, TError>
+        private sealed class SelectQueryResult<TValueSource, TError, TValueResult> : IQueryResultAsync<TValueResult, TError>
         {
-            private readonly IQueryResult<TValueSource, TError> source;
+            private readonly IQueryResultAsync<TValueSource, TError> source;
             private readonly Func<TValueSource, TValueResult> selector;
 
             /// <summary>
@@ -96,7 +96,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
             /// </exception>
-            public SelectQueryResult(IQueryResult<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
+            public SelectQueryResult(IQueryResultAsync<TValueSource, TError> source, Func<TValueSource, TValueResult> selector)
             {
                 ArgumentNullException.ThrowIfNull(source);
                 ArgumentNullException.ThrowIfNull(selector);
@@ -106,12 +106,9 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public IQueryResultNode<TValueResult, TError> Nodes
+            public async ITask<IQueryResultNodeAsync<TValueResult, TError>> GetNodes()
             {
-                get
-                {
-                    return this.source.Nodes.Select(selector);
-                }
+                return await (await this.source.GetNodes()).Select(selector).ConfigureAwait(false);
             }
         }
 
