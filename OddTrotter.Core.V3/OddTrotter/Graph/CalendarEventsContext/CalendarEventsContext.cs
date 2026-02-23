@@ -568,41 +568,38 @@
             return new ConcatQueryResult<TElement, TException>(queryResult, next);
         }
 
-        private sealed class ConcatQueryResult<TElement, TException> : IQueryResult<TElement, TException>
+        private sealed class ConcatQueryResult<TElement, TException> : IQueryResultAsync<TElement, TException>
         {
-            private readonly IQueryResult<TElement, TException> queryResult;
-            private readonly Task<IQueryResult<TElement, TException>> next;
+            private readonly IQueryResultAsync<TElement, TException> queryResult;
+            private readonly Task<IQueryResultAsync<TElement, TException>> next;
 
             public ConcatQueryResult(
-                IQueryResult<TElement, TException> queryResult,
-                Task<IQueryResult<TElement, TException>> next)
+                IQueryResultAsync<TElement, TException> queryResult,
+                Task<IQueryResultAsync<TElement, TException>> next)
             {
                 this.queryResult = queryResult;
                 this.next = next;
             }
 
-            public IQueryResultNode<TElement, TException> Nodes
+            public async ITask<IQueryResultNodeAsync<TElement, TException>> GetNodes()
             {
-                get
-                {
-                    return new QueryResultNode(this.queryResult.Nodes, this.next);
-                }
+                return new QueryResultNode(await this.queryResult.GetNodes().ConfigureAwait(false), this.next);
             }
 
-            private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
+            private sealed class QueryResultNode : IQueryResultNodeAsync<TElement, TException>
             {
-                private readonly IQueryResultNode<TElement, TException> queryResultNode;
-                private readonly Task<IQueryResult<TElement, TException>> next;
+                private readonly IQueryResultNodeAsync<TElement, TException> queryResultNode;
+                private readonly Task<IQueryResultAsync<TElement, TException>> next;
 
                 public QueryResultNode(
-                    IQueryResultNode<TElement, TException> queryResultNode,
-                    Task<IQueryResult<TElement, TException>> next)
+                    IQueryResultNodeAsync<TElement, TException> queryResultNode,
+                    Task<IQueryResultAsync<TElement, TException>> next)
                 {
                     this.queryResultNode = queryResultNode;
                     this.next = next;
                 }
 
-                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
@@ -617,7 +614,7 @@
                                     .ToTaskWrapper() //// TODO how to handle `configureawait`?
                                     .ContinueWith(
                                         nextQueryResult =>
-                                        {
+                                        /*{
                                             unsafe
                                             {
                                                 var fakeContext = default(TContext)!;
@@ -633,9 +630,34 @@
                                                     return rightMap(right, ref toPass);
                                                 }
                                             }
+                                        },*/
+                                        {
+                                            //// TODO i don't know if this actually makes the calls async...
+                                            return nextQueryResult.GetNodes().ContinueWith(
+                                                nextQueryResultNode =>
+                                                {
+                                                    unsafe
+                                                    {
+                                                        var fakeContext = default(TContext)!;
+                                                        ref TContext toPass = ref Unsafe.AsRef(ref fakeContext); //// TODO use the real context here...
+
+                                                        //// TODO you shouldn't need to decompose
+                                                        if (nextQueryResultNode.Decompose(out var left, out var right))
+                                                        {
+                                                            return leftMap(left, ref toPass);
+                                                        }
+                                                        else
+                                                        {
+                                                            return rightMap(right, ref toPass);
+                                                        }
+                                                    }
+                                                },
+                                                _ => throw _,
+                                                _ => throw _);
                                         },
                                         _ => throw _,
-                                        _ => throw _);
+                                        _ => throw _)
+                                    .Unwrap();
                             },
                             ref context);
 
@@ -648,14 +670,14 @@
                         .Unwrap();
                 }
 
-                private sealed class FirstElement : IElement<TElement, TException>
+                private sealed class FirstElement : IElementAsync<TElement, TException>
                 {
-                    private readonly IElement<TElement, TException> element;
-                    private readonly Task<IQueryResult<TElement, TException>> next;
+                    private readonly IElementAsync<TElement, TException> element;
+                    private readonly Task<IQueryResultAsync<TElement, TException>> next;
 
                     public FirstElement(
-                        IElement<TElement, TException> element,
-                        Task<IQueryResult<TElement, TException>> next)
+                        IElementAsync<TElement, TException> element,
+                        Task<IQueryResultAsync<TElement, TException>> next)
                     {
                         this.element = element;
                         this.next = next;
@@ -669,10 +691,10 @@
                         }
                     }
 
-                    public IQueryResultNode<TElement, TException> Next()
+                    public async ITask<IQueryResultNodeAsync<TElement, TException>> Next()
                     {
                         //// TODO you don't account for `this.element.next` returning an error
-                        return new QueryResultNode(this.element.Next(), this.next);
+                        return new QueryResultNode(await this.element.Next().ConfigureAwait(false), this.next);
                     }
                 }
             }
