@@ -1285,37 +1285,48 @@
 
     public sealed class ArrayElementsReader<TNextReader> : IReader<ArrayElementsToken<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public ArrayElementsReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
 
         public async ITask<ArrayElementsToken<TNextReader>> Move()
         {
-            var peeked = await this.stream.PeekAsync();
-            if (peeked == null)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            if (peeked == ']')
+            var currentByte = this.buffer[this.currentByteIndex];
+            ++this.currentByteIndex;
+            if (currentByte == ']')
             {
                 return new ArrayElementsToken<TNextReader>.None(
                     this.nextReaderFactory(
                         this.stream, 
                         this.buffer, 
+                        this.currentByteIndex,
                         this.validBytes));
             }
 
@@ -1323,8 +1334,9 @@
                 new ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (strema, buffer, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                    (strema, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
                         stream,
                         buffer,
                         validBytes,
@@ -1361,19 +1373,22 @@
 
     public sealed class ArrayElementReader<TNextReader> : IReader<ValueReader<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public ArrayElementReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -1384,6 +1399,7 @@
                 new ValueReader<TNextReader>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
                     this.nextReaderFactory)).ConfigureAwait(false);
         }
@@ -2460,7 +2476,7 @@
 
         private static void ReadChar(byte[] buffer, int currentByteIndex, int validBytes, char character)
         {
-            if (buffer[currentByteIndex] != character)
+            if (validBytes == 0 || buffer[currentByteIndex] != character)
             {
                 throw new Exception("TODO invalid JSON");
             }
