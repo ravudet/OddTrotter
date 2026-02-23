@@ -112,7 +112,7 @@
                         },
                         ref builder);
 
-                    return (await element.Next().ConfigureAwait(false), true); //// TODO something is very wrong, because at some point `next` will need to get the next *page* and make a network call, but there's no task being used...
+                    return (await element.Next().ConfigureAwait(false), true);
                 },
                 async terminal =>
                 {

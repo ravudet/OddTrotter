@@ -21,8 +21,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
         /// </exception>
-        public static IQueryResult<TValue, TError> Where<TValue, TError>(
-            this IQueryResult<TValue, TError> source,
+        public static IQueryResultAsync<TValue, TError> Where<TValue, TError>(
+            this IQueryResultAsync<TValue, TError> source,
             Func<TValue, bool> predicate)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -75,8 +75,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
         /// </exception>
-        public static IQueryResult<TValueResult, TError> Select<TValueSource, TError, TValueResult>(
-            this IQueryResult<TValueSource, TError> source,
+        public static IQueryResultAsync<TValueResult, TError> Select<TValueSource, TError, TValueResult>(
+            this IQueryResultAsync<TValueSource, TError> source,
             Func<TValueSource, TValueResult> selector)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -128,7 +128,7 @@ namespace Fx.QueryContext
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
         public static IEither<FirstOrDefault<TElement, TDefault>, TError> FirstOrDefault<TElement, TError, TDefault>(
-            this IQueryResult<TElement, TError> source, 
+            this IQueryResultAsync<TElement, TError> source, 
             TDefault @default)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -174,9 +174,9 @@ namespace Fx.QueryContext
         /// Thrown if <paramref name="first"/> or <paramref name="second"/> <paramref name="firstErrorSelector"/> or
         /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
         /// </exception>
-        public static IQueryResult<TValue, TErrorResult> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-            this IQueryResult<TValue, TErrorFirst> first, 
-            IQueryResult<TValue, TErrorSecond> second, 
+        public static IQueryResultAsync<TValue, TErrorResult> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResultAsync<TValue, TErrorFirst> first, 
+            IQueryResultAsync<TValue, TErrorSecond> second, 
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
             Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -371,8 +371,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
         /// </exception>
-        public static IQueryResult<TValue, TErrorResult> SelectError<TValue, TErrorSource, TErrorResult>(
-            this IQueryResult<TValue, TErrorSource> source,
+        public static IQueryResultAsync<TValue, TErrorResult> SelectError<TValue, TErrorSource, TErrorResult>(
+            this IQueryResultAsync<TValue, TErrorSource> source,
             Func<TErrorSource, TErrorResult> selector)
         {
             ArgumentNullException.ThrowIfNull(source);
