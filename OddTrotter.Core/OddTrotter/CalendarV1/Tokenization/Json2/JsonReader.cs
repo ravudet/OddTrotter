@@ -1456,10 +1456,12 @@
                 new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
                         this.nextReaderFactory)));
         }
