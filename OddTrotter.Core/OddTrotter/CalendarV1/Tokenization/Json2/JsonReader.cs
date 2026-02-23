@@ -1001,19 +1001,22 @@
 
     public sealed class SubsequentMemberReader<TNextReader> : IReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public SubsequentMemberReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -1024,14 +1027,17 @@
                 new CommaReader<WhitespaceReader<MemberReader<TNextReader>>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new WhitespaceReader<MemberReader<TNextReader>>(
+                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<MemberReader<TNextReader>>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
-                        (stream, buffer, validBytes) => new MemberReader<TNextReader>(
+                        (stream, buffer, currentByteIndex, validBytes) => new MemberReader<TNextReader>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
                             this.nextReaderFactory)))).ConfigureAwait(false);
         }
@@ -1039,21 +1045,24 @@
 
     public sealed class CommaReader<TNextReader> : IReader<CommaToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<CommaToken>> task;
 
         public CommaReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -1075,14 +1084,14 @@
 
         private async ITask<CommaToken> GetValue2()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ',').ConfigureAwait(false);
+            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ',').ConfigureAwait(false);
             return CommaToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
