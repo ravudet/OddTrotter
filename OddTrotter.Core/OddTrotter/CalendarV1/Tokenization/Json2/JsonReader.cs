@@ -848,10 +848,12 @@
                 new SubsequentMemberReader<SubsequentMembersReader<TNextReader>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new SubsequentMembersReader<TNextReader>(
+                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentMembersReader<TNextReader>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
                         this.nextReaderFactory)));
         }
