@@ -1208,12 +1208,14 @@
                         (stream, buffer, currentByteIndex, validBytes) => new ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
-                            (stream, buffer, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
+                            (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
                                 stream,
                                 buffer,
+                                currentByteIndex,
                                 validBytes,
-                                (stream, buffer, validBytes) => new ArrayEndReader<TNextReader>(
+                                (stream, buffer, currentByteIndex, validBytes) => new ArrayEndReader<TNextReader>(
                                     stream,
                                     buffer,
                                     validBytes,
@@ -1339,6 +1341,7 @@
                     (strema, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
                         this.nextReaderFactory)));
         }
