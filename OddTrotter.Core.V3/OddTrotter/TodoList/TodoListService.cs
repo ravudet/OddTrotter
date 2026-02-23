@@ -17,8 +17,8 @@
 
     internal sealed class TodoListService<TCalendarEventsContext> : ITodoListService<CalendarTodoListErrors>
         where TCalendarEventsContext : 
-            IQueryContext<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
-            IWhereQueryContextMixin<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
+            IQueryContextAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
+            IWhereQueryContextMixinAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
     {
         private readonly TCalendarEventsContext calendarEventsContext;
 
