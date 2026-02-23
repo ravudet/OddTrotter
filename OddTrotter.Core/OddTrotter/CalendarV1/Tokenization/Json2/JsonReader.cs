@@ -1544,21 +1544,24 @@
 
     public sealed class ArrayEndReader<TNextReader> : IReader<ArrayEndToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<ArrayEndToken>> task;
 
         public ArrayEndReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -1580,14 +1583,14 @@
 
         private async ITask<ArrayEndToken> GetValue2()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ']').ConfigureAwait(false);
+            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ']').ConfigureAwait(false);
             return ArrayEndToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
