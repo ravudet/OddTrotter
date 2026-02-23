@@ -848,7 +848,6 @@
                         this.validBytes));
             }
 
-            ++this.currentByteIndex;
             return new SubsequentMembersToken<TNextReader>.More(
                 new SubsequentMemberReader<SubsequentMembersReader<TNextReader>>(
                     this.stream,
@@ -1448,7 +1447,6 @@
             }
 
             var currentByte = this.buffer[this.currentByteIndex];
-            ++this.currentByteIndex;
             if (currentByte != ',')
             {
                 return new SubsequentArrayElementsToken<TNextReader>.None(
@@ -2377,7 +2375,7 @@
                     (stream, buffer, currentByteIndex, validBytes) => new CharsReader<StringDelimiterReader<TNextReader>>(
                         stream,
                         buffer,
-                        this.currentByteIndex,
+                        currentByteIndex,
                         validBytes,
                         (stream, buffer, currentByteIndex, validBytes) => new StringDelimiterReader<TNextReader>(
                             stream,
@@ -2510,9 +2508,9 @@
                 }
 
                 var currentByte = this.buffer[this.currentByteIndex];
-                ++this.currentByteIndex;
                 if (currentByte == 0x5C)
                 {
+                    ++this.currentByteIndex;
                     if (this.currentByteIndex >= this.validBytes)
                     {
                         this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
@@ -2537,6 +2535,7 @@
                     break;
                 }
 
+                ++this.currentByteIndex;
                 yield return @char;
             }
         }
