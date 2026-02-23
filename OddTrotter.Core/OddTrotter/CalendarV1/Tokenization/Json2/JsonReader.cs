@@ -800,40 +800,50 @@
 
     public sealed class SubsequentMembersReader<TNextReader> : IReader<SubsequentMembersToken<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public SubsequentMembersReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
 
         public async ITask<SubsequentMembersToken<TNextReader>> Move()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            if (peeked != ',')
+            if (this.buffer[this.currentByteIndex] != ',')
             {
                 return new SubsequentMembersToken<TNextReader>.None(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
+                        this.currentByteIndex,
                         this.validBytes));
             }
 
+            ++this.currentByteIndex;
             return new SubsequentMembersToken<TNextReader>.More(
                 new SubsequentMemberReader<SubsequentMembersReader<TNextReader>>(
                     this.stream,

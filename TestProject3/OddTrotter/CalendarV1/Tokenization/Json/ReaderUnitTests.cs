@@ -282,6 +282,8 @@
         [TestMethod]
         public async Task V2Broad()
         {
+            //// TODO `move` implementations should also be single-execution
+            
             //// TODO implement buffers for readers
             //// TODO change reader interface so that async is only used when the buffer is expanded
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
