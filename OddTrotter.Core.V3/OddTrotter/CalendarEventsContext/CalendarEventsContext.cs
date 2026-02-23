@@ -32,7 +32,7 @@
     }
 
     internal sealed class CalendarEventsContext : //// TODO i think you need to rethink some of your concrete implementation names; for example, this is an implementation of a calendar event context that *leverages graph*; shouldn't the graph part be in the name? 
-        IQueryContext
+        IQueryContextAsync
             <
                 IEither
                     <
@@ -42,7 +42,7 @@
                 CalendarEvent, 
                 PagingException
             >, 
-        IWhereQueryContextMixin
+        IWhereQueryContextMixinAsync
             <
                 IEither
                     <
@@ -101,7 +101,7 @@
             this.seriesMasterPredicate = seriesMasterPredicate;
         }
 
-        public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
+        public async ITask<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
             var events = await this.GetEvents().ConfigureAwait(false);
             var translatedEvents = Translate(events) //// TODO add a `where` that takes in a `task<queryresult>`

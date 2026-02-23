@@ -3,12 +3,12 @@ namespace Fx.QueryContext
 {
     using System.Threading.Tasks;
 
-    public interface IQueryContext<out TClientValue, out TDataStoreValue, out TError> //// TODO is there really a "synchronous" query context? and by extension, is there really a "synchronous" query result?
+    public interface IQueryContextAsync<out TClientValue, out TDataStoreValue, out TError>
     {
         /// <summary>
         /// placeholder
         /// </summary>
         /// <returns></returns>
-        ITask<IQueryResult<TClientValue, TError>> Evaluate();
+        ITask<IQueryResultAsync<TClientValue, TError>> Evaluate();
     }
 }

@@ -28,7 +28,7 @@
     /// <typeparam name="TElement"></typeparam>
     /// <typeparam name="TTranslationException"></typeparam>
     /// <typeparam name="TPagingException"></typeparam>
-    internal sealed class CollectionContext<TElement, TTranslationException, TPagingException> : ICollectionContext<TElement, TTranslationException, TPagingException>
+    /*internal sealed class CollectionContext<TElement, TTranslationException, TPagingException> : ICollectionContext<TElement, TTranslationException, TPagingException>
     {
         private readonly StrongConventionContext.IStrongConventionContext<TElement> strongConventionContext;
         private readonly Uri calendarRoot;
@@ -77,7 +77,7 @@
 #pragma warning restore CS0108 // Member hides inherited member; missing new keyword
     }
                     */
-                });
+                /*});
             StrongConventionContext.GetCollectionResponse<TElement> getCollectionResponse;
             try
             {
@@ -126,7 +126,7 @@
                     }
                 });
         }
-    }
+    }*/
 
 
     internal sealed class CalendarEventsContext : 
@@ -166,7 +166,7 @@
             this.top = top;
         }
 
-        public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
+        public async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
             return await EvaluatePage(this.strongConventionContext, this.calendarRoot, this.accessToken, true).ConfigureAwait(false);
 
@@ -174,7 +174,7 @@
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
         }
 
-        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
+        private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri uri, 
             string accessToken,
@@ -223,7 +223,7 @@
                             .Element
                             .SelectRight(deserializationError =>
                                 new CalendarEventTranslationException("TODO", deserializationError.Exception)))
-                        .ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
 
                     if (success.NextLink != null)
                     {
@@ -240,7 +240,7 @@
                     }
                     else
                     {
-                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference //// TODO put the failure in there
+                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference //// TODO put the failure in there
                     }
                 });
         }
@@ -405,6 +405,82 @@
 
     internal static class Extensions2
     {
+        internal static IQueryResultAsync<TElement, TException> ToQueryResultAsync<TElement, TException>(
+            this IEnumerable<TElement> enumerable)
+        {
+            return new QueryResultAsync<TElement, TException>(enumerable);
+        }
+
+        private sealed class QueryResultAsync<TElement, TException> : IQueryResultAsync<TElement, TException>
+        {
+            private readonly IEnumerable<TElement> enumerable;
+
+            public QueryResultAsync(IEnumerable<TElement> enumerable)
+            {
+                this.enumerable = enumerable;
+            }
+
+            public async ITask<IQueryResultNodeAsync<TElement, TException>> GetNodes()
+            {
+                return await Task.FromResult(new QueryResultNode(this.enumerable.GetEnumerator())).ConfigureAwait(false); //// TODO disposable
+            }
+
+            private sealed class QueryResultNode : IQueryResultNodeAsync<TElement, TException>
+            {
+                private readonly IEnumerator<TElement> enumerator;
+
+                public QueryResultNode(IEnumerator<TElement> enumerator)
+                {
+                    this.enumerator = enumerator;
+                }
+
+                public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    RefEither<IElementAsync<TElement, TException>, IEither<IError<TException>, IEmpty>> either;
+                    if (this.enumerator.MoveNext())
+                    {
+                        either = RefEither.Right<IEither<IError<TException>, IEmpty>>().Left((IElementAsync<TElement, TException>)new Element(this.enumerator.Current, this.enumerator)); //// TODO shouldn't need the cast
+                    }
+                    else
+                    {
+                        either = RefEither.Left<IElementAsync<TElement, TException>>().Right((IEither<IError<TException>, IEmpty>)Either.Left<IError<TException>>().Right(Empty.Instance)); //// TODO shouldn't need the cast
+                    }
+
+                    return either.ApplyAsync(leftMap, rightMap, ref context);
+                }
+
+                private sealed class Element : IElementAsync<TElement, TException>
+                {
+                    private readonly IEnumerator<TElement> enumerator;
+
+                    public Element(TElement value, IEnumerator<TElement> enumerator)
+                    {
+                        Value = value;
+                        this.enumerator = enumerator;
+                    }
+
+                    public TElement Value { get; }
+
+                    public async ITask<IQueryResultNodeAsync<TElement, TException>> Next()
+                    {
+                        return await Task.FromResult(new QueryResultNode(this.enumerator)).ConfigureAwait(false);
+                    }
+                }
+
+                private sealed class Empty : IEmpty
+                {
+                    private Empty()
+                    {
+                    }
+
+                    public static Empty Instance { get; } = new Empty();
+                }
+            }
+        }
+
         internal static IQueryResult<TElement, TException> ToQueryResult<TElement, TException>(
             this IEnumerable<TElement> enumerable)
         {
@@ -484,9 +560,9 @@
             }
         }
 
-        internal static IQueryResult<TElement, TException> Concat2<TElement, TException>(
-            this IQueryResult<TElement, TException> queryResult,
-            Task<IQueryResult<TElement, TException>> next)
+        internal static IQueryResultAsync<TElement, TException> Concat2<TElement, TException>(
+            this IQueryResultAsync<TElement, TException> queryResult,
+            Task<IQueryResultAsync<TElement, TException>> next)
         {
             //// TODO in a previous iteration, you took several overloads to aggregate the possible terminal errors; but you *could* have one aggregator that takes two `optional<texception>` parameters
             return new ConcatQueryResult<TElement, TException>(queryResult, next);
