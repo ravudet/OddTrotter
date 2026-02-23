@@ -4,6 +4,7 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.Try;
@@ -31,9 +32,9 @@ namespace Fx.QueryContext
             return new WhereQueryResult<TValue, TError>(source, predicate);
         }
 
-        private sealed class WhereQueryResult<TValue, TError> : IQueryResult<TValue, TError>
+        private sealed class WhereQueryResult<TValue, TError> : IQueryResultAsync<TValue, TError>
         {
-            private readonly IQueryResult<TValue, TError> source;
+            private readonly IQueryResultAsync<TValue, TError> source;
             private readonly Func<TValue, bool> predicate;
 
             /// <summary>
@@ -44,7 +45,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
             /// </exception>
-            public WhereQueryResult(IQueryResult<TValue, TError> source, Func<TValue, bool> predicate)
+            public WhereQueryResult(IQueryResultAsync<TValue, TError> source, Func<TValue, bool> predicate)
             {
                 ArgumentNullException.ThrowIfNull(source);
                 ArgumentNullException.ThrowIfNull(predicate);
@@ -54,12 +55,9 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public IQueryResultNode<TValue, TError> Nodes
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
             {
-                get
-                {
-                    return this.source.Nodes.Where(predicate);
-                }
+                return await (await this.source.GetNodes().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
             }
         }
 
