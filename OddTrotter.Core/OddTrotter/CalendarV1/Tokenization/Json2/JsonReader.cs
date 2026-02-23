@@ -412,7 +412,6 @@
                 (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);
             }
 
-            ++this.currentByteIndex;
             return FalseToken.Instance;
         }
 
@@ -478,7 +477,6 @@
                 (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, @char).ConfigureAwait(false);
             }
 
-            ++this.currentByteIndex;
             return NullToken.Instance;
         }
 
@@ -544,7 +542,6 @@
                 (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, @char).ConfigureAwait(false);
             }
 
-            ++this.currentByteIndex;
             return TrueToken.Instance;
         }
 
@@ -566,19 +563,22 @@
 
     public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public ObjectReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -589,13 +589,15 @@
                 new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) =>
+                    (stream, buffer, currentByteIndex, validBytes) =>
                         new WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
-                            (stream, buffer, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
+                            (stream, buffer, currentByteIndex, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
                                 stream,
                                 buffer,
                                 validBytes,
@@ -613,21 +615,24 @@
 
     public sealed class ObjectStartReader<TNextReader> : IReader<ObjectStartToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<ObjectStartToken>> task;
 
         public ObjectStartReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -649,14 +654,15 @@
 
         private async ITask<ObjectStartToken> GetValue2()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '{').ConfigureAwait(false);
+            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '{').ConfigureAwait(false);
+
             return ObjectStartToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -671,37 +677,46 @@
 
     public sealed class MembersReader<TNextReader> : IReader<MembersToken<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public MembersReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
 
         public async ITask<MembersToken<TNextReader>> Move()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            if (peeked != '"')
+            if (this.buffer[this.currentByteIndex] != '"')
             {
                 return new MembersToken<TNextReader>.None(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
+                        this.currentByteIndex + 1,
                         this.validBytes));
             }
 
@@ -743,19 +758,22 @@
 
     public sealed class FirstMemberReader<TNextReader> : IReader<MemberReader<SubsequentMembersReader<TNextReader>>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public FirstMemberReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -853,19 +871,22 @@
 
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public MemberReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -876,22 +897,27 @@
                 new StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(
+                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
-                        (stream, buffer, validBytes) => new ColonReader<WhitespaceReader<ValueReader<TNextReader>>>(
+                        (stream, buffer, currentByteIndex, validBytes) => new ColonReader<WhitespaceReader<ValueReader<TNextReader>>>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
-                            (stream, buffer, validBytes) => new WhitespaceReader<ValueReader<TNextReader>>(
+                            (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ValueReader<TNextReader>>(
                                 stream,
                                 buffer,
+                                currentByteIndex,
                                 validBytes,
-                                (stream, buffer, validBytes) => new ValueReader<TNextReader>(
+                                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<TNextReader>(
                                     stream,
                                     buffer,
+                                    currentByteIndex,
                                     validBytes,
                                     this.nextReaderFactory)))))).ConfigureAwait(false);
         }
@@ -899,21 +925,24 @@
 
     public sealed class ColonReader<TNextReader> : IReader<ColonToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<ColonToken>> task;
 
         public ColonReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -935,14 +964,14 @@
 
         private async ITask<ColonToken> GetValue2()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, ':').ConfigureAwait(false);
+            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ':').ConfigureAwait(false);
             return ColonToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -2142,19 +2171,22 @@
 
     public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public StringReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -2165,14 +2197,17 @@
                 new StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new CharsReader<StringDelimiterReader<TNextReader>>(
+                    (stream, buffer, currentByteIndex, validBytes) => new CharsReader<StringDelimiterReader<TNextReader>>(
                         stream,
                         buffer,
+                        this.currentByteIndex,
                         validBytes,
-                        (stream, buffer, validBytes) => new StringDelimiterReader<TNextReader>(
+                        (stream, buffer, currentByteIndex, validBytes) => new StringDelimiterReader<TNextReader>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
                             this.nextReaderFactory)))).ConfigureAwait(false);
         }
@@ -2181,21 +2216,24 @@
     //// TODO is "delimiter" a good name for this?
     public sealed class StringDelimiterReader<TNextReader> : IReader<StringDelimiterToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<StringDelimiterToken>> task;
 
         public StringDelimiterReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -2217,14 +2255,14 @@
 
         private async ITask<StringDelimiterToken> GetValue2()
         {
-            await Helpers.ReadChar(this.stream, this.buffer, this.validBytes, '"').ConfigureAwait(false);
+            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '"').ConfigureAwait(false);
             return StringDelimiterToken.Instance;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -2239,21 +2277,24 @@
 
     public sealed class CharsReader<TNextReader> : IReader<IEnumerable<CharToken>, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<IEnumerable<CharToken>>> task;
 
         public CharsReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -2282,17 +2323,28 @@
         {
             while (true)
             {
-                var peeked = await stream.PeekAsync().ConfigureAwait(false);
-                if (peeked == null)
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                    this.currentByteIndex = 0;
+                }
+
+                if (this.validBytes == 0)
                 {
                     yield break;
                 }
 
-                if (peeked == 0x5C)
+                var currentByte = this.buffer[this.currentByteIndex];
+                ++this.currentByteIndex;
+                if (currentByte == 0x5C)
                 {
-                    await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
-                    peeked = await stream.PeekAsync().ConfigureAwait(false);
-                    if (peeked == null)
+                    if (this.currentByteIndex >= this.validBytes)
+                    {
+                        this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                        this.currentByteIndex = 0;
+                    }
+
+                    if (this.validBytes == 0)
                     {
                         throw new Exception("TODO invalid JSON");
                     }
@@ -2303,14 +2355,13 @@
                 CharToken @char;
                 try
                 {
-                    @char = new CharToken.Unescaped(peeked.Value);
+                    @char = new CharToken.Unescaped(currentByte);
                 }
                 catch (Exception)
                 {
                     break;
                 }
 
-                await stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
                 yield return @char;
             }
         }
@@ -2318,7 +2369,7 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -2365,7 +2416,7 @@
 
             ReadChar(buffer, currentByteIndex, validBytes, character);
 
-            return (currentByteIndex, validBytes);
+            return (currentByteIndex + 1, validBytes);
         }
 
         private static void ReadChar(byte[] buffer, int currentByteIndex, int validBytes, char character)
