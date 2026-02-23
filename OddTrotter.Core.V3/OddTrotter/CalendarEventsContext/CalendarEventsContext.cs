@@ -529,41 +529,38 @@
             return new SelectQueryResult<TValue, TError, TResult>(queryResult, selector);
         }
 
-        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
+        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
         {
-            private readonly IQueryResult<TValue, TError> queryResult;
+            private readonly IQueryResultAsync<TValue, TError> queryResult;
             private readonly Func<TValue, Task<TResult>> selector;
 
             public SelectQueryResult(
-                IQueryResult<TValue, TError> queryResult,
+                IQueryResultAsync<TValue, TError> queryResult,
                 Func<TValue, Task<TResult>> selector)
             {
                 this.queryResult = queryResult;
                 this.selector = selector;
             }
 
-            public IQueryResultNode<TResult, TError> Nodes
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
             {
-                get
-                {
-                    return new QueryResultNode(this.queryResult.Nodes, this.selector);
-                }
+                return new QueryResultNode(await this.queryResult.GetNodes().ConfigureAwait(false), this.selector);
             }
 
-            private sealed class QueryResultNode : IQueryResultNode<TResult, TError>
+            private sealed class QueryResultNode : IQueryResultNodeAsync<TResult, TError>
             {
-                private readonly IQueryResultNode<TValue, TError> queryResult;
+                private readonly IQueryResultNodeAsync<TValue, TError> queryResult;
                 private readonly Func<TValue, Task<TResult>> selector;
 
                 public QueryResultNode(
-                    IQueryResultNode<TValue, TError> queryResult,
+                    IQueryResultNodeAsync<TValue, TError> queryResult,
                     Func<TValue, Task<TResult>> selector)
                 {
                     this.queryResult = queryResult;
                     this.selector = selector;
                 }
 
-                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
+                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
                     where TResult1 : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult1>, allows ref struct
@@ -594,14 +591,14 @@
                     }
                 }
 
-                private sealed class Element : IElement<TResult, TError>
+                private sealed class Element : IElementAsync<TResult, TError>
                 {
-                    private readonly IElement<TValue, TError> element;
+                    private readonly IElementAsync<TValue, TError> element;
                     private readonly Func<TValue, Task<TResult>> selector;
 
                     public Element(
                         TResult value,
-                        IElement<TValue, TError> element,
+                        IElementAsync<TValue, TError> element,
                         Func<TValue, Task<TResult>> selector)
                     {
                         Value = value;
@@ -611,9 +608,9 @@
 
                     public TResult Value { get; }
 
-                    public IQueryResultNode<TResult, TError> Next()
+                    public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
                     {
-                        return new QueryResultNode(this.element.Next(), this.selector);
+                        return new QueryResultNode(await this.element.Next().ConfigureAwait(false), this.selector);
                     }
                 }
             }
