@@ -276,6 +276,7 @@
                         new NumberReader<TNextReader>(
                             this.stream,
                             this.buffer,
+                            this.currentByteIndex,
                             this.validBytes,
                             this.nextReaderFactory));
                 case '"':
@@ -1648,6 +1649,7 @@
                             (stream, buffer, currentByteIndex, validBytes) => new ExpReader<TNextReader>(
                                 stream,
                                 buffer,
+                                currentByteIndex,
                                 validBytes,
                                 this.nextReaderFactory)))))
                 .ConfigureAwait(false);
