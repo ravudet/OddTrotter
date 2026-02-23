@@ -1976,32 +1976,41 @@
 
     public sealed class ExpReader<TNextReader> : IReader<ExpToken<TNextReader>>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         public ExpReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
         }
 
         public async ITask<ExpToken<TNextReader>> Move()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null || (peeked != 'e' && peeked != 'E'))
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0 || (this.buffer[this.currentByteIndex] != 'e' && this.buffer[this.currentByteIndex] != 'E'))
             {
                 return new ExpToken<TNextReader>.Absent(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
+                        this.currentByteIndex,
                         this.validBytes));
             }
 
@@ -2009,12 +2018,14 @@
                 new EReader<ExpSignReader<DigitsReader<TNextReader>>>(
                     this.stream,
                     this.buffer,
+                    this.currentByteIndex,
                     this.validBytes,
-                    (stream, buffer, validBytes) => new ExpSignReader<DigitsReader<TNextReader>>(
+                    (stream, buffer, currentByteIndex, validBytes) => new ExpSignReader<DigitsReader<TNextReader>>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
-                        (stream, buffer, validBytes) => new DigitsReader<TNextReader>(
+                        (stream, buffer, currentByteIndex, validBytes) => new DigitsReader<TNextReader>(
                             stream,
                             buffer,
                             validBytes,
@@ -2051,21 +2062,24 @@
 
     public sealed class EReader<TNextReader> : IReader<EToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<EToken>> task;
 
         public EReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -2087,19 +2101,25 @@
 
         private async ITask<EToken> GetValue2()
         {
-            var read = await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
-            if (read == 0)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0 || (this.buffer[this.currentByteIndex] != 'e' && this.buffer[this.currentByteIndex] != 'E'))
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            return new EToken(this.buffer[0]);
+            ++this.currentByteIndex;
+            return new EToken(this.buffer[this.currentByteIndex]);
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -2120,21 +2140,24 @@
 
     public sealed class ExpSignReader<TNextReader> : IReader<ExpSignToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<ExpSignToken>> task;
 
         public ExpSignReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -2156,15 +2179,26 @@
 
         private async ITask<ExpSignToken> GetValue2()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == '+')
+            if (this.currentByteIndex >= this.validBytes)
             {
-                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
+            {
+                return ExpSignToken.Absent.Instance;
+            }
+
+            var currentByte = this.buffer[this.currentByteIndex];
+            if (currentByte == '+')
+            {
+                ++this.currentByteIndex;
                 return ExpSignToken.Positive.Instance;
             }
-            else if (peeked == '-')
+            else if (currentByte == '-')
             {
-                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                ++this.currentByteIndex;
                 return ExpSignToken.Negative.Instance;
             }
             else
@@ -2176,7 +2210,7 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
@@ -2217,21 +2251,24 @@
     public sealed class DigitsReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
         //// TODO reuse digits reader
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<IEnumerable<DigitToken>>> task;
 
         public DigitsReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
