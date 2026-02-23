@@ -317,8 +317,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
         /// </exception>
-        public static IQueryResult<TResult, TError> TrySelect<TValue, TError, TResult>(
-            this IQueryResult<TValue, TError> source, 
+        public static IQueryResultAsync<TResult, TError> TrySelect<TValue, TError, TResult>(
+            this IQueryResultAsync<TValue, TError> source, 
             Try<TValue, TResult> @try)
         {
             ArgumentNullException.ThrowIfNull(source);
