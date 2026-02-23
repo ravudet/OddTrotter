@@ -1643,8 +1643,9 @@
                         (stream, buffer, currentByteIndex, validBytes) => new FracReader<ExpReader<TNextReader>>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
-                            (stream, buffer, validBytes) => new ExpReader<TNextReader>(
+                            (stream, buffer, currentByteIndex, validBytes) => new ExpReader<TNextReader>(
                                 stream,
                                 buffer,
                                 validBytes,
@@ -1856,21 +1857,24 @@
 
     public sealed class FracReader<TNextReader> : IReader<FracToken, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<FracToken>> task;
 
         public FracReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -1892,13 +1896,18 @@
 
         private async ITask<FracToken> GetValue2()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null || peeked.Value != '.')
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0 || this.buffer[this.currentByteIndex] != '.')
             {
                 return FracToken.Absent.Instance;
             }
 
-            await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+            ++this.currentByteIndex;
             return new FracToken.Frac(await this.GetValueImpl().ToTask().ConfigureAwait(false));
         }
 
@@ -1906,8 +1915,13 @@
         {
             while (true)
             {
-                var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-                if (peeked == null)
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                    this.currentByteIndex = 0;
+                }
+
+                if (this.validBytes == 0)
                 {
                     yield break;
                 }
@@ -1915,14 +1929,14 @@
                 DigitToken digit;
                 try
                 {
-                    digit = new DigitToken(peeked.Value);
+                    digit = new DigitToken(this.buffer[this.currentByteIndex]);
                 }
                 catch (Exception) //// TODO use correct exception type
                 {
                     yield break;
                 }
 
-                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                ++this.currentByteIndex;
                 yield return digit;
             }
         }
@@ -1930,7 +1944,7 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
