@@ -1218,6 +1218,7 @@
                                 (stream, buffer, currentByteIndex, validBytes) => new ArrayEndReader<TNextReader>(
                                     stream,
                                     buffer,
+                                    currentByteIndex,
                                     validBytes,
                                     this.nextReaderFactory))))))
                 .ConfigureAwait(false);
