@@ -2028,6 +2028,7 @@
                         (stream, buffer, currentByteIndex, validBytes) => new DigitsReader<TNextReader>(
                             stream,
                             buffer,
+                            currentByteIndex,
                             validBytes,
                             this.nextReaderFactory))));
         }
@@ -2295,37 +2296,48 @@
 
         private async IAsyncEnumerable<DigitToken> GetValueImpl()
         {
-            var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-            if (peeked == null)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
             while (true)
             {
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                    this.currentByteIndex = 0;
+                }
+
+                if (this.validBytes == 0)
+                {
+                    yield break;
+                }
+
                 DigitToken digit;
                 try
                 {
-                    digit = new DigitToken(peeked.Value);
+                    digit = new DigitToken(this.buffer[this.currentByteIndex]);
                 }
                 catch (Exception) //// TODO use correct exception type
                 {
                     yield break;
                 }
 
-                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
-                peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-                if (peeked == null)
-                {
-                    yield break;
-                }
+                ++this.currentByteIndex;
             }
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
