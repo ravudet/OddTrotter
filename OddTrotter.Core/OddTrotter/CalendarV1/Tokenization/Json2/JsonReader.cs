@@ -1638,8 +1638,9 @@
                     (stream, buffer, currentByteIndex, validBytes) => new IntReader<FracReader<ExpReader<TNextReader>>>(
                         stream,
                         buffer,
+                        currentByteIndex,
                         validBytes,
-                        (stream, buffer, validBytes) => new FracReader<ExpReader<TNextReader>>(
+                        (stream, buffer, currentByteIndex, validBytes) => new FracReader<ExpReader<TNextReader>>(
                             stream,
                             buffer,
                             validBytes,
@@ -1742,21 +1743,24 @@
     
     public sealed class IntReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
     {
-        private readonly PeekableStream stream;
+        private readonly Stream stream;
         private readonly byte[] buffer;
-        private readonly int validBytes;
-        private readonly Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory;
+        private int currentByteIndex;
+        private int validBytes;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<IEnumerable<DigitToken>>> task;
 
         public IntReader(
-            PeekableStream stream,
+            Stream stream,
             byte[] buffer,
+            int currentByteIndex,
             int validBytes,
-            Func<PeekableStream, byte[], int, TNextReader> nextReaderFactory)
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.stream = stream;
             this.buffer = buffer;
+            this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
@@ -1783,44 +1787,55 @@
 
         private async IAsyncEnumerable<DigitToken> GetValueImpl()
         {
-            var read = await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
-            if (read == 0)
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                this.currentByteIndex = 0;
+            }
+
+            if (this.validBytes == 0)
             {
                 throw new Exception("TODO invalid JSON");
             }
 
-            var digit = new DigitToken(this.buffer[0]);
+            var currentByte = this.buffer[this.currentByteIndex];
+            var digit = new DigitToken(currentByte);
             yield return digit;
-            if (this.buffer[0] == '0')
+            if (currentByte == '0')
             {
                 yield break;
             }
 
             while (true)
             {
-                var peeked = await this.stream.PeekAsync().ConfigureAwait(false);
-                if (peeked == null)
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+                    this.currentByteIndex = 0;
+                }
+
+                if (this.validBytes == 0)
                 {
                     yield break;
                 }
 
                 try
                 {
-                    digit = new DigitToken(peeked.Value);
+                    digit = new DigitToken(this.buffer[this.currentByteIndex]);
                 }
                 catch (Exception) //// TODO use correct exception type
                 {
                     yield break;
                 }
 
-                await this.stream.ReadAsync(this.buffer, 0, this.validBytes).ConfigureAwait(false);
+                ++this.currentByteIndex;
             }
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.validBytes);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
 
