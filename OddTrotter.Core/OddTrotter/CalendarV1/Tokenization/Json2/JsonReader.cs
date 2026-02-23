@@ -723,7 +723,7 @@
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
-                        this.currentByteIndex + 1,
+                        this.currentByteIndex,
                         this.validBytes));
             }
 

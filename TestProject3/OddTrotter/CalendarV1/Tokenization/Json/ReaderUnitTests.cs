@@ -303,7 +303,15 @@
         "string": "asdf",
         "null": null
     },
-    "emptyObject": {},
+    "emptyObject": {}
+}
+""";
+
+            /*
+             *
+             
+
+,
     "emptyArray": [],
     "array": [
         {
@@ -314,8 +322,7 @@
             "null": null
         }
     ]
-}
-""";
+             * */
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
                 var reader = new Json2.JsonReader(stream);
