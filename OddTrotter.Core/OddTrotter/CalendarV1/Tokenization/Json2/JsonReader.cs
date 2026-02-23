@@ -284,6 +284,7 @@
                         new StringReader<TNextReader>(
                             this.stream,
                             this.buffer,
+                            this.currentByteIndex,
                             this.validBytes,
                             this.nextReaderFactory));
                 default:
