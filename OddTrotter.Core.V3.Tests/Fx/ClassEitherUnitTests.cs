@@ -43,6 +43,7 @@
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item
+        //// TODO in graph.calendareventscontext, is there a difference between graph giving an error response and graph giving a "malformed" respose (e.g. a collection when a single value was expected, something that's not json, something that's missing properties, etc.)?
         //// TODO now you need to do the UI level
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
     //// TODO actually do a mock test in `contexttests`

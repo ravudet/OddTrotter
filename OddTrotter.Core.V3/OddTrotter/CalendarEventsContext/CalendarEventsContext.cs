@@ -111,7 +111,7 @@
                             calendarEvent => calendarEvent.Start > this.startTime, // there's a bug in the graph api; it treats gt as ge, so we need to do this extra check locally
                             error => true));
             if (where != null)
-            { 
+            {
                 translatedEvents = translatedEvents
                     .Where(
                         calendarEventOrError => calendarEventOrError.Apply(calendarEvent => this.where(calendarEvent), error => true));
