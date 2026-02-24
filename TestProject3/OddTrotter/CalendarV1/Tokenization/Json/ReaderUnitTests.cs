@@ -273,7 +273,12 @@
             Func<Json2.StringReader<TNextReader>, Task> stringReadToEnd,
             Func<Json2.TrueReader<TNextReader>, Task> trueReadToEnd)
         {
-            var valueToken = await valueReader.Move();
+            ValueToken<TNextReader> valueToken;
+            while (!valueReader.TryMove2(out valueToken))
+            {
+                await valueReader.Read().ConfigureAwait(false);
+            }
+
             if (valueToken is ValueToken<TNextReader>.Array array)
             {
                 await arrayReadToEnd(array.Reader).ConfigureAwait(false);

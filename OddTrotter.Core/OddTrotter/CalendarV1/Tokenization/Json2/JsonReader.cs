@@ -216,7 +216,7 @@
         public byte Char { get; }
     }
 
-    public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
+    public sealed class ValueReader<TNextReader> : IAsyncReader<ValueToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -238,12 +238,18 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ValueToken<TNextReader>> Move()
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public ValueToken<TNextReader> TryMove(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
             if (this.validBytes == 0)
@@ -251,6 +257,7 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            read = true;
             switch ((char)this.buffer[this.currentByteIndex])
             {
                 case 'f':
