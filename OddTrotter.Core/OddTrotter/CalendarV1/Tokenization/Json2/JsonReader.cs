@@ -61,10 +61,15 @@
     public sealed class JsonReader : IAsyncReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
+        private readonly byte[] buffer;
+        private int currentByteIndex;
+        private int validBytes;
+        private bool read;
 
         public JsonReader(Stream stream)
         {
             this.stream = stream;
+            this.buffer = new byte[20]; //// TODO parameterize
         }
 
         public async ITask<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> Move()
@@ -72,14 +77,32 @@
             return await Task.FromResult(this.MoveImpl()).ConfigureAwait(false);
         }
 
-        public Task Read()
+        public async Task Read()
         {
-            throw new NotImplementedException();
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+            this.read = true;
         }
 
         public WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> TryMove(out bool read)
         {
-            throw new NotImplementedException();
+            read = this.read;
+            return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                        nestedStream,
+                        nestedBuffer,
+                        currentByteIndex,
+                        nestedValidBytes,
+                        (_, _, _, _) => new Nothing())));
         }
 
         private WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> MoveImpl()

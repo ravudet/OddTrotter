@@ -58,11 +58,11 @@
 
         public static async Task ReadToEnd(this Json2.JsonReader reader)
         {
-            var whitespaceReader = await reader.Move().ConfigureAwait(false);
-            await whitespaceReader.ReadToEnd4Async(
-                async valueReader => await valueReader.ReadToEnd2(
-                    async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                        nothing => Task.CompletedTask)));
+            await reader.ReadToEnd4Async(
+                async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                    async valueReader => await valueReader.ReadToEnd2(
+                        async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                            nothing => Task.CompletedTask))));
         }
 
         public static async Task ReadToEnd3<TNextReader>(
@@ -319,6 +319,7 @@
             //// TODO `move` implementations should also be single-execution
             
             //// TODO change reader interface so that async is only used when the buffer is expanded
+            //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
 
             var data =
