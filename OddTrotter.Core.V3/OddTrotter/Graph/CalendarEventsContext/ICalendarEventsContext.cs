@@ -21,9 +21,9 @@
         ///  //// TODO do you want to split httpexception into 2 exceptions, one for read and one for write? //// TODO i'm not sure you can always differentiate, and if you can, i'm not sure there is an actionable difference
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception>
+        /// <exception cref="WriteException">Thrown if an error occurred writing to the underlying stream</exception> //// TODO note that this is "writing *to the request*" //// TODO make sure to update this everywhere
         /// <exception cref="HttpRequestException">Thrown if an error occurred trasmitting data between the client and the service</exception>
-        /// <exception cref="ReadException">Thrown if an error occurred reading from the underlying stream</exception>
+        /// <exception cref="ReadException">Thrown if an error occurred reading from the underlying stream</exception> //// TODO note that this is "reading *from the response*"
         /// <exception cref="ContextException">Thrown if the underlying response payload is not valid OData or does not represent a collection response</exception>
         Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate();
 
