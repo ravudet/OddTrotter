@@ -4,10 +4,13 @@ namespace Fx.QueryContext
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.Try;
+
+    using OddTrotter.Graph.CalendarEventsContext;
 
     public static partial class QueryResultExtensions
     {
@@ -122,14 +125,13 @@ namespace Fx.QueryContext
         /// <param name="default"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public static IEither<FirstOrDefault<TElement, TDefault>, TError> FirstOrDefault<TElement, TError, TDefault>(
+        public static async ITask<IEither<FirstOrDefault<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
             this IQueryResultAsync<TElement, TError> source, 
             TDefault @default)
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return source
-                .Nodes
+            return (await source.GetNodes().ConfigureAwait(false))
                 .Apply(
                     element =>
                         Either
@@ -152,86 +154,6 @@ namespace Fx.QueryContext
                                         .Left(
                                             System.Linq.FirstOrDefault.Create(
                                                 Either.Left<TElement>().Right(@default)))));
-        }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <typeparam name="TErrorFirst"></typeparam>
-        /// <typeparam name="TErrorSecond"></typeparam>
-        /// <typeparam name="TErrorResult"></typeparam>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <param name="errorAggregator"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="first"/> or <paramref name="second"/> <paramref name="firstErrorSelector"/> or
-        /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
-        /// </exception>
-        public static IQueryResultAsync<TValue, TErrorResult> Concat<TValue, TErrorFirst, TErrorSecond, TErrorResult>(
-            this IQueryResultAsync<TValue, TErrorFirst> first, 
-            IQueryResultAsync<TValue, TErrorSecond> second, 
-            Func<TErrorFirst, TErrorResult> firstErrorSelector,
-            Func<TErrorSecond, TErrorResult> secondErrorSelector,
-            Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
-        {
-            ArgumentNullException.ThrowIfNull(first);
-            ArgumentNullException.ThrowIfNull(second);
-            ArgumentNullException.ThrowIfNull(firstErrorSelector);
-            ArgumentNullException.ThrowIfNull(secondErrorSelector);
-            ArgumentNullException.ThrowIfNull(errorAggregator);
-
-            return new ConcatQueryResult<TValue, TErrorFirst, TErrorSecond, TErrorResult>(first, second, firstErrorSelector, secondErrorSelector, errorAggregator);
-        }
-
-        private sealed class ConcatQueryResult<TValue, TErrorFirst, TErrorSecond, TErrorResult> : 
-            IQueryResult<TValue, TErrorResult>
-        {
-            private readonly IQueryResult<TValue, TErrorFirst> first;
-            private readonly IQueryResult<TValue, TErrorSecond> second;
-            private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
-            private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
-            private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
-
-            /// <summary>
-            /// placeholder
-            /// </summary>
-            /// <param name="first"></param>
-            /// <param name="second"></param>
-            /// <param name="errorAggregator"></param>
-            /// <exception cref="ArgumentNullException">
-            /// Thrown if <paramref name="first"/> or <paramref name="second"/> <paramref name="firstErrorSelector"/> or
-            /// <paramref name="secondErrorSelector"/> or <paramref name="errorAggregator"/> is <see langword="null"/>
-            /// </exception>
-            public ConcatQueryResult(
-                IQueryResult<TValue, TErrorFirst> first, 
-                IQueryResult<TValue, TErrorSecond> second,
-                Func<TErrorFirst, TErrorResult> firstErrorSelector,
-                Func<TErrorSecond, TErrorResult> secondErrorSelector,
-                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
-            {
-                ArgumentNullException.ThrowIfNull(first);
-                ArgumentNullException.ThrowIfNull(second);
-                ArgumentNullException.ThrowIfNull(firstErrorSelector);
-                ArgumentNullException.ThrowIfNull(secondErrorSelector);
-                ArgumentNullException.ThrowIfNull(errorAggregator);
-
-                this.first = first;
-                this.second = second;
-                this.firstErrorSelector = firstErrorSelector;
-                this.secondErrorSelector = secondErrorSelector;
-                this.errorAggregator = errorAggregator;
-            }
-
-            /// <inheritdoc/>
-            public IQueryResultNode<TValue, TErrorResult> Nodes
-            {
-                get
-                {
-                    return this.first.Nodes.Concat(second.Nodes, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
-                }
-            }
         }
 
         /// <summary>
@@ -322,9 +244,9 @@ namespace Fx.QueryContext
             return new TrySelectResult<TValue, TError, TResult>(source, @try);
         }
 
-        private sealed class TrySelectResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
+        private sealed class TrySelectResult<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
         {
-            private readonly IQueryResult<TValue, TError> source;
+            private readonly IQueryResultAsync<TValue, TError> source;
             private readonly Try<TValue, TResult> @try;
 
             /// <summary>
@@ -335,7 +257,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
             /// </exception>
-            public TrySelectResult(IQueryResult<TValue, TError> source, Try<TValue, TResult> @try)
+            public TrySelectResult(IQueryResultAsync<TValue, TError> source, Try<TValue, TResult> @try)
             {
                 ArgumentNullException.ThrowIfNull(source);
                 ArgumentNullException.ThrowIfNull(@try);
@@ -345,12 +267,9 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public IQueryResultNode<TResult, TError> Nodes
+            public async ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
             {
-                get
-                {
-                    return this.source.Nodes.TrySelect(this.@try);
-                }
+                return await (await this.source.GetNodes().ConfigureAwait(false)).TrySelect(this.@try).ConfigureAwait(false);
             }
         }
 
@@ -376,9 +295,9 @@ namespace Fx.QueryContext
             return new SelectErrorResult<TValue, TErrorSource, TErrorResult>(source, selector);
         }
 
-        private sealed class SelectErrorResult<TValue, TErrorSource, TErrorResult> : IQueryResult<TValue, TErrorResult>
+        private sealed class SelectErrorResult<TValue, TErrorSource, TErrorResult> : IQueryResultAsync<TValue, TErrorResult>
         {
-            private readonly IQueryResult<TValue, TErrorSource> source;
+            private readonly IQueryResultAsync<TValue, TErrorSource> source;
             private readonly Func<TErrorSource, TErrorResult> selector;
 
             /// <summary>
@@ -390,7 +309,7 @@ namespace Fx.QueryContext
             /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
             /// </exception>
             public SelectErrorResult(
-                IQueryResult<TValue, TErrorSource> source,
+                IQueryResultAsync<TValue, TErrorSource> source,
                 Func<TErrorSource, TErrorResult> selector)
             {
                 ArgumentNullException.ThrowIfNull(source);
@@ -401,13 +320,82 @@ namespace Fx.QueryContext
             }
 
             /// <inheritdoc/>
-            public IQueryResultNode<TValue, TErrorResult> Nodes
+            public async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> GetNodes()
             {
-                get
-                {
-                    return this.source.Nodes.SelectError(this.selector);
-                }
+                return (await this.source.GetNodes()).SelectError(this.selector);
             }
+        }
+
+        public static IQueryResultNodeAsync<TValue, TErrorResult> SelectError<TValue, TErrorSource, TErrorResult>(
+            this IQueryResultNodeAsync<TValue, TErrorSource> source,
+            Func<TErrorSource, TErrorResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return source
+                .Select(
+                    element =>
+                        new SelectErrorElement<TValue, TErrorSource, TErrorResult>(
+                            element.Value,
+                            element,
+                            selector),
+                    terminal =>
+                        terminal
+                            .SelectLeft(
+                                error => new SelectErrorError<TErrorResult>(selector(error.Value))))
+                .ToQueryResultNodeAsync();
+        }
+
+        private sealed class SelectErrorElement<TValue, TErrrorSource, TErrorResult> : IElementAsync<TValue, TErrorResult>
+        {
+            private readonly IElementAsync<TValue, TErrrorSource> element;
+            private readonly Func<TErrrorSource, TErrorResult> selector;
+
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            /// <param name="next"></param>
+            /// <param name="selector"></param>
+            /// <exception cref="ArgumentNullException">
+            /// Thrown if <paramref name="next"/> or <paramref name="selector"/> is <see langword="null"/>
+            /// </exception>
+            public SelectErrorElement(
+                TValue value,
+                IElementAsync<TValue, TErrrorSource> element,
+                Func<TErrrorSource, TErrorResult> selector)
+            {
+                ArgumentNullException.ThrowIfNull(selector);
+
+                this.Value = value;
+                this.element = element;
+                this.selector = selector;
+            }
+
+            /// <inheritdoc/>
+            public TValue Value { get; }
+
+            /// <inheritdoc/>
+            public async ITask<IQueryResultNodeAsync<TValue, TErrorResult>> Next()
+            {
+                return (await this.element.Next()).SelectError(this.selector);
+            }
+        }
+
+        private sealed class SelectErrorError<TError> : IError<TError>
+        {
+            /// <summary>
+            /// placeholder
+            /// </summary>
+            /// <param name="value"></param>
+            public SelectErrorError(TError value)
+            {
+                this.Value = value;
+            }
+
+            /// <inheritdoc/>
+            public TError Value { get; }
         }
     }
 }

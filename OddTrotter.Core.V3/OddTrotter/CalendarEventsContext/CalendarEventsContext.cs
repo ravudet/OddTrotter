@@ -125,14 +125,14 @@
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
-            return instanceEvents.Concat(
-                seriesEvents,
+            return instanceEvents.Concat2(
+                Task.FromResult(seriesEvents)/*,
                 firstError => firstError,
                 secondError => secondError,
                 (firstError, secondError) =>
                     new Graph.PagingException(
                             "TODO an error occurred while paging both instances events and series events",
-                            new AggregateException(firstError, secondError)));
+                            new AggregateException(firstError, secondError))*/);
         }
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstanceEvents()
@@ -180,7 +180,7 @@
                             {
                                 //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever first a non-error instance
                                 var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: instances.FirstOrDefault(new Nothing()).SelectLeft(_ => _.AsEither())); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
+                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: await instances.FirstOrDefault(new Nothing()).SelectLeft(_ => _.AsEither()).ConfigureAwait(false)); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
                             })
                         .ConfigureAwait(false))
                 .Select(
