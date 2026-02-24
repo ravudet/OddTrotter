@@ -419,8 +419,6 @@
         private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<FalseToken>> task;
-
         public FalseReader(
             Stream stream,
             byte[] buffer,
@@ -433,37 +431,6 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<FalseToken>>(async () => await this.GetValue2().ConfigureAwait(false));
-        }
-
-        public async ITask<FalseToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<FalseToken> GetValue2()
-        {
-            foreach (var @char in "false")
-            {
-                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex , this.validBytes, @char).ConfigureAwait(false);
-            }
-
-            return FalseToken.Instance;
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public FalseToken TryGetValue(out bool read)
