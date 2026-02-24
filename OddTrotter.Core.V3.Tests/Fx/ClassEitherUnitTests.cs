@@ -43,7 +43,6 @@
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item
-        //// TODO but first, there's a TODO in `todolistservice` about how `element.next()` needs to be async at least sometimes; figure out how to make this work
         //// TODO now you need to do the UI level
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
     //// TODO actually do a mock test in `contexttests`
