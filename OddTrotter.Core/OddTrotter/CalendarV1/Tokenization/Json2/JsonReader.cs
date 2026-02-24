@@ -475,12 +475,14 @@
         public static FalseToken Instance { get; } = new FalseToken();
     }
 
-    public sealed class NullReader<TNextReader> : IReader<NullToken, TNextReader>
+    public sealed class NullReader<TNextReader> : IAsyncReader<NullToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
+        private readonly string literal = "null";
+        private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<NullToken>> task;
@@ -527,6 +529,38 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public NullToken TryGetValue(out bool read)
+        {
+            for (; this.currentCharacter < this.literal.Length; ++this.currentCharacter)
+            {
+                (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, this.literal[this.currentCharacter]);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
+            }
+
+            read = true;
+            return NullToken.Instance;
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
