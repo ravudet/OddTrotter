@@ -72,11 +72,6 @@
             this.buffer = new byte[20]; //// TODO parameterize
         }
 
-        public async ITask<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> Move()
-        {
-            return await Task.FromResult(this.MoveImpl()).ConfigureAwait(false);
-        }
-
         public async Task Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
@@ -92,26 +87,6 @@
                 this.buffer,
                 this.currentByteIndex,
                 this.validBytes,
-                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
-                    stream,
-                    buffer,
-                    currentByteIndex,
-                    validBytes,
-                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
-                        nestedStream,
-                        nestedBuffer,
-                        currentByteIndex,
-                        nestedValidBytes,
-                        (_, _, _, _) => new Nothing())));
-        }
-
-        private WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> MoveImpl()
-        {
-            return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
-                this.stream,
-                new byte[20], //// TODO parameterize
-                0,
-                0,
                 (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
                     stream,
                     buffer,
