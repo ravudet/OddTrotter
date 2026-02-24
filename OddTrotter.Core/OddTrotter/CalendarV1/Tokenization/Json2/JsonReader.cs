@@ -1324,7 +1324,6 @@
             }
 
             var currentByte = this.buffer[this.currentByteIndex];
-            ++this.currentByteIndex;
             if (currentByte == ']')
             {
                 return new ArrayElementsToken<TNextReader>.None(
