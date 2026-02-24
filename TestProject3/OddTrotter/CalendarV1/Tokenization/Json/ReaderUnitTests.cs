@@ -323,7 +323,7 @@
         {
             //// TODO `move` implementations should also be single-execution
             
-            //// TODO change reader interface so that async is only used when the buffer is expanded //// TODO you are at nullreader
+            //// TODO change reader interface so that async is only used when the buffer is expanded //// TODO you are at object reader
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished
             
