@@ -36,6 +36,18 @@
         }
     }
 
+    public interface IAsyncReader<out TNextReader>
+    {
+        Task Read();
+
+        TNextReader TryMove(out bool read);
+    }
+
+    public interface IAsyncReader<out TValue, out TNextReader> : IAsyncReader<TNextReader>
+    {
+        TValue TryGetValue(out bool read);
+    }
+
     public interface IReader<out TNextReader>
     {
         ITask<TNextReader> Move();
@@ -81,7 +93,7 @@
         }
     }
 
-    public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
+    public sealed class WhitespaceReader<TNextReader> : IAsyncReader<IEnumerable<WhitespaceToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -90,6 +102,9 @@
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<IEnumerable<WhitespaceToken>>> task;
+        private bool finished;
+
+        private readonly List<WhitespaceToken> tokens;
 
         public WhitespaceReader(
             Stream stream,
@@ -105,6 +120,9 @@
             this.nextReaderFactory = nextReaderFactory;
 
             this.task = new Task<ITask<IEnumerable<WhitespaceToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
+
+            this.tokens = new List<WhitespaceToken>();
+            this.finished = false;
         }
 
         public async ITask<IEnumerable<WhitespaceToken>> GetValue()
@@ -122,11 +140,7 @@
 
         private async ITask<IEnumerable<WhitespaceToken>> GetValue2()
         {
-            return await this.GetValueImpl().ToTask().ConfigureAwait(false);
-        }
-
-        private async IAsyncEnumerable<WhitespaceToken> GetValueImpl()
-        {
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
                 if (this.currentByteIndex >= this.validBytes)
@@ -138,7 +152,7 @@
                 if (this.validBytes == 0)
                 {
                     // no more bytes to read
-                    yield break;
+                    break;
                 }
 
                 WhitespaceToken whitespace;
@@ -152,13 +166,78 @@
                 }
 
                 ++this.currentByteIndex;
-                yield return whitespace;
+                this.tokens.Add(whitespace);
             }
+
+            return this.tokens;
         }
 
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public IEnumerable<WhitespaceToken> TryGetValue(out bool read)
+        {
+            if (this.finished)
+            {
+                read = true;
+            }
+            else
+            {
+                read = this.TryGetValue2();
+            }
+
+            return this.tokens;
+        }
+
+        private bool TryGetValue2()
+        {
+            while (true)
+            {
+                if (this.validBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    return false;
+                }
+
+                WhitespaceToken whitespace;
+                try
+                {
+                    whitespace = new WhitespaceToken(this.buffer[this.currentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++this.currentByteIndex;
+                this.tokens.Add(whitespace);
+            }
+
+            return true;
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
