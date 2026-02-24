@@ -541,15 +541,15 @@
         public static NullToken Instance { get; } = new NullToken();
     }
 
-    public sealed class TrueReader<TNextReader> : IReader<TrueToken, TNextReader>
+    public sealed class TrueReader<TNextReader> : IAsyncReader<TrueToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
+        private readonly string literal = "true";
+        private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<TrueToken>> task;
 
         public TrueReader(
             Stream stream,
@@ -563,36 +563,37 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task   = new Task<ITask<TrueToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
-        public async ITask<TrueToken> GetValue()
+        public TrueToken TryGetValue(out bool read)
         {
-            try
+            for (; this.currentCharacter < this.literal.Length; ++this.currentCharacter)
             {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<TrueToken> GetValue2()
-        {
-            foreach (var @char in "true")
-            {
-                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, @char).ConfigureAwait(false);
+                (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, this.literal[this.currentCharacter]);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = true;
             return TrueToken.Instance;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }

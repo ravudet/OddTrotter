@@ -259,7 +259,7 @@
                             async charsReader => await charsReader.ReadToEnd4(
                                 async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
                                     async nextReader => await readToEnd(nextReader))))),
-                    async trueReader => await trueReader.ReadToEnd4(
+                    async trueReader => await trueReader.ReadToEnd4Async(
                         async nextReader => await readToEnd(nextReader)));
         }
 
