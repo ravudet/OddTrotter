@@ -58,7 +58,7 @@
         ITask<TValue> GetValue();
     }
 
-    public sealed class JsonReader : IReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public sealed class JsonReader : IAsyncReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
 
@@ -70,6 +70,16 @@
         public async ITask<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> Move()
         {
             return await Task.FromResult(this.MoveImpl()).ConfigureAwait(false);
+        }
+
+        public Task Read()
+        {
+            throw new NotImplementedException();
+        }
+
+        public WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> TryMove(out bool read)
+        {
+            throw new NotImplementedException();
         }
 
         private WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> MoveImpl()
@@ -101,7 +111,6 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<IEnumerable<WhitespaceToken>>> task;
         private bool finished;
 
         private readonly List<WhitespaceToken> tokens;
@@ -119,63 +128,8 @@
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
-            this.task = new Task<ITask<IEnumerable<WhitespaceToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
-
             this.tokens = new List<WhitespaceToken>();
             this.finished = false;
-        }
-
-        public async ITask<IEnumerable<WhitespaceToken>> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<IEnumerable<WhitespaceToken>> GetValue2()
-        {
-            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
-            while (true)
-            {
-                if (this.currentByteIndex >= this.validBytes)
-                {
-                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                    this.currentByteIndex = 0;
-                }
-
-                if (this.validBytes == 0)
-                {
-                    // no more bytes to read
-                    break;
-                }
-
-                WhitespaceToken whitespace;
-                try
-                {
-                    whitespace = new WhitespaceToken(this.buffer[this.currentByteIndex]);
-                }
-                catch (Exception)
-                {
-                    break;
-                }
-
-                ++this.currentByteIndex;
-                this.tokens.Add(whitespace);
-            }
-
-            return this.tokens;
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public IEnumerable<WhitespaceToken> TryGetValue(out bool read)
@@ -194,6 +148,7 @@
 
         private bool TryGetValue2()
         {
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
                 if (this.validBytes == 0)
