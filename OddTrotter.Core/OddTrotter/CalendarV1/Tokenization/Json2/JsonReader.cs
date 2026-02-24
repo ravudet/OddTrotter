@@ -409,12 +409,14 @@
         }
     }
 
-    public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
+    public sealed class FalseReader<TNextReader> : IAsyncReader<FalseToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
+        private readonly string literal = "false";
+        private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
         private readonly Task<ITask<FalseToken>> task;
@@ -461,6 +463,38 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public FalseToken TryGetValue(out bool read)
+        {
+            for (; this.currentCharacter < this.literal.Length; ++this.currentCharacter)
+            {
+                (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, this.literal[this.currentCharacter]);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
+            }
+
+            read = true;
+            return FalseToken.Instance;
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -2617,6 +2651,17 @@
 
     public static class Helpers
     {
+        public static (bool Read, int CurrentByteIndex, int ValidBytes) TryReadChar(Stream stream, byte[] buffer, int currentByteIndex, int validBytes, char character)
+        {
+            if (currentByteIndex >= validBytes)
+            {
+                return (false, currentByteIndex, validBytes);
+            }
+
+            ReadChar(buffer, currentByteIndex, validBytes, character);
+            return (true, currentByteIndex + 1, validBytes);
+        }
+
         public static async Task<(int CurrentByteIndex, int ValidBytes)> ReadChar(Stream stream, byte[] buffer, int currentByteIndex, int validBytes, char character)
         {
             if (currentByteIndex >= validBytes)
