@@ -484,8 +484,6 @@
         private readonly string literal = "null";
         private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<NullToken>> task;
         
         public NullReader(
             Stream stream,
@@ -499,37 +497,6 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<NullToken>>(async () => await this.GetValue2().ConfigureAwait(false));
-        }
-
-        public async ITask<NullToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<NullToken> GetValue2()
-        {
-            foreach (var @char in "null")
-            {
-                (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, @char).ConfigureAwait(false);
-            }
-
-            return NullToken.Instance;
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public NullToken TryGetValue(out bool read)
