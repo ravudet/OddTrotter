@@ -213,7 +213,7 @@
                         async charsReader => await charsReader.ReadToEnd4(
                             async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
                                 async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                    async colonReader => await colonReader.ReadToEnd4(
+                                    async colonReader => await colonReader.ReadToEnd4Async(
                                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                                             async valueReader => await valueReader.ReadToEnd2(
                                                 async nextReader => await readToEnd(nextReader))))))))));

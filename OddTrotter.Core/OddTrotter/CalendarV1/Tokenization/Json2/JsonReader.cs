@@ -1013,15 +1013,13 @@
         }
     }
 
-    public sealed class ColonReader<TNextReader> : IReader<ColonToken, TNextReader>
+    public sealed class ColonReader<TNextReader> : IAsyncReader<ColonToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<ColonToken>> task;
 
         public ColonReader(
             Stream stream,
@@ -1035,32 +1033,33 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<ColonToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
-        public async ITask<ColonToken> GetValue()
+        public ColonToken TryGetValue(out bool read)
         {
-            try
+            (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ':');
+            if (!read)
             {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
+                return default!; //// TODO !
             }
 
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<ColonToken> GetValue2()
-        {
-            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ':').ConfigureAwait(false);
             return ColonToken.Instance;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
