@@ -607,7 +607,7 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
-    public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
+    public sealed class ObjectReader<TNextReader> : IAsyncReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -659,6 +659,43 @@
                                             currentByteIndex,
                                             validBytes,
                                             this.nextReaderFactory)))))).ConfigureAwait(false);
+        }
+
+        public Task Read()
+        {
+            return Task.CompletedTask;
+        }
+
+        public ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> TryMove(out bool read)
+        {
+            read = true;
+            return new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) =>
+                    new WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
+                        stream,
+                        buffer,
+                        currentByteIndex,
+                        validBytes,
+                        (stream, buffer, currentByteIndex, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
+                            stream,
+                            buffer,
+                            currentByteIndex,
+                            validBytes,
+                            (strema, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
+                                    stream,
+                                    buffer,
+                                    currentByteIndex,
+                                    validBytes,
+                                    (stream, buffer, currentByteIndex, validBytes) => new ObjectEndReader<TNextReader>(
+                                        stream,
+                                        buffer,
+                                        currentByteIndex,
+                                        validBytes,
+                                            this.nextReaderFactory)))));
         }
     }
 
