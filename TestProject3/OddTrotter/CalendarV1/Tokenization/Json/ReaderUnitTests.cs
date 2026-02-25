@@ -207,7 +207,7 @@
             this Json2.MemberReader<TNextReader> memberReader,
             Func<TNextReader, Task> readToEnd)
         {
-            await memberReader.ReadToEnd4(
+            await memberReader.ReadToEnd4Async(
                 async stringReader => await stringReader.ReadToEnd4(
                     async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
                         async charsReader => await charsReader.ReadToEnd4(

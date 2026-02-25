@@ -954,7 +954,7 @@
         }
     }
 
-    public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+    public sealed class MemberReader<TNextReader> : IAsyncReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -976,35 +976,40 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(
+            return Task.CompletedTask;
+        }
+
+        public StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> TryMove(out bool read)
+        {
+            read = true;
+            return new StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new ColonReader<WhitespaceReader<ValueReader<TNextReader>>>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new ColonReader<WhitespaceReader<ValueReader<TNextReader>>>(
+                        (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ValueReader<TNextReader>>(
                             stream,
                             buffer,
                             currentByteIndex,
                             validBytes,
-                            (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ValueReader<TNextReader>>(
+                            (stream, buffer, currentByteIndex, validBytes) => new ValueReader<TNextReader>(
                                 stream,
                                 buffer,
                                 currentByteIndex,
                                 validBytes,
-                                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<TNextReader>(
-                                    stream,
-                                    buffer,
-                                    currentByteIndex,
-                                    validBytes,
-                                    this.nextReaderFactory)))))).ConfigureAwait(false);
+                                this.nextReaderFactory)))));
         }
     }
 
