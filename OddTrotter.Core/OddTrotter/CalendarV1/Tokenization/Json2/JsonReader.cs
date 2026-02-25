@@ -1699,7 +1699,7 @@
         public static ArrayEndToken Instance { get; } = new ArrayEndToken();
     }
 
-    public sealed class NumberReader<TNextReader> : IReader<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
+    public sealed class NumberReader<TNextReader> : IAsyncReader<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1721,43 +1721,45 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new IntReader<FracReader<ExpReader<TNextReader>>>(
+            return Task.CompletedTask;
+        }
+
+        public SignReader<IntReader<FracReader<ExpReader<TNextReader>>>> TryMove(out bool read)
+        {
+            read = true;
+            return new SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new IntReader<FracReader<ExpReader<TNextReader>>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new FracReader<ExpReader<TNextReader>>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new FracReader<ExpReader<TNextReader>>(
+                        (stream, buffer, currentByteIndex, validBytes) => new ExpReader<TNextReader>(
                             stream,
                             buffer,
                             currentByteIndex,
                             validBytes,
-                            (stream, buffer, currentByteIndex, validBytes) => new ExpReader<TNextReader>(
-                                stream,
-                                buffer,
-                                currentByteIndex,
-                                validBytes,
-                                this.nextReaderFactory)))))
-                .ConfigureAwait(false);
+                            this.nextReaderFactory))));
         }
     }
 
-    public sealed class SignReader<TNextReader> : IReader<SignToken, TNextReader>
+    public sealed class SignReader<TNextReader> : IAsyncReader<SignToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<SignToken>> task;
 
         public SignReader(
             Stream stream,
@@ -1771,31 +1773,17 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<SignToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
-        public async ITask<SignToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<SignToken> GetValue2()
+        public SignToken TryGetValue(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
+            read = true;
             if (this.validBytes == 0 || this.buffer[this.currentByteIndex] != '-')
             {
                 return SignToken.Absent.Instance;
@@ -1805,9 +1793,20 @@
             return SignToken.Negative.Instance;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
