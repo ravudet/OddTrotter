@@ -1,6 +1,5 @@
 ﻿namespace OddTrotter.Graph.CalendarEventsContext //// TODO there's almost certainly a better namespace to put this class; i'm actually not clear if this class is even specific to graph (though one that renews tokens would be, or at least it would be specific to entra)
 {
-    using System.Reflection.Metadata.Ecma335;
     using System.Threading.Tasks;
 
     using OddTrotter.Odata.v4_01.Reader;
