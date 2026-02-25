@@ -2115,7 +2115,7 @@
         }
     }
 
-    public sealed class ExpReader<TNextReader> : IReader<ExpToken<TNextReader>>
+    public sealed class ExpReader<TNextReader> : IAsyncReader<ExpToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2137,15 +2137,22 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ExpToken<TNextReader>> Move()
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public ExpToken<TNextReader> TryMove(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
-            if (this.validBytes == 0 || (this.buffer[this.currentByteIndex] != 'e' && this.buffer[this.currentByteIndex] != 'E'))
+            read = true;
+            if (this.validBytes == 0 || this.buffer[this.currentByteIndex] != '-')
             {
                 return new ExpToken<TNextReader>.Absent(
                     this.nextReaderFactory(
@@ -2155,6 +2162,7 @@
                         this.validBytes));
             }
 
+            ++this.currentByteIndex;
             return new ExpToken<TNextReader>.Present(
                 new EReader<ExpSignReader<DigitsReader<TNextReader>>>(
                     this.stream,

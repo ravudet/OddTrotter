@@ -134,7 +134,12 @@
             Func<TNextReader, Task> absentReadToEnd,
             Func<Json2.EReader<ExpSignReader<DigitsReader<TNextReader>>>, Task> presentReadToEnd)
         {
-            var expToken = await expReader.Move();
+            ExpToken<TNextReader> expToken;
+            while (!expReader.TryMove2(out expToken))
+            {
+                await expReader.Read().ConfigureAwait(false);
+            }
+
             if (expToken is ExpToken<TNextReader>.Absent absent)
             {
                 await absentReadToEnd(absent.Reader);
