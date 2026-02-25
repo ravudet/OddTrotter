@@ -24,7 +24,9 @@
             var requestReaderFactory = (HttpRequestMessage httpRequestMessage) => new RequestReader(httpRequestMessage);
             using (var httpClient = new HttpClient())
             {
-                var requestWriterFactory = () => new RequestWriter(new HttpClientAdapter(httpClient));
+                var httpClientAdapter = new HttpClientAdapter(httpClient);
+                var accessToken = "TODO";
+                var requestWriterFactory = () => new AuthorizedRequestWriter(new RequestWriter(httpClientAdapter), accessToken); //// TODO it might be nifty to have an extension like `.Authorize(accessToken)`
                 var protocolContext = new ProtocolContext(requestReaderFactory, requestWriterFactory);
                 var weakConventionContext = new WeakConventionContext(protocolContext, StringComparer.Ordinal);
                 var propertyNameComparer = StringComparer.OrdinalIgnoreCase;
@@ -35,7 +37,6 @@
                 var strongConventionContext = new StrongConventionContext<Graph.CalendarEventsContext.CalendarEvent>(
                     weakConventionContext,
                     calendarEventDeserializer);
-                var accessToken = "TODO";
                 var calendarSource = new CalendarSource(
                     strongConventionContext,
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar"),

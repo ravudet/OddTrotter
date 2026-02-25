@@ -1,5 +1,6 @@
 ﻿namespace OddTrotter.Graph.CalendarEventsContext //// TODO there's almost certainly a better namespace to put this class; i'm actually not clear if this class is even specific to graph (though one that renews tokens would be, or at least it would be specific to entra)
 {
+    using System.Reflection.Metadata.Ecma335;
     using System.Threading.Tasks;
 
     using OddTrotter.Odata.v4_01.Reader;
@@ -126,12 +127,12 @@
 
                                 public async Task<IUrlQueryKvpWriter> Write()
                                 {
-                                    throw new System.NotImplementedException();
+                                    var urlQueryKvpWriter = await this.urlQueryWriter.Write().ConfigureAwait(false);
+                                    return new UrlQueryKvpWriter(urlQueryKvpWriter, this.accessToken);
                                 }
 
                                 public async Task<IHeadersWriter> WriteHeaders()
                                 {
-                                    throw new System.NotImplementedException();
                                     //// TODO add access token here
                                 }
 
@@ -148,7 +149,8 @@
 
                                     public async Task<IUrlQueryNameWriter> Write(UrlQueryName urlQueryName)
                                     {
-                                        throw new System.NotImplementedException();
+                                        var urlQueryNameWriter = await this.urlQueryKvpWriter.Write(urlQueryName).ConfigureAwait(false);
+                                        return new UrlQueryNameWriter(urlQueryNameWriter, accessToken);
                                     }
 
                                     private sealed class UrlQueryNameWriter : IUrlQueryNameWriter
@@ -164,12 +166,14 @@
 
                                         public async Task<IUrlQueryWriter> Write()
                                         {
-                                            throw new System.NotImplementedException();
+                                            var urlQueryWriter = await this.urlQueryNameWriter.Write().ConfigureAwait(false);
+                                            return new UrlQueryWriter(urlQueryWriter, accessToken);
                                         }
 
                                         public async Task<IUrlQueryValueWriter> WriteValue()
                                         {
-                                            throw new System.NotImplementedException();
+                                            var urlQueryValueWriter = await this.urlQueryNameWriter.WriteValue().ConfigureAwait(false);
+                                            return new UrlQueryValueWriter(urlQueryValueWriter, accessToken);
                                         }
 
                                         private sealed class UrlQueryValueWriter : IUrlQueryValueWriter
@@ -185,7 +189,8 @@
 
                                             public async Task<IUrlQueryWriter> Write(UrlQueryValue urlQueryValue)
                                             {
-                                                throw new System.NotImplementedException();
+                                                var urlQueryWriter = await this.urlQueryValueWriter.Write(urlQueryValue).ConfigureAwait(false);
+                                                return new UrlQueryWriter(urlQueryWriter, this.accessToken);
                                             }
                                         }
                                     }
@@ -205,7 +210,8 @@
 
                                 public async Task<IUrlPathWriter> Write(UrlPathSegment urlPathSegment)
                                 {
-                                    throw new System.NotImplementedException();
+                                    var urlPathWriter = await this.urlPathSegmentWriter.Write(urlPathSegment).ConfigureAwait(false);
+                                    return new UrlPathWriter(urlPathWriter, this.accessToken);
                                 }
                             }
                         }
