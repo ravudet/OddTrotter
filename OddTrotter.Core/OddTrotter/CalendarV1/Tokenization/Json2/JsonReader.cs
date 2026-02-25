@@ -1073,7 +1073,7 @@
         public static ColonToken Instance { get; } = new ColonToken();
     }
 
-    public sealed class SubsequentMemberReader<TNextReader> : IReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
+    public sealed class SubsequentMemberReader<TNextReader> : IAsyncReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1095,25 +1095,30 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new CommaReader<WhitespaceReader<MemberReader<TNextReader>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<MemberReader<TNextReader>>(
+            return Task.CompletedTask;
+        }
+
+        public CommaReader<WhitespaceReader<MemberReader<TNextReader>>> TryMove(out bool read)
+        {
+            read = true;
+            return new CommaReader<WhitespaceReader<MemberReader<TNextReader>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<MemberReader<TNextReader>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new MemberReader<TNextReader>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new MemberReader<TNextReader>(
-                            stream,
-                            buffer,
-                            currentByteIndex,
-                            validBytes,
-                            this.nextReaderFactory)))).ConfigureAwait(false);
+                        this.nextReaderFactory)));
         }
     }
 

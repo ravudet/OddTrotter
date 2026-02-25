@@ -195,7 +195,7 @@
         {
             await subsequentMembersReader.ReadToEnd9(
                 async whitespaceReader => await readToEnd(whitespaceReader),
-                async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4(
+                async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4Async(
                     async commaReader => await commaReader.ReadToEnd4(
                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                             async memberReader => await memberReader.ReadToEnd10(
