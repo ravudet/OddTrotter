@@ -699,7 +699,7 @@
         }
     }
 
-    public sealed class ObjectStartReader<TNextReader> : IReader<ObjectStartToken, TNextReader>
+    public sealed class ObjectStartReader<TNextReader> : IAsyncReader<ObjectStartToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -748,6 +748,34 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public ObjectStartToken TryGetValue(out bool read)
+        {
+            (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '{');
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
+            return ObjectStartToken.Instance;
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
