@@ -1361,7 +1361,7 @@
         public static ArrayStartToken Instance { get; } = new ArrayStartToken();
     }
 
-    public sealed class ArrayElementsReader<TNextReader> : IReader<ArrayElementsToken<TNextReader>>
+    public sealed class ArrayElementsReader<TNextReader> : IAsyncReader<ArrayElementsToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1383,12 +1383,18 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ArrayElementsToken<TNextReader>> Move()
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public ArrayElementsToken<TNextReader> TryMove(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
             if (this.validBytes == 0)
@@ -1396,13 +1402,14 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            read = true;
             var currentByte = this.buffer[this.currentByteIndex];
             if (currentByte == ']')
             {
                 return new ArrayElementsToken<TNextReader>.None(
                     this.nextReaderFactory(
-                        this.stream, 
-                        this.buffer, 
+                        this.stream,
+                        this.buffer,
                         this.currentByteIndex,
                         this.validBytes));
             }

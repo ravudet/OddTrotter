@@ -70,7 +70,12 @@
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> someReadToEnd)
         {
-            var arrayElementsToken = await arrayElementsReader.Move();
+            ArrayElementsToken<TNextReader> arrayElementsToken;
+            while (!arrayElementsReader.TryMove2(out arrayElementsToken))
+            {
+                await arrayElementsReader.Read().ConfigureAwait(false);
+            }
+
             if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
             {
                 await noneReadToEnd(none.Reader);
@@ -333,7 +338,7 @@
         {
             //// TODO `move` implementations should also be single-execution
             
-            //// TODO change reader interface so that async is only used when the buffer is expanded //// TODO you are at object reader
+            //// TODO change reader interface so that async is only used when the buffer is expanded //// TODO you are at array element reader
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished
             
