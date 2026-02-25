@@ -169,7 +169,12 @@
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, Task> moreReadToEnd)
         {
-            var subsequentMembersToken = await subsequentMembersReader.Move();
+            SubsequentMembersToken<TNextReader> subsequentMembersToken;
+            while (!subsequentMembersReader.TryMove2(out subsequentMembersToken))
+            {
+                await subsequentMembersReader.Read().ConfigureAwait(false);
+            }
+
             if (subsequentMembersToken is SubsequentMembersToken<TNextReader>.None none)
             {
                 await noneReadToEnd(none.Reader);

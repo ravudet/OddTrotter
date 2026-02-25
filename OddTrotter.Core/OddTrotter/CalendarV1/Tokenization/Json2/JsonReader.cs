@@ -860,7 +860,7 @@
         }
     }
 
-    public sealed class SubsequentMembersReader<TNextReader> : IReader<SubsequentMembersToken<TNextReader>>
+    public sealed class SubsequentMembersReader<TNextReader> : IAsyncReader<SubsequentMembersToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -882,12 +882,18 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<SubsequentMembersToken<TNextReader>> Move()
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public SubsequentMembersToken<TNextReader> TryMove(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
             if (this.validBytes == 0)
@@ -895,6 +901,7 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            read = true;
             if (this.buffer[this.currentByteIndex] != ',')
             {
                 return new SubsequentMembersToken<TNextReader>.None(
