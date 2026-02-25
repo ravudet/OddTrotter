@@ -224,9 +224,9 @@
         {
             await memberReader.ReadToEnd4Async(
                 async stringReader => await stringReader.ReadToEnd4Async(
-                    async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                    async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
                         async charsReader => await charsReader.ReadToEnd4(
-                            async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                            async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
                                 async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                                     async colonReader => await colonReader.ReadToEnd4Async(
                                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
@@ -280,9 +280,9 @@
                                                     async objectEndReader => await objectEndReader.ReadToEnd4Async(
                                                         async nextReader => await readToEnd(nextReader)))))))))),
                     async stringReader => await stringReader.ReadToEnd4Async(
-                        async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                        async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
                             async charsReader => await charsReader.ReadToEnd4(
-                                async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
+                                async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
                                     async nextReader => await readToEnd(nextReader))))),
                     async trueReader => await trueReader.ReadToEnd4Async(
                         async nextReader => await readToEnd(nextReader)));
