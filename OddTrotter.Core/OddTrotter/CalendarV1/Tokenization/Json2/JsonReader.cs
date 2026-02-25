@@ -1242,7 +1242,6 @@
         public static ObjectEndToken Instance { get; } = new ObjectEndToken();
     }
 
-    //// TODO you got this wrong, there might not be any array elements
     public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
