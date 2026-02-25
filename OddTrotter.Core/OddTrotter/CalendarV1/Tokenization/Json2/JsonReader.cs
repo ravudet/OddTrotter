@@ -749,38 +749,6 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<MembersToken<TNextReader>> Move()
-        {
-            if (this.currentByteIndex >= this.validBytes)
-            {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
-            }
-
-            if (this.validBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            if (this.buffer[this.currentByteIndex] != '"')
-            {
-                return new MembersToken<TNextReader>.None(
-                    this.nextReaderFactory(
-                        this.stream,
-                        this.buffer,
-                        this.currentByteIndex,
-                        this.validBytes));
-            }
-
-            return new MembersToken<TNextReader>.Some(
-                new FirstMemberReader<TNextReader>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    this.nextReaderFactory));
-        }
-
         public async Task Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
