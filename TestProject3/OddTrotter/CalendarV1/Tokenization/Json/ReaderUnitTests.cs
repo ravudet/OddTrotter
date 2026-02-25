@@ -256,13 +256,13 @@
                             async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                                 async membersReader => await membersReader.ReadToEnd8(
                                     async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                        async objectEndReader => await objectEndReader.ReadToEnd4(
+                                        async objectEndReader => await objectEndReader.ReadToEnd4Async(
                                             async nextReader => await readToEnd(nextReader))),
                                     async firstMemberReader => await firstMemberReader.ReadToEnd4Async(
                                         async memberReader => await memberReader.ReadToEnd10(
                                             async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
                                                 async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                                    async objectEndReader => await objectEndReader.ReadToEnd4(
+                                                    async objectEndReader => await objectEndReader.ReadToEnd4Async(
                                                         async nextReader => await readToEnd(nextReader)))))))))),
                     async stringReader => await stringReader.ReadToEnd4(
                         async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4(
