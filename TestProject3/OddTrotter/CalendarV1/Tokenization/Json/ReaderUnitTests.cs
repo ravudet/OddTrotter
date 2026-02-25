@@ -254,7 +254,7 @@
                     async numberReader => await numberReader.ReadToEnd4Async(
                         async signReader => await signReader.ReadToEnd4Async(
                             async intReader => await intReader.ReadToEnd4Async(
-                                async fracReader => await fracReader.ReadToEnd4(
+                                async fracReader => await fracReader.ReadToEnd4Async(
                                     async expReader => await expReader.ReadToEnd7(
                                         async nextReader => await readToEnd(nextReader),
                                         async eReader => await eReader.ReadToEnd4(

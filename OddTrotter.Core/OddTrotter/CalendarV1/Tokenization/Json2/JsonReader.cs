@@ -1970,7 +1970,7 @@
         public byte Digit { get; }
     }
 
-    public sealed class FracReader<TNextReader> : IReader<FracToken, TNextReader>
+    public sealed class FracReader<TNextReader> : IAsyncReader<FracToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1978,7 +1978,9 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<FracToken>> task;
+        private readonly List<DigitToken> tokens;
+
+        private bool finished;
 
         public FracReader(
             Stream stream,
@@ -1993,52 +1995,63 @@
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
-            this.task = new Task<ITask<FracToken>>(async () => await this.GetValue2().ConfigureAwait(false));
+            this.tokens = new List<DigitToken>();
         }
 
-        public async ITask<FracToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<FracToken> GetValue2()
+        public FracToken TryGetValue(out bool read)
         {
             if (this.currentByteIndex >= this.validBytes)
             {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
+                read = false;
+                return default!; //// TODO !
             }
 
             if (this.validBytes == 0 || this.buffer[this.currentByteIndex] != '.')
             {
+                read = true;
                 return FracToken.Absent.Instance;
             }
 
             ++this.currentByteIndex;
-            return new FracToken.Frac(await this.GetValueImpl().ToTask().ConfigureAwait(false));
+            var digits = this.TryGetValue3(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
+            return new FracToken.Frac(digits);
         }
 
-        private async IAsyncEnumerable<DigitToken> GetValueImpl()
+        private IEnumerable<DigitToken> TryGetValue3(out bool read)
         {
+            if (this.finished)
+            {
+                read = true;
+            }
+            else
+            {
+                read = this.TryGetValue2();
+            }
+
+            this.finished = read;
+            return this.tokens;
+        }
+
+        private bool TryGetValue2()
+        {
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
+
             while (true)
             {
-                if (this.currentByteIndex >= this.validBytes)
-                {
-                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                    this.currentByteIndex = 0;
-                }
-
                 if (this.validBytes == 0)
                 {
-                    yield break;
+                    // no more bytes to read
+                    break;
+                }
+
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    return false;
                 }
 
                 DigitToken digit;
@@ -2046,19 +2059,32 @@
                 {
                     digit = new DigitToken(this.buffer[this.currentByteIndex]);
                 }
-                catch (Exception) //// TODO use correct exception type
+                catch (Exception)
                 {
-                    yield break;
+                    break;
                 }
 
                 ++this.currentByteIndex;
-                yield return digit;
+                this.tokens.Add(digit);
             }
+
+            return true;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
