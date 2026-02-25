@@ -121,7 +121,7 @@
         {
             await subsequentArrayElementsReader.ReadToEnd5(
                 async nextReader => await readToEnd(nextReader),
-                async subsequentArrayElementReader => await subsequentArrayElementReader.ReadToEnd4(
+                async subsequentArrayElementReader => await subsequentArrayElementReader.ReadToEnd4Async(
                     async commaReader => await commaReader.ReadToEnd4Async(
                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                             async arrayElementReader => await arrayElementReader.ReadToEnd4Async(

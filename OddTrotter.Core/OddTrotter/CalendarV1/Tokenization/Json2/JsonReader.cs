@@ -1628,7 +1628,7 @@
         }
     }
 
-    public sealed class SubsequentArrayElementReader<TNextReader> : IReader<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>>
+    public sealed class SubsequentArrayElementReader<TNextReader> : IAsyncReader<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1650,26 +1650,30 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayElementReader<TNextReader>>(
+            return Task.CompletedTask;
+        }
+
+        public CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>> TryMove(out bool read)
+        {
+            read = true;
+            return new CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayElementReader<TNextReader>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new ArrayElementReader<TNextReader>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new ArrayElementReader<TNextReader>(
-                            stream,
-                            buffer,
-                            currentByteIndex,
-                            validBytes,
-                            this.nextReaderFactory))))
-                .ConfigureAwait(false);
+                        this.nextReaderFactory)));
         }
     }
 
