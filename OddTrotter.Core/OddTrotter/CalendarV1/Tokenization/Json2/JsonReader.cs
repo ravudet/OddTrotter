@@ -2475,7 +2475,7 @@
         }
     }
 
-    public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
+    public sealed class StringReader<TNextReader> : IAsyncReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2497,25 +2497,30 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new CharsReader<StringDelimiterReader<TNextReader>>(
+            return Task.CompletedTask;
+        }
+
+        public StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> TryMove(out bool read)
+        {
+            read = true;
+            return new StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new CharsReader<StringDelimiterReader<TNextReader>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new StringDelimiterReader<TNextReader>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new StringDelimiterReader<TNextReader>(
-                            stream,
-                            buffer,
-                            currentByteIndex,
-                            validBytes,
-                            this.nextReaderFactory)))).ConfigureAwait(false);
+                        this.nextReaderFactory)));
         }
     }
 
