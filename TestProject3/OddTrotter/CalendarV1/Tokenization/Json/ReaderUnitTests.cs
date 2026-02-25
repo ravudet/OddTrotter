@@ -224,7 +224,7 @@
             Func<TNextReader, Task> readToEnd)
         {
             await valueReader.ReadToEnd1(
-                    async arrayReader => await arrayReader.ReadToEnd4(
+                    async arrayReader => await arrayReader.ReadToEnd4Async(
                         async arrayStartReader => await arrayStartReader.ReadToEnd4(
                             async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                                 async arrayElementsReader => await arrayElementsReader.ReadToEnd3(

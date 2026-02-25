@@ -1242,7 +1242,7 @@
         public static ObjectEndToken Instance { get; } = new ObjectEndToken();
     }
 
-    public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
+    public sealed class ArrayReader<TNextReader> : IAsyncReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1264,36 +1264,40 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>(
+            return Task.CompletedTask;
+        }
+
+        public ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>> TryMove(out bool read)
+        {
+            read = true;
+            return new ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>(
                         stream,
                         buffer,
                         currentByteIndex,
                         validBytes,
-                        (stream, buffer, currentByteIndex, validBytes) => new ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>(
+                        (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
                             stream,
                             buffer,
                             currentByteIndex,
                             validBytes,
-                            (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ArrayEndReader<TNextReader>>(
+                            (stream, buffer, currentByteIndex, validBytes) => new ArrayEndReader<TNextReader>(
                                 stream,
                                 buffer,
                                 currentByteIndex,
                                 validBytes,
-                                (stream, buffer, currentByteIndex, validBytes) => new ArrayEndReader<TNextReader>(
-                                    stream,
-                                    buffer,
-                                    currentByteIndex,
-                                    validBytes,
-                                    this.nextReaderFactory))))))
-                .ConfigureAwait(false);
+                                this.nextReaderFactory)))));
         }
     }
 
