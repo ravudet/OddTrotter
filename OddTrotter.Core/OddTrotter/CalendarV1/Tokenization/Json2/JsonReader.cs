@@ -789,7 +789,7 @@
         public static ObjectStartToken Instance { get; } = new ObjectStartToken();
     }
 
-    public sealed class MembersReader<TNextReader> : IReader<MembersToken<TNextReader>>
+    public sealed class MembersReader<TNextReader> : IAsyncReader<MembersToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -824,6 +824,45 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            if (this.buffer[this.currentByteIndex] != '"')
+            {
+                return new MembersToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.currentByteIndex,
+                        this.validBytes));
+            }
+
+            return new MembersToken<TNextReader>.Some(
+                new FirstMemberReader<TNextReader>(
+                    this.stream,
+                    this.buffer,
+                    this.currentByteIndex,
+                    this.validBytes,
+                    this.nextReaderFactory));
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public MembersToken<TNextReader> TryMove(out bool read)
+        {
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                read = false;
+                return default!; //// TODO !
+            }
+
+            if (this.validBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            read = true;
             if (this.buffer[this.currentByteIndex] != '"')
             {
                 return new MembersToken<TNextReader>.None(
