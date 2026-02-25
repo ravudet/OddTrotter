@@ -112,7 +112,7 @@
             await subsequentArrayElementsReader.ReadToEnd5(
                 async nextReader => await readToEnd(nextReader),
                 async subsequentArrayElementReader => await subsequentArrayElementReader.ReadToEnd4(
-                    async commaReader => await commaReader.ReadToEnd4(
+                    async commaReader => await commaReader.ReadToEnd4Async(
                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                             async arrayElementReader => await arrayElementReader.ReadToEnd4(
                                 async valueReader => await valueReader.ReadToEnd2(
@@ -196,7 +196,7 @@
             await subsequentMembersReader.ReadToEnd9(
                 async whitespaceReader => await readToEnd(whitespaceReader),
                 async subsequentMemberReader => await subsequentMemberReader.ReadToEnd4Async(
-                    async commaReader => await commaReader.ReadToEnd4(
+                    async commaReader => await commaReader.ReadToEnd4Async(
                         async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                             async memberReader => await memberReader.ReadToEnd10(
                                 async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
