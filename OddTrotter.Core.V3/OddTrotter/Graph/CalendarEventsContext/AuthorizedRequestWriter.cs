@@ -18,6 +18,8 @@
 
         public async Task<IVerbWriter> Write()
         {
+            //// TODO can you do something like `irequestwriter inject(this irequestwriter, IUrlQueryWriter)` and have an `inject` overload for each kind of writer? you would potentially end up with a lot of overhead if you "inject" a lot of things, but you could maybe return an `iinjectedrequestwriter : irequestwriter` that has it's own `inject` method?
+
             var verbWriter = await this.requestWriter.Write().ConfigureAwait(false);
             return new VerbWriter(verbWriter, this.accessToken);
         }
