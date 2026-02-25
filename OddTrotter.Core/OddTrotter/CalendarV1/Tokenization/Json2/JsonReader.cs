@@ -141,6 +141,7 @@
                 read = this.TryGetValue2();
             }
 
+            this.finished = read;
             return this.tokens;
         }
 
@@ -1836,13 +1837,17 @@
         }
     }
     
-    public sealed class IntReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
+    public sealed class IntReader<TNextReader> : IAsyncReader<IEnumerable<DigitToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+        private bool finished;
+        private bool firstDigitRead;
+
+        private readonly List<DigitToken> tokens;
 
         private readonly Task<ITask<IEnumerable<DigitToken>>> task;
 
@@ -1858,6 +1863,8 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
+
+            this.tokens = new List<DigitToken>();
 
             this.task = new Task<ITask<IEnumerable<DigitToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
@@ -1930,6 +1937,95 @@
         public async ITask<TNextReader> Move()
         {
             await this.GetValue().ConfigureAwait(false);
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public IEnumerable<DigitToken> TryGetValue(out bool read)
+        {
+            if (this.finished)
+            {
+                read = true;
+            }
+            else
+            {
+                read = this.TryGetValue2();
+            }
+
+            this.finished = read;
+            return this.tokens;
+        }
+
+        private bool TryGetValue2()
+        {
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
+
+            if (!this.firstDigitRead)
+            {
+                var currentByte = this.buffer[this.currentByteIndex];
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(currentByte);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                this.tokens.Add(digit);
+                this.firstDigitRead = true;
+                ++this.currentByteIndex;
+                if (currentByte == '0')
+                {
+                    return true;
+                }
+            }
+
+            while (true)
+            {
+                if (this.validBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    return false;
+                }
+
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(this.buffer[this.currentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++this.currentByteIndex;
+                this.tokens.Add(digit);
+            }
+
+            return true;
+        }
+
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
