@@ -225,7 +225,7 @@
         {
             await valueReader.ReadToEnd1(
                     async arrayReader => await arrayReader.ReadToEnd4Async(
-                        async arrayStartReader => await arrayStartReader.ReadToEnd4(
+                        async arrayStartReader => await arrayStartReader.ReadToEnd4Async(
                             async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
                                 async arrayElementsReader => await arrayElementsReader.ReadToEnd3(
                                     async whitespaceReader => await whitespaceReader.ReadToEnd4Async(

@@ -1301,15 +1301,13 @@
         }
     }
 
-    public sealed class ArrayStartReader<TNextReader> : IReader<ArrayStartToken, TNextReader>
+    public sealed class ArrayStartReader<TNextReader> : IAsyncReader<ArrayStartToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<ArrayStartToken>> task;
 
         public ArrayStartReader(
             Stream stream,
@@ -1323,32 +1321,33 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<ArrayStartToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
-        public async ITask<ArrayStartToken> GetValue()
+        public ArrayStartToken TryGetValue(out bool read)
         {
-            try
+            (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '[');
+            if (!read)
             {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
+                return default!; //// TODO !
             }
 
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<ArrayStartToken> GetValue2()
-        {
-            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '[').ConfigureAwait(false);
             return ArrayStartToken.Instance;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
