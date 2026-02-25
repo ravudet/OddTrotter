@@ -264,7 +264,7 @@
                                         async nextReader => await readToEnd(nextReader),
                                         async eReader => await eReader.ReadToEnd4Async(
                                             async expSignReader => await expSignReader.ReadToEnd4Async(
-                                                async digitsReader => await digitsReader.ReadToEnd4(
+                                                async digitsReader => await digitsReader.ReadToEnd4Async(
                                                     async nextReader => await readToEnd(nextReader))))))))),
                     async objectReader => await objectReader.ReadToEnd4Async(
                         async objectStartReader => await objectStartReader.ReadToEnd4Async(

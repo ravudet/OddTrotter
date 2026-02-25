@@ -2381,7 +2381,7 @@
         }
     }
 
-    public sealed class DigitsReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
+    public sealed class DigitsReader<TNextReader> : IAsyncReader<IEnumerable<DigitToken>, TNextReader>
         //// TODO reuse digits reader
     {
         private readonly Stream stream;
@@ -2390,7 +2390,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<IEnumerable<DigitToken>>> task;
+        private readonly List<DigitToken> tokens;
+        private bool finished;
 
         public DigitsReader(
             Stream stream,
@@ -2405,51 +2406,38 @@
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
-            this.task = new Task<ITask<IEnumerable<DigitToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
+            this.tokens = new List<DigitToken>();
         }
 
-        public async ITask<IEnumerable<DigitToken>> GetValue()
+        public IEnumerable<DigitToken> TryGetValue(out bool read)
         {
-            try
+            if (this.finished)
             {
-                this.task.Start();
+                read = true;
             }
-            catch (InvalidOperationException)
+            else
             {
+                read = this.TryGetValue2();
             }
 
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+            this.finished = read;
+            return this.tokens;
         }
 
-        private async ITask<IEnumerable<DigitToken>> GetValue2()
+        private bool TryGetValue2()
         {
-            return await this.GetValueImpl().ToTask().ConfigureAwait(false);
-        }
-
-        private async IAsyncEnumerable<DigitToken> GetValueImpl()
-        {
-            if (this.currentByteIndex >= this.validBytes)
-            {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
-            }
-
-            if (this.validBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
-                if (this.currentByteIndex >= this.validBytes)
-                {
-                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                    this.currentByteIndex = 0;
-                }
-
                 if (this.validBytes == 0)
                 {
-                    yield break;
+                    // no more bytes to read
+                    break;
+                }
+
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    return false;
                 }
 
                 DigitToken digit;
@@ -2457,18 +2445,32 @@
                 {
                     digit = new DigitToken(this.buffer[this.currentByteIndex]);
                 }
-                catch (Exception) //// TODO use correct exception type
+                catch (Exception)
                 {
-                    yield break;
+                    break;
                 }
 
                 ++this.currentByteIndex;
+                this.tokens.Add(digit);
             }
+
+            return true;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
