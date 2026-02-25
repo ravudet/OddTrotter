@@ -816,7 +816,7 @@
         }
     }
 
-    public sealed class FirstMemberReader<TNextReader> : IReader<MemberReader<SubsequentMembersReader<TNextReader>>>
+    public sealed class FirstMemberReader<TNextReader> : IAsyncReader<MemberReader<SubsequentMembersReader<TNextReader>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -838,20 +838,25 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<MemberReader<SubsequentMembersReader<TNextReader>>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new MemberReader<SubsequentMembersReader<TNextReader>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentMembersReader<TNextReader>(
-                        stream,
-                        buffer,
-                        currentByteIndex,
-                        validBytes,
-                        this.nextReaderFactory))).ConfigureAwait(false);
+            return Task.CompletedTask;
+        }
+
+        public MemberReader<SubsequentMembersReader<TNextReader>> TryMove(out bool read)
+        {
+            read = true;
+            return new MemberReader<SubsequentMembersReader<TNextReader>>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new SubsequentMembersReader<TNextReader>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    this.nextReaderFactory));
         }
     }
 
