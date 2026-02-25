@@ -2584,7 +2584,7 @@
         public static StringDelimiterToken Instance { get; } = new StringDelimiterToken();
     }
 
-    public sealed class CharsReader<TNextReader> : IReader<IEnumerable<CharToken>, TNextReader>
+    public sealed class CharsReader<TNextReader> : IAsyncReader<IEnumerable<CharToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2592,7 +2592,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<IEnumerable<CharToken>>> task;
+        private readonly List<CharToken> tokens;
+        private bool finished;
 
         public CharsReader(
             Stream stream,
@@ -2607,40 +2608,38 @@
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
 
-            this.task = new Task<ITask<IEnumerable<CharToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
+            this.tokens = new List<CharToken>();
         }
 
-        public async ITask<IEnumerable<CharToken>> GetValue()
+        public IEnumerable<CharToken> TryGetValue(out bool read)
         {
-            try
+            if (this.finished)
             {
-                this.task.Start();
+                read = true;
             }
-            catch (InvalidOperationException)
+            else
             {
+                read = this.TryGetValue2();
             }
 
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+            this.finished = read;
+            return this.tokens;
         }
 
-        private async ITask<IEnumerable<CharToken>> GetValue2()
+        private bool TryGetValue2()
         {
-            return await this.GetValueImpl().ToTask().ConfigureAwait(false);
-        }
-
-        private async IAsyncEnumerable<CharToken> GetValueImpl()
-        {
+            // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
-                if (this.currentByteIndex >= this.validBytes)
-                {
-                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                    this.currentByteIndex = 0;
-                }
-
                 if (this.validBytes == 0)
                 {
-                    yield break;
+                    // no more bytes to read
+                    break;
+                }
+
+                if (this.currentByteIndex >= this.validBytes)
+                {
+                    return false;
                 }
 
                 var currentByte = this.buffer[this.currentByteIndex];
@@ -2649,8 +2648,8 @@
                     ++this.currentByteIndex;
                     if (this.currentByteIndex >= this.validBytes)
                     {
-                        this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                        this.currentByteIndex = 0;
+                        //// TODO keep track that you are reading an escaped character
+                        return false;
                     }
 
                     if (this.validBytes == 0)
@@ -2672,13 +2671,26 @@
                 }
 
                 ++this.currentByteIndex;
-                yield return @char;
+                this.tokens.Add(@char);
             }
+
+            return true;
         }
 
-        public async ITask<TNextReader> Move()
+        public async Task Read()
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
