@@ -1456,7 +1456,7 @@
         }
     }
 
-    public sealed class ArrayElementReader<TNextReader> : IReader<ValueReader<TNextReader>>
+    public sealed class ArrayElementReader<TNextReader> : IAsyncReader<ValueReader<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1478,15 +1478,20 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ValueReader<TNextReader>> Move()
+        public Task Read()
         {
-            return await Task.FromResult(
-                new ValueReader<TNextReader>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    this.nextReaderFactory)).ConfigureAwait(false);
+            return Task.CompletedTask;
+        }
+
+        public ValueReader<TNextReader> TryMove(out bool read)
+        {
+            read = true;
+            return new ValueReader<TNextReader>(
+                this.stream,
+                this.buffer,
+                this.currentByteIndex,
+                this.validBytes,
+                this.nextReaderFactory);
         }
     }
 
