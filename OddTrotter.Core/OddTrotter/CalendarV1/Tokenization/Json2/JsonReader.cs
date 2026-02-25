@@ -1495,7 +1495,7 @@
         }
     }
 
-    public sealed class SubsequentArrayElementsReader<TNextReader> : IReader<SubsequentArrayElementsToken<TNextReader>>
+    public sealed class SubsequentArrayElementsReader<TNextReader> : IAsyncReader<SubsequentArrayElementsToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1530,6 +1530,51 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            var currentByte = this.buffer[this.currentByteIndex];
+            if (currentByte != ',')
+            {
+                return new SubsequentArrayElementsToken<TNextReader>.None(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.currentByteIndex,
+                        this.validBytes));
+            }
+
+            return new SubsequentArrayElementsToken<TNextReader>.More(
+                new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.currentByteIndex,
+                    this.validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                        stream,
+                        buffer,
+                        currentByteIndex,
+                        validBytes,
+                        this.nextReaderFactory)));
+        }
+
+        public async Task Read()
+        {
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
+        }
+
+        public SubsequentArrayElementsToken<TNextReader> TryMove(out bool read)
+        {
+            if (this.currentByteIndex >= this.validBytes)
+            {
+                read = false;
+                return default!; //// TODO !
+            }
+
+            if (this.validBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            read = true;
             var currentByte = this.buffer[this.currentByteIndex];
             if (currentByte != ',')
             {

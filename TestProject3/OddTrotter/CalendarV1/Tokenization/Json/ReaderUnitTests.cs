@@ -95,7 +95,12 @@
             Func<TNextReader, Task> noneReadToEnd,
             Func<Json2.SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, Task> moreReadToEnd)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move();
+            SubsequentArrayElementsToken<TNextReader> subsequentArrayElementsToken;
+            while (!subsequentArrayElementsReader.TryMove2(out subsequentArrayElementsToken))
+            {
+                await subsequentArrayElementsReader.Read().ConfigureAwait(false);
+            }
+
             if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
             {
                 await noneReadToEnd(none.Reader);
