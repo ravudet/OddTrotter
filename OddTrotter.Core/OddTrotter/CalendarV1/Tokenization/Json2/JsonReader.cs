@@ -629,38 +629,6 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>> Move()
-        {
-            return await Task.FromResult(
-                new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) =>
-                        new WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
-                            stream,
-                            buffer,
-                            currentByteIndex,
-                            validBytes,
-                            (stream, buffer, currentByteIndex, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
-                                stream,
-                                buffer,
-                                currentByteIndex,
-                                validBytes,
-                                (strema, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
-                                        stream,
-                                        buffer,
-                                        currentByteIndex,
-                                        validBytes,
-                                        (stream, buffer, currentByteIndex, validBytes) => new ObjectEndReader<TNextReader>(
-                                            stream,
-                                            buffer,
-                                            currentByteIndex,
-                                            validBytes,
-                                            this.nextReaderFactory)))))).ConfigureAwait(false);
-        }
-
         public Task Read()
         {
             return Task.CompletedTask;
@@ -707,8 +675,6 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<ObjectStartToken>> task;
-
         public ObjectStartReader(
             Stream stream,
             byte[] buffer,
@@ -721,34 +687,6 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<ObjectStartToken>>(async () => await this.GetValue2().ConfigureAwait(false));
-        }
-
-        public async ITask<ObjectStartToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<ObjectStartToken> GetValue2()
-        {
-            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, '{').ConfigureAwait(false);
-
-            return ObjectStartToken.Instance;
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public ObjectStartToken TryGetValue(out bool read)
