@@ -1517,44 +1517,6 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async ITask<SubsequentArrayElementsToken<TNextReader>> Move()
-        {
-            if (this.currentByteIndex >= this.validBytes)
-            {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
-            }
-
-            if (this.validBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            var currentByte = this.buffer[this.currentByteIndex];
-            if (currentByte != ',')
-            {
-                return new SubsequentArrayElementsToken<TNextReader>.None(
-                    this.nextReaderFactory(
-                        this.stream,
-                        this.buffer,
-                        this.currentByteIndex,
-                        this.validBytes));
-            }
-
-            return new SubsequentArrayElementsToken<TNextReader>.More(
-                new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
-                    this.stream,
-                    this.buffer,
-                    this.currentByteIndex,
-                    this.validBytes,
-                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
-                        stream,
-                        buffer,
-                        currentByteIndex,
-                        validBytes,
-                        this.nextReaderFactory)));
-        }
-
         public async Task Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
@@ -1685,8 +1647,6 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        private readonly Task<ITask<ArrayEndToken>> task;
-
         public ArrayEndReader(
             Stream stream,
             byte[] buffer,
@@ -1699,33 +1659,6 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<ArrayEndToken>>(async () => await this.GetValue2().ConfigureAwait(false));
-        }
-
-        public async ITask<ArrayEndToken> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<ArrayEndToken> GetValue2()
-        {
-            (this.currentByteIndex, this.validBytes) = await Helpers.ReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, ']').ConfigureAwait(false);
-            return ArrayEndToken.Instance;
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public ArrayEndToken TryGetValue(out bool read)
