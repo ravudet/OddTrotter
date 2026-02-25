@@ -2210,15 +2210,13 @@
         }
     }
 
-    public sealed class EReader<TNextReader> : IReader<EToken, TNextReader>
+    public sealed class EReader<TNextReader> : IAsyncReader<EToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
-
-        private readonly Task<ITask<EToken>> task;
 
         public EReader(
             Stream stream,
@@ -2232,43 +2230,33 @@
             this.currentByteIndex = currentByteIndex;
             this.validBytes = validBytes;
             this.nextReaderFactory = nextReaderFactory;
-
-            this.task = new Task<ITask<EToken>>(async () => await this.GetValue2().ConfigureAwait(false));
         }
 
-        public async ITask<EToken> GetValue()
+        public EToken TryGetValue(out bool read)
         {
-            try
+            (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, 'e'); //// TODO should also allow 'E'
+            if (!read)
             {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
+                return default!; //// TODO !
             }
 
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
+            return new EToken((byte)'e');
         }
 
-        private async ITask<EToken> GetValue2()
+        public async Task Read()
         {
-            if (this.currentByteIndex >= this.validBytes)
-            {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
-            }
-
-            if (this.validBytes == 0 || (this.buffer[this.currentByteIndex] != 'e' && this.buffer[this.currentByteIndex] != 'E'))
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            ++this.currentByteIndex;
-            return new EToken(this.buffer[this.currentByteIndex]);
+            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.currentByteIndex = 0;
         }
 
-        public async ITask<TNextReader> Move()
+        public TNextReader TryMove(out bool read)
         {
-            await this.GetValue().ConfigureAwait(false);
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
