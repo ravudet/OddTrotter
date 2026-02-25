@@ -48,16 +48,6 @@
         TValue TryGetValue(out bool read);
     }
 
-    public interface IReader<out TNextReader>
-    {
-        ITask<TNextReader> Move();
-    }
-
-    public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
-    {
-        ITask<TValue> GetValue();
-    }
-
     public sealed class JsonReader : IAsyncReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;

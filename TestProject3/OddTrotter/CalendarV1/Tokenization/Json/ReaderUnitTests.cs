@@ -33,12 +33,6 @@
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
-        private static async Task ReadToEnd4<TNextReader>(this Json2.IReader<TNextReader> currentReader, Func<TNextReader, Task> readToEnd)
-        {
-            var nextReader = await currentReader.Move().ConfigureAwait(false);
-            await readToEnd(nextReader).ConfigureAwait(false);
-        }
-        
         /*private static async ITask<TSubsequentReader> Read1<TSubsequentReader>(this Json2.IReader<Json2.IReader<TSubsequentReader>> currentReader)
         {
             var nextReader = await currentReader.Move().ConfigureAwait(false);
