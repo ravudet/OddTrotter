@@ -1849,8 +1849,6 @@
 
         private readonly List<DigitToken> tokens;
 
-        private readonly Task<ITask<IEnumerable<DigitToken>>> task;
-
         public IntReader(
             Stream stream,
             byte[] buffer,
@@ -1865,79 +1863,6 @@
             this.nextReaderFactory = nextReaderFactory;
 
             this.tokens = new List<DigitToken>();
-
-            this.task = new Task<ITask<IEnumerable<DigitToken>>>(async () => await this.GetValue2().ConfigureAwait(false));
-        }
-
-        public async ITask<IEnumerable<DigitToken>> GetValue()
-        {
-            try
-            {
-                this.task.Start();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            return await (await this.task.ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        private async ITask<IEnumerable<DigitToken>> GetValue2()
-        {
-            return await this.GetValueImpl().ToTask().ConfigureAwait(false);
-        }
-
-        private async IAsyncEnumerable<DigitToken> GetValueImpl()
-        {
-            if (this.currentByteIndex >= this.validBytes)
-            {
-                this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                this.currentByteIndex = 0;
-            }
-
-            if (this.validBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            var currentByte = this.buffer[this.currentByteIndex];
-            var digit = new DigitToken(currentByte);
-            yield return digit;
-            if (currentByte == '0')
-            {
-                yield break;
-            }
-
-            while (true)
-            {
-                if (this.currentByteIndex >= this.validBytes)
-                {
-                    this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-                    this.currentByteIndex = 0;
-                }
-
-                if (this.validBytes == 0)
-                {
-                    yield break;
-                }
-
-                try
-                {
-                    digit = new DigitToken(this.buffer[this.currentByteIndex]);
-                }
-                catch (Exception) //// TODO use correct exception type
-                {
-                    yield break;
-                }
-
-                ++this.currentByteIndex;
-            }
-        }
-
-        public async ITask<TNextReader> Move()
-        {
-            await this.GetValue().ConfigureAwait(false);
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
 
         public IEnumerable<DigitToken> TryGetValue(out bool read)
