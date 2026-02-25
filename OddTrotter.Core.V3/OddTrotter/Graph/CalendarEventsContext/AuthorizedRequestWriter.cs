@@ -133,7 +133,13 @@
 
                                 public async Task<IHeadersWriter> WriteHeaders()
                                 {
-                                    //// TODO add access token here
+                                    var headersWriter = await this.urlQueryWriter.WriteHeaders().ConfigureAwait(false);
+                                    var headerWriter = await headersWriter.WriteHeader().ConfigureAwait(false);
+                                    var headerKvpWriter = await headerWriter.Write().ConfigureAwait(false);
+                                    var headerKeyWriter = await headerKvpWriter.Write(new HeaderKey("Authorization")).ConfigureAwait(false);
+                                    var headerValueWriter = await headerKeyWriter.Write(new HeaderValue(this.accessToken)).ConfigureAwait(false);
+                                    var headerKeyWriter2 = await headerValueWriter.Write().ConfigureAwait(false);
+                                    return await headerKeyWriter2.Write().ConfigureAwait(false);
                                 }
 
                                 private sealed class UrlQueryKvpWriter : IUrlQueryKvpWriter
