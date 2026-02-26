@@ -76,7 +76,7 @@
             }
             else if (valueToken is ValueToken<TNextReader>.Object @object)
             {
-                return await @object.Reader.Move().Move().Move().Move8().Move().Move().ConfigureAwait(false);
+                return await @object.Reader.Move().Move().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.String @string)
             {
@@ -92,16 +92,16 @@
             }
         }
 
-        public static async ITask<TNextReader> Move8<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this ITask<Json2.IAsyncReader<MembersToken<TNextReader>>> subsequentArrayElementsReader)
         {
-            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move8().ConfigureAwait(false);
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move8<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IAsyncReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<MembersToken<TNextReader>>().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is MembersToken<TNextReader>.None none)
             {
