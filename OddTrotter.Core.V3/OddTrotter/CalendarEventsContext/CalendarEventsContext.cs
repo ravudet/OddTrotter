@@ -40,7 +40,7 @@
                         CalendarEventTranslationException
                     >, 
                 CalendarEvent, 
-                PagingException
+                Graph.PagingError
             >, 
         IWhereQueryContextMixinAsync
             <
@@ -50,7 +50,7 @@
                         CalendarEventTranslationException
                     >,
                 CalendarEvent,
-                PagingException,
+                Graph.PagingError,
                 CalendarEventsContext
             >
     {
@@ -101,7 +101,7 @@
             this.seriesMasterPredicate = seriesMasterPredicate;
         }
 
-        public async ITask<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
+        public async ITask<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError>> Evaluate()
         {
             var events = await this.GetEvents().ConfigureAwait(false);
             var translatedEvents = Translate(events) //// TODO add a `where` that takes in a `task<queryresult>`
@@ -120,7 +120,7 @@
             return translatedEvents;
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetEvents()
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetEvents()
         {
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
@@ -135,7 +135,7 @@
                             new AggregateException(firstError, secondError))*/);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstanceEvents()
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstanceEvents()
         {
             var context = this
                 .calendarSource
@@ -159,7 +159,7 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEvents()
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEvents()
         {
             var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
             if (this.seriesMasterPredicate != null)
@@ -282,13 +282,13 @@
                         .SelectRight(
                             translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
                                 .SelectRight(
-                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO", instancePagingError))
+                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO"))
                                 .Coalesce()));
 
             return mastersWithInstances;
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries(string seriesMasterId)
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId)
         {
             var pageStartTime = this.startTime;
             var pageEndTime = pageStartTime + this.firstInstanceInSeriesLookahead;
@@ -300,7 +300,7 @@
             return await this.GetInstancesInSeries(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
             var initial = await GetInstancesInSeriesWithinTimeSlice(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
 
@@ -314,7 +314,7 @@
             return initial.Concat2(this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime));
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
             var context = this.calendarSource.Events().Get(seriesMasterId).Instances(pageStartTime, pageEndTime).Get();
             if (this.isCancelled != null)
@@ -325,7 +325,7 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException>> GetSeriesEventMasters()
+        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEventMasters()
         {
             var context = this
                 .calendarSource
@@ -343,14 +343,15 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private static IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> Translate(IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingException> graphQueryResult)
+        private static IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError> Translate(IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError> graphQueryResult)
         {
             return graphQueryResult
                 .Select(element => element
                     .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
                     .SelectLeft(calendarEvent => CalendarEventsContext.Translate(calendarEvent))
                     .SelectManyLeft())
-                .SelectError(pagingException => new PagingException("TODO", pagingException));
+                ////.SelectError(pagingException => new PagingException("TODO", pagingException))
+                ;
         }
 
         private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)

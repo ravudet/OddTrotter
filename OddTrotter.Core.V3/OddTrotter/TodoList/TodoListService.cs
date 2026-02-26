@@ -17,8 +17,8 @@
 
     internal sealed class TodoListService<TCalendarEventsContext> : ITodoListService<CalendarTodoListErrors>
         where TCalendarEventsContext : 
-            IQueryContextAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException>,
-            IWhereQueryContextMixinAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, PagingException, CalendarEventsContext>
+            IQueryContextAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, OddTrotter.Graph.CalendarEventsContext.PagingError>,
+            IWhereQueryContextMixinAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, OddTrotter.Graph.CalendarEventsContext.PagingError, CalendarEventsContext>
     {
         private readonly TCalendarEventsContext calendarEventsContext;
 
@@ -59,7 +59,7 @@
             return result;
         }
 
-        private static async Task<TodoListResultBuilder> Convert(IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static async Task<TodoListResultBuilder> Convert(IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, OddTrotter.Graph.CalendarEventsContext.PagingError> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
@@ -68,7 +68,7 @@
             return builder;
         }
 
-        private static async Task ConvertIterator(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
+        private static async Task ConvertIterator(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, OddTrotter.Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
         {
             bool @continue;
             while (((queryResultNode, @continue) = await ConvertApply(queryResultNode, builder).ConfigureAwait(false)).@continue)
@@ -76,7 +76,7 @@
             }
         }
 
-        private static async Task<(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>, bool)> ConvertApply(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException> queryResultNode, TodoListResultBuilder builder)
+        private static async Task<(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, OddTrotter.Graph.CalendarEventsContext.PagingError>, bool)> ConvertApply(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, OddTrotter.Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
         {
             return await queryResultNode.Apply(
                 async element =>
@@ -121,7 +121,7 @@
                         builder.PagingError = error.Value;
                     }
 
-                    return await Task.FromResult(((IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>)null!, false)).ConfigureAwait(false);
+                    return await Task.FromResult(((IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, OddTrotter.Graph.CalendarEventsContext.PagingError>)null!, false)).ConfigureAwait(false);
                 })
                 .ConfigureAwait(false);
         }
@@ -164,7 +164,7 @@
 
             public List<Exception> BodyParseErrors { get; set; } //// TODO use the right tpye of elements
 
-            public PagingException? PagingError { get; set; }
+            public OddTrotter.Graph.CalendarEventsContext.PagingError? PagingError { get; set; }
         }
     }
 

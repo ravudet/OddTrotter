@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Net;
+    using System.Net.Http;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
@@ -162,7 +164,7 @@
             this.top = top;
         }
 
-        public async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
+        public async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> Evaluate()
         {
             return await EvaluatePage(this.strongConventionContext, this.calendarRoot, true).ConfigureAwait(false);
 
@@ -170,7 +172,7 @@
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
         }
 
-        private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
+        private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> EvaluatePage(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri uri, 
             bool throwOnFailureResponse)
@@ -194,17 +196,64 @@
             {
                 getCollectionResponse = await strongConventionContext.GetCollection(getCollectionRequest).ConfigureAwait(false);
             }
+            catch (HttpRequestException httpRequestException)
+            {
+                if (throwOnFailureResponse)
+                {
+                    throw;
+                }
+                else
+                {
+                    return Enumerable
+                        .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .SelectError(_ => new PagingError.Http(httpRequestException));
+                }
+            }
             catch (StrongConventionContext.ReadException readException)
             {
-                throw new ReadException("TODO", readException);
+                var exception = new ReadException("TODO", readException);
+                if (throwOnFailureResponse)
+                {
+                    throw exception;
+                }
+                else
+                {
+                    return Enumerable
+                        .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .SelectError(_ => new PagingError.Read(exception));
+                }
             }
             catch (StrongConventionContext.WriteException writeException)
             {
-                throw new WriteException("TODO", writeException);
+                var exception = new WriteException("TODO", writeException);
+                if (throwOnFailureResponse)
+                {
+                    throw exception;
+                }
+                else
+                {
+                    return Enumerable
+                        .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .SelectError(_ => new PagingError.Write(exception));
+                }
             }
             catch (StrongConventionContext.StrongConventionException strongConventionException)
             {
-                throw new ContextException("TODO", strongConventionException);
+                var exception = new ContextException("TODO", strongConventionException);
+                if (throwOnFailureResponse)
+                {
+                    throw exception;
+                }
+                else
+                {
+                    return Enumerable
+                        .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .SelectError(_ => new PagingError.Context(exception));
+                }
             }
 
             return getCollectionResponse.Apply(
@@ -216,7 +265,7 @@
                             .Element
                             .SelectRight(deserializationError =>
                                 new CalendarEventTranslationException("TODO", deserializationError.Exception)))
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference
+                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>(); //// TODO bad type inference
 
                     if (success.NextLink != null)
                     {
@@ -227,18 +276,37 @@
                 },
                 failure =>
                 {
-                    if (throwOnFailureResponse)
+                    if (false) //// TODO 501 or 503
                     {
-                        if (false) //// TODO 501 or 503
+#pragma warning disable CS0162 // Unreachable code detected
+                        var exception = new UnauthorizedAccessTokenException("TODO", "TODO", "TODO");
+#pragma warning restore CS0162 // Unreachable code detected
+                        if (throwOnFailureResponse)
                         {
-                            throw new UnauthorizedAccessTokenException("TODO", "TODO", "TODO");
+                            throw exception;
                         }
-
-                        throw new ContextException("TODO");
+                        else
+                        {
+                            return Enumerable
+                                .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                                .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                                .SelectError(_ => new PagingError.Unauthorized(exception));
+                        }
                     }
                     else
                     {
-                        return Enumerable.Empty<IEither<CalendarEvent, CalendarEventTranslationException>>().ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>(); //// TODO bad type inference //// TODO put the failure in there
+                        var exception = new ContextException("TODO");
+                        if (throwOnFailureResponse)
+                        {
+                            throw exception;
+                        }
+                        else
+                        {
+                            return Enumerable
+                                .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
+                                .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                                .SelectError(_ => new PagingError.Context(exception));
+                        }
                     }
                 });
         }
