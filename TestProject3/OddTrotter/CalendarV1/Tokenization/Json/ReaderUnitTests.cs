@@ -109,7 +109,7 @@
             }
             else if (subsequentArrayElementsToken is MembersToken<TNextReader>.Some more)
             {
-                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move9();
+                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move();
             }
             else
             {
@@ -117,16 +117,16 @@
             }
         }
 
-        public static async ITask<TNextReader> Move9<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this ITask<Json2.IAsyncReader<SubsequentMembersToken<TNextReader>>> subsequentArrayElementsReader)
         {
-            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move9().ConfigureAwait(false);
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move9<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IAsyncReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentMembersToken<TNextReader>>().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.None none)
             {
@@ -134,7 +134,7 @@
             }
             else if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.More more)
             {
-                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move9();
+                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move();
             }
             else
             {
