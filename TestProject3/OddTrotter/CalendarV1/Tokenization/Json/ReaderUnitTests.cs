@@ -33,6 +33,115 @@
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
+        private static async ITask<TNextReader> MoveMinus1<TNextReader>(this ITask<Json2.IAsyncReader<TNextReader>> currentReader)
+        {
+            return await (await currentReader.ConfigureAwait(false)).Move0().ConfigureAwait(false);
+        }
+
+        private static async ITask<TNextReader> Move0<TNextReader>(this Json2.IAsyncReader<TNextReader> currentReader)
+        {
+            TNextReader nextReader;
+            while (!currentReader.TryMove2(out nextReader))
+            {
+                await currentReader.Read().ConfigureAwait(false);
+            }
+
+            return nextReader;
+        }
+
+        public static async ITask<TNextReader> Move1<TNextReader>(this ITask<Json2.IAsyncReader<ValueToken<TNextReader>>> valueReader)
+        {
+            return await (await valueReader.ConfigureAwait(false)).Move3().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move3<TNextReader>(this Json2.IAsyncReader<ValueToken<TNextReader>> valueReader)
+        {
+            var valueToken = await valueReader.Move0().ConfigureAwait(false);
+
+            if (valueToken is ValueToken<TNextReader>.Array array)
+            {
+                return await array.Reader.Move0().MoveMinus1().MoveMinus1().Move5().MoveMinus1().MoveMinus1().ConfigureAwait(false);
+            }
+            else if (valueToken is ValueToken<TNextReader>.False @false)
+            {
+                return await @false.Reader.Move0().ConfigureAwait(false);
+            }
+            else if (valueToken is ValueToken<TNextReader>.Null @null)
+            {
+                return await @null.Reader.Move0().ConfigureAwait(false);
+            }
+            else if (valueToken is ValueToken<TNextReader>.Number number)
+            {
+                return await number.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1();
+            }
+            else if (valueToken is ValueToken<TNextReader>.Object @object)
+            {
+                await objectReadToEnd(@object.Reader).ConfigureAwait(false);
+            }
+            else if (valueToken is ValueToken<TNextReader>.String @string)
+            {
+                await stringReadToEnd(@string.Reader).ConfigureAwait(false);
+            }
+            else if (valueToken is ValueToken<TNextReader>.True @true)
+            {
+                await trueReadToEnd(@true.Reader).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new Exception("TODO you should have an `apply` method or something on `valuetoken<T>`");
+            }
+        }
+
+        public static async ITask<TNextReader> Move5<TNextReader>(
+            this ITask<Json2.IAsyncReader<ArrayElementsToken<TNextReader>>> arrayElementsReader)
+        {
+            return await (await arrayElementsReader.ConfigureAwait(false)).Move4().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move4<TNextReader>(
+            this Json2.IAsyncReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
+        {
+            var arrayElementsToken = await arrayElementsReader.Move0().ConfigureAwait(false);
+
+            if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
+            {
+                return none.Reader;
+            }
+            else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
+            {
+                return await some.Reader.Move0().Move1().Move6();
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
+        }
+
+        public static async ITask<TNextReader> Move6<TNextReader>(
+            this ITask<Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>>> subsequentArrayElementsReader)
+        {
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move6().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move6<TNextReader>(
+            this Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
+        {
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+
+            if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
+            {
+                return none.Reader;
+            }
+            else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
+            {
+                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move6();
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
+        }
+
         /*private static async ITask<TSubsequentReader> Read1<TSubsequentReader>(this Json2.IReader<Json2.IReader<TSubsequentReader>> currentReader)
         {
             var nextReader = await currentReader.Move().ConfigureAwait(false);
@@ -233,53 +342,53 @@
             Func<TNextReader, Task> readToEnd)
         {
             await valueReader.ReadToEnd1(
-                    async arrayReader => await arrayReader.ReadToEnd4Async(
-                        async arrayStartReader => await arrayStartReader.ReadToEnd4Async(
-                            async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                async arrayElementsReader => await arrayElementsReader.ReadToEnd3(
-                                    async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                        async arrayEndReader => await arrayEndReader.ReadToEnd4Async(
-                                            async nextReader => await readToEnd(nextReader))),
-                                    async arrayElementReader => await arrayElementReader.ReadToEnd4Async(
-                                        async valueReader => await valueReader.ReadToEnd2(
-                                            async subsequentArrayElementsReader => await subsequentArrayElementsReader.ReadToEnd6(
-                                                async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                                    async arrayEndReader => await arrayEndReader.ReadToEnd4Async(
-                                                        async nextReader => await readToEnd(nextReader)))))))))),
-                    async falseReader => await falseReader.ReadToEnd4Async(
-                        async nextReader => await readToEnd(nextReader)),
-                    async nullReader => await nullReader.ReadToEnd4Async(
-                        async nextReader => await readToEnd(nextReader)),
-                    async numberReader => await numberReader.ReadToEnd4Async(
-                        async signReader => await signReader.ReadToEnd4Async(
-                            async intReader => await intReader.ReadToEnd4Async(
-                                async fracReader => await fracReader.ReadToEnd4Async(
-                                    async expReader => await expReader.ReadToEnd7(
-                                        async nextReader => await readToEnd(nextReader),
-                                        async eReader => await eReader.ReadToEnd4Async(
-                                            async expSignReader => await expSignReader.ReadToEnd4Async(
-                                                async digitsReader => await digitsReader.ReadToEnd4Async(
-                                                    async nextReader => await readToEnd(nextReader))))))))),
-                    async objectReader => await objectReader.ReadToEnd4Async(
-                        async objectStartReader => await objectStartReader.ReadToEnd4Async(
-                            async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                async membersReader => await membersReader.ReadToEnd8(
-                                    async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                        async objectEndReader => await objectEndReader.ReadToEnd4Async(
-                                            async nextReader => await readToEnd(nextReader))),
-                                    async firstMemberReader => await firstMemberReader.ReadToEnd4Async(
-                                        async memberReader => await memberReader.ReadToEnd10(
-                                            async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
-                                                async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
-                                                    async objectEndReader => await objectEndReader.ReadToEnd4Async(
-                                                        async nextReader => await readToEnd(nextReader)))))))))),
-                    async stringReader => await stringReader.ReadToEnd4Async(
-                        async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
-                            async charsReader => await charsReader.ReadToEnd4Async(
-                                async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
-                                    async nextReader => await readToEnd(nextReader))))),
-                    async trueReader => await trueReader.ReadToEnd4Async(
-                        async nextReader => await readToEnd(nextReader)));
+                async arrayReader => await arrayReader.ReadToEnd4Async(
+                    async arrayStartReader => await arrayStartReader.ReadToEnd4Async(
+                        async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                            async arrayElementsReader => await arrayElementsReader.ReadToEnd3(
+                                async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                                    async arrayEndReader => await arrayEndReader.ReadToEnd4Async(
+                                        async nextReader => await readToEnd(nextReader))),
+                                async arrayElementReader => await arrayElementReader.ReadToEnd4Async(
+                                    async valueReader => await valueReader.ReadToEnd2(
+                                        async subsequentArrayElementsReader => await subsequentArrayElementsReader.ReadToEnd6(
+                                            async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                                                async arrayEndReader => await arrayEndReader.ReadToEnd4Async(
+                                                    async nextReader => await readToEnd(nextReader)))))))))),
+                async falseReader => await falseReader.ReadToEnd4Async(
+                    async nextReader => await readToEnd(nextReader)),
+                async nullReader => await nullReader.ReadToEnd4Async(
+                    async nextReader => await readToEnd(nextReader)),
+                async numberReader => await numberReader.ReadToEnd4Async(
+                    async signReader => await signReader.ReadToEnd4Async(
+                        async intReader => await intReader.ReadToEnd4Async(
+                            async fracReader => await fracReader.ReadToEnd4Async(
+                                async expReader => await expReader.ReadToEnd7(
+                                    async nextReader => await readToEnd(nextReader),
+                                    async eReader => await eReader.ReadToEnd4Async(
+                                        async expSignReader => await expSignReader.ReadToEnd4Async(
+                                            async digitsReader => await digitsReader.ReadToEnd4Async(
+                                                async nextReader => await readToEnd(nextReader))))))))),
+                async objectReader => await objectReader.ReadToEnd4Async(
+                    async objectStartReader => await objectStartReader.ReadToEnd4Async(
+                        async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                            async membersReader => await membersReader.ReadToEnd8(
+                                async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                                    async objectEndReader => await objectEndReader.ReadToEnd4Async(
+                                        async nextReader => await readToEnd(nextReader))),
+                                async firstMemberReader => await firstMemberReader.ReadToEnd4Async(
+                                    async memberReader => await memberReader.ReadToEnd10(
+                                        async subsequentMembersReader => await subsequentMembersReader.ReadToEnd11(
+                                            async whitespaceReader => await whitespaceReader.ReadToEnd4Async(
+                                                async objectEndReader => await objectEndReader.ReadToEnd4Async(
+                                                    async nextReader => await readToEnd(nextReader)))))))))),
+                async stringReader => await stringReader.ReadToEnd4Async(
+                    async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
+                        async charsReader => await charsReader.ReadToEnd4Async(
+                            async stringDelimiterReader => await stringDelimiterReader.ReadToEnd4Async(
+                                async nextReader => await readToEnd(nextReader))))),
+                async trueReader => await trueReader.ReadToEnd4Async(
+                    async nextReader => await readToEnd(nextReader)));
         }
 
         public static async Task ReadToEnd1<TNextReader>(
