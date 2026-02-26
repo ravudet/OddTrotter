@@ -225,10 +225,9 @@
         {
             //// TODO `move` implementations should also be single-execution
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
+            //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
             
 
-            //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished
-            
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
 
             var data =
