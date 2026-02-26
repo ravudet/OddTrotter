@@ -40,7 +40,7 @@
                         CalendarEventTranslationException
                     >, 
                 CalendarEvent, 
-                Graph.PagingError
+                Graph.PagingError //// TODO when you use this here, either the implementation detail (that we are using graph) is leaked, or the caller is forced to parameterize this (i.e. to use `iquerycontextasync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, TError>`) (or else the *caller* will leak implementation details); do you want to try to abstract this in some way? i think to really get that correct, you would need one or two *other* implementations of a calendar events context...
             >, 
         IWhereQueryContextMixinAsync
             <
