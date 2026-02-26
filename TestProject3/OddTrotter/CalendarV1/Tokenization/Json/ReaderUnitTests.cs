@@ -72,11 +72,11 @@
             }
             else if (valueToken is ValueToken<TNextReader>.Number number)
             {
-                return await number.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1();
+                return await number.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().Move7().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Object @object)
             {
-                await objectReadToEnd(@object.Reader).ConfigureAwait(false);
+                return await @object.Reader.Move0().MoveMinus1().MoveMinus1().Move8().MoveMinus1().MoveMinus1().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.String @string)
             {
@@ -89,6 +89,81 @@
             else
             {
                 throw new Exception("TODO you should have an `apply` method or something on `valuetoken<T>`");
+            }
+        }
+
+        public static async ITask<TNextReader> Move8<TNextReader>(
+            this ITask<Json2.IAsyncReader<MembersToken<TNextReader>>> subsequentArrayElementsReader)
+        {
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move8().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move8<TNextReader>(
+            this Json2.IAsyncReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
+        {
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+
+            if (subsequentArrayElementsToken is MembersToken<TNextReader>.None none)
+            {
+                return none.Reader;
+            }
+            else if (subsequentArrayElementsToken is MembersToken<TNextReader>.Some more)
+            {
+                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move9();
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
+        }
+
+        public static async ITask<TNextReader> Move9<TNextReader>(
+            this ITask<Json2.IAsyncReader<SubsequentMembersToken<TNextReader>>> subsequentArrayElementsReader)
+        {
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move9().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move9<TNextReader>(
+            this Json2.IAsyncReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
+        {
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+
+            if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.None none)
+            {
+                return none.Reader;
+            }
+            else if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.More more)
+            {
+                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move9();
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
+            }
+        }
+
+        public static async ITask<TNextReader> Move7<TNextReader>(
+            this ITask<Json2.IAsyncReader<ExpToken<TNextReader>>> subsequentArrayElementsReader)
+        {
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move7().ConfigureAwait(false);
+        }
+
+        public static async ITask<TNextReader> Move7<TNextReader>(
+            this Json2.IAsyncReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
+        {
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+
+            if (subsequentArrayElementsToken is ExpToken<TNextReader>.Absent none)
+            {
+                return none.Reader;
+            }
+            else if (subsequentArrayElementsToken is ExpToken<TNextReader>.Present more)
+            {
+                return await more.Reader.Move0().MoveMinus1().MoveMinus1();
+            }
+            else
+            {
+                throw new Exception("TODO implement apply");
             }
         }
 
