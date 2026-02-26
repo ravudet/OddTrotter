@@ -33,12 +33,12 @@
             await readToEnd(nextReader).ConfigureAwait(false);
         }
 
-        private static async ITask<TNextReader> MoveMinus1<TNextReader>(this ITask<Json2.IAsyncReader<TNextReader>> currentReader)
+        private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IAsyncReader<TNextReader>> currentReader)
         {
-            return await (await currentReader.ConfigureAwait(false)).Move0().ConfigureAwait(false);
+            return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        private static async ITask<TNextReader> Move0<TNextReader>(this Json2.IAsyncReader<TNextReader> currentReader)
+        private static async ITask<TNextReader> Move<TNextReader>(this Json2.IAsyncReader<TNextReader> currentReader)
         {
             TNextReader nextReader;
             while (!currentReader.TryMove2(out nextReader))
@@ -49,42 +49,42 @@
             return nextReader;
         }
 
-        public static async ITask<TNextReader> Move1<TNextReader>(this ITask<Json2.IAsyncReader<ValueToken<TNextReader>>> valueReader)
+        public static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IAsyncReader<ValueToken<TNextReader>>> valueReader)
         {
             return await (await valueReader.ConfigureAwait(false)).Move3().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move3<TNextReader>(this Json2.IAsyncReader<ValueToken<TNextReader>> valueReader)
         {
-            var valueToken = await valueReader.Move0().ConfigureAwait(false);
+            var valueToken = await valueReader.Move().ConfigureAwait(false);
 
             if (valueToken is ValueToken<TNextReader>.Array array)
             {
-                return await array.Reader.Move0().MoveMinus1().MoveMinus1().Move5().MoveMinus1().MoveMinus1().ConfigureAwait(false);
+                return await array.Reader.Move().Move().Move().Move5().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.False @false)
             {
-                return await @false.Reader.Move0().ConfigureAwait(false);
+                return await @false.Reader.Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Null @null)
             {
-                return await @null.Reader.Move0().ConfigureAwait(false);
+                return await @null.Reader.Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Number number)
             {
-                return await number.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().Move7().ConfigureAwait(false);
+                return await number.Reader.Move().Move().Move().Move().Move7().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Object @object)
             {
-                return await @object.Reader.Move0().MoveMinus1().MoveMinus1().Move8().MoveMinus1().MoveMinus1().ConfigureAwait(false);
+                return await @object.Reader.Move().Move().Move().Move8().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.String @string)
             {
-                await stringReadToEnd(@string.Reader).ConfigureAwait(false);
+                return await @string.Reader.Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.True @true)
             {
-                await trueReadToEnd(@true.Reader).ConfigureAwait(false);
+                return await @true.Reader.Move().ConfigureAwait(false);
             }
             else
             {
@@ -101,7 +101,7 @@
         public static async ITask<TNextReader> Move8<TNextReader>(
             this Json2.IAsyncReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is MembersToken<TNextReader>.None none)
             {
@@ -109,7 +109,7 @@
             }
             else if (subsequentArrayElementsToken is MembersToken<TNextReader>.Some more)
             {
-                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move9();
+                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move9();
             }
             else
             {
@@ -126,7 +126,7 @@
         public static async ITask<TNextReader> Move9<TNextReader>(
             this Json2.IAsyncReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.None none)
             {
@@ -134,7 +134,7 @@
             }
             else if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.More more)
             {
-                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move9();
+                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move9();
             }
             else
             {
@@ -151,7 +151,7 @@
         public static async ITask<TNextReader> Move7<TNextReader>(
             this Json2.IAsyncReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is ExpToken<TNextReader>.Absent none)
             {
@@ -159,7 +159,7 @@
             }
             else if (subsequentArrayElementsToken is ExpToken<TNextReader>.Present more)
             {
-                return await more.Reader.Move0().MoveMinus1().MoveMinus1();
+                return await more.Reader.Move().Move().Move();
             }
             else
             {
@@ -176,7 +176,7 @@
         public static async ITask<TNextReader> Move4<TNextReader>(
             this Json2.IAsyncReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
         {
-            var arrayElementsToken = await arrayElementsReader.Move0().ConfigureAwait(false);
+            var arrayElementsToken = await arrayElementsReader.Move().ConfigureAwait(false);
 
             if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
             {
@@ -184,7 +184,7 @@
             }
             else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
             {
-                return await some.Reader.Move0().Move1().Move6();
+                return await some.Reader.Move().Move().Move6();
             }
             else
             {
@@ -201,7 +201,7 @@
         public static async ITask<TNextReader> Move6<TNextReader>(
             this Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move0().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
             {
@@ -209,7 +209,7 @@
             }
             else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
             {
-                return await more.Reader.Move0().MoveMinus1().MoveMinus1().MoveMinus1().Move1().Move6();
+                return await more.Reader.Move().Move().Move().Move().Move().Move6();
             }
             else
             {
@@ -233,6 +233,16 @@
         {
             return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }*/
+
+        public static IAsyncReader<TNextReader> AsReader<TNextReader>(this IAsyncReader<TNextReader> reader)
+        {
+            return reader;
+        }
+
+        public static async Task<Nothing> Move(this Json2.JsonReader reader)
+        {
+            return await reader.AsReader().Move().Move().Move().Move().ConfigureAwait(false);
+        }
 
         public static async Task ReadToEnd(this Json2.JsonReader reader)
         {
@@ -565,6 +575,10 @@
             {
                 var reader = new Json2.JsonReader(stream);
                 await reader.ReadToEnd().ConfigureAwait(false);
+
+                stream.Position = 0;
+                reader = new Json2.JsonReader(stream);
+                await reader.Move().ConfigureAwait(false);
             }
         }
 
