@@ -573,11 +573,11 @@
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                var reader = new Json2.JsonReader(stream);
+                /*var reader = new Json2.JsonReader(stream);
                 await reader.ReadToEnd().ConfigureAwait(false);
 
-                stream.Position = 0;
-                reader = new Json2.JsonReader(stream);
+                stream.Position = 0;*/
+                var reader = new Json2.JsonReader(stream);
                 await reader.Move().ConfigureAwait(false);
             }
         }
