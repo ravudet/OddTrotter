@@ -22,9 +22,30 @@
             return read;
         }
 
+        private static bool TryMove2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, out TNextReader nextReader)
+            where TCurrentReader : Json2.IReader<TNextReader>, allows ref struct
+            where TNextReader : allows ref struct
+        {
+            nextReader = currentReader.Self.TryMove(out var read);
+            return read;
+        }
+
         private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<TNextReader>> currentReader)
         {
             return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
+        }
+
+        private static ITask<TNextReader> Move<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
+            where TCurrentReader : Json2.IReader<TNextReader>, allows ref struct
+            where TNextReader : allows ref struct
+        {
+            TNextReader nextReader;
+            while (!currentReader.TryMove2(out nextReader))
+            {
+                var task = currentReader.Read();
+            }
+
+            return nextReader;
         }
 
         private static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
@@ -206,14 +227,9 @@
             }
         }
 
-        public static Json2.IReader<TNextReader> AsReader<TNextReader>(this Json2.IReader<TNextReader> reader)
+        public static ITask<Nothing> Move(this Json2.JsonReader reader)
         {
-            return reader;
-        }
-
-        public static async Task<Nothing> Move(this Json2.JsonReader reader)
-        {
-            return await reader.AsReader().Move().Move().Move().Move().ConfigureAwait(false);
+            return reader.AsReader().Move().Move().Move().Move();
         }
     }
 

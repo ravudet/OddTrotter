@@ -36,19 +36,54 @@
         }
     }
 
+    public readonly ref struct TypeHolder<TSelf, T1>
+        where TSelf : allows ref struct
+        where T1 : allows ref struct
+    {
+        public TypeHolder(TSelf self)
+        {
+            Self = self;
+        }
+
+        public TSelf Self { get; }
+    }
+
+    public readonly ref struct TypeHolder<TSelf, T1, T2>
+        where TSelf : allows ref struct
+        where T1 : allows ref struct
+        where T2 : allows ref struct
+    {
+        public TypeHolder(TSelf self)
+        {
+            Self = self;
+        }
+
+        public TSelf Self { get; }
+    }
+
     public interface IReader<out TNextReader>
+        where TNextReader : allows ref struct
     {
         Task Read();
 
         TNextReader TryMove(out bool read);
     }
 
+    public interface IReader2<TSelf, TNextReader> : IReader<TNextReader>
+        where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
+        where TNextReader : allows ref struct
+    {
+        TypeHolder<TSelf, TNextReader> AsReader();
+    }
+
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
+        where TValue : allows ref struct
+        where TNextReader : allows ref struct
     {
         TValue TryGetValue(out bool read);
     }
 
-    public ref struct JsonReader : IReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -60,6 +95,11 @@
         {
             this.stream = stream;
             this.buffer = new byte[20]; //// TODO parameterize
+        }
+
+        public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> AsReader()
+        {
+            return new TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>(this);
         }
 
         public async Task Read()
@@ -92,6 +132,7 @@
     }
 
     public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -208,6 +249,7 @@
     }
 
     public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -324,6 +366,7 @@
     }
 
     public abstract class ValueToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private ValueToken()
         {
@@ -401,6 +444,7 @@
     }
 
     public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -467,6 +511,7 @@
     }
 
     public sealed class NullReader<TNextReader> : IReader<NullToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -533,6 +578,7 @@
     }
 
     public sealed class TrueReader<TNextReader> : IReader<TrueToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -599,6 +645,7 @@
     }
 
     public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -659,6 +706,7 @@
     }
 
     public sealed class ObjectStartReader<TNextReader> : IReader<ObjectStartToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -719,6 +767,7 @@
     }
 
     public sealed class MembersReader<TNextReader> : IReader<MembersToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -781,6 +830,7 @@
     }
 
     public abstract class MembersToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private MembersToken()
         {
@@ -808,6 +858,7 @@
     }
 
     public sealed class FirstMemberReader<TNextReader> : IReader<MemberReader<SubsequentMembersReader<TNextReader>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -852,6 +903,7 @@
     }
 
     public sealed class SubsequentMembersReader<TNextReader> : IReader<SubsequentMembersToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -919,6 +971,7 @@
     }
 
     public abstract class SubsequentMembersToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private SubsequentMembersToken()
         {
@@ -946,6 +999,7 @@
     }
 
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1005,6 +1059,7 @@
     }
 
     public sealed class ColonReader<TNextReader> : IReader<ColonToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1065,6 +1120,7 @@
     }
 
     public sealed class SubsequentMemberReader<TNextReader> : IReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1114,6 +1170,7 @@
     }
 
     public sealed class CommaReader<TNextReader> : IReader<CommaToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1174,6 +1231,7 @@
     }
 
     public sealed class ObjectEndReader<TNextReader> : IReader<ObjectEndToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1234,6 +1292,7 @@
     }
 
     public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1293,6 +1352,7 @@
     }
 
     public sealed class ArrayStartReader<TNextReader> : IReader<ArrayStartToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1353,6 +1413,7 @@
     }
 
     public sealed class ArrayElementsReader<TNextReader> : IReader<ArrayElementsToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1421,6 +1482,7 @@
     }
 
     public abstract class ArrayElementsToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private ArrayElementsToken()
         {
@@ -1448,6 +1510,7 @@
     }
 
     public sealed class ArrayElementReader<TNextReader> : IReader<ValueReader<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1487,6 +1550,7 @@
     }
 
     public sealed class SubsequentArrayElementsReader<TNextReader> : IReader<SubsequentArrayElementsToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1555,6 +1619,7 @@
     }
 
     public abstract class SubsequentArrayElementsToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private SubsequentArrayElementsToken()
         {
@@ -1582,6 +1647,7 @@
     }
 
     public sealed class SubsequentArrayElementReader<TNextReader> : IReader<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1631,6 +1697,7 @@
     }
 
     public sealed class ArrayEndReader<TNextReader> : IReader<ArrayEndToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1691,6 +1758,7 @@
     }
 
     public sealed class NumberReader<TNextReader> : IReader<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1745,6 +1813,7 @@
     }
 
     public sealed class SignReader<TNextReader> : IReader<SignToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1828,6 +1897,7 @@
     }
     
     public sealed class IntReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1961,6 +2031,7 @@
     }
 
     public sealed class FracReader<TNextReader> : IReader<FracToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2106,6 +2177,7 @@
     }
 
     public sealed class ExpReader<TNextReader> : IReader<ExpToken<TNextReader>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2174,6 +2246,7 @@
     }
 
     public abstract class ExpToken<TNextReader>
+        where TNextReader : allows ref struct
     {
         private ExpToken()
         {
@@ -2201,6 +2274,7 @@
     }
 
     public sealed class EReader<TNextReader> : IReader<EToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2267,6 +2341,7 @@
     }
 
     public sealed class ExpSignReader<TNextReader> : IReader<ExpSignToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2372,6 +2447,7 @@
     }
 
     public sealed class DigitsReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
+        where TNextReader : allows ref struct
         //// TODO reuse digits reader
     {
         private readonly Stream stream;
@@ -2466,6 +2542,7 @@
     }
 
     public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2516,6 +2593,7 @@
 
     //// TODO is "delimiter" a good name for this?
     public sealed class StringDelimiterReader<TNextReader> : IReader<StringDelimiterToken, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2575,6 +2653,7 @@
     }
 
     public sealed class CharsReader<TNextReader> : IReader<IEnumerable<CharToken>, TNextReader>
+        where TNextReader : allows ref struct
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
