@@ -60,7 +60,7 @@
 
             if (valueToken is ValueToken<TNextReader>.Array array)
             {
-                return await array.Reader.Move().Move().Move().Move5().Move().Move().ConfigureAwait(false);
+                return await array.Reader.Move().Move().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.False @false)
             {
@@ -72,7 +72,7 @@
             }
             else if (valueToken is ValueToken<TNextReader>.Number number)
             {
-                return await number.Reader.Move().Move().Move().Move().Move7().ConfigureAwait(false);
+                return await number.Reader.Move().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Object @object)
             {
@@ -142,16 +142,16 @@
             }
         }
 
-        public static async ITask<TNextReader> Move7<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this ITask<Json2.IAsyncReader<ExpToken<TNextReader>>> subsequentArrayElementsReader)
         {
-            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move7().ConfigureAwait(false);
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move7<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IAsyncReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<ExpToken<TNextReader>>().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is ExpToken<TNextReader>.Absent none)
             {
@@ -167,16 +167,16 @@
             }
         }
 
-        public static async ITask<TNextReader> Move5<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this ITask<Json2.IAsyncReader<ArrayElementsToken<TNextReader>>> arrayElementsReader)
         {
-            return await (await arrayElementsReader.ConfigureAwait(false)).Move4().ConfigureAwait(false);
+            return await (await arrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move4<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IAsyncReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
         {
-            var arrayElementsToken = await arrayElementsReader.Move().ConfigureAwait(false);
+            var arrayElementsToken = await arrayElementsReader.Move<ArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
             if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
             {
