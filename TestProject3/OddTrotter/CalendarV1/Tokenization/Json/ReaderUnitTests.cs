@@ -16,18 +16,18 @@
 
     public static class ReaderExtensions
     {
-        private static bool TryMove2<TNextReader>(this Json2.IAsyncReader<TNextReader> currentReader, out TNextReader nextReader)
+        private static bool TryMove2<TNextReader>(this Json2.IReader<TNextReader> currentReader, out TNextReader nextReader)
         {
             nextReader = currentReader.TryMove(out var read);
             return read;
         }
 
-        private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IAsyncReader<TNextReader>> currentReader)
+        private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<TNextReader>> currentReader)
         {
             return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        private static async ITask<TNextReader> Move<TNextReader>(this Json2.IAsyncReader<TNextReader> currentReader)
+        private static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
         {
             TNextReader nextReader;
             while (!currentReader.TryMove2(out nextReader))
@@ -38,12 +38,12 @@
             return nextReader;
         }
 
-        public static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IAsyncReader<ValueToken<TNextReader>>> valueReader)
+        public static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<ValueToken<TNextReader>>> valueReader)
         {
             return await (await valueReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move<TNextReader>(this Json2.IAsyncReader<ValueToken<TNextReader>> valueReader)
+        public static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<ValueToken<TNextReader>> valueReader)
         {
             var valueToken = await valueReader.Move<ValueToken<TNextReader>>().ConfigureAwait(false);
 
@@ -82,13 +82,13 @@
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this ITask<Json2.IAsyncReader<MembersToken<TNextReader>>> subsequentArrayElementsReader)
+            this ITask<Json2.IReader<MembersToken<TNextReader>>> subsequentArrayElementsReader)
         {
             return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this Json2.IAsyncReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
+            this Json2.IReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<MembersToken<TNextReader>>().ConfigureAwait(false);
 
@@ -107,13 +107,13 @@
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this ITask<Json2.IAsyncReader<SubsequentMembersToken<TNextReader>>> subsequentArrayElementsReader)
+            this ITask<Json2.IReader<SubsequentMembersToken<TNextReader>>> subsequentArrayElementsReader)
         {
             return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this Json2.IAsyncReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
+            this Json2.IReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentMembersToken<TNextReader>>().ConfigureAwait(false);
 
@@ -132,13 +132,13 @@
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this ITask<Json2.IAsyncReader<ExpToken<TNextReader>>> subsequentArrayElementsReader)
+            this ITask<Json2.IReader<ExpToken<TNextReader>>> subsequentArrayElementsReader)
         {
             return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this Json2.IAsyncReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
+            this Json2.IReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<ExpToken<TNextReader>>().ConfigureAwait(false);
 
@@ -157,13 +157,13 @@
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this ITask<Json2.IAsyncReader<ArrayElementsToken<TNextReader>>> arrayElementsReader)
+            this ITask<Json2.IReader<ArrayElementsToken<TNextReader>>> arrayElementsReader)
         {
             return await (await arrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this Json2.IAsyncReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
+            this Json2.IReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
         {
             var arrayElementsToken = await arrayElementsReader.Move<ArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
@@ -182,13 +182,13 @@
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this ITask<Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>>> subsequentArrayElementsReader)
+            this ITask<Json2.IReader<SubsequentArrayElementsToken<TNextReader>>> subsequentArrayElementsReader)
         {
             return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
-            this Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
+            this Json2.IReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
@@ -206,7 +206,7 @@
             }
         }
 
-        public static IAsyncReader<TNextReader> AsReader<TNextReader>(this IAsyncReader<TNextReader> reader)
+        public static Json2.IReader<TNextReader> AsReader<TNextReader>(this Json2.IReader<TNextReader> reader)
         {
             return reader;
         }

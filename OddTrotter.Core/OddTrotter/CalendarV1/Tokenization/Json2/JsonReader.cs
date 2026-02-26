@@ -36,19 +36,19 @@
         }
     }
 
-    public interface IAsyncReader<out TNextReader>
+    public interface IReader<out TNextReader>
     {
         Task Read();
 
         TNextReader TryMove(out bool read);
     }
 
-    public interface IAsyncReader<out TValue, out TNextReader> : IAsyncReader<TNextReader>
+    public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
     {
         TValue TryGetValue(out bool read);
     }
 
-    public sealed class JsonReader : IAsyncReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public sealed class JsonReader : IReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -91,7 +91,7 @@
         }
     }
 
-    public sealed class WhitespaceReader<TNextReader> : IAsyncReader<IEnumerable<WhitespaceToken>, TNextReader>
+    public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -207,7 +207,7 @@
         public byte Char { get; }
     }
 
-    public sealed class ValueReader<TNextReader> : IAsyncReader<ValueToken<TNextReader>>
+    public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -400,7 +400,7 @@
         }
     }
 
-    public sealed class FalseReader<TNextReader> : IAsyncReader<FalseToken, TNextReader>
+    public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -466,7 +466,7 @@
         public static FalseToken Instance { get; } = new FalseToken();
     }
 
-    public sealed class NullReader<TNextReader> : IAsyncReader<NullToken, TNextReader>
+    public sealed class NullReader<TNextReader> : IReader<NullToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -532,7 +532,7 @@
         public static NullToken Instance { get; } = new NullToken();
     }
 
-    public sealed class TrueReader<TNextReader> : IAsyncReader<TrueToken, TNextReader>
+    public sealed class TrueReader<TNextReader> : IReader<TrueToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -598,7 +598,7 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
-    public sealed class ObjectReader<TNextReader> : IAsyncReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
+    public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -658,7 +658,7 @@
         }
     }
 
-    public sealed class ObjectStartReader<TNextReader> : IAsyncReader<ObjectStartToken, TNextReader>
+    public sealed class ObjectStartReader<TNextReader> : IReader<ObjectStartToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -718,7 +718,7 @@
         public static ObjectStartToken Instance { get; } = new ObjectStartToken();
     }
 
-    public sealed class MembersReader<TNextReader> : IAsyncReader<MembersToken<TNextReader>>
+    public sealed class MembersReader<TNextReader> : IReader<MembersToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -807,7 +807,7 @@
         }
     }
 
-    public sealed class FirstMemberReader<TNextReader> : IAsyncReader<MemberReader<SubsequentMembersReader<TNextReader>>>
+    public sealed class FirstMemberReader<TNextReader> : IReader<MemberReader<SubsequentMembersReader<TNextReader>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -851,7 +851,7 @@
         }
     }
 
-    public sealed class SubsequentMembersReader<TNextReader> : IAsyncReader<SubsequentMembersToken<TNextReader>>
+    public sealed class SubsequentMembersReader<TNextReader> : IReader<SubsequentMembersToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -945,7 +945,7 @@
         }
     }
 
-    public sealed class MemberReader<TNextReader> : IAsyncReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+    public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1004,7 +1004,7 @@
         }
     }
 
-    public sealed class ColonReader<TNextReader> : IAsyncReader<ColonToken, TNextReader>
+    public sealed class ColonReader<TNextReader> : IReader<ColonToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1064,7 +1064,7 @@
         public static ColonToken Instance { get; } = new ColonToken();
     }
 
-    public sealed class SubsequentMemberReader<TNextReader> : IAsyncReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
+    public sealed class SubsequentMemberReader<TNextReader> : IReader<CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1113,7 +1113,7 @@
         }
     }
 
-    public sealed class CommaReader<TNextReader> : IAsyncReader<CommaToken, TNextReader>
+    public sealed class CommaReader<TNextReader> : IReader<CommaToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1173,7 +1173,7 @@
         public static CommaToken Instance { get; } = new CommaToken();
     }
 
-    public sealed class ObjectEndReader<TNextReader> : IAsyncReader<ObjectEndToken, TNextReader>
+    public sealed class ObjectEndReader<TNextReader> : IReader<ObjectEndToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1233,7 +1233,7 @@
         public static ObjectEndToken Instance { get; } = new ObjectEndToken();
     }
 
-    public sealed class ArrayReader<TNextReader> : IAsyncReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
+    public sealed class ArrayReader<TNextReader> : IReader<ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1292,7 +1292,7 @@
         }
     }
 
-    public sealed class ArrayStartReader<TNextReader> : IAsyncReader<ArrayStartToken, TNextReader>
+    public sealed class ArrayStartReader<TNextReader> : IReader<ArrayStartToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1352,7 +1352,7 @@
         public static ArrayStartToken Instance { get; } = new ArrayStartToken();
     }
 
-    public sealed class ArrayElementsReader<TNextReader> : IAsyncReader<ArrayElementsToken<TNextReader>>
+    public sealed class ArrayElementsReader<TNextReader> : IReader<ArrayElementsToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1447,7 +1447,7 @@
         }
     }
 
-    public sealed class ArrayElementReader<TNextReader> : IAsyncReader<ValueReader<TNextReader>>
+    public sealed class ArrayElementReader<TNextReader> : IReader<ValueReader<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1486,7 +1486,7 @@
         }
     }
 
-    public sealed class SubsequentArrayElementsReader<TNextReader> : IAsyncReader<SubsequentArrayElementsToken<TNextReader>>
+    public sealed class SubsequentArrayElementsReader<TNextReader> : IReader<SubsequentArrayElementsToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1581,7 +1581,7 @@
         }
     }
 
-    public sealed class SubsequentArrayElementReader<TNextReader> : IAsyncReader<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>>
+    public sealed class SubsequentArrayElementReader<TNextReader> : IReader<CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1630,7 +1630,7 @@
         }
     }
 
-    public sealed class ArrayEndReader<TNextReader> : IAsyncReader<ArrayEndToken, TNextReader>
+    public sealed class ArrayEndReader<TNextReader> : IReader<ArrayEndToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1690,7 +1690,7 @@
         public static ArrayEndToken Instance { get; } = new ArrayEndToken();
     }
 
-    public sealed class NumberReader<TNextReader> : IAsyncReader<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
+    public sealed class NumberReader<TNextReader> : IReader<SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1744,7 +1744,7 @@
         }
     }
 
-    public sealed class SignReader<TNextReader> : IAsyncReader<SignToken, TNextReader>
+    public sealed class SignReader<TNextReader> : IReader<SignToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1827,7 +1827,7 @@
         }
     }
     
-    public sealed class IntReader<TNextReader> : IAsyncReader<IEnumerable<DigitToken>, TNextReader>
+    public sealed class IntReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -1960,7 +1960,7 @@
         public byte Digit { get; }
     }
 
-    public sealed class FracReader<TNextReader> : IAsyncReader<FracToken, TNextReader>
+    public sealed class FracReader<TNextReader> : IReader<FracToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2105,7 +2105,7 @@
         }
     }
 
-    public sealed class ExpReader<TNextReader> : IAsyncReader<ExpToken<TNextReader>>
+    public sealed class ExpReader<TNextReader> : IReader<ExpToken<TNextReader>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2200,7 +2200,7 @@
         }
     }
 
-    public sealed class EReader<TNextReader> : IAsyncReader<EToken, TNextReader>
+    public sealed class EReader<TNextReader> : IReader<EToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2266,7 +2266,7 @@
         public byte E { get; }
     }
 
-    public sealed class ExpSignReader<TNextReader> : IAsyncReader<ExpSignToken, TNextReader>
+    public sealed class ExpSignReader<TNextReader> : IReader<ExpSignToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2371,7 +2371,7 @@
         }
     }
 
-    public sealed class DigitsReader<TNextReader> : IAsyncReader<IEnumerable<DigitToken>, TNextReader>
+    public sealed class DigitsReader<TNextReader> : IReader<IEnumerable<DigitToken>, TNextReader>
         //// TODO reuse digits reader
     {
         private readonly Stream stream;
@@ -2465,7 +2465,7 @@
         }
     }
 
-    public sealed class StringReader<TNextReader> : IAsyncReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
+    public sealed class StringReader<TNextReader> : IReader<StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2515,7 +2515,7 @@
     }
 
     //// TODO is "delimiter" a good name for this?
-    public sealed class StringDelimiterReader<TNextReader> : IAsyncReader<StringDelimiterToken, TNextReader>
+    public sealed class StringDelimiterReader<TNextReader> : IReader<StringDelimiterToken, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -2574,7 +2574,7 @@
         public static StringDelimiterToken Instance { get; } = new StringDelimiterToken();
     }
 
-    public sealed class CharsReader<TNextReader> : IAsyncReader<IEnumerable<CharToken>, TNextReader>
+    public sealed class CharsReader<TNextReader> : IReader<IEnumerable<CharToken>, TNextReader>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
