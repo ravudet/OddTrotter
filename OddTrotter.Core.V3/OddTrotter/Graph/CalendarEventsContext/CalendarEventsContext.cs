@@ -135,7 +135,6 @@
     {
         private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri calendarRoot;
-        private readonly string accessToken;
 
         private readonly string? filter;
         private readonly string? orderBy;
@@ -143,23 +142,20 @@
 
         internal CalendarEventsContext(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext,
-            Uri calendarRoot,
-            string accessToken)
-            : this(strongConventionContext, calendarRoot, accessToken, null, null, null)
+            Uri calendarRoot)
+            : this(strongConventionContext, calendarRoot, null, null, null)
         {
         }
 
         private CalendarEventsContext(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri calendarRoot,
-            string accessToken,
             string? filter,
             string? orderBy,
             string? top)
         {
             this.strongConventionContext = strongConventionContext;
             this.calendarRoot = calendarRoot;
-            this.accessToken = accessToken; //// TODO access token really should be baked into `strongConventionContext`, especially to abstract things like token expiration
 
             this.filter = filter;
             this.orderBy = orderBy;
@@ -168,7 +164,7 @@
 
         public async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> Evaluate()
         {
-            return await EvaluatePage(this.strongConventionContext, this.calendarRoot, this.accessToken, true).ConfigureAwait(false);
+            return await EvaluatePage(this.strongConventionContext, this.calendarRoot, true).ConfigureAwait(false);
 
 
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
@@ -177,14 +173,11 @@
         private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingException>> EvaluatePage(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri uri, 
-            string accessToken,
             bool throwOnFailureResponse)
         {
             var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
                 uri.ToString(),
-                new[]
-                {
-                    new HttpHeader("Authorization", accessToken), //// TODO i think you need an exception specifically for this, you can do something like this to accomplish that:
+                Enumerable.Empty<HttpHeader>());
                     /*
                     internal interface IGraphVersion : IStrongConventionContext
     {
@@ -195,7 +188,7 @@
 #pragma warning restore CS0108 // Member hides inherited member; missing new keyword
     }
                     */
-                });
+                
             StrongConventionContext.GetCollectionResponse<CalendarEvent> getCollectionResponse;
             try
             {
@@ -227,7 +220,7 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat2(EvaluatePage(strongConventionContext, new Uri(success.NextLink), accessToken, false));
+                        graphCalendarEvents = graphCalendarEvents.Concat2(EvaluatePage(strongConventionContext, new Uri(success.NextLink), false));
                     }
 
                     return graphCalendarEvents;
@@ -294,7 +287,6 @@
                 return new CalendarEventsContext(
                     this.strongConventionContext,
                     this.calendarRoot,
-                    this.accessToken,
                     filterExpression,
                     this.orderBy,
                     this.top);
@@ -304,7 +296,6 @@
                 return new CalendarEventsContext(
                     this.strongConventionContext,
                     this.calendarRoot,
-                    this.accessToken,
                     this.filter + " and " + filterExpression,
                     this.orderBy,
                     this.top);
@@ -321,7 +312,6 @@
             return new CalendarEventsContext(
                 this.strongConventionContext,
                 this.calendarRoot,
-                this.accessToken,
                 this.filter,
                 this.orderBy,
                 top.ToString());
@@ -344,7 +334,6 @@
                 return new CalendarEventsContext(
                     this.strongConventionContext,
                     this.calendarRoot,
-                    this.accessToken,
                     this.filter,
                     orderByExpression,
                     this.top);
@@ -354,7 +343,6 @@
                 return new CalendarEventsContext(
                     this.strongConventionContext,
                     this.calendarRoot,
-                    this.accessToken,
                     this.filter,
                     this.orderBy + "," + orderByExpression,
                     this.top);

@@ -11,24 +11,20 @@
     {
         private readonly IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri rootCalendarUri;
-        private readonly string accessToken;
 
         internal CalendarSource(
             IStrongConventionContext<CalendarEvent> strongConventionContext,
-            Uri rootCalendarUri,
-            string accessToken)
+            Uri rootCalendarUri)
         {
             this.strongConventionContext = strongConventionContext;
             this.rootCalendarUri = rootCalendarUri;
-            this.accessToken = accessToken;
         }
 
         public ICalendarEventsSource Events()
         {
             return new CalendarEventsSource(
                 this.strongConventionContext, 
-                new Uri(this.rootCalendarUri, "events"), 
-                this.accessToken);
+                new Uri(this.rootCalendarUri, "events"));
         }
     }
 
@@ -36,29 +32,25 @@
     {
         private readonly IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri rootCalendarEventsUri;
-        private readonly string accessToken;
 
         internal CalendarEventsSource(
             IStrongConventionContext<CalendarEvent> strongConventionContext,
-            Uri rootCalendarEventsUri,
-            string accessToken)
+            Uri rootCalendarEventsUri)
         {
             this.strongConventionContext = strongConventionContext;
             this.rootCalendarEventsUri = rootCalendarEventsUri;
-            this.accessToken = accessToken; //// TODO this should really be abstracted in the strong convention context somehow
         }
 
         public ICalendarEventsContext Get()
         {
-            return new CalendarEventsContext(this.strongConventionContext, this.rootCalendarEventsUri, this.accessToken);
+            return new CalendarEventsContext(this.strongConventionContext, this.rootCalendarEventsUri);
         }
 
         public ICalendarEventSource Get(string id)
         {
             return new CalendarEventSource(
                 this.strongConventionContext, 
-                new Uri(this.rootCalendarEventsUri, id), 
-                this.accessToken);
+                new Uri(this.rootCalendarEventsUri, id));
         }
     }
 
@@ -66,29 +58,25 @@
     {
         private readonly IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri rootCalendarEventUri;
-        private readonly string accessToken;
 
         internal CalendarEventSource(
             IStrongConventionContext<CalendarEvent> strongConventionContext,
-            Uri rootCalendarEventUri,
-            string accessToken)
+            Uri rootCalendarEventUri)
         {
             this.strongConventionContext = strongConventionContext;
             this.rootCalendarEventUri = rootCalendarEventUri;
-            this.accessToken = accessToken;
         }
 
         public ICalendarEventContext Get()
         {
-            return new CalendarEventContext(this.strongConventionContext, this.rootCalendarEventUri, this.accessToken);
+            return new CalendarEventContext(this.strongConventionContext, this.rootCalendarEventUri);
         }
 
         public ICalendarEventsSource Instances(DateTime startDateTime, DateTime endTime)
         {
             return new CalendarEventsSource(
                 this.strongConventionContext,
-                new Uri(this.rootCalendarEventUri, $"instances?startDateTime={startDateTime.ToString()}&endTime={endTime.ToString()}"),
-                this.accessToken);
+                new Uri(this.rootCalendarEventUri, $"instances?startDateTime={startDateTime.ToString()}&endTime={endTime.ToString()}"));
         }
     }
 
@@ -96,8 +84,7 @@
     {
         internal CalendarEventContext(
             IStrongConventionContext<CalendarEvent> strongConventionContext,
-            Uri rootCalendarEventUri,
-            string accessToken)
+            Uri rootCalendarEventUri)
         {
         }
 

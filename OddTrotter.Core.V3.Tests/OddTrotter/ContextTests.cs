@@ -39,8 +39,7 @@
                     calendarEventDeserializer);
                 var calendarSource = new CalendarSource(
                     strongConventionContext,
-                    new Uri("https://graph.microsoft.com/v1.0/me/calendar"),
-                    accessToken);
+                    new Uri("https://graph.microsoft.com/v1.0/me/calendar"));
                 var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(calendarSource, DateTime.UtcNow); //// TODO parameterize the timestamp
                 var todoList = new TodoListService<OddTrotter.CalendarEventsContext.CalendarEventsContext>(calendarEventsContext);
 
