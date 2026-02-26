@@ -184,7 +184,7 @@
             }
             else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
             {
-                return await some.Reader.Move().Move().Move6();
+                return await some.Reader.Move().Move().Move();
             }
             else
             {
@@ -192,16 +192,16 @@
             }
         }
 
-        public static async ITask<TNextReader> Move6<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this ITask<Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>>> subsequentArrayElementsReader)
         {
-            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move6().ConfigureAwait(false);
+            return await (await subsequentArrayElementsReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move6<TNextReader>(
+        public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IAsyncReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
             if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
             {
@@ -209,7 +209,7 @@
             }
             else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
             {
-                return await more.Reader.Move().Move().Move().Move().Move().Move6();
+                return await more.Reader.Move().Move().Move().Move().Move().Move();
             }
             else
             {
