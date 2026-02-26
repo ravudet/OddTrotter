@@ -48,7 +48,7 @@
         TValue TryGetValue(out bool read);
     }
 
-    public sealed class JsonReader : IReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public ref struct JsonReader : IReader<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
