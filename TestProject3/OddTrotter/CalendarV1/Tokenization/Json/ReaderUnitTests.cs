@@ -51,12 +51,12 @@
 
         public static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IAsyncReader<ValueToken<TNextReader>>> valueReader)
         {
-            return await (await valueReader.ConfigureAwait(false)).Move3().ConfigureAwait(false);
+            return await (await valueReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        public static async ITask<TNextReader> Move3<TNextReader>(this Json2.IAsyncReader<ValueToken<TNextReader>> valueReader)
+        public static async ITask<TNextReader> Move<TNextReader>(this Json2.IAsyncReader<ValueToken<TNextReader>> valueReader)
         {
-            var valueToken = await valueReader.Move().ConfigureAwait(false);
+            var valueToken = await valueReader.Move<ValueToken<TNextReader>>().ConfigureAwait(false);
 
             if (valueToken is ValueToken<TNextReader>.Array array)
             {
