@@ -12,6 +12,11 @@
     {
         private readonly IHttpClient httpClient;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> is <see langword="null"/></exception>
         public RequestWriter(IHttpClient httpClient)
         {
             this.httpClient = httpClient;
@@ -25,6 +30,11 @@
 
     internal sealed class VerbWriter : IVerbWriter
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> is <see langword="null"/></exception>
         private readonly IHttpClient httpClient;
 
         public VerbWriter(IHttpClient httpClient)
@@ -44,6 +54,11 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> is <see langword="null"/></exception>
         public UrlWriter(IHttpClient httpClient, HttpMethod httpMethod)
         {
             this.httpClient = httpClient;
@@ -61,6 +76,12 @@
         private readonly IHttpClient httpClient;
         private readonly HttpMethod httpMethod;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> is <see langword="null"/></exception>
         public UrlSchemeWriter(IHttpClient httpClient, HttpMethod httpMethod)
         {
             this.httpClient = httpClient;
@@ -79,6 +100,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlDomainWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -98,6 +127,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlPathWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -122,6 +159,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlPathSegmentWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -142,6 +187,14 @@
         private readonly string url;
         private readonly bool first;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlQueryWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, bool first)
         {
             this.httpClient = httpClient;
@@ -167,6 +220,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlQueryKvpWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -186,6 +247,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlQueryNameWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -210,6 +279,14 @@
         private readonly HttpMethod httpMethod;
         private readonly string url;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public UrlQueryValueWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
         {
             this.httpClient = httpClient;
@@ -230,11 +307,27 @@
         private readonly string url;
         private readonly IEnumerable<Tuple<string, string>> headers;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url)
             : this(httpClient, httpMethod, url, Enumerable.Empty<Tuple<string, string>>())
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         internal HeadersWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
@@ -261,6 +354,15 @@
         private readonly string url;
         private readonly IEnumerable<Tuple<string, string>> headers;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="headers"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public HeaderWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
@@ -282,6 +384,15 @@
         private readonly string url;
         private readonly IEnumerable<Tuple<string, string>> headers;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="headers"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public HeaderKvpWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
@@ -306,6 +417,15 @@
         private readonly string header;
         private readonly bool first;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="headers"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> or <paramref name="headerKey"/> or <paramref name="header"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public HeaderKeyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers, string headerKey, string header, bool first)
         {
             this.httpClient = httpClient;
@@ -337,6 +457,17 @@
         private readonly string headerKey;
         private readonly string header;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="headers"></param>
+        /// <param name="headerKey"></param>
+        /// <param name="header"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> or <paramref name="headerKey"/> or <paramref name="header"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public HeaderValueWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers, string headerKey, string header)
         {
             this.httpClient = httpClient;
@@ -360,7 +491,15 @@
         private readonly string url;
         private readonly IEnumerable<Tuple<string, string>> headers;
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="headers"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpClient"/> or <paramref name="httpMethod"/> or <paramref name="url"/> or <paramref name="headers"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="url"/> is not a valid URL</exception>
         public BodyWriter(IHttpClient httpClient, HttpMethod httpMethod, string url, IEnumerable<Tuple<string, string>> headers)
         {
             this.httpClient = httpClient;
