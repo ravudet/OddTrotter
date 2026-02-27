@@ -773,6 +773,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public ObjectStartReader(
             Stream stream,
             byte[] buffer,
@@ -795,6 +797,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = read;
             return ObjectStartToken.Instance;
         }
 
@@ -806,12 +809,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -1171,6 +1178,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public ColonReader(
             Stream stream,
             byte[] buffer,
@@ -1193,6 +1202,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return ColonToken.Instance;
         }
 
@@ -1204,12 +1214,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -1282,6 +1296,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public CommaReader(
             Stream stream,
             byte[] buffer,
@@ -1304,6 +1320,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return CommaToken.Instance;
         }
         
@@ -1315,12 +1332,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -1342,6 +1363,8 @@
         private int currentByteIndex;
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+
+        private bool read;
 
         public ObjectEndReader(
             Stream stream,
@@ -1365,6 +1388,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return ObjectEndToken.Instance;
         }
 
@@ -1376,12 +1400,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -1464,6 +1492,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public ArrayStartReader(
             Stream stream,
             byte[] buffer,
@@ -1486,6 +1516,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return ArrayStartToken.Instance;
         }
 
@@ -1497,12 +1528,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -1670,6 +1705,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private int read;
+        
         public SubsequentArrayElementsReader(
             Stream stream,
             byte[] buffer,
@@ -1692,6 +1729,34 @@
 
         public SubsequentArrayElementsToken<TNextReader> TryMove(out bool read)
         {
+            if (this.read == 1)
+            {
+                read = true;
+                return new SubsequentArrayElementsToken<TNextReader>(
+                    this.nextReaderFactory(
+                        this.stream,
+                        this.buffer,
+                        this.currentByteIndex,
+                        this.validBytes));
+            }
+
+            if (this.read == 2)
+            {
+                read = true;
+                return new SubsequentArrayElementsToken<TNextReader>(
+                new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
+                    this.stream,
+                    this.buffer,
+                    this.currentByteIndex,
+                    this.validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new SubsequentArrayElementsReader<TNextReader>(
+                        stream,
+                        buffer,
+                        currentByteIndex,
+                        validBytes,
+                        this.nextReaderFactory)));
+            }
+
             if (this.currentByteIndex >= this.validBytes)
             {
                 read = false;
@@ -1707,6 +1772,7 @@
             var currentByte = this.buffer[this.currentByteIndex];
             if (currentByte != ',')
             {
+                this.read = 1;
                 return new SubsequentArrayElementsToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
@@ -1715,6 +1781,7 @@
                         this.validBytes));
             }
 
+            this.read = 2;
             return new SubsequentArrayElementsToken<TNextReader>(
                 new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
                     this.stream,
@@ -1825,6 +1892,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public ArrayEndReader(
             Stream stream,
             byte[] buffer,
@@ -1847,6 +1916,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return ArrayEndToken.Instance;
         }
 
@@ -1858,12 +1928,16 @@
 
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }
@@ -2729,6 +2803,8 @@
         private int validBytes;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
+        private bool read;
+
         public StringDelimiterReader(
             Stream stream,
             byte[] buffer,
@@ -2751,6 +2827,7 @@
                 return default!; //// TODO !
             }
 
+            this.read = true;
             return StringDelimiterToken.Instance;
         }
 
@@ -2761,12 +2838,16 @@
         }
         public TNextReader TryMove(out bool read)
         {
-            this.TryGetValue(out read);
-            if (!read)
+            if (!this.read)
             {
-                return default!; //// TODO !
+                this.TryGetValue(out read);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
             }
 
+            read = this.read;
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
         }
     }

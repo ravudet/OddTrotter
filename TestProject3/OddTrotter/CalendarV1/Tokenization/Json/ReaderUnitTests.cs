@@ -19,6 +19,11 @@
         private static bool TryMove2<TNextReader>(this Json2.IReader<TNextReader> currentReader, out TNextReader nextReader)
             where TNextReader : allows ref struct
         {
+            if (currentReader == null)
+            {
+                throw new Exception("TODO");
+            }
+
             nextReader = currentReader.TryMove(out var read);
             return read;
         }
@@ -69,16 +74,213 @@
             return nextReader;
         }*/
 
-        private static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
+        private static ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
             where TNextReader : allows ref struct
         {
-            TNextReader nextReader;
+            if (currentReader == null)
+            {
+                throw new Exception("TODO");
+            }
+
+            /*TNextReader nextReader;
             while (!currentReader.TryMove2(out nextReader))
             {
                 await currentReader.Read().ConfigureAwait(false);
             }
 
-            return nextReader;
+            return nextReader;*/
+
+            return new MoveTask<TNextReader>(currentReader);
+        }
+
+        private sealed class MoveTask<TNextReader> : ITask<TNextReader>
+            where TNextReader : allows ref struct
+        {
+            private readonly Json2.IReader<TNextReader> currentReader;
+
+            public MoveTask(Json2.IReader<TNextReader> currentReader)
+            {
+                if (currentReader == null)
+                {
+                    throw new Exception("TODO");
+                }
+
+                this.currentReader = currentReader;
+            }
+
+            public IConfiguredAwaitable<TNextReader> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.currentReader, continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TNextReader>
+            {
+                private readonly Json2.IReader<TNextReader> currentReader;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(Json2.IReader<TNextReader> currentReader, bool continueOnCapturedContext)
+                {
+                    this.currentReader = currentReader;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public ITaskAwaiter<TNextReader> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.currentReader, this.continueOnCapturedContext);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<TNextReader>
+                {
+                    private readonly Json2.IReader<TNextReader> currentReader;
+                    private readonly bool continueOnCapturedContext;
+
+                    private System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter? task;
+
+                    public TaskAwaiter(Json2.IReader<TNextReader> currentReader, bool continueOnCapturedContext)
+                    {
+                        if (currentReader == null)
+                        {
+                            throw new Exception("TODO");
+                        }
+
+                        this.currentReader = currentReader;
+                        this.continueOnCapturedContext = continueOnCapturedContext;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            if (this.task != null)
+                            {
+                                if (!this.task.Value.IsCompleted)
+                                {
+                                    return false;
+                                }
+                                else
+                                {
+                                    if (this.currentReader.TryMove2(out _)) //// TODO you are making the *terrible* assumption that `trymove` is idempotent
+                                    {
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        this.task = this.currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                        return this.task.Value.IsCompleted;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (this.currentReader.TryMove2(out _)) //// TODO you are making the *terrible* assumption that `trymove` is idempotent
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    this.task = this.currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                    return this.task.Value.IsCompleted;
+                                }
+                            }
+                        }
+                    }
+
+                    public TNextReader GetResult()
+                    {
+                        var result = this.currentReader.TryMove(out _);
+                        if (result == null)
+                        {
+                        }
+
+                        return result;
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        throw new Exception("TODO");
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        throw new Exception("TODO");
+                    }
+                }
+            }
+
+            public ITaskAwaiter<TNextReader> GetAwaiter()
+            {
+                return new TaskAwaiter(this.currentReader);
+            }
+
+            private sealed class TaskAwaiter : ITaskAwaiter<TNextReader>
+            {
+                private readonly Json2.IReader<TNextReader> currentReader;
+
+                private System.Runtime.CompilerServices.TaskAwaiter? task;
+
+                public TaskAwaiter(Json2.IReader<TNextReader> currentReader)
+                {
+                    this.currentReader = currentReader;
+                }
+
+                public bool IsCompleted
+                {
+                    get
+                    {
+                        if (this.task != null)
+                        {
+                            if (!this.task.Value.IsCompleted)
+                            {
+                                return false;
+                            }
+                            else
+                            {
+                                if (this.currentReader.TryMove2(out _))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    this.task = this.currentReader.Read().GetAwaiter();
+                                    return this.task.Value.IsCompleted;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (this.currentReader.TryMove2(out _))
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                this.task = this.currentReader.Read().GetAwaiter();
+                                return this.task.Value.IsCompleted;
+                            }
+                        }
+                    }
+                }
+
+                public TNextReader GetResult()
+                {
+                    var result = this.currentReader.TryMove(out _);
+                    if (result == null)
+                    {
+                    }
+
+                    return result;
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    throw new Exception("TODO");
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    throw new Exception("TODO");
+                }
+            }
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<ValueToken<TNextReader>>> valueReader)
