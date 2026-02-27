@@ -72,7 +72,7 @@
         where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
         where TNextReader : allows ref struct
     {
-        TypeHolder<TSelf, TNextReader> AsReader();
+        TypeHolder<TSelf, TNextReader> AsReader { get; }
 
         ReaderContext Context { get; }
 
@@ -132,9 +132,12 @@
             }
         }
 
-        public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> AsReader()
+        public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> AsReader
         {
-            return new TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>(this);
+            get
+            {
+                return new TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>(this);
+            }
         }
 
         public async Task Read()

@@ -5,6 +5,7 @@ namespace System.Threading.Tasks
 
     [AsyncMethodBuilder(typeof(TaskMethodBuilder<>))]
     public interface ITask<out T>
+        where T : allows ref struct
     {
         /// <inheritdoc cref="Task{TResult}.GetAwaiter"/>
         ITaskAwaiter<T> GetAwaiter();

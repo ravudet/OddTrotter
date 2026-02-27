@@ -17,6 +17,7 @@
     public static class ReaderExtensions
     {
         private static bool TryMove2<TNextReader>(this Json2.IReader<TNextReader> currentReader, out TNextReader nextReader)
+            where TNextReader : allows ref struct
         {
             nextReader = currentReader.TryMove(out var read);
             return read;
@@ -69,6 +70,7 @@
         }*/
 
         private static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
+            where TNextReader : allows ref struct
         {
             TNextReader nextReader;
             while (!currentReader.TryMove2(out nextReader))
@@ -133,18 +135,9 @@
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<MembersToken<TNextReader>>().ConfigureAwait(false);
 
-            if (subsequentArrayElementsToken is MembersToken<TNextReader>.None none)
-            {
-                return none.Reader;
-            }
-            else if (subsequentArrayElementsToken is MembersToken<TNextReader>.Some more)
-            {
-                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move();
-            }
-            else
-            {
-                throw new Exception("TODO implement apply");
-            }
+            return subsequentArrayElementsToken.Apply(
+                none => none,
+                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().GetAwaiter().GetResult()); //// TODO not async
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -245,6 +238,12 @@
             {
                 throw new Exception("TODO implement apply");
             }
+        }
+
+        private static Json2.IReader<TNextReader> AsReader<TNextReader>(this Json2.IReader<TNextReader> reader)
+            where TNextReader : allows ref struct
+        {
+            return reader;
         }
 
         public static ITask<Nothing> Move(this Json2.JsonReader reader)
