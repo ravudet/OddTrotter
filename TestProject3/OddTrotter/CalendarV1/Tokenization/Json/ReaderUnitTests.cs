@@ -137,7 +137,7 @@
 
             return await subsequentArrayElementsToken.Apply(
                 none => Task.FromResult(none).ToTaskWrapper(),
-                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move());
+                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -151,18 +151,9 @@
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentMembersToken<TNextReader>>().ConfigureAwait(false);
 
-            if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.None none)
-            {
-                return none.Reader;
-            }
-            else if (subsequentArrayElementsToken is SubsequentMembersToken<TNextReader>.More more)
-            {
-                return await more.Reader.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move();
-            }
-            else
-            {
-                throw new Exception("TODO implement apply");
-            }
+            return await subsequentArrayElementsToken.Apply(
+                none => Task.FromResult(none).ToTaskWrapper(),
+                more => more.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -176,18 +167,9 @@
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<ExpToken<TNextReader>>().ConfigureAwait(false);
 
-            if (subsequentArrayElementsToken is ExpToken<TNextReader>.Absent none)
-            {
-                return none.Reader;
-            }
-            else if (subsequentArrayElementsToken is ExpToken<TNextReader>.Present more)
-            {
-                return await more.Reader.Move().Move().Move();
-            }
-            else
-            {
-                throw new Exception("TODO implement apply");
-            }
+            return await subsequentArrayElementsToken.Apply(
+                absent => Task.FromResult(absent).ToTaskWrapper(),
+                present => present.Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -201,18 +183,9 @@
         {
             var arrayElementsToken = await arrayElementsReader.Move<ArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
-            if (arrayElementsToken is ArrayElementsToken<TNextReader>.None none)
-            {
-                return none.Reader;
-            }
-            else if (arrayElementsToken is ArrayElementsToken<TNextReader>.Some some)
-            {
-                return await some.Reader.Move().Move().Move();
-            }
-            else
-            {
-                throw new Exception("TODO implement apply");
-            }
+            return await arrayElementsToken.Apply(
+                none => Task.FromResult(none).ToTaskWrapper(),
+                some => some.Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -226,18 +199,9 @@
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
-            if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.None none)
-            {
-                return none.Reader;
-            }
-            else if (subsequentArrayElementsToken is SubsequentArrayElementsToken<TNextReader>.More more)
-            {
-                return await more.Reader.Move().Move().Move().Move().Move().Move();
-            }
-            else
-            {
-                throw new Exception("TODO implement apply");
-            }
+            return await subsequentArrayElementsToken.Apply(
+                none => Task.FromResult(none).ToTaskWrapper(),
+                more => more.Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         private static Json2.IReader<TNextReader> AsReader<TNextReader>(this Json2.IReader<TNextReader> reader)
