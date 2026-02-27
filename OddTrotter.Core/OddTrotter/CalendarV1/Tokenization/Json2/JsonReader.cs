@@ -1559,7 +1559,7 @@
             var currentByte = this.buffer[this.currentByteIndex];
             if (currentByte == ']')
             {
-                return new ArrayElementsToken<TNextReader>.None(
+                return new ArrayElementsToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
@@ -1567,7 +1567,7 @@
                         this.validBytes));
             }
 
-            return new ArrayElementsToken<TNextReader>.Some(
+            return new ArrayElementsToken<TNextReader>(
                 new ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
                     this.stream,
                     this.buffer,
@@ -1582,31 +1582,39 @@
         }
     }
 
-    public abstract class ArrayElementsToken<TNextReader>
+    public readonly ref struct ArrayElementsToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private ArrayElementsToken()
+        private readonly RefNullable<TNextReader> none;
+        private readonly RefNullable<ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>> some;
+
+        public ArrayElementsToken(TNextReader reader)
         {
+            this.none = new RefNullable<TNextReader>(reader);
         }
 
-        public sealed class None : ArrayElementsToken<TNextReader>
+        public ArrayElementsToken(ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
         {
-            public None(TNextReader reader)
-            {
-                Reader = reader;
-            }
-
-            public TNextReader Reader { get; }
+            this.some = new RefNullable<ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>>(reader);
         }
 
-        public sealed class Some : ArrayElementsToken<TNextReader>
+        public TResult Apply<TResult>(
+            Func<TNextReader, TResult> noneMap,
+            Func<ArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, TResult> someMap)
+            where TResult : allows ref struct
         {
-            public Some(ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
+            if (this.none.TryGetValue(out var none))
             {
-                Reader = reader;
+                return noneMap(none);
             }
-
-            public ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> Reader { get; }
+            else if (this.some.TryGetValue(out var some))
+            {
+                return someMap(some);
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
         }
     }
 
@@ -1696,7 +1704,7 @@
             var currentByte = this.buffer[this.currentByteIndex];
             if (currentByte != ',')
             {
-                return new SubsequentArrayElementsToken<TNextReader>.None(
+                return new SubsequentArrayElementsToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
@@ -1704,7 +1712,7 @@
                         this.validBytes));
             }
 
-            return new SubsequentArrayElementsToken<TNextReader>.More(
+            return new SubsequentArrayElementsToken<TNextReader>(
                 new SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>(
                     this.stream,
                     this.buffer,
@@ -1719,31 +1727,39 @@
         }
     }
 
-    public abstract class SubsequentArrayElementsToken<TNextReader>
+    public readonly ref struct SubsequentArrayElementsToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private SubsequentArrayElementsToken()
+        private readonly RefNullable<TNextReader> none;
+        private readonly RefNullable<SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>> more;
+
+        public SubsequentArrayElementsToken(TNextReader reader)
         {
+            this.none = new RefNullable<TNextReader>(reader);
         }
 
-        public sealed class None : SubsequentArrayElementsToken<TNextReader>
+        public SubsequentArrayElementsToken(SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
         {
-            public None(TNextReader reader)
-            {
-                Reader = reader;
-            }
-
-            public TNextReader Reader { get; }
+            this.more = new RefNullable<SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>>(reader);
         }
 
-        public sealed class More : SubsequentArrayElementsToken<TNextReader>
+        public TResult Apply<TResult>(
+            Func<TNextReader, TResult> noneMap,
+            Func<SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>>, TResult> moreMap)
+            where TResult : allows ref struct
         {
-            public More(SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> reader)
+            if (this.none.TryGetValue(out var none))
             {
-                Reader = reader;
+                return noneMap(none);
             }
-
-            public SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> Reader { get; }
+            else if (this.more.TryGetValue(out var more))
+            {
+                return moreMap(more);
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
         }
     }
 
