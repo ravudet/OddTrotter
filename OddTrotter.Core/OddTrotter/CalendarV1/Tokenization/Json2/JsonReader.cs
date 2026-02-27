@@ -108,7 +108,7 @@
         public int ValidBytes { get; set; }
     }
 
-    public sealed class JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -170,7 +170,7 @@
 
         public bool TryMove(out Func<ReaderContext, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
-            nextFactory = context => new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
+            nextFactory = static context => new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
                 context.Stream,
                 context.Buffer,
                 context.CurrentByteIndex,

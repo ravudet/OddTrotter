@@ -52,7 +52,7 @@
             return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
-        /*private static ITask<TResult> FromResult<TContext, TResult>(TContext context, Func<TContext, TResult> factory)
+        private static ITask<TResult> FromResult<TContext, TResult>(TContext context, Func<TContext, TResult> factory)
             where TResult : allows ref struct
         {
         }
@@ -72,7 +72,7 @@
             }
 
             return nextReader;
-        }*/
+        }
 
         private static ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
             where TNextReader : allows ref struct
@@ -414,7 +414,7 @@
 
         public static ITask<Nothing> Move(this Json2.JsonReader reader)
         {
-            return reader.AsReader().Move().Move().Move().Move();
+            return reader.AsReader.Move().Move().Move().Move();
         }
     }
 
