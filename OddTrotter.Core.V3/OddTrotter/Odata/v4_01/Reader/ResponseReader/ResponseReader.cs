@@ -13,6 +13,11 @@
     {
         private readonly HttpResponseMessage httpResponseMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpResponseMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> is <see langword="null"/></exception>
         internal ResponseReader(HttpResponseMessage httpResponseMessage)
         {
             this.httpResponseMessage = httpResponseMessage;
@@ -28,6 +33,11 @@
     {
         private readonly HttpResponseMessage httpResponseMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpResponseMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> is <see langword="null"/></exception>
         internal StatusCodeReader(HttpResponseMessage httpResponseMessage)
         {
             this.httpResponseMessage = httpResponseMessage;
@@ -64,6 +74,7 @@
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
         private readonly Func<byte[], long, T> bodyReaderFactory;
 
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> or <paramref name="headers"/> or <paramref name="bodyReaderFactory"/> is <see langword="null"/></exception>
         internal HeadersReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
@@ -96,6 +107,8 @@
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
         private readonly Func<byte[], long, T> bodyReaderFactory;
 
+
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> or <paramref name="headers"/> or <paramref name="bodyReaderFactory"/> is <see langword="null"/></exception>
         internal HeaderReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
@@ -118,6 +131,13 @@
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
         private readonly Func<byte[], long, T> bodyReaderFactory;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpResponseMessage"></param>
+        /// <param name="headers"></param>
+        /// <param name="bodyReaderFactory"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> or <paramref name="headers"/> or <paramref name="bodyReaderFactory"/> is <see langword="null"/></exception>
         internal HeaderKvpReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
@@ -140,6 +160,13 @@
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers;
         private readonly Func<byte[], long, T> bodyReaderFactory;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpResponseMessage"></param>
+        /// <param name="headers"></param>
+        /// <param name="bodyReaderFactory"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> or <paramref name="headers"/> or <paramref name="bodyReaderFactory"/> is <see langword="null"/></exception>
         internal HeaderKeyReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
@@ -178,6 +205,14 @@
         private readonly IEnumerator<string> values;
         private readonly Func<byte[], long, T> bodyReaderFactory;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpResponseMessage"></param>
+        /// <param name="headers"></param>
+        /// <param name="values"></param>
+        /// <param name="bodyReaderFactory"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpResponseMessage"/> or <paramref name="headers"/> <paramref name="values"/> or <paramref name="bodyReaderFactory"/> is <see langword="null"/></exception>
         internal HeaderValueReader(
             HttpResponseMessage httpResponseMessage,
             IEnumerator<KeyValuePair<string, IEnumerable<string>>> headers,
@@ -213,6 +248,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal BodyReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -235,6 +277,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal PropertyReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -252,6 +301,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal PropertyNameReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -296,6 +352,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal PropertyValueReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -339,6 +402,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal LiteralReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -379,6 +449,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal FalseReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -417,6 +494,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal NumberReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -455,6 +539,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal TrueReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -493,6 +584,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal NullReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
@@ -531,6 +629,13 @@
         private readonly byte[] bytes;
         private readonly long index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal StringReader(byte[] bytes, long index)
         {
             this.bytes = bytes;
