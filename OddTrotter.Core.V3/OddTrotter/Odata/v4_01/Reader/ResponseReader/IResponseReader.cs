@@ -44,6 +44,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="successMap"></param>
+        /// <param name="failureMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="successMap"/> or <paramref name="failureMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Success, TResult> successMap,
             Func<Failure, TResult> failureMap)
@@ -64,6 +72,11 @@
 
         internal sealed class Success : StatusCodeToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             public Success(IHeadersReader<IBodyReader> reader)
             {
                 Reader = reader;
@@ -74,6 +87,11 @@
 
         internal sealed class Failure : StatusCodeToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             public Failure(IHeadersReader<IErrorResponseReader> reader)
             {
                 Reader = reader;
@@ -101,6 +119,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerMap"></param>
+        /// <param name="bodyMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerMap"/> or <paramref name="bodyMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Header, TResult> headerMap,
             Func<Body, TResult> bodyMap)
@@ -121,6 +147,11 @@
 
         internal sealed class Header : HeadersToken<T>
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Header(IHeaderReader<T> reader)
             {
                 Reader = reader;
@@ -131,6 +162,11 @@
 
         internal sealed class Body : HeadersToken<T>
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Body(T reader)
             {
                 Reader = reader;
@@ -182,6 +218,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerValueMap"></param>
+        /// <param name="headersMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerValueMap"/> or <paramref name="headersMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<HeaderValue, TResult> headerValueMap,
             Func<Headers, TResult> headersMap)
@@ -200,6 +244,11 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class HeaderValue : HeaderKeyToken<T>
         {
             internal HeaderValue(IHeaderValueReader<T> reader)
@@ -210,6 +259,11 @@
             public IHeaderValueReader<T> Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Headers : HeaderKeyToken<T>
         {
             internal Headers(IHeadersReader<T> reader)
@@ -239,6 +293,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerValueMap"></param>
+        /// <param name="headersMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerValueMap"/> or <paramref name="headersMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<HeaderValue, TResult> headerValueMap,
             Func<Headers, TResult> headersMap)
@@ -257,6 +319,11 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class HeaderValue : HeaderValueToken<T>
         {
             internal HeaderValue(IHeaderValueReader<T> reader)
@@ -267,6 +334,11 @@
             public IHeaderValueReader<T> Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Headers : HeaderValueToken<T>
         {
             internal Headers(IHeadersReader<T> reader)
@@ -296,6 +368,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="propertyMap"></param>
+        /// <param name="endMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="propertyMap"/> or <paramref name="endMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Property, TResult> propertyMap,
             Func<End, TResult> endMap)
@@ -314,6 +394,11 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Property : BodyToken
         {
             public Property(IPropertyReader reader)
@@ -324,6 +409,11 @@
             public IPropertyReader Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class End : BodyToken
         {
             private End()
@@ -376,6 +466,15 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="literalMap"></param>
+        /// <param name="nullMap"></param>
+        /// <param name="stringMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="literalMap"/> or <paramref name="nullMap"/> or <paramref name="stringMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Literal, TResult> literalMap,
             Func<Null, TResult> nullMap,
@@ -399,6 +498,11 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Literal : PropertyValueToken
         {
             internal Literal(ILiteralReader reader)
@@ -409,6 +513,11 @@
             public ILiteralReader Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Null : PropertyValueToken
         {
             internal Null(INullReader reader)
@@ -419,6 +528,11 @@
             public INullReader Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class String : PropertyValueToken
         {
             internal String(IStringReader reader)
@@ -450,6 +564,15 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="trueMap"></param>
+        /// <param name="falseMap"></param>
+        /// <param name="numberMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="trueMap"/> or <paramref name="falseMap"/> or <paramref name="numberMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<True, TResult> trueMap,
             Func<False, TResult> falseMap,
@@ -473,6 +596,11 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class True : LiteralToken
         {
             internal True(ITrueReader reader)
@@ -483,6 +611,11 @@
             public ITrueReader Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class False : LiteralToken
         {
             internal False(IFalseReader reader)
@@ -493,6 +626,11 @@
             public IFalseReader Reader { get; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
         internal sealed class Number : LiteralToken
         {
             internal Number(INumberReader reader)

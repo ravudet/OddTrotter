@@ -11,8 +11,15 @@
     {
         private readonly HttpRequestMessage httpRequestMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal RequestReader(HttpRequestMessage httpRequestMessage)
         {
+            ArgumentNullException.ThrowIfNull(httpRequestMessage);
+
             this.httpRequestMessage = httpRequestMessage;
         }
 
@@ -26,6 +33,11 @@
     {
         private readonly HttpRequestMessage httpRequestMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal VerbReader(HttpRequestMessage httpRequestMessage)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -43,6 +55,11 @@
     {
         private readonly HttpRequestMessage httpRequestMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal UrlReader(HttpRequestMessage httpRequestMessage)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -58,6 +75,11 @@
     {
         private readonly HttpRequestMessage httpRequestMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal UrlSchemeReader(HttpRequestMessage httpRequestMessage)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -82,6 +104,11 @@
     {
         private readonly HttpRequestMessage httpRequestMessage;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal UrlDomainReader(HttpRequestMessage httpRequestMessage)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -107,11 +134,24 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int segment;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal UrlPathReader(HttpRequestMessage httpRequestMessage)
             : this(httpRequestMessage, 0)
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="segment"></param>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="segment"/> is TODO</exception>
         internal UrlPathReader(HttpRequestMessage httpRequestMessage, int segment)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -144,6 +184,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int segment;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="segment"/> is TODO</exception>
         internal UrlPathSegmentReader(HttpRequestMessage httpRequestMessage, int segment)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -175,11 +221,23 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal UrlQueryReader(HttpRequestMessage httpRequestMessage)
             : this(httpRequestMessage, 1)
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal UrlQueryReader(HttpRequestMessage httpRequestMessage, int index)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -210,6 +268,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal UrlQueryKvpReader(HttpRequestMessage httpRequestMessage, int index)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -233,6 +297,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal UrlQueryNameReader(HttpRequestMessage httpRequestMessage, int index)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -287,6 +357,13 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly int index;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="index"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is TODO</exception>
         internal UrlQueryValueReader(HttpRequestMessage httpRequestMessage, int index)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -319,11 +396,22 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal HeadersReader(HttpRequestMessage httpRequestMessage)
             : this(httpRequestMessage, httpRequestMessage.Headers.GetEnumerator())
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="enumerator"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> or <paramref name="enumerator"/> is <see langword="null"/></exception>
         internal HeadersReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -346,6 +434,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="enumerator"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> or <paramref name="enumerator"/> is <see langword="null"/></exception>
         internal HeaderReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -363,6 +457,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="enumerator"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> or <paramref name="enumerator"/> is <see langword="null"/></exception>
         internal HeaderKvpReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -380,6 +480,12 @@
         private readonly HttpRequestMessage httpRequestMessage;
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="enumerator"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> or <paramref name="enumerator"/> is <see langword="null"/></exception>
         internal HeaderKeyReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -410,6 +516,13 @@
         private readonly IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator;
         private readonly IEnumerator<string> valuesEnumerator;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="valuesEnumerator"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> or <paramref name="enumerator"/> or <paramref name="valuesEnumerator"/> is <see langword="null"/></exception>
         internal HeaderValueReader(HttpRequestMessage httpRequestMessage, IEnumerator<KeyValuePair<string, IEnumerable<string>>> enumerator, IEnumerator<string> valuesEnumerator)
         {
             this.httpRequestMessage = httpRequestMessage;
@@ -438,7 +551,12 @@
     internal sealed class BodyReader : IBodyReader
     {
         private readonly HttpRequestMessage httpRequestMessage;
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpRequestMessage"/> is <see langword="null"/></exception>
         internal BodyReader(HttpRequestMessage httpRequestMessage)
         {
             this.httpRequestMessage = httpRequestMessage;
