@@ -1,16 +1,21 @@
-﻿using System.Net.Http;
-
-namespace OddTrotter.Graph.CalendarEventsContext
+﻿namespace OddTrotter.Graph.CalendarEventsContext
 {
+    using System;
+    using System.Net.Http;
+
     internal abstract class PagingError
     {
-        private PagingError()
+        private PagingError(Uri nextLink)
         {
+            NextLink = nextLink;
         }
+
+        Uri NextLink { get; }
 
         internal sealed class Read : PagingError
         {
-            internal Read(ReadException exception)
+            internal Read(Uri nextLink, ReadException exception)
+                : base(nextLink)
             {
                 Exception = exception;
             }
@@ -20,7 +25,8 @@ namespace OddTrotter.Graph.CalendarEventsContext
 
         internal sealed class Write : PagingError
         {
-            internal Write(WriteException exception)
+            internal Write(Uri nextLink, WriteException exception)
+                : base(nextLink)
             {
                 Exception = exception;
             }
@@ -30,7 +36,8 @@ namespace OddTrotter.Graph.CalendarEventsContext
 
         internal sealed class Http : PagingError
         {
-            internal Http(HttpRequestException exception)
+            internal Http(Uri nextLink, HttpRequestException exception)
+                : base(nextLink)
             {
                 Exception = exception;
             }
@@ -40,7 +47,8 @@ namespace OddTrotter.Graph.CalendarEventsContext
 
         internal sealed class Context : PagingError
         {
-            internal Context(ContextException exception)
+            internal Context(Uri nextLink, ContextException exception)
+                : base(nextLink)
             {
                 Exception = exception;
             }
@@ -50,7 +58,8 @@ namespace OddTrotter.Graph.CalendarEventsContext
 
         internal sealed class Unauthorized : PagingError
         {
-            internal Unauthorized(UnauthorizedAccessTokenException exception)
+            internal Unauthorized(Uri nextLink, UnauthorizedAccessTokenException exception)
+                : base(nextLink)
             {
                 Exception = exception;
             }

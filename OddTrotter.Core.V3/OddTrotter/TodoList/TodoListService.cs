@@ -12,29 +12,37 @@
     using Fx.QueryContext.Mixins;
 
     using OddTrotter.CalendarEventsContext;
-
-    using static Fx.Either.EitherExtensions;
+    using OddTrotter.Graph.CalendarEventsSource;
 
     internal sealed class TodoListService : ITodoListService<CalendarTodoListErrors>
     {
-        private readonly CalendarEventsContext calendarEventsContext;
+        private readonly ICalendarSource calendarSource;
+        private readonly CalendarEventsContextSettings calendarEventsContextSettings;
 
-        public TodoListService(CalendarEventsContext calendarEventsContext)
+        public TodoListService(
+            ICalendarSource calendarSource,
+            OddTrotter.CalendarEventsContext.CalendarEventsContextSettings calendarEventsContextSettings)
         {
-            this.calendarEventsContext = calendarEventsContext;
+            this.calendarSource = calendarSource;
+            this.calendarEventsContextSettings = calendarEventsContextSettings;
         }
 
         public async Task<TodoListResult<CalendarTodoListErrors>> Retrieve()
         {
-            var todoListEvents = await this
-                .calendarEventsContext
+            var lastRecordedEventTimeStamp = DateTime.UtcNow; //// TODO retrieve the correct timestamp
+
+            var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(
+                this.calendarSource,
+                lastRecordedEventTimeStamp,
+                this.calendarEventsContextSettings);
+            var todoListEvents = await calendarEventsContext
                 .Where(calendarEvent => calendarEvent.Start < DateTime.UtcNow)
                 .Where(calendarEvent => calendarEvent.IsCancelled == false)
                 .Where(calendarEvent => calendarEvent.Subject == "todo list")
                 .Evaluate()
                 .ConfigureAwait(false);
 
-            var lastRecordedEventTimeStamp = DateTime.UtcNow; //// TODO use the correct timestamp
+            
 
             var builder = await Convert(todoListEvents, lastRecordedEventTimeStamp).ConfigureAwait(false);
 
@@ -43,7 +51,7 @@
                 lastRecordedEventTimeStamp,
                 builder.EndTimestamp);
             var errors = new CalendarTodoListErrors(
-                builder.PagingError?.ToString(), //// TODO is an exception string really expected here?
+                builder.PagingError,
                 Enumerable.Empty<CalendarEvent>(), //// TODO
                 Enumerable.Empty<(CalendarEvent, Exception)>(), //// TODO
                 Enumerable.Empty<CalendarEvent>(), //// TODO

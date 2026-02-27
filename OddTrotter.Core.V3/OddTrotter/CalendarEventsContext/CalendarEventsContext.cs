@@ -12,6 +12,7 @@
     using Fx.Realizable;
 
     using OddTrotter.Graph.CalendarEventsContext;
+    using OddTrotter.Graph.CalendarEventsSource;
 
     using Graph = OddTrotter.Graph.CalendarEventsContext;
 
@@ -54,8 +55,8 @@
                 CalendarEventsContext
             >
     {
-        private readonly Graph.ICalendarSource calendarSource;
-        private readonly DateTime startTime; //// TODO should you also add this to settings, defaulting to `now`?
+        private readonly ICalendarSource calendarSource;
+        private readonly DateTime startTime;
         private readonly uint pageSize;
         private readonly TimeSpan firstInstanceInSeriesLookahead;
         private readonly bool? isCancelled;
@@ -63,12 +64,12 @@
         private readonly Func<CalendarEvent, bool>? where;
         private readonly Func<Graph.CalendarEvent, bool>? seriesMasterPredicate;
 
-        internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime)
+        internal CalendarEventsContext(ICalendarSource calendarSource, DateTime startTime)
             : this(calendarSource, startTime, CalendarEventsContextSettings.Default)
         {
         }
 
-        internal CalendarEventsContext(Graph.ICalendarSource calendarSource, DateTime startTime, CalendarEventsContextSettings settings)
+        internal CalendarEventsContext(ICalendarSource calendarSource, DateTime startTime, CalendarEventsContextSettings settings)
             : this(
                   calendarSource,
                   startTime,
@@ -82,7 +83,7 @@
         }
 
         private CalendarEventsContext(
-            Graph.ICalendarSource calendarSource, 
+            ICalendarSource calendarSource, 
             DateTime startTime,
             uint pageSize,
             TimeSpan firstInstanceInSeriesLookahead,

@@ -40,8 +40,7 @@
                 var calendarSource = new CalendarSource(
                     strongConventionContext,
                     new Uri("https://graph.microsoft.com/v1.0/me/calendar"));
-                var calendarEventsContext = new OddTrotter.CalendarEventsContext.CalendarEventsContext(calendarSource, DateTime.UtcNow); //// TODO parameterize the timestamp
-                var todoList = new TodoListService.TodoListService(calendarEventsContext);
+                var todoList = new TodoListService.TodoListService(calendarSource , CalendarEventsContext.CalendarEventsContextSettings.Default);
 
 
             }

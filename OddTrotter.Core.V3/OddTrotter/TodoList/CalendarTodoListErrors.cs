@@ -4,11 +4,11 @@
     using System.Collections.Generic;
 
     using OddTrotter.CalendarEventsContext;
-
+    
     internal class CalendarTodoListErrors
     {
         public CalendarTodoListErrors( //// TODO this whole type is wrong, look at the todo list service to find what the *types* are that you can service; you shouldn't lose overall fidelity (i.e. the UI should still have text that has useful and readable messages), but still not leak abstractions //// TODO this might mean that `todolistservice` is *not* "abstract" and just directly takes an instance of (the non-graph) `calendareventscontext` so that it knows directly what to do for each error
-            string? brokenNextLink,
+            OddTrotter.Graph.CalendarEventsContext.PagingError? brokenNextLink,
             IEnumerable<CalendarEvent> eventsWithoutStarts,
             IEnumerable<(CalendarEvent, Exception)> eventsWithStartParseFailures,
             IEnumerable<CalendarEvent> eventsWithoutBodies,
@@ -41,7 +41,7 @@
             EventsWithBodyParseFailures = eventsWithBodyParseFailures;
         }
 
-        public string? BrokenNextLink { get; }
+        public OddTrotter.Graph.CalendarEventsContext.PagingError? BrokenNextLink { get; }
 
         public IEnumerable<CalendarEvent> EventsWithoutStarts { get; }
 

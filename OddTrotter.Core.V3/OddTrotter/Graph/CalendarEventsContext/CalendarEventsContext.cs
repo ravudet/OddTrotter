@@ -207,7 +207,7 @@
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                         .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                        .SelectError(_ => new PagingError.Http(httpRequestException));
+                        .SelectError(_ => new PagingError.Http(uri, httpRequestException));
                 }
             }
             catch (StrongConventionContext.ReadException readException)
@@ -222,7 +222,7 @@
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                         .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                        .SelectError(_ => new PagingError.Read(exception));
+                        .SelectError(_ => new PagingError.Read(uri, exception));
                 }
             }
             catch (StrongConventionContext.WriteException writeException)
@@ -237,7 +237,7 @@
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                         .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                        .SelectError(_ => new PagingError.Write(exception));
+                        .SelectError(_ => new PagingError.Write(uri, exception));
                 }
             }
             catch (StrongConventionContext.StrongConventionException strongConventionException)
@@ -252,7 +252,7 @@
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                         .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                        .SelectError(_ => new PagingError.Context(exception));
+                        .SelectError(_ => new PagingError.Context(uri, exception));
                 }
             }
 
@@ -290,7 +290,7 @@
                             return Enumerable
                                 .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                                 .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                                .SelectError(_ => new PagingError.Unauthorized(exception));
+                                .SelectError(_ => new PagingError.Unauthorized(uri, exception));
                         }
                     }
                     else
@@ -305,7 +305,7 @@
                             return Enumerable
                                 .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
                                 .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
-                                .SelectError(_ => new PagingError.Context(exception));
+                                .SelectError(_ => new PagingError.Context(uri, exception));
                         }
                     }
                 });
