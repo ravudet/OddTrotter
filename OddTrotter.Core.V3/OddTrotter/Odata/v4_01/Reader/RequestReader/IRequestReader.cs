@@ -83,6 +83,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="pathSegmentMap"></param>
+        /// <param name="queryMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pathSegmentMap"/> or <paramref name="queryMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<PathSegment, TResult> pathSegmentMap,
             Func<Query, TResult> queryMap)
@@ -103,6 +111,11 @@
 
         public sealed class PathSegment : UrlPathToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal PathSegment(IUrlPathSegmentReader reader)
             {
                 Reader = reader;
@@ -113,6 +126,11 @@
 
         public sealed class Query : UrlPathToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Query(IUrlQueryReader reader)
             {
                 Reader = reader;
@@ -152,6 +170,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="kvpMap"></param>
+        /// <param name="headersMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="kvpMap"/> or <paramref name="headersMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Kvp, TResult> kvpMap,
             Func<Headers, TResult> headersMap)
@@ -172,6 +198,11 @@
 
         internal sealed class Kvp : UrlQueryToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Kvp(IUrlQueryKvpReader reader)
             {
                 Reader = reader;
@@ -182,6 +213,11 @@
 
         internal sealed class Headers : UrlQueryToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Headers(IHeadersReader reader)
             {
                 Reader = reader;
@@ -221,6 +257,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="queryValueMap"></param>
+        /// <param name="queryMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="queryValueMap"/> or <paramref name="queryMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<QueryValue, TResult> queryValueMap,
             Func<Query, TResult> queryMap)
@@ -241,6 +285,11 @@
 
         internal sealed class QueryValue : UrlQueryNameToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal QueryValue(IUrlQueryValueReader reader)
             {
                 Reader = reader;
@@ -251,6 +300,11 @@
 
         internal sealed class Query : UrlQueryNameToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Query(IUrlQueryReader reader)
             {
                 Reader = reader;
@@ -290,6 +344,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerMap"></param>
+        /// <param name="bodyMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerMap"/> or <paramref name="bodyMap"/> is <see langword="null"/></exception>`
         internal TResult Apply<TResult>(
             Func<Header, TResult> headerMap,
             Func<Body, TResult> bodyMap)
@@ -310,6 +372,11 @@
 
         internal sealed class Header : HeadersToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Header(IHeaderReader reader)
             {
                 Reader = reader;
@@ -320,6 +387,11 @@
 
         internal sealed class Body : HeadersToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Body(IBodyReader reader)
             {
                 Reader = reader;
@@ -371,6 +443,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerValueMap"></param>
+        /// <param name="headersMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerValueMap"/> or <paramref name="headersMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<HeaderValue, TResult> headerValueMap,
             Func<Headers, TResult> headersMap)
@@ -391,6 +471,11 @@
 
         internal sealed class HeaderValue : HeaderKeyToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal HeaderValue(IHeaderValueReader reader)
             {
                 Reader = reader;
@@ -401,6 +486,11 @@
 
         internal sealed class Headers : HeaderKeyToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Headers(IHeadersReader reader)
             {
                 Reader = reader;
@@ -428,6 +518,14 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="headerValueMap"></param>
+        /// <param name="headersMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="headerValueMap"/> or <paramref name="headersMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<HeaderValue, TResult> headerValueMap,
             Func<Headers, TResult> headersMap)
@@ -448,6 +546,10 @@
 
         internal sealed class HeaderValue : HeaderValueToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal HeaderValue(IHeaderValueReader reader)
             {
                 Reader = reader;
@@ -458,6 +560,11 @@
 
         internal sealed class Headers : HeaderValueToken
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is <see langword="null"/></exception>
             internal Headers(IHeadersReader reader)
             {
                 Reader = reader;
@@ -485,6 +592,13 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="endMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="endMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<End, TResult> endMap)
         {

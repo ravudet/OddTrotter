@@ -39,11 +39,11 @@
 
 
 
-    //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
+
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item
-        //// TODO you need to tidy things up so that you can document the exceptions before going to the UI level, but at this point it looks like you can surface all of the error information that you would like    
+        //// TODO you need to tidy things up so that you can document the exceptions before going to the UI level, but at this point it looks like you can surface all of the error information that you would like
 
         //// TODO now you need to do the UI level
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
@@ -70,6 +70,14 @@
     //// TODO add to code quality that if an exception has additional properties, the `tostring` method should be overloaded to include those properties? (NOTE: .NET doesn't do this)
     //// TODO add covariance and contravariance to code quality
     //// TODO don't forget to implement all of the mixins for all of the fundamental ieither implementations; make sure that all wrappers for an either implement a monad so that the wrappers don't have to implement all of the mixins just to get at the underlying either's mixins
+    
+
+
+
+
+
+
+    //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
 
     [TestClass]
     public sealed class ClassEitherUnitTests
