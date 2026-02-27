@@ -74,6 +74,12 @@
         where TNextReader : allows ref struct
     {
         TypeHolder<TSelf, TNextReader> AsReader();
+
+        ReaderContext Context { get; }
+
+        static abstract Func<ReaderContext, TSelf> Factory { get; }
+
+        bool TryMove(out Func<ReaderContext, TNextReader> nextFactory);
     }
 
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
@@ -81,6 +87,26 @@
         where TNextReader : allows ref struct
     {
         TValue TryGetValue(out bool read);
+    }
+
+    public sealed class ReaderContext
+    {
+        public ReaderContext(
+            Stream stream,
+            byte[] buffer,
+            int currentByteIndex,
+            int validBytes)
+        {
+            Stream = stream;
+            Buffer = buffer;
+            CurrentByteIndex = currentByteIndex;
+            ValidBytes = validBytes;
+        }
+
+        public Stream Stream { get; }
+        public byte[] Buffer { get; }
+        public int CurrentByteIndex { get; set;  }
+        public int ValidBytes { get; set; }
     }
 
     public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
@@ -95,6 +121,16 @@
         {
             this.stream = stream;
             this.buffer = new byte[20]; //// TODO parameterize
+        }
+
+        public static Func<ReaderContext, JsonReader> Factory { get; } = (readerContext) => new JsonReader(readerContext.Stream);
+
+        public ReaderContext Context
+        {
+            get
+            {
+                return new ReaderContext(this.stream, this.buffer, this.currentByteIndex, this.validBytes); //// TODO this should not initialize a new insteance every time
+            }
         }
 
         public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> AsReader()
@@ -128,6 +164,27 @@
                         currentByteIndex,
                         nestedValidBytes,
                         (_, _, _, _) => new Nothing())));
+        }
+
+        public bool TryMove(out Func<ReaderContext, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
+        {
+            nextFactory = context => new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
+                context.Stream,
+                context.Buffer,
+                context.CurrentByteIndex,
+                context.ValidBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                        nestedStream,
+                        nestedBuffer,
+                        currentByteIndex,
+                        nestedValidBytes,
+                        (_, _, _, _) => new Nothing())));
+            return true;
         }
     }
 

@@ -30,19 +30,39 @@
             return read;
         }
 
+        private static TaskWrapper<T> ToTaskWrapper<T>(this Task<T> task)
+        {
+            return new TaskWrapper<T>(task);
+        }
+
+        private static TaskWrapper<Nothing> ToTaskWrapper(this Task task)
+        {
+            return task.ContinueWith(_ => new Nothing()).ToTaskWrapper();
+        }
+
+
         private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<TNextReader>> currentReader)
         {
             return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
         }
 
+        private static ITask<TResult> FromResult<TContext, TResult>(TContext context, Func<TContext, TResult> factory)
+            where TResult : allows ref struct
+        {
+        }
+
         private static ITask<TNextReader> Move<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
-            where TCurrentReader : Json2.IReader<TNextReader>, allows ref struct
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
-            TNextReader nextReader;
-            while (!currentReader.TryMove2(out nextReader))
+            var self = currentReader.Self;
+            if (self.TryMove(out var nextReaderFactory))
             {
-                var task = currentReader.Read();
+                return FromResult(currentReader.Self.Context, nextReaderFactory);
+            }
+            else
+            {
+                var task = currentReader.Self.Read().ToTaskWrapper();
             }
 
             return nextReader;
