@@ -2,13 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Fx;
 
     public static class AsyncEnumerableExtensions
     {
@@ -109,7 +108,7 @@
         public int ValidBytes { get; set; }
     }
 
-    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    public sealed class JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
         private readonly Stream stream;
         private readonly byte[] buffer;
@@ -868,7 +867,7 @@
             read = true;
             if (this.buffer[this.currentByteIndex] != '"')
             {
-                return new MembersToken<TNextReader>.None(
+                return new MembersToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
@@ -876,7 +875,7 @@
                         this.validBytes));
             }
 
-            return new MembersToken<TNextReader>.Some(
+            return new MembersToken<TNextReader>(
                 new FirstMemberReader<TNextReader>(
                     this.stream,
                     this.buffer,
@@ -886,31 +885,69 @@
         }
     }
 
-    public abstract class MembersToken<TNextReader>
+    public readonly ref struct RefNullable<T>
+        where T : allows ref struct
+    {
+        private readonly T value;
+
+        private readonly bool hasValue;
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        public RefNullable(T value)
+        {
+            this.value = value;
+
+            this.hasValue = true;
+        }
+
+        /// <summary>
+        /// placeholder
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryGetValue(out T value)
+        {
+            value = this.value;
+            return this.hasValue;
+        }
+    }
+
+    public readonly ref struct MembersToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private MembersToken()
+        private readonly RefNullable<TNextReader> none;
+        private readonly RefNullable<FirstMemberReader<TNextReader>> some;
+
+        public MembersToken(TNextReader reader)
         {
+            this.none = new RefNullable<TNextReader>(reader);
         }
 
-        public sealed class None : MembersToken<TNextReader>
+        public MembersToken(FirstMemberReader<TNextReader> reader)
         {
-            public None(TNextReader reader)
-            {
-                Reader = reader;
-            }
-
-            public TNextReader Reader { get; }
+            this.some = new RefNullable<FirstMemberReader<TNextReader>>(reader);
         }
 
-        public sealed class Some : MembersToken<TNextReader>
+        public TResult Apply<TResult>(
+            Func<TNextReader, TResult> noneMap,
+            Func<FirstMemberReader<TNextReader>, TResult> someMap)
+            where TResult : allows ref struct
         {
-            public Some(FirstMemberReader<TNextReader> reader)
+            if (this.none.TryGetValue(out var none))
             {
-                Reader = reader;
+                return noneMap(none);
             }
-
-            public FirstMemberReader<TNextReader> Reader { get; }
+            else if (this.some.TryGetValue(out var some))
+            {
+                return someMap(some);
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
         }
     }
 
@@ -1004,7 +1041,7 @@
             read = true;
             if (this.buffer[this.currentByteIndex] != ',')
             {
-                return new SubsequentMembersToken<TNextReader>.None(
+                return new SubsequentMembersToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
@@ -1012,7 +1049,7 @@
                         this.validBytes));
             }
 
-            return new SubsequentMembersToken<TNextReader>.More(
+            return new SubsequentMembersToken<TNextReader>(
                 new SubsequentMemberReader<SubsequentMembersReader<TNextReader>>(
                     this.stream,
                     this.buffer,
@@ -1027,34 +1064,41 @@
         }
     }
 
-    public abstract class SubsequentMembersToken<TNextReader>
+    public readonly ref struct SubsequentMembersToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private SubsequentMembersToken()
+        private readonly RefNullable<TNextReader> none;
+        private readonly RefNullable<SubsequentMemberReader<SubsequentMembersReader<TNextReader>>> more;
+
+        public SubsequentMembersToken(TNextReader reader)
         {
+            this.none = new RefNullable<TNextReader>(reader);
         }
 
-        public sealed class None : SubsequentMembersToken<TNextReader>
+        public SubsequentMembersToken(SubsequentMemberReader<SubsequentMembersReader<TNextReader>> reader)
         {
-            public None(TNextReader reader)
-            {
-                Reader = reader;
-            }
-
-            public TNextReader Reader { get; }
+            this.more = new RefNullable<SubsequentMemberReader<SubsequentMembersReader<TNextReader>>>(reader);
         }
 
-        public sealed class More : SubsequentMembersToken<TNextReader>
+        public TResult Apply<TResult>(
+            Func<TNextReader, TResult> noneMap,
+            Func<SubsequentMemberReader<SubsequentMembersReader<TNextReader>>, TResult> moreMap)
+            where TResult : allows ref struct
         {
-            public More(SubsequentMemberReader<SubsequentMembersReader<TNextReader>> reader)
+            if (this.none.TryGetValue(out var none))
             {
-                Reader = reader;
+                return noneMap(none);
             }
-
-            public SubsequentMemberReader<SubsequentMembersReader<TNextReader>> Reader { get; }
+            else if (this.more.TryGetValue(out var more))
+            {
+                return moreMap(more);
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
         }
     }
-
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
         where TNextReader : allows ref struct
     {
