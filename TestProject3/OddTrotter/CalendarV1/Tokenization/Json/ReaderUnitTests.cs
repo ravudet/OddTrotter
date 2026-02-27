@@ -135,9 +135,9 @@
         {
             var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<MembersToken<TNextReader>>().ConfigureAwait(false);
 
-            return subsequentArrayElementsToken.Apply(
-                none => none,
-                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().GetAwaiter().GetResult()); //// TODO not async
+            return await subsequentArrayElementsToken.Apply(
+                none => Task.FromResult(none).ToTaskWrapper(),
+                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move());
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
