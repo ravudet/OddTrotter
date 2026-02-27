@@ -283,7 +283,7 @@
                         .SelectRight(
                             translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
                                 .SelectRight(
-                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO"))
+                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO include the paging error and include everything we know about the series master"))
                                 .Coalesce()));
 
             return mastersWithInstances;

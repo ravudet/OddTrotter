@@ -264,7 +264,7 @@
                         .Select(element => element
                             .Element
                             .SelectRight(deserializationError =>
-                                new CalendarEventTranslationException("TODO", deserializationError.Exception)))
+                                new CalendarEventTranslationException("TODO include the odata object too, but not as 'odata', probably just a string", deserializationError.Exception)))
                         .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>(); //// TODO bad type inference
 
                     if (success.NextLink != null)
