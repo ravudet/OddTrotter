@@ -15,14 +15,11 @@
 
     using static Fx.Either.EitherExtensions;
 
-    internal sealed class TodoListService<TCalendarEventsContext, TPagingError> : ITodoListService<CalendarTodoListErrors>
-        where TCalendarEventsContext : 
-            IQueryContextAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, TPagingError>,
-            IWhereQueryContextMixinAsync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, TPagingError, TCalendarEventsContext>
+    internal sealed class TodoListService : ITodoListService<CalendarTodoListErrors>
     {
-        private readonly TCalendarEventsContext calendarEventsContext;
+        private readonly CalendarEventsContext calendarEventsContext;
 
-        public TodoListService(TCalendarEventsContext calendarEventsContext)
+        public TodoListService(CalendarEventsContext calendarEventsContext)
         {
             this.calendarEventsContext = calendarEventsContext;
         }
