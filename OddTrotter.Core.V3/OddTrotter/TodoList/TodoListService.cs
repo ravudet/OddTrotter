@@ -52,7 +52,7 @@
                 builder.EndTimestamp);
             var errors = new CalendarTodoListErrors(
                 builder.PagingError,
-                Enumerable.Empty<CalendarEvent>(), //// TODO
+                Enumerable.Empty<CalendarEvent>(), //// TODO you need to update `CalendarTodoListErrors` to not contain redundant properties; you should base it off of what errors are actually occurring and differentiated; you also need to rewrite the razor page to use this newly formed type
                 Enumerable.Empty<(CalendarEvent, Exception)>(), //// TODO
                 Enumerable.Empty<CalendarEvent>(), //// TODO
                 Enumerable.Empty<(CalendarEvent, Exception)>() //// TODO
