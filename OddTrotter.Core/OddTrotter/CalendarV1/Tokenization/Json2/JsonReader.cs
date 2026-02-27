@@ -2333,7 +2333,7 @@
             read = true;
             if (this.validBytes == 0 || this.buffer[this.currentByteIndex] != '-')
             {
-                return new ExpToken<TNextReader>.Absent(
+                return new ExpToken<TNextReader>(
                     this.nextReaderFactory(
                         this.stream,
                         this.buffer,
@@ -2342,7 +2342,7 @@
             }
 
             ++this.currentByteIndex;
-            return new ExpToken<TNextReader>.Present(
+            return new ExpToken<TNextReader>(
                 new EReader<ExpSignReader<DigitsReader<TNextReader>>>(
                     this.stream,
                     this.buffer,
@@ -2362,31 +2362,39 @@
         }
     }
 
-    public abstract class ExpToken<TNextReader>
+    public readonly ref struct ExpToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private ExpToken()
+        private readonly RefNullable<TNextReader> absent;
+        private readonly RefNullable<EReader<ExpSignReader<DigitsReader<TNextReader>>>> present;
+
+        public ExpToken(TNextReader reader)
         {
+            this.absent = new RefNullable<TNextReader>(reader);
         }
 
-        public sealed class Absent : ExpToken<TNextReader>
+        public ExpToken(EReader<ExpSignReader<DigitsReader<TNextReader>>> reader)
         {
-            public Absent(TNextReader reader)
-            {
-                Reader = reader;
-            }
-
-            public TNextReader Reader { get; }
+            this.present = new RefNullable<EReader<ExpSignReader<DigitsReader<TNextReader>>>>(reader);
         }
 
-        public sealed class Present : ExpToken<TNextReader>
+        public TResult Apply<TResult>(
+            Func<TNextReader, TResult> absentMap,
+            Func<EReader<ExpSignReader<DigitsReader<TNextReader>>>, TResult> presentMap)
+            where TResult : allows ref struct
         {
-            public Present(EReader<ExpSignReader<DigitsReader<TNextReader>>> reader)
+            if (this.absent.TryGetValue(out var absent))
             {
-                Reader = reader;
+                return absentMap(absent);
             }
-
-            public EReader<ExpSignReader<DigitsReader<TNextReader>>> Reader { get; }
+            else if (this.present.TryGetValue(out var present))
+            {
+                return presentMap(present);
+            }
+            else
+            {
+                throw new Exception("tODO");
+            }
         }
     }
 
