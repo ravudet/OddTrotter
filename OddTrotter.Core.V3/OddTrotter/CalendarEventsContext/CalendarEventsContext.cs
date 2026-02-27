@@ -31,7 +31,7 @@
         public TimeSpan FirstInstanceInSeriesLookahead { get; }
     }
 
-    internal sealed class CalendarEventsContext : //// TODO i think you need to rethink some of your concrete implementation names; for example, this is an implementation of a calendar event context that *leverages graph*; shouldn't the graph part be in the name? 
+    internal sealed class CalendarEventsContext : //// TODO i think you need to rethink some of your concrete implementation names; for example, this is an implementation of a calendar event context that *leverages graph*; shouldn't the graph part be in the name?
         IQueryContextAsync
             <
                 IEither
