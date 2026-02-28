@@ -122,7 +122,7 @@
             this.buffer = new byte[20]; //// TODO parameterize
         }
 
-        public static Func<ReaderContext, JsonReader> Factory { get; } = (readerContext) => new JsonReader(readerContext.Stream);
+        public static Func<ReaderContext, JsonReader> Factory { get; } = static (readerContext) => new JsonReader(readerContext.Stream);
 
         public ReaderContext Context
         {

@@ -74,6 +74,28 @@
             return nextReader;
         }
 
+        private sealed class MoveTask2<TNextReader> : ITask<TNextReader>
+        {
+            private readonly ReaderContext readerContext;
+            private readonly Func<ReaderContext, TNextReader> currentReaderFactory;
+
+            public MoveTask2(ReaderContext readerContext, Func<ReaderContext, TNextReader> currentReaderFactory)
+            {
+                this.readerContext = readerContext;
+                this.currentReaderFactory = currentReaderFactory;
+            }
+
+            public IConfiguredAwaitable<TNextReader> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<TNextReader> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private static ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
             where TNextReader : allows ref struct
         {
