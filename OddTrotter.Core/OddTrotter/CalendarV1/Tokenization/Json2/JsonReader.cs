@@ -108,29 +108,31 @@
         public int ValidBytes { get; set; }
     }
 
+    public static class ReaderContextExtensions
+    {
+        public static async Task Read(this ReaderContext readerContext)
+        {
+            readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ConfigureAwait(false);
+            readerContext.CurrentByteIndex = 0;
+        }
+    }
+
     public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private int currentByteIndex;
-        private int validBytes;
-        private bool read;
+        ////private bool read;
 
         public JsonReader(Stream stream)
         {
-            this.stream = stream;
-            this.buffer = new byte[20]; //// TODO parameterize
+            this.Context = new ReaderContext(
+                stream, 
+                new byte[20], //// TODO parameterize
+                0, 
+                0);
         }
 
         public static Func<ReaderContext, JsonReader> Factory { get; } = static (readerContext) => new JsonReader(readerContext.Stream);
 
-        public ReaderContext Context
-        {
-            get
-            {
-                return new ReaderContext(this.stream, this.buffer, this.currentByteIndex, this.validBytes); //// TODO this should not initialize a new insteance every time
-            }
-        }
+        public ReaderContext Context { get; }
 
         public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> AsReader
         {
@@ -140,21 +142,22 @@
             }
         }
 
-        public async Task Read()
+        public Task Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-            this.currentByteIndex = 0;
-            this.read = true;
+            return this.Context.Read();
+
+            ////this.read = true;
         }
 
         public WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> TryMove(out bool read)
         {
-            read = this.read;
+            ////read = this.read;
+            read = true;
             return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
-                this.stream,
-                this.buffer,
-                this.currentByteIndex,
-                this.validBytes,
+                this.Context.Stream,
+                this.Context.Buffer,
+                this.Context.CurrentByteIndex,
+                this.Context.ValidBytes,
                 (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
                     stream,
                     buffer,

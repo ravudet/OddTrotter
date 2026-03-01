@@ -49,15 +49,91 @@
 
         private static async ITask<TNextReader> Move<TNextReader>(this ITask<Json2.IReader<TNextReader>> currentReader)
         {
-            return await (await currentReader.ConfigureAwait(false)).Move().ConfigureAwait(false);
+            return await (await currentReader.ConfigureAwait(false)).Move1().ConfigureAwait(false);
         }
 
         private static ITask<TResult> FromResult<TContext, TResult>(TContext context, Func<TContext, TResult> factory)
             where TResult : allows ref struct
         {
+            return new FromResultTask<TContext, TResult>(context, factory);
         }
 
-        private static ITask<TNextReader> Move<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
+        private sealed class FromResultTask<TContext, TResult> : ITask<TResult>
+            where TResult : allows ref struct
+        {
+            private readonly TContext context;
+            private readonly Func<TContext, TResult> factory;
+
+            public FromResultTask(TContext context, Func<TContext, TResult> factory)
+            {
+                this.context = context;
+                this.factory = factory;
+            }
+
+            public IConfiguredAwaitable<TResult> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.context, this.factory);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TResult>
+            {
+                private readonly TContext context;
+                private readonly Func<TContext, TResult> factory;
+
+                public ConfiguredAwaitable(TContext context, Func<TContext, TResult> factory)
+                {
+                    this.context = context;
+                    this.factory = factory;
+                }
+
+                public ITaskAwaiter<TResult> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.context, this.factory);
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<TResult>
+                {
+                    private readonly TContext context;
+                    private readonly Func<TContext, TResult> factory;
+
+                    public TaskAwaiter(TContext context, Func<TContext, TResult> factory)
+                    {
+                        this.context = context;
+                        this.factory = factory;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return true;
+                        }
+                    }
+
+                    public TResult GetResult()
+                    {
+                        return this.factory(this.context);
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+            }
+
+            public ITaskAwaiter<TResult> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private static ITask<TNextReader> Move2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
@@ -68,26 +144,106 @@
             }
             else
             {
-                var task = currentReader.Self.Read().ToTaskWrapper();
+                return new Move2Task<TCurrentReader, TNextReader>(self.Read().ToTaskWrapper(), self.Context);
             }
-
-            return nextReader;
         }
 
-        private sealed class MoveTask2<TNextReader> : ITask<TNextReader>
+        private sealed class Move2Task<TCurrentReader, TNextReader> : ITask<TNextReader>
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
+            where TNextReader : allows ref struct
         {
+            private readonly ITask<Nothing> task;
             private readonly ReaderContext readerContext;
-            private readonly Func<ReaderContext, TNextReader> currentReaderFactory;
 
-            public MoveTask2(ReaderContext readerContext, Func<ReaderContext, TNextReader> currentReaderFactory)
+            public Move2Task(ITask<Nothing> task, ReaderContext readerContext)
             {
+                this.task = task;
                 this.readerContext = readerContext;
-                this.currentReaderFactory = currentReaderFactory;
             }
 
             public IConfiguredAwaitable<TNextReader> ConfigureAwait(bool continueOnCapturedContext)
             {
-                throw new NotImplementedException();
+                return new ConfiguredAwaitable(this.task, this.readerContext, continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TNextReader>
+            {
+                private ITask<Nothing> task;
+                private readonly ReaderContext readerContext;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(
+                    ITask<Nothing> task,
+                    ReaderContext readerContext,
+                    bool continueOnCapturedContext)
+                {
+                    this.task = task;
+                    this.readerContext = readerContext;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public ITaskAwaiter<TNextReader> GetAwaiter()
+                {
+                    return new TaskAwaiter(this.task, this.readerContext, this.continueOnCapturedContext); 
+                }
+
+                private sealed class TaskAwaiter : ITaskAwaiter<TNextReader>
+                {
+                    private ITaskAwaiter<Nothing> task;
+                    private readonly ReaderContext readerContext;
+                    private readonly bool continueOnCapturedContext;
+
+                    public TaskAwaiter(
+                        ITask<Nothing> task,
+                        ReaderContext readerContext,
+                        bool continueOnCapturedContext)
+                    {
+                        this.task = task.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
+                        this.readerContext = readerContext;
+                        this.continueOnCapturedContext = continueOnCapturedContext;
+                    }
+
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            if (this.task.IsCompleted)
+                            {
+                                var currentReader = TCurrentReader.Factory(this.readerContext);
+                                if (currentReader.TryMove(out _))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    this.task = currentReader.Read().ToTaskWrapper().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                    return this.task.IsCompleted;
+                                }
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    public TNextReader GetResult()
+                    {
+                        TCurrentReader.Factory(this.readerContext).TryMove(out var nextReaderFactory);
+                        return nextReaderFactory(this.readerContext);
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
             }
 
             public ITaskAwaiter<TNextReader> GetAwaiter()
@@ -96,7 +252,7 @@
             }
         }
 
-        private static ITask<TNextReader> Move<TNextReader>(this Json2.IReader<TNextReader> currentReader)
+        private static ITask<TNextReader> Move1<TNextReader>(this Json2.IReader<TNextReader> currentReader)
             where TNextReader : allows ref struct
         {
             if (currentReader == null)
@@ -112,15 +268,15 @@
 
             return nextReader;*/
 
-            return new MoveTask<TNextReader>(currentReader);
+            return new Move1Task<TNextReader>(currentReader);
         }
 
-        private sealed class MoveTask<TNextReader> : ITask<TNextReader>
+        private sealed class Move1Task<TNextReader> : ITask<TNextReader>
             where TNextReader : allows ref struct
         {
             private readonly Json2.IReader<TNextReader> currentReader;
 
-            public MoveTask(Json2.IReader<TNextReader> currentReader)
+            public Move1Task(Json2.IReader<TNextReader> currentReader)
             {
                 if (currentReader == null)
                 {
@@ -312,35 +468,35 @@
 
         public static async ITask<TNextReader> Move<TNextReader>(this Json2.IReader<ValueToken<TNextReader>> valueReader)
         {
-            var valueToken = await valueReader.Move<ValueToken<TNextReader>>().ConfigureAwait(false);
+            var valueToken = await valueReader.Move1<ValueToken<TNextReader>>().ConfigureAwait(false);
 
             if (valueToken is ValueToken<TNextReader>.Array array)
             {
-                return await array.Reader.Move().Move().Move().Move().Move().Move().ConfigureAwait(false);
+                return await array.Reader.Move1().Move().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.False @false)
             {
-                return await @false.Reader.Move().ConfigureAwait(false);
+                return await @false.Reader.Move1().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Null @null)
             {
-                return await @null.Reader.Move().ConfigureAwait(false);
+                return await @null.Reader.Move1().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Number number)
             {
-                return await number.Reader.Move().Move().Move().Move().Move().ConfigureAwait(false);
+                return await number.Reader.Move1().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.Object @object)
             {
-                return await @object.Reader.Move().Move().Move().Move().Move().Move().ConfigureAwait(false);
+                return await @object.Reader.Move1().Move().Move().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.String @string)
             {
-                return await @string.Reader.Move().Move().Move().Move().ConfigureAwait(false);
+                return await @string.Reader.Move1().Move().Move().Move().ConfigureAwait(false);
             }
             else if (valueToken is ValueToken<TNextReader>.True @true)
             {
-                return await @true.Reader.Move().ConfigureAwait(false);
+                return await @true.Reader.Move1().ConfigureAwait(false);
             }
             else
             {
@@ -357,11 +513,11 @@
         public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IReader<MembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<MembersToken<TNextReader>>().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move1<MembersToken<TNextReader>>().ConfigureAwait(false);
 
             return await subsequentArrayElementsToken.Apply(
                 none => Task.FromResult(none).ToTaskWrapper(),
-                some => some.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
+                some => some.Move1().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -373,11 +529,11 @@
         public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IReader<SubsequentMembersToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentMembersToken<TNextReader>>().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move1<SubsequentMembersToken<TNextReader>>().ConfigureAwait(false);
 
             return await subsequentArrayElementsToken.Apply(
                 none => Task.FromResult(none).ToTaskWrapper(),
-                more => more.Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
+                more => more.Move1().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -389,11 +545,11 @@
         public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IReader<ExpToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<ExpToken<TNextReader>>().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move1<ExpToken<TNextReader>>().ConfigureAwait(false);
 
             return await subsequentArrayElementsToken.Apply(
                 absent => Task.FromResult(absent).ToTaskWrapper(),
-                present => present.Move().Move().Move()).ConfigureAwait(false);
+                present => present.Move1().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -405,11 +561,11 @@
         public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IReader<ArrayElementsToken<TNextReader>> arrayElementsReader)
         {
-            var arrayElementsToken = await arrayElementsReader.Move<ArrayElementsToken<TNextReader>>().ConfigureAwait(false);
+            var arrayElementsToken = await arrayElementsReader.Move1<ArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
             return await arrayElementsToken.Apply(
                 none => Task.FromResult(none).ToTaskWrapper(),
-                some => some.Move().Move().Move()).ConfigureAwait(false);
+                some => some.Move1().Move().Move()).ConfigureAwait(false);
         }
 
         public static async ITask<TNextReader> Move<TNextReader>(
@@ -421,11 +577,11 @@
         public static async ITask<TNextReader> Move<TNextReader>(
             this Json2.IReader<SubsequentArrayElementsToken<TNextReader>> subsequentArrayElementsReader)
         {
-            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move<SubsequentArrayElementsToken<TNextReader>>().ConfigureAwait(false);
+            var subsequentArrayElementsToken = await subsequentArrayElementsReader.Move1<SubsequentArrayElementsToken<TNextReader>>().ConfigureAwait(false);
 
             return await subsequentArrayElementsToken.Apply(
                 none => Task.FromResult(none).ToTaskWrapper(),
-                more => more.Move().Move().Move().Move().Move().Move()).ConfigureAwait(false);
+                more => more.Move1().Move().Move().Move().Move().Move()).ConfigureAwait(false);
         }
 
         private static Json2.IReader<TNextReader> AsReader<TNextReader>(this Json2.IReader<TNextReader> reader)
@@ -436,7 +592,7 @@
 
         public static ITask<Nothing> Move(this Json2.JsonReader reader)
         {
-            return reader.AsReader.Move().Move().Move().Move();
+            return reader.AsReader.Move2().Move().Move().Move();
         }
     }
 
