@@ -608,6 +608,7 @@
             
 
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
+            //// TODO all of these `itask` implementations can't be object allocations or it defeats the purpose
 
             var data =
 """
