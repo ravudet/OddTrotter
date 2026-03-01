@@ -607,7 +607,9 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
             
 
+            //// TODO create a readtoend implementation that is specific to this test so that it uses the least amount of calls and initializations
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
+            //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
             //// TODO all of these `itask` implementations can't be object allocations or it defeats the purpose
 
             var data =
