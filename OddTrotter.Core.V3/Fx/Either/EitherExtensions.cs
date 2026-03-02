@@ -613,7 +613,7 @@ namespace Fx.Either
         //// tcontinuable
         //// icontinuable
         //// realizable
-        //// task
+        //// task //// TODO should these *return* itask? since they can't have a `tresult` that is a ref struct anyway...
         //// }
         //// TODO you didn't include synchronous overloads
         //// TODO you didn't include the context parameter (which may or may not be `ref`)
