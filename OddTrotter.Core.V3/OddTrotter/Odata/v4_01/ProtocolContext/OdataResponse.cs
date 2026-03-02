@@ -11,10 +11,21 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="successMap"></param>
+        /// <param name="failureMap"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="successMap"/> or <paramref name="failureMap"/> is <see langword="null"/></exception>
         internal TResult Apply<TResult>(
             Func<Success, TResult> successMap,
             Func<Failure, TResult> failureMap)
         {
+            ArgumentNullException.ThrowIfNull(successMap);
+            ArgumentNullException.ThrowIfNull(failureMap);
+
             if (this is Success success)
             {
                 return successMap(success);
