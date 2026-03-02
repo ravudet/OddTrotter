@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.Json
 {
     using System;
+    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq.V2;
@@ -138,7 +139,7 @@
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (self.TryMove(out var nextReaderFactory))
+            if (self.TryMove3(out var nextReaderFactory))
             {
                 return FromResult(currentReader.Self.Context, nextReaderFactory);
             }
@@ -211,7 +212,7 @@
                             if (this.task.IsCompleted)
                             {
                                 var currentReader = TCurrentReader.Factory(this.readerContext);
-                                if (currentReader.TryMove(out _))
+                                if (currentReader.TryMove3(out _))
                                 {
                                     return true;
                                 }
@@ -230,7 +231,7 @@
 
                     public TNextReader GetResult()
                     {
-                        TCurrentReader.Factory(this.readerContext).TryMove(out var nextReaderFactory);
+                        TCurrentReader.Factory(this.readerContext).TryMove3(out var nextReaderFactory);
                         return nextReaderFactory(this.readerContext);
                     }
 
@@ -596,6 +597,47 @@
         }
     }
 
+    internal static class TestExtensions
+    {
+        internal static async Task<TNextReader> MoveInternal1<TNextReader>(this Json2.IReader<TNextReader> currentReader)
+        {
+            var nextReader = currentReader.TryMove(out var read);
+            if (!read) //// TODO this is supposed to be a while loop
+            {
+                await currentReader.Read().ConfigureAwait(false);
+                nextReader = currentReader.TryMove(out read);
+            }
+
+            return nextReader;
+        }
+
+        internal static Task<Func<ReaderContext, TNextReader>> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
+            where TNextReader : allows ref struct
+        {
+            var self = currentReader.Self;
+            var context = self.Context;
+            if (!self.TryMove3(out var nextFactory)) //// TODO this is supposed to be a while loop
+            {
+                return self.Read().ContinueWith(
+                    (_, context) =>
+                    {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8604 // Possible null reference argument.
+                        var self = TCurrentReader.Factory((ReaderContext)context);
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+                        self.TryMove3(out var nextFactory);
+                        return nextFactory;
+                    },
+                    context);
+            }
+
+            return Task.FromResult(nextFactory);
+        }
+    }
+
     [TestClass]
     public sealed class ReaderUnitTests
     {
@@ -646,10 +688,100 @@
             {
                 var reader = new Json2.JsonReader(stream);
                 await reader.Move().ConfigureAwait(false);
+
+                stream.Position = 0;
+                reader = new Json2.JsonReader(stream);
+
+                var context = reader.Context;
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2().ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory(context);
+                var valueReader = await whitespaceReader.MoveInternal1().ConfigureAwait(false);
+                var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
+
+                if (!(valueToken is ValueToken<WhitespaceReader<Nothing>>.Object @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectReader = await @object.Reader.MoveInternal1().ConfigureAwait(false);
+                var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiterReader = await stringReader.MoveInternal1().ConfigureAwait(false);
+                var charsReader = await stringDelimiterReader.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiterReader2 = await charsReader.MoveInternal1().ConfigureAwait(false);
+                var whitespaceReader3 = await stringDelimiterReader2.MoveInternal1().ConfigureAwait(false);
+                var colonReader = await whitespaceReader3.MoveInternal1().ConfigureAwait(false);
+                var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
+                var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
+                var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
+                if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.True @true))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var subsequentMembersReader = await @true.Reader.MoveInternal1().ConfigureAwait(false);
+                var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembersReader.Read().ConfigureAwait(false);
+                    subsequentMembersToken = subsequentMembersReader.TryMove(out read);
+                }
+
+                var subsequentMemberReader = subsequentMembersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    more => more);
+
+                // false
+                var commaReader = await subsequentMemberReader.MoveInternal1().ConfigureAwait(false);
+                var whitespaceReader5 = await commaReader.MoveInternal1().ConfigureAwait(false);
+                var memberReader2 = await whitespaceReader5.MoveInternal1().ConfigureAwait(false);
+                var stringReader2 = await memberReader2.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiterReader3 = await stringReader2.MoveInternal1().ConfigureAwait(false);
+                var charsReader2 = await stringDelimiterReader3.MoveInternal1();
+                var stringDelimiterReader4 = await charsReader2.MoveInternal1();
+                var whitespace6 = await stringDelimiterReader4.MoveInternal1();
+                var colon2 = await whitespace6.MoveInternal1();
+                var whitespace7 = await colon2.MoveInternal1();
+                var value3 = await whitespace7.MoveInternal1();
+                var valueToken3 = await value3.MoveInternal1();
+                if (!(valueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.False @false))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var subsequentMembers2 = await @false.Reader.MoveInternal1();
+                var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembers2.Read();
+                    subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
+                }
+
+                var subsequentMember2 = subsequentMembersToken2.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);
+
+                // 1234
             }
         }
 
         
+
 
         /*private static async Task ReadToEnd<TNextReader>(Json2.StringReader<TNextReader> stringReader, Func<TNextReader, Task> readToEnd)
         {

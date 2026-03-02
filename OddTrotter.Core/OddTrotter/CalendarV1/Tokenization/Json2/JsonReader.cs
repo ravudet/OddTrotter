@@ -78,7 +78,7 @@
 
         static abstract Func<ReaderContext, TSelf> Factory { get; }
 
-        bool TryMove(out Func<ReaderContext, TNextReader> nextFactory);
+        bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory);
     }
 
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
@@ -171,7 +171,7 @@
                         (_, _, _, _) => new Nothing())));
         }
 
-        public bool TryMove(out Func<ReaderContext, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
+        public bool TryMove3(out Func<ReaderContext, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
             nextFactory = static context => new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
                 context.Stream,
