@@ -44,7 +44,7 @@
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item
         //// TODO you need to tidy things up so that you can document the exceptions before going to the UI level, but at this point it looks like you can surface all of the error information that you would like
-            //// TODO add inheritdoc to reads and writers and then you are done with that level
+            //// TODO you are at the protocol level
 
         //// TODO now you need to do the UI level
     //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
