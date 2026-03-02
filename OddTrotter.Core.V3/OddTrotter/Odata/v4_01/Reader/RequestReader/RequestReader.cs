@@ -23,6 +23,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<IVerbReader> Read()
         {
             return await Task.FromResult(new VerbReader(httpRequestMessage)).ConfigureAwait(false);
@@ -43,6 +44,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<(IUrlReader UrlReader, HttpVerb HttpVerb)> Read()
         {
             var httpVerb = new HttpVerb(httpRequestMessage.Method.Method); //// TODO not all methods are supported by odata
@@ -65,6 +67,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlSchemeReader> Read()
         {
             return await Task.FromResult(new UrlSchemeReader(httpRequestMessage)).ConfigureAwait(false);
@@ -85,6 +88,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<(IUrlDomainReader UrlDomainReader, UrlScheme UrlScheme)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -114,6 +118,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<(IUrlPathReader UrlPathReader, UrlDomain UrlDomain)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -158,6 +163,7 @@
             this.segment = segment;
         }
 
+        /// <inheritdoc/>
         public async Task<UrlPathToken> Read()
         {
             //// TODO we should probably confirm that there is no fragment (and anything else that odata doesn't leverage)
@@ -196,6 +202,7 @@
             this.segment = segment;
         }
 
+        /// <inheritdoc/>
         public async Task<(IUrlPathReader UrlPathReader, UrlPathSegment UrlPathSegment)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -244,6 +251,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<UrlQueryToken> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -280,6 +288,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryNameReader> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -309,6 +318,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(UrlQueryNameToken UrlQueryNameToken, UrlQueryName UrlQueryName)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -370,6 +380,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IUrlQueryReader UrlQueryReader, UrlQueryValue UrlQueryValue)> Read()
         {
             var requestUri = httpRequestMessage.RequestUri;
@@ -418,6 +429,7 @@
             this.enumerator = enumerator;
         }
 
+        /// <inheritdoc/>
         public async Task<HeadersToken> Read()
         {
             if (!enumerator.MoveNext())
@@ -446,6 +458,7 @@
             this.enumerator = enumerator;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKvpReader> Read()
         {
             return await Task.FromResult(new HeaderKvpReader(httpRequestMessage, enumerator)).ConfigureAwait(false);
@@ -469,6 +482,7 @@
             this.enumerator = enumerator;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKeyReader> Read()
         {
             return await Task.FromResult(new HeaderKeyReader(httpRequestMessage, enumerator)).ConfigureAwait(false);
@@ -492,6 +506,7 @@
             this.enumerator = enumerator;
         }
 
+        /// <inheritdoc/>
         public async Task<(HeaderKeyToken HeaderKeyToken, HeaderKey HeaderKey)> Read()
         {
             var headerKey = new HeaderKey(enumerator.Current.Key);
@@ -530,6 +545,7 @@
             this.valuesEnumerator = valuesEnumerator;
         }
 
+        /// <inheritdoc/>
         public async Task<(HeaderValueToken HeaderValueToken, HeaderValue HeaderValue)> Read()
         {
             var headerValue = new HeaderValue(valuesEnumerator.Current);
@@ -562,6 +578,7 @@
             this.httpRequestMessage = httpRequestMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<BodyToken> Read()
         {
             //// TODO implement actually reading the body

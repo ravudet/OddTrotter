@@ -23,6 +23,7 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<IStatusCodeReader> Read()
         {
             return await Task.FromResult(new StatusCodeReader(this.httpResponseMessage)).ConfigureAwait(false);
@@ -43,6 +44,7 @@
             this.httpResponseMessage = httpResponseMessage;
         }
 
+        /// <inheritdoc/>
         public async Task<(StatusCodeToken StatusCodeToken, HttpStatusCode HttpStatusCode)> Read()
         {
             var httpStatusCode = new HttpStatusCode(this.httpResponseMessage.StatusCode.ToString());
@@ -85,6 +87,7 @@
             this.bodyReaderFactory = bodyReaderFactory;
         }
 
+        /// <inheritdoc/>
         public async Task<HeadersToken<T>> Read()
         {
             if (!this.headers.MoveNext())
@@ -119,6 +122,7 @@
             this.bodyReaderFactory = bodyReaderFactory;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKvpReader<T>> Read()
         {
             return await Task.FromResult(new HeaderKvpReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory)).ConfigureAwait(false);
@@ -148,6 +152,7 @@
             this.bodyReaderFactory = bodyReaderFactory;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKeyReader<T>> Read()
         {
             return await Task.FromResult(new HeaderKeyReader<T>(this.httpResponseMessage, this.headers, this.bodyReaderFactory)).ConfigureAwait(false);
@@ -177,6 +182,7 @@
             this.bodyReaderFactory = bodyReaderFactory;
         }
 
+        /// <inheritdoc/>
         public async Task<(HeaderKeyToken<T> HeaderKeyToken, HeaderKey HeaderKey)> Read()
         {
             var header = this.headers.Current;
@@ -225,6 +231,7 @@
             this.bodyReaderFactory = bodyReaderFactory;
         }
 
+        /// <inheritdoc/>
         public async Task<(HeaderValueToken<T> HeaderValueToken, HeaderValue HeaderValue)> Read()
         {
             var headerValue = new HeaderValue(this.values.Current);
@@ -261,6 +268,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<BodyToken> Read()
         {
             if (this.index == this.bytes.Length)
@@ -290,6 +298,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<IPropertyNameReader> Read()
         {
             return await Task.FromResult(new PropertyNameReader(this.bytes, this.index)).ConfigureAwait(false);
@@ -314,6 +323,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IPropertyValueReader PropertyValueReader, PropertyName PropertyName)> Read()
         {
             long i;
@@ -365,6 +375,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<PropertyValueToken> Read()
         {
             long i;
@@ -415,6 +426,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<LiteralToken> Read()
         {
             long i;
@@ -462,6 +474,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IBodyReader BodyReader, FalseToken FalseToken)> Read()
         {
             long i;
@@ -507,6 +520,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IBodyReader BodyReader, Number Number)> Read()
         {
             long i;
@@ -552,6 +566,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IBodyReader BodyReader, TrueToken TrueToken)> Read()
         {
             long i;
@@ -597,6 +612,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IBodyReader BodyReader, NullToken NullToken)> Read()
         {
             long i;
@@ -642,6 +658,7 @@
             this.index = index;
         }
 
+        /// <inheritdoc/>
         public async Task<(IBodyReader BodyReader, StringToken StringToken)> Read()
         {
             long i;

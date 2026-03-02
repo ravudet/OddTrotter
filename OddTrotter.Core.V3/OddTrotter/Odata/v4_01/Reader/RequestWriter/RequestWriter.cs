@@ -22,6 +22,7 @@
             this.httpClient = httpClient;
         }
 
+        /// <inheritdoc/>
         public async Task<IVerbWriter> Write()
         {
             return await Task.FromResult(new VerbWriter(httpClient)).ConfigureAwait(false);
@@ -42,6 +43,7 @@
             this.httpClient = httpClient;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlWriter> Write(HttpVerb httpVerb)
         {
             //// TODO use the provided verb
@@ -65,6 +67,7 @@
             this.httpMethod = httpMethod;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlSchemeWriter> Write()
         {
             return await Task.FromResult(new UrlSchemeWriter(httpClient, httpMethod)).ConfigureAwait(false);
@@ -88,6 +91,7 @@
             this.httpMethod = httpMethod;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlDomainWriter> Write(UrlScheme urlScheme)
         {
             return await Task.FromResult(new UrlDomainWriter(httpClient, httpMethod, urlScheme.Value)).ConfigureAwait(false);
@@ -115,6 +119,7 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlPathWriter> Write(UrlDomain urlDomain)
         {
             return await Task.FromResult(new UrlPathWriter(httpClient, httpMethod, url + urlDomain.Value)).ConfigureAwait(false);
@@ -142,11 +147,13 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryWriter> Write()
         {
             return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url, true)).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlPathSegmentWriter> WriteSegment()
         {
             return await Task.FromResult(new UrlPathSegmentWriter(httpClient, httpMethod, url)).ConfigureAwait(false);
@@ -174,6 +181,7 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlPathWriter> Write(UrlPathSegment urlPathSegment)
         {
             return await Task.FromResult(new UrlPathWriter(httpClient, httpMethod, url + '/' + urlPathSegment.Value)).ConfigureAwait(false);
@@ -203,11 +211,13 @@
             this.first = first;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryKvpWriter> Write()
         {
             return await Task.FromResult(new UrlQueryKvpWriter(httpClient, httpMethod, url + (first ? '?' : '&'))).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<IHeadersWriter> WriteHeaders()
         {
             return await Task.FromResult(new HeadersWriter(httpClient, httpMethod, url)).ConfigureAwait(false);
@@ -235,6 +245,7 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryNameWriter> Write(UrlQueryName urlQueryName)
         {
             return await Task.FromResult(new UrlQueryNameWriter(httpClient, httpMethod, url + urlQueryName.Value)).ConfigureAwait(false);
@@ -262,11 +273,13 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryWriter> Write()
         {
             return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url, false)).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryValueWriter> WriteValue()
         {
             return await Task.FromResult(new UrlQueryValueWriter(httpClient, httpMethod, url + '=')).ConfigureAwait(false);
@@ -294,6 +307,7 @@
             this.url = url;
         }
 
+        /// <inheritdoc/>
         public async Task<IUrlQueryWriter> Write(UrlQueryValue urlQueryValue)
         {
             return await Task.FromResult(new UrlQueryWriter(httpClient, httpMethod, url + urlQueryValue.Value, false)).ConfigureAwait(false);
@@ -336,11 +350,13 @@
             this.headers = headers;
         }
 
+        /// <inheritdoc/>
         public async Task<IBodyWriter> Write()
         {
             return await Task.FromResult(new BodyWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderWriter> WriteHeader()
         {
             return await Task.FromResult(new HeaderWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
@@ -371,6 +387,7 @@
             this.headers = headers;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKvpWriter> Write()
         {
             return await Task.FromResult(new HeaderKvpWriter(httpClient, httpMethod, url, headers)).ConfigureAwait(false);
@@ -401,6 +418,7 @@
             this.headers = headers;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKeyWriter> Write(HeaderKey headerKey)
         {
             return await Task.FromResult(new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey.Value, string.Empty, true)).ConfigureAwait(false);
@@ -437,11 +455,13 @@
             this.first = first;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeadersWriter> Write()
         {
             return await Task.FromResult(new HeadersWriter(httpClient, httpMethod, url, headers.Append(Tuple.Create(headerKey, headerKey)))).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderValueWriter> Write(HeaderValue headerValue)
         {
             return await Task.FromResult(new HeaderValueWriter(httpClient, httpMethod, url, headers, headerKey, header + (first ? string.Empty : ";") + headerValue.Value)).ConfigureAwait(false);
@@ -478,6 +498,7 @@
             this.header = header;
         }
 
+        /// <inheritdoc/>
         public async Task<IHeaderKeyWriter> Write()
         {
             return await Task.FromResult(new HeaderKeyWriter(httpClient, httpMethod, url, headers, headerKey, header, false)).ConfigureAwait(false);
@@ -508,6 +529,7 @@
             this.headers = headers;
         }
 
+        /// <inheritdoc/>
         public async Task<OddTrotter.Odata.v4_01.Reader.ResponseReader.IResponseReader> Send()
         {
             if (httpMethod == HttpMethod.Get)
