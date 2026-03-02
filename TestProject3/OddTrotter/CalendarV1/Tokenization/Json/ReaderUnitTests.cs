@@ -778,6 +778,81 @@
                     _ => _);
 
                 // 1234
+                var comma2 = await subsequentMember2.MoveInternal1();
+                var whitespace8 = await comma2.MoveInternal1();
+                var member3 = await whitespace8.MoveInternal1();
+                var string3 = await member3.MoveInternal1();
+                var stringDelimiter5 = await string3.MoveInternal1();
+                var chars3 = await stringDelimiter5.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiter6 = await chars3.MoveInternal1().ConfigureAwait(false);
+                var whitespace9 = await stringDelimiter6.MoveInternal1().ConfigureAwait(false);
+                var colon3 = await whitespace9.MoveInternal1();
+                var whitespace10 = await colon3.MoveInternal1();
+                var value4 = await whitespace10.MoveInternal1();
+                var valueToken4 = await value4.MoveInternal1();
+                if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var sign = await number.Reader.MoveInternal1();
+                var @int = await sign.MoveInternal1();
+                var frac = await @int.MoveInternal1();
+                var exp = await frac.MoveInternal1();
+                var expToken = exp.TryMove(out read);
+                if (!read)
+                {
+                    await exp.Read();
+                    expToken = exp.TryMove(out read);
+                }
+
+                var subsequentMembers3 = expToken.Apply(
+                    _ => _,
+                    _ => throw new Exception("tODO"));
+                var subsequentMembersToken3 = subsequentMembers3.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembers3.Read();
+                    subsequentMembersToken3 = subsequentMembers3.TryMove(out read);
+                }
+
+                var subsequentMember3 = subsequentMembersToken3.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);
+
+                // asdf
+                var comma3 = await subsequentMember3.MoveInternal1();
+                var whitespace11 = await comma3.MoveInternal1();
+                var member4 = await whitespace11.MoveInternal1();
+                var string4 = await member4.MoveInternal1();
+                var stringDelimiter7 = await string4.MoveInternal1();
+                var chars4 = await stringDelimiter7.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiter8 = await chars4.MoveInternal1().ConfigureAwait(false);
+                var whitespace12 = await stringDelimiter8.MoveInternal1().ConfigureAwait(false);
+                var colon4 = await whitespace12.MoveInternal1();
+                var whitespace13 = await colon4.MoveInternal1();
+                var value5 = await whitespace13.MoveInternal1();
+                var valueToken5 = await value5.MoveInternal1();
+                if (!(valueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.String @string))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var stringDelimiter9 = await @string.Reader.MoveInternal1();
+                var chars5 = await stringDelimiter9.MoveInternal1();
+                var stringDelimiter10 = await chars5.MoveInternal1();
+                var subsequentMembers4 = await stringDelimiter10.MoveInternal1();
+
+                var subsequentMembersToken4 = subsequentMembers4.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembers4.Read();
+                    subsequentMembersToken4 = subsequentMembers4.TryMove(out read);
+                }
+
+                var subsequentMember4 = subsequentMembersToken4.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);
             }
         }
 
