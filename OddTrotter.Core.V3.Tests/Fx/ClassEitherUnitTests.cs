@@ -8,6 +8,42 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //// TODO prepare to break out into "either" work and "oddtrotter" work; cleanup the todo list below
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //// TODO the "bare minimum" should be for that top-level "production" code; you will then do this recursively later for other files
 
     //// TODO the stuff in the `oddtrotter` folder is still being explored; once you've productized the stuff in `fx` and `system`, you should completely rewrite the stuff in `oddtrotter`
