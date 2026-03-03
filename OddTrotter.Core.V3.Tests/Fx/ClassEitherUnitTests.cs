@@ -60,6 +60,7 @@
 
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
+    //// TODO go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
 
 
 
@@ -93,13 +94,6 @@
 
 
 
-
-
-
-
-
-
-    //// FUTURE you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
 
 
 
