@@ -43,7 +43,6 @@
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers to their appropriate "production" places
     //// TODO you implemented the odata interfaces, in service of the next TODO item
-        //// TODO can something like `selectleft` (line 301 of eitherextensions) use realizable instead of itask?
         //// TODO you need to tidy things up so that you can document the exceptions before going to the UI level, but at this point it looks like you can surface all of the error information that you would like
             //// TODO you are at the protocol level
 
