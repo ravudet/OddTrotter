@@ -754,23 +754,23 @@
                 var memberReader2 = await whitespaceReader5.MoveInternal1().ConfigureAwait(false);
                 var stringReader2 = await memberReader2.MoveInternal1().ConfigureAwait(false);
                 var stringDelimiterReader3 = await stringReader2.MoveInternal1().ConfigureAwait(false);
-                var charsReader2 = await stringDelimiterReader3.MoveInternal1();
-                var stringDelimiterReader4 = await charsReader2.MoveInternal1();
-                var whitespace6 = await stringDelimiterReader4.MoveInternal1();
-                var colon2 = await whitespace6.MoveInternal1();
-                var whitespace7 = await colon2.MoveInternal1();
-                var value3 = await whitespace7.MoveInternal1();
-                var valueToken3 = await value3.MoveInternal1();
+                var charsReader2 = await stringDelimiterReader3.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiterReader4 = await charsReader2.MoveInternal1().ConfigureAwait(false);
+                var whitespace6 = await stringDelimiterReader4.MoveInternal1().ConfigureAwait(false);
+                var colon2 = await whitespace6.MoveInternal1().ConfigureAwait(false);
+                var whitespace7 = await colon2.MoveInternal1().ConfigureAwait(false);
+                var value3 = await whitespace7.MoveInternal1().ConfigureAwait(false);
+                var valueToken3 = await value3.MoveInternal1().ConfigureAwait(false);
                 if (!(valueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.False @false))
                 {
                     throw new Exception("TODO");
                 }
 
-                var subsequentMembers2 = await @false.Reader.MoveInternal1();
+                var subsequentMembers2 = await @false.Reader.MoveInternal1().ConfigureAwait(false);
                 var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
                 if (!read)
                 {
-                    await subsequentMembers2.Read();
+                    await subsequentMembers2.Read().ConfigureAwait(false);
                     subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
                 }
 
@@ -779,18 +779,18 @@
                     _ => _);
 
                 // 1234
-                var comma2 = await subsequentMember2.MoveInternal1();
-                var whitespace8 = await comma2.MoveInternal1();
-                var member3 = await whitespace8.MoveInternal1();
-                var string3 = await member3.MoveInternal1();
-                var stringDelimiter5 = await string3.MoveInternal1();
+                var comma2 = await subsequentMember2.MoveInternal1().ConfigureAwait(false);
+                var whitespace8 = await comma2.MoveInternal1().ConfigureAwait(false);
+                var member3 = await whitespace8.MoveInternal1().ConfigureAwait(false);
+                var string3 = await member3.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiter5 = await string3.MoveInternal1().ConfigureAwait(false);
                 var chars3 = await stringDelimiter5.MoveInternal1().ConfigureAwait(false);
                 var stringDelimiter6 = await chars3.MoveInternal1().ConfigureAwait(false);
                 var whitespace9 = await stringDelimiter6.MoveInternal1().ConfigureAwait(false);
-                var colon3 = await whitespace9.MoveInternal1();
-                var whitespace10 = await colon3.MoveInternal1();
-                var value4 = await whitespace10.MoveInternal1();
-                var valueToken4 = await value4.MoveInternal1();
+                var colon3 = await whitespace9.MoveInternal1().ConfigureAwait(false);
+                var whitespace10 = await colon3.MoveInternal1().ConfigureAwait(false);
+                var value4 = await whitespace10.MoveInternal1().ConfigureAwait(false);
+                var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
                 if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
                 {
                     throw new Exception("TODO");
