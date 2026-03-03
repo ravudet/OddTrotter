@@ -1098,6 +1098,54 @@
                     _ => throw new Exception("TODO"),
                     _ => _);
 
+                // emptyobject
+                var comma6 = await subsequentMember6.MoveInternal1();
+                var whitespace21 = await comma6.MoveInternal1();
+                var member7 = await whitespace21.MoveInternal1();
+                var string8 = await member7.MoveInternal1();
+                var stringDelimiter15 = await string8.MoveInternal1();
+                var chars8 = await stringDelimiter15.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiter16 = await chars8.MoveInternal1().ConfigureAwait(false);
+                var whitespace22 = await stringDelimiter16.MoveInternal1().ConfigureAwait(false);
+                var colon7 = await whitespace22.MoveInternal1();
+                var whitespace23 = await colon7.MoveInternal1();
+                var value8 = await whitespace23.MoveInternal1();
+                var valueToken8 = await value8.MoveInternal1();
+                if (!(valueToken8 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Object object3))
+                {
+                    throw new Exception("TODO");
+                }
+
+                /*var objectStart3 = await object3.Reader.MoveInternal1();
+                var whitespace24 = await objectStart3.MoveInternal1();
+                var members3 = await whitespace24.MoveInternal1();
+                var membersToken3 = members3.TryMove(out read);
+                if (!read)
+                {
+                    await members3.Read();
+                    membersToken3 = members3.TryMove(out read);
+                }
+
+                var whitespace25 = membersToken.Apply(_ => _, _ => throw new Exception("TODO"));
+                var objectEnd = await whitespace25.MoveInternal1();
+                var whitespace26 = await objectEnd.MoveInternal1();
+                await whitespace26.MoveInternal1();
+
+
+
+
+
+                var subsequentMembers7 = await @null.Reader.MoveInternal1();
+                var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembers5.Read();
+                    subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                }
+
+                var subsequentMember5 = subsequentMembersToken5.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);*/
             }
         }
 
