@@ -476,11 +476,29 @@ namespace Fx.Either
 
         public static RefEither<TLeft, TRight> SelectManyRight<TEither, TLeft, TEitherInner, TRight>(
             this TypeHolder<TEither, TLeft, TypeHolder<TEitherInner, TLeft, TRight>> either)
-            where TEither : IEither<TLeft, TEitherInner>, allows ref struct
+            where TEither : IEither<TLeft, TypeHolder<TEitherInner, TLeft, TRight>>, allows ref struct
             where TLeft : allows ref struct
             where TEitherInner : IEither<TLeft, TRight>, allows ref struct
             where TRight : allows ref struct
         {
+            return either
+                .Apply(
+                    left => RefEither.Right<TRight>().Left(left),
+                    right =>
+                    {
+                        var selected = right;
+                        try
+                        {
+                            return selected
+                                .Apply(
+                                    nestedLeft => RefEither.Right<TRight>().Left(nestedLeft),
+                                    nestedRight => RefEither.Left<TLeft>().Right(nestedRight));
+                        }
+                        catch (RightMapException rightMapException)
+                        {
+                            throw rightMapException.InnerException!; //// TODO
+                        }
+                    });
         }
 
 
