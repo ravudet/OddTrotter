@@ -1087,31 +1087,16 @@
                     subsequentMembers6 = await nestedobjectEnd.MoveInternal1();
                 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                /*var subsequentMembers5 = await @object2.Reader.MoveInternal1();
-                var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
                 if (!read)
                 {
-                    await subsequentMembers5.Read();
-                    subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                    await subsequentMembers6.Read();
+                    subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
                 }
 
-                var subsequentMember5 = subsequentMembersToken5.Apply(
+                var subsequentMember6 = subsequentMembersToken6.Apply(
                     _ => throw new Exception("TODO"),
-                    _ => _);*/
+                    _ => _);
 
             }
         }
