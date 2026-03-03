@@ -81,6 +81,14 @@
         bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory);
     }
 
+    public interface IReader2<TSelf, TValue, TNextReader> : IReader2<TSelf, TNextReader>
+        where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
+        where TNextReader : allows ref struct
+        where TValue : allows ref struct
+    {
+        bool TryGetValue3(out TNextReader nextReader);
+    }
+
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
         where TValue : allows ref struct
         where TNextReader : allows ref struct
@@ -193,7 +201,7 @@
         }
     }
 
-    public sealed class WhitespaceReader<TNextReader> : IReader<IEnumerable<WhitespaceToken>, TNextReader>
+    public sealed class WhitespaceReader<TNextReader> : IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
         where TNextReader : allows ref struct
     {
         private readonly Stream stream;
@@ -205,6 +213,12 @@
         private bool finished;
 
         private readonly List<WhitespaceToken> tokens;
+
+        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader> AsReader => throw new NotImplementedException();
+
+        public ReaderContext Context => throw new NotImplementedException();
+
+        public static Func<ReaderContext, WhitespaceReader<TNextReader>> Factory => throw new NotImplementedException();
 
         public WhitespaceReader(
             Stream stream,
@@ -286,6 +300,16 @@
             }
 
             return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public bool TryGetValue3(out TNextReader nextReader)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory)
+        {
+            throw new NotImplementedException();
         }
     }
 
