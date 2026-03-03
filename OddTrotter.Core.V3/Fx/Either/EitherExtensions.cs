@@ -456,6 +456,10 @@ namespace Fx.Either
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            return realizable.ContinueWith(
+                _ => _.AsNestedEither(),
+                _ => throw _,
+                _ => throw _);
         }
 
         public static Realizable<RefEither<TLeft, TRight>> SelectManyRight<TEither, TLeft, TEitherInner, TRight>(
@@ -465,13 +469,19 @@ namespace Fx.Either
             where TEitherInner : IEither<TLeft, TRight>, allows ref struct
             where TRight : allows ref struct
         {
+            return either.ContinueWith(
+                _ => _.SelectManyRight(),
+                _ => throw _,
+                _ => throw _);
         }
 
-        public static TypeHolder<TEither, TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsNestedEither<TEither, TLeft, TRight>(this TypeHolder<TEither, TLeft, RefEither<TLeft, TRight>> either)
-            where TEither : IEither<TLeft, RefEither<TLeft, TRight>>, allows ref struct
+        public static TypeHolder<RefEither<TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>>, TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsNestedEither<TLeft, TRight>(this TypeHolder<RefEither<TLeft, RefEither<TLeft, TRight>>, TLeft, RefEither<TLeft, TRight>> either)
             where TLeft : allows ref struct
             where TRight : allows ref struct
         {
+            return either.Select( //// TODO selectright
+                left => left,
+                right => right.AsEither).AsEither;
         }
 
         public static RefEither<TLeft, TRight> SelectManyRight<TEither, TLeft, TEitherInner, TRight>(
