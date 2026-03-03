@@ -178,7 +178,7 @@
             bool throwOnFailureResponse)
         {
             var getCollectionRequest = new StrongConventionContext.GetCollectionRequest<CalendarEvent>(
-                uri.ToString(),
+                uri,
                 Enumerable.Empty<HttpHeader>());
                     /*
                     internal interface IGraphVersion : IStrongConventionContext
