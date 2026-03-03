@@ -1212,7 +1212,24 @@
                 }
 
                 var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
+                var value11 = await arrayElement.MoveInternal1();
+                var valueToken11 = await value11.MoveInternal1();
+                if (!(valueToken11 is ValueToken<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.Object object4))
+                {
+                    throw new Exception("TODO");
+                }
 
+                var objectStart4 = await object4.Reader.MoveInternal1();
+                var whitespace35 = await objectStart4.MoveInternal1();
+                var members4 = await whitespace35.MoveInternal1();
+                var membersToken4 = members4.TryMove(out read);
+                if (!read)
+                {
+                    await members4.Read();
+                    membersToken4 = members4.TryMove(out read);
+                }
+
+                var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
 
 
 
