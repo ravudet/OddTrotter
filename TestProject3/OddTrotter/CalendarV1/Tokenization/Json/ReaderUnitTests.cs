@@ -1139,6 +1139,49 @@
                 var subsequentMember8 = subsequentMembersToken7.Apply(
                     _ => throw new Exception("TODO"),
                     _ => _);
+
+                // emptyarray
+                var comma7 = await subsequentMember8.MoveInternal1();
+                var whitespace26 = await comma7.MoveInternal1();
+                var member8 = await whitespace26.MoveInternal1();
+                var string9 = await member8.MoveInternal1();
+                var stringDelimiter17 = await string9.MoveInternal1();
+                var chars9 = await stringDelimiter17.MoveInternal1().ConfigureAwait(false);
+                var stringDelimiter18 = await chars9.MoveInternal1().ConfigureAwait(false);
+                var whitespace27 = await stringDelimiter18.MoveInternal1().ConfigureAwait(false);
+                var colon8 = await whitespace27.MoveInternal1();
+                var whitespace28 = await colon8.MoveInternal1();
+                var value9 = await whitespace28.MoveInternal1();
+                var valueToken9 = await value9.MoveInternal1();
+                if (!(valueToken9 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Array array))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var arrayStart = await array.Reader.MoveInternal1();
+                var whitespace29 = await arrayStart.MoveInternal1();
+                var arrayElements = await whitespace29.MoveInternal1();
+                var arrayElementsToken = arrayElements.TryMove(out read);
+                if (!read)
+                {
+                    await arrayElements.Read();
+                    arrayElementsToken = arrayElements.TryMove(out read);
+                }
+
+                var whitespace30 = arrayElementsToken.Apply(_ => _, _ => throw new Exception("TODO"));
+                var arrayEnd = await whitespace30.MoveInternal1();
+                var subsequentMembers9 = await arrayEnd.MoveInternal1();
+                var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
+                if (!read)
+                {
+                    await subsequentMembers9.Read();
+                    subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
+                }
+
+                var subsequentMember10 = subsequentMembersToken9.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);
+
             }
         }
 
