@@ -613,7 +613,7 @@ namespace Fx.Either
         //// tcontinuable
         //// icontinuable
         //// realizable
-        //// task //// TODO should these *return* itask? since they can't have a `tresult` that is a ref struct anyway...
+        //// task //// TODO should these *return* itask? since they can't have a `tresult` that is a ref struct anyway... //// TODO i think you should actually add `itask` variants as well; but the answer to the question is yes, because then you can have the overlaods that need covariance (like `selectmany`) chains together when they are async
         //// }
         //// TODO you didn't include synchronous overloads
         //// TODO you didn't include the context parameter (which may or may not be `ref`)
