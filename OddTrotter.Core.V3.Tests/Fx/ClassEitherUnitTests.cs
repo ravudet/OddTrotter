@@ -100,7 +100,6 @@
 
 
     //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
-    //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
 
 
 
