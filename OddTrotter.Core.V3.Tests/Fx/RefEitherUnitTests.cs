@@ -389,5 +389,30 @@
                 }
             }
         }
+
+        [TestMethod]
+        public void SelectMany()
+        {
+            var either = Something();
+            either.AsEither.AsNestedEither().SelectManyRight();
+        }
+
+        private static RefEither<string, RefEither<string, Exception>> Something()
+        {
+            return RefEither.Right<RefEither<string, Exception>>().Left("asdf");
+        }
+
+        [TestMethod]
+        public Task AsyncSelectMany()
+        {
+            var either = Something2();
+            either.AsEither().AsNestedEither();
+        }
+
+        private static Realizable<RefEither<string, RefEither<string, Exception>>> Something2()
+        {
+            return Realizable.Realizable.FromResult(
+                RefEither.Right<RefEither<string, Exception>>().Left("asdf"));
+        }
     }
 }

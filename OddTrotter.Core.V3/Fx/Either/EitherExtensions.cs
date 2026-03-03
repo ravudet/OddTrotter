@@ -450,6 +450,48 @@ namespace Fx.Either
 
 
 
+
+
+        public static Realizable<TypeHolder<RefEither<TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>>, TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>>> AsNestedEither<TLeft, TRight>(this Realizable<TypeHolder<RefEither<TLeft, RefEither<TLeft, TRight>>, TLeft, RefEither<TLeft, TRight>>> realizable)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+        }
+
+        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsEither<TLeft, TRight>(this Realizable<RefEither<TLeft, TRight>> realizable)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+
+        }
+
+        public static RefEither<TLeft, TRight> SelectManyRight<TContinuable, TEither, TLeft, TEitherInner, TRight>(
+            this TContinuable either)
+            where TEither : IEither<TLeft, TEitherInner>, allows ref struct
+            where TLeft : allows ref struct
+            where TEitherInner : IEither<TLeft, TRight>, allows ref struct
+            where TRight : allows ref struct
+            where TContinuable : IContinuable<TypeHolder<TEither, TLeft, TypeHolder<TEitherInner, TLeft, TRight>>>, allows ref struct
+        {
+        }
+
+        public static TypeHolder<TEither, TLeft, TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsNestedEither<TEither, TLeft, TRight>(this TypeHolder<TEither, TLeft, RefEither<TLeft, TRight>> either)
+            where TEither : IEither<TLeft, RefEither<TLeft, TRight>>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+        }
+
+        public static RefEither<TLeft, TRight> SelectManyRight<TEither, TLeft, TEitherInner, TRight>(
+            this TypeHolder<TEither, TLeft, TypeHolder<TEitherInner, TLeft, TRight>> either)
+            where TEither : IEither<TLeft, TEitherInner>, allows ref struct
+            where TLeft : allows ref struct
+            where TEitherInner : IEither<TLeft, TRight>, allows ref struct
+            where TRight : allows ref struct
+        {
+        }
+
+
         public static async ITask<IEither<TLeft, TRight>> SelectManyLeft<TLeft, TRight>(
             this ITask<IEither<IEither<TLeft, TRight>, TRight>> either)
         {

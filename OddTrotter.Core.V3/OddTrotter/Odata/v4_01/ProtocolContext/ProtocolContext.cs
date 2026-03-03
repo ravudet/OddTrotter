@@ -44,7 +44,7 @@
         /// <exception cref="Protocol.ProtocolException">Thrown if the underlying response payload is not valid OData</exception>
         public async Task<OdataResponse> Send(OdataRequest request)
         {
-            using (var httpRequestMessage = new HttpRequestMessage(new HttpMethod(request.HttpMethod), request.Uri))
+            using (var httpRequestMessage = new HttpRequestMessage(request.HttpMethod, request.Uri))
             {
                 foreach (var header in request.Headers)
                 {

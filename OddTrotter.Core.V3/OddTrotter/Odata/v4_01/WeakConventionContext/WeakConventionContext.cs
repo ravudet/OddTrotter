@@ -35,7 +35,7 @@
         public async Task<GetCollectionResponse> GetCollection(GetCollectionRequest request)
         {
             var odataRequest = new Protocol.OdataRequest(
-                "GET",
+                new HttpMethod("GET"),
                 request.Url,
                 request.Headers);
             Protocol.OdataResponse odataResponse;
