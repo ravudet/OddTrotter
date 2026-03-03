@@ -37,84 +37,73 @@
 
 
 
+    //// TODO remove anything under oddtrotter in v3 that is dead code
+    //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff?
 
 
 
-
-
-
-
-    //// TODO the "bare minimum" should be for that top-level "production" code; you will then do this recursively later for other files
-
-    //// TODO the stuff in the `oddtrotter` folder is still being explored; once you've productized the stuff in `fx` and `system`, you should completely rewrite the stuff in `oddtrotter`
 
     //// TODO taskextensions
     //// TODO taskwrapper
     //// TODO realizableextensions
-    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (mixins) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
-    //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 
     //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
-    //// TODO move any extensions or helpers to their appropriate "production" places
-    //// TODO you implemented the odata interfaces, in service of the next TODO item
-        //// TODO you need to tidy things up so that you can document the exceptions before going to the UI level, but at this point it looks like you can surface all of the error information that you would like
-            //// TODO you are at the protocol level
+    //// TODO move any extensions or helpers in the `oddtrotter` folder to their appropriate "production" places
 
-        //// TODO now you need to do the UI level
-    //// TODO MAKE SURE TO GO ALL THE WAY TO THE UI LEVEL!
-    //// TODO actually do a mock test in `contexttests`
-    //// TODO remove anything under oddtrotter in v3 that is dead code
-    //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff? that's how you will know that the next item is done
-    //// TODO remember, "bare minimum" is actually production code
 
-    //// TODO then, implement the bare minimum needed for oddtrotter to make sure you have a real POC; here, the bare minimum includes anything required for type inference; like, make everything look pretty, allo the way down
-    //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
-    //// TODO `iawaitable` should be *only* what is needed for `await` to work
+
+
+
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
-    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration; "style" here is asking about anything, but particularly the newlines for the lambdas (if you have `a => a.b().c()` is that `a => a\n.b()\n.c()` or is it `a =>\na\n.b()\n.c()`? does it change when there is an `await`?) and the fluent ".{method}" new line conventions, and where to put `await` and `configureawait` and all of that stuff
-    //// TODO implement assert extensions so you can always use assert.that
-    //// TODO for the current "bare minimum", make everything look really nice and complete; you don't need every overload and variation, but the ones that you do have should be complete
+
+
+
+
+
+    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (mixins) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
+    //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
+    //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
+
+    //// TODO implement assert extensions so you can always use assert.that; this should go in `fx.test` or something
     //// TODO add `assert.that` to code quality
     //// TODO add `await="true"` exception documentation to code quality
-    //// TODO you need to implement "everything" (all of the extension variations and overloads; any renames that need to happen; implementing visitors and such; full code quality); but, you weren't very systematic the first time through with what you implemented, nor with what you tested; you should do that now //// TODO this should probably be a "bottom up" kind of thing to make sure that all of the documented nuances at lower levels get surfaced at the highest levels
-    ////    TODO for all of your tests, because of the nature of `realizable`, you will need to have a test where the values are realized and a test where the values are not realized
     //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality //// TODO but i think you already use object.referenceequal for this though?
-    //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
-    //// TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
     //// TODO add to code quality that if an exception has additional properties, the `tostring` method should be overloaded to include those properties? (NOTE: .NET doesn't do this)
     //// TODO add covariance and contravariance to code quality
-    //// TODO don't forget to implement all of the mixins for all of the fundamental ieither implementations; make sure that all wrappers for an either implement a monad so that the wrappers don't have to implement all of the mixins just to get at the underlying either's mixins
-    
+
+
+
+    //// these should go in fx.core:
+    ////    do a complete cleanup of the `system` folder
+    ////        TODO `iawaitable` should be *only* what is needed for `await` to work
+    ////    do a complete cleanup of the `fx` folder
+    ////        TODO for all of your tests, because of the nature of `realizable`, you will need to have a test where the values are realized and a test where the values are not realized
+    ////        TODO don't forget to implement all of the mixins for all of the fundamental ieither implementations; make sure that all wrappers for an either implement a monad so that the wrappers don't have to implement all of the mixins just to get at the underlying either's mixins
+    ////        TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
+    ////    you have a list of patterns that you used for the `fx` folder; which of those do you want to add to code quality?
+    ////    you need to move the query context stuff from the oddtrotter folder into fx.core; you should explore the `ref struct` stuff for that before doing it, though, similar to how you did `ieither`
+
+
+
+
+    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration; "style" here is asking about anything, but particularly the newlines for the lambdas (if you have `a => a.b().c()` is that `a => a\n.b()\n.c()` or is it `a =>\na\n.b()\n.c()`? does it change when there is an `await`?) and the fluent ".{method}" new line conventions, and where to put `await` and `configureawait` and all of that stuff
 
 
 
 
 
 
+
+    //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
     //// TODO in strong convention context, are you sure you want to use ieither instead of teither : ieither, allows ref struct?
+
+
+
 
     [TestClass]
     public sealed class ClassEitherUnitTests

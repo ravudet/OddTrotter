@@ -56,7 +56,7 @@
             Element = element;
         }
         
-        internal IEither<T, DeserializationError> Element { get; }
+        internal IEither<T, DeserializationError> Element { get; } //// TODO do you want to use `refeither` here? //// TODO in fact, explore having all of the odata stuff be entirely `ref struct`s
     }
 
     internal sealed class DeserializationError
