@@ -18,25 +18,6 @@
 
 
 
-
-
-
-
-
-    //// TODO prepare to break out into "either" work and "oddtrotter" work; cleanup the todo list below
-
-
-
-
-
-
-
-
-
-
-
-
-
     //// TODO remove anything under oddtrotter in v3 that is dead code
     //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff?
 
