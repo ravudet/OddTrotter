@@ -91,7 +91,6 @@
 
 
 
-    //// TODO get feedback on names and style at this point, using oddtrotter POC as the demonstration; "style" here is asking about anything, but particularly the newlines for the lambdas (if you have `a => a.b().c()` is that `a => a\n.b()\n.c()` or is it `a =>\na\n.b()\n.c()`? does it change when there is an `await`?) and the fluent ".{method}" new line conventions, and where to put `await` and `configureawait` and all of that stuff
 
 
 
@@ -99,7 +98,8 @@
 
 
 
-    //// TODO you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
+
+    //// FUTURE you could have a `class` implementation of `ieither` that takes delegates for left and right (where those delegates can return `ref struct`s); is this worth doing?
 
 
 
