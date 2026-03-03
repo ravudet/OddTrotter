@@ -1128,23 +1128,17 @@
 
                 var whitespace25 = membersToken3.Apply(_ => _, _ => throw new Exception("TODO"));
                 var objectEnd = await whitespace25.MoveInternal1();
-                var whitespace26 = await objectEnd.MoveInternal1();
-
-
-
-
-
-                /*var subsequentMembers7 = await @null.Reader.MoveInternal1();
-                var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                var subsequentMembers7 = await objectEnd.MoveInternal1();
+                var subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
                 if (!read)
                 {
-                    await subsequentMembers5.Read();
-                    subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+                    await subsequentMembers7.Read();
+                    subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
                 }
 
-                var subsequentMember5 = subsequentMembersToken5.Apply(
+                var subsequentMember8 = subsequentMembersToken7.Apply(
                     _ => throw new Exception("TODO"),
-                    _ => _);*/
+                    _ => _);
             }
         }
 
