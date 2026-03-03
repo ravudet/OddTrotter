@@ -1424,26 +1424,15 @@
                     subsequentMembersToken10 = subsequentMembers10.TryMove(out read);
                 }
 
-                var subsequentMember11 = subsequentMembersToken10.Apply(
+                var whitespace37 = subsequentMembersToken10.Apply(
                     _ => _,
                     _ => throw new Exception("TODO"));
+                var objectEnd2 = await whitespace37.MoveInternal1();
+                var whitespace38 = await objectEnd2.MoveInternal1();
+                var nothing = await whitespace38.MoveInternal1();
+                Assert.AreEqual(new Nothing(), nothing);
 
-
-
-
-
-                /*var arrayEnd = await whitespace30.MoveInternal1();
-                var subsequentMembers9 = await arrayEnd.MoveInternal1();
-                var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-                if (!read)
-                {
-                    await subsequentMembers9.Read();
-                    subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-                }
-
-                var subsequentMember10 = subsequentMembersToken9.Apply(
-                    _ => throw new Exception("TODO"),
-                    _ => _);*/
+                Assert.AreEqual(stream.Length, stream.Position);
             }
         }
 
