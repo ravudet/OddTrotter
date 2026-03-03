@@ -1018,41 +1018,41 @@
                         _ => throw new Exception("TODO"),
                         _ => _);
 
-                    /*// asdf
-                    var comma3 = await subsequentMember3.MoveInternal1();
-                    var whitespace11 = await comma3.MoveInternal1();
-                    var member4 = await whitespace11.MoveInternal1();
-                    var string4 = await member4.MoveInternal1();
-                    var stringDelimiter7 = await string4.MoveInternal1();
-                    var chars4 = await stringDelimiter7.MoveInternal1().ConfigureAwait(false);
-                    var stringDelimiter8 = await chars4.MoveInternal1().ConfigureAwait(false);
-                    var whitespace12 = await stringDelimiter8.MoveInternal1().ConfigureAwait(false);
-                    var colon4 = await whitespace12.MoveInternal1();
-                    var whitespace13 = await colon4.MoveInternal1();
-                    var value5 = await whitespace13.MoveInternal1();
-                    var valueToken5 = await value5.MoveInternal1();
-                    if (!(valueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.String @string5))
+                    // asdf
+                    var nestedcomma3 = await nestedsubsequentMember3.MoveInternal1();
+                    var nestedwhitespace11 = await nestedcomma3.MoveInternal1();
+                    var nestedmember4 = await nestedwhitespace11.MoveInternal1();
+                    var nestedstring4 = await nestedmember4.MoveInternal1();
+                    var nestedstringDelimiter7 = await nestedstring4.MoveInternal1();
+                    var nestedchars4 = await nestedstringDelimiter7.MoveInternal1().ConfigureAwait(false);
+                    var nestedstringDelimiter8 = await nestedchars4.MoveInternal1().ConfigureAwait(false);
+                    var nestedwhitespace12 = await nestedstringDelimiter8.MoveInternal1().ConfigureAwait(false);
+                    var nestedcolon4 = await nestedwhitespace12.MoveInternal1();
+                    var nestedwhitespace13 = await nestedcolon4.MoveInternal1();
+                    var nestedvalue5 = await nestedwhitespace13.MoveInternal1();
+                    var nestedvalueToken5 = await nestedvalue5.MoveInternal1();
+                    if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.String @nestedstring5))
                     {
                         throw new Exception("TODO");
                     }
 
-                    var stringDelimiter9 = await @string5.Reader.MoveInternal1();
-                    var chars5 = await stringDelimiter9.MoveInternal1();
-                    var stringDelimiter10 = await chars5.MoveInternal1();
-                    var subsequentMembers4 = await stringDelimiter10.MoveInternal1();
+                    var nestedstringDelimiter9 = await @nestedstring5.Reader.MoveInternal1();
+                    var nestedchars5 = await nestedstringDelimiter9.MoveInternal1();
+                    var nestedstringDelimiter10 = await nestedchars5.MoveInternal1();
+                    var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1();
 
-                    var subsequentMembersToken4 = subsequentMembers4.TryMove(out read);
+                    var nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
                     if (!read)
                     {
-                        await subsequentMembers4.Read();
-                        subsequentMembersToken4 = subsequentMembers4.TryMove(out read);
+                        await nestedsubsequentMembers4.Read();
+                        nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
                     }
 
-                    var subsequentMember4 = subsequentMembersToken4.Apply(
+                    var nestedsubsequentMember4 = nestedsubsequentMembersToken4.Apply(
                         _ => throw new Exception("TODO"),
                         _ => _);
 
-                    // null
+                    /*// null
                     var comma4 = await subsequentMember4.MoveInternal1();
                     var whitespace14 = await comma4.MoveInternal1();
                     var member5 = await whitespace14.MoveInternal1();
