@@ -1116,7 +1116,7 @@
                     throw new Exception("TODO");
                 }
 
-                /*var objectStart3 = await object3.Reader.MoveInternal1();
+                var objectStart3 = await object3.Reader.MoveInternal1();
                 var whitespace24 = await objectStart3.MoveInternal1();
                 var members3 = await whitespace24.MoveInternal1();
                 var membersToken3 = members3.TryMove(out read);
@@ -1126,16 +1126,15 @@
                     membersToken3 = members3.TryMove(out read);
                 }
 
-                var whitespace25 = membersToken.Apply(_ => _, _ => throw new Exception("TODO"));
+                var whitespace25 = membersToken3.Apply(_ => _, _ => throw new Exception("TODO"));
                 var objectEnd = await whitespace25.MoveInternal1();
                 var whitespace26 = await objectEnd.MoveInternal1();
-                await whitespace26.MoveInternal1();
 
 
 
 
 
-                var subsequentMembers7 = await @null.Reader.MoveInternal1();
+                /*var subsequentMembers7 = await @null.Reader.MoveInternal1();
                 var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
                 if (!read)
                 {
