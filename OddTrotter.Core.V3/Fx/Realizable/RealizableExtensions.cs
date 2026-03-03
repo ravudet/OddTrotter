@@ -14,6 +14,8 @@ namespace Fx.Realizable
 
         public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsEither<TLeft, TRight>(
             this Realizable<RefEither<TLeft, TRight>> realizable)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
         {
             //// TODO are you really happy with the name of this extension?
             return realizable

@@ -403,10 +403,12 @@
         }
 
         [TestMethod]
-        public Task AsyncSelectMany()
+        public async Task AsyncSelectMany()
         {
             var either = Something2();
-            either.AsEither().AsNestedEither();
+            await either.AsEither().AsNestedEither()
+                .SelectManyRight().AsEither()
+                .Apply(_ => _, _ => _.ToString());
         }
 
         private static Realizable<RefEither<string, RefEither<string, Exception>>> Something2()

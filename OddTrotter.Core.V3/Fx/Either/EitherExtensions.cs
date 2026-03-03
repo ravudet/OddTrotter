@@ -458,20 +458,12 @@ namespace Fx.Either
         {
         }
 
-        public static Realizable<TypeHolder<RefEither<TLeft, TRight>, TLeft, TRight>> AsEither<TLeft, TRight>(this Realizable<RefEither<TLeft, TRight>> realizable)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-        {
-
-        }
-
-        public static RefEither<TLeft, TRight> SelectManyRight<TContinuable, TEither, TLeft, TEitherInner, TRight>(
-            this TContinuable either)
-            where TEither : IEither<TLeft, TEitherInner>, allows ref struct
+        public static Realizable<RefEither<TLeft, TRight>> SelectManyRight<TEither, TLeft, TEitherInner, TRight>(
+            this Realizable<TypeHolder<TEither, TLeft, TypeHolder<TEitherInner, TLeft, TRight>>> either)
+            where TEither : IEither<TLeft, TypeHolder<TEitherInner, TLeft, TRight>>, allows ref struct
             where TLeft : allows ref struct
             where TEitherInner : IEither<TLeft, TRight>, allows ref struct
             where TRight : allows ref struct
-            where TContinuable : IContinuable<TypeHolder<TEither, TLeft, TypeHolder<TEitherInner, TLeft, TRight>>>, allows ref struct
         {
         }
 
