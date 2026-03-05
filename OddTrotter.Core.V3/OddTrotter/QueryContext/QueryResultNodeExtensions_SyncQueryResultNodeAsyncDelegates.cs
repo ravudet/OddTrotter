@@ -40,18 +40,5 @@ namespace Fx.QueryContext
 
             return new QueryResultNodeAsync<TValue, TError>(await source.ConfigureAwait(false));
         }
-
-        public static ITask<QueryResultNodeAsync<TValue, TError>> ToQueryResultNodeAsync<TValue, TError>(
-            this Realizable<IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>>> source)
-        {
-            if (source.AsEither.Decompose(out var realized, out var future))
-            {
-                return Task.FromResult(new QueryResultNodeAsync<TValue, TError>(realized)).ToTaskWrapper();
-            }
-            else
-            {
-                return future.ToQueryResultNodeAsync();
-            }
-        }
     }
 }
