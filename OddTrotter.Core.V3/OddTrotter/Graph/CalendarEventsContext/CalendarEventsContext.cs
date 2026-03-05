@@ -18,7 +18,7 @@
     using StrongConventionContext = OddTrotter.Odata.v4_01.StrongConventionContext;
 
 
-    internal interface ICollectionContext<out TElement, out TTranslationException, out TPagingException>
+    /*internal interface ICollectionContext<out TElement, out TTranslationException, out TPagingException>
     {
         ITask<IQueryResult<IEither<TElement, TTranslationException>, TPagingException>> Evaluate();
     }
@@ -30,7 +30,7 @@
     /// <typeparam name="TElement"></typeparam>
     /// <typeparam name="TTranslationException"></typeparam>
     /// <typeparam name="TPagingException"></typeparam>
-    /*internal sealed class CollectionContext<TElement, TTranslationException, TPagingException> : ICollectionContext<TElement, TTranslationException, TPagingException>
+    internal sealed class CollectionContext<TElement, TTranslationException, TPagingException> : ICollectionContext<TElement, TTranslationException, TPagingException>
     {
         private readonly StrongConventionContext.IStrongConventionContext<TElement> strongConventionContext;
         private readonly Uri calendarRoot;
