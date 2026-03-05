@@ -473,12 +473,6 @@
             return either;
         }
 
-        internal static IEither<IEither<TLeftInner, TRightInner>, TRight> AsEither2<TLeftInner, TRightInner, TRight>(
-            this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
-        {
-            return either;
-        }
-
         internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
