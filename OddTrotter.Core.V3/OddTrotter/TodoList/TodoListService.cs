@@ -172,27 +172,4 @@
             public Graph.CalendarEventsContext.PagingError? PagingError { get; set; }
         }
     }
-
-    internal static partial class Extensions
-    {
-        internal static TResult Apply<TLeft, TRight, TContext, TResult>(
-            this IEither<TLeft, TRight> either,
-            Func<TLeft, TContext, TResult> leftMap,
-            Func<TRight, TContext, TResult> rightMap,
-            TContext context)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-            where TResult : allows ref struct
-            where TContext : allows ref struct
-        {
-            if (either.Decompose(out var left, out var right)) //// TODO you shouldn't need `decompose` for this
-            {
-                return leftMap(left, context);
-            }
-            else
-            {
-                return rightMap(right, context);
-            }
-        }
-    }
 }
