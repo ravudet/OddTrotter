@@ -56,47 +56,5 @@ namespace System.Linq
                 return FirstOrDefault.Create(Either.Right<TDefault>().Left(enumerator.Current));
             }
         }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TElement"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="try"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
-        /// </exception>
-        public static IEnumerable<TResult> TrySelect<TElement, TResult>(
-            this IEnumerable<TElement> source,
-            Try<TElement, TResult> @try)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(@try);
-
-            return TrySelectIterator(source, @try);
-        }
-
-        /// <summary>
-        /// placeholder
-        /// </summary>
-        /// <typeparam name="TElement"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="source">assumed to not be <see langword="null"/></param>
-        /// <param name="try">assumed to not be <see langword="null"/></param>
-        /// <returns></returns>
-        private static IEnumerable<TResult> TrySelectIterator<TElement, TResult>(
-            this IEnumerable<TElement> source,
-            Try<TElement, TResult> @try)
-        {
-            foreach (var element in source)
-            {
-                if (@try(element, out var result))
-                {
-                    yield return result;
-                }
-            }
-        }
     }
 }
