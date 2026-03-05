@@ -10,7 +10,7 @@
             NextLink = nextLink;
         }
 
-        Uri NextLink { get; }
+        public Uri NextLink { get; }
 
         internal sealed class Read : PagingError
         {
