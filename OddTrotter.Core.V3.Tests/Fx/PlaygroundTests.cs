@@ -380,7 +380,7 @@
             usersSource
                 .Get()
                 .Filter(user => user.DisplayName.Contains("foo"))
-                .Filter(user => user.DirectReports.Any(directReport => directReport.DisplayName.Contains("bar")));
+                .Filter(user => user.DirectReports.Any(directReport => directReport.DisplayName.Contains(user.DisplayName)));
         }
 
 
