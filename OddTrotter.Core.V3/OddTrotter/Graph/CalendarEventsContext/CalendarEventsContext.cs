@@ -206,7 +206,7 @@
                 {
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .ToQueryResultAsync()
                         .SelectError(_ => new PagingError.Http(uri, httpRequestException));
                 }
             }
@@ -221,7 +221,7 @@
                 {
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .ToQueryResultAsync()
                         .SelectError(_ => new PagingError.Read(uri, exception));
                 }
             }
@@ -236,7 +236,7 @@
                 {
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .ToQueryResultAsync()
                         .SelectError(_ => new PagingError.Write(uri, exception));
                 }
             }
@@ -251,7 +251,7 @@
                 {
                     return Enumerable
                         .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                        .ToQueryResultAsync()
                         .SelectError(_ => new PagingError.Context(uri, exception));
                 }
             }
@@ -265,7 +265,8 @@
                             .Element
                             .SelectRight(deserializationError =>
                                 new CalendarEventTranslationException("TODO include the odata object too, but not as 'odata', probably just a string", deserializationError.Exception)))
-                        .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>(); //// TODO bad type inference
+                        .ToQueryResultAsync()
+                        .SelectError<PagingError>();
 
                     if (success.NextLink != null)
                     {
@@ -289,7 +290,7 @@
                         {
                             return Enumerable
                                 .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                                .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                                .ToQueryResultAsync()
                                 .SelectError(_ => new PagingError.Unauthorized(uri, exception));
                         }
                     }
@@ -304,7 +305,7 @@
                         {
                             return Enumerable
                                 .Empty<IEither<CalendarEvent, CalendarEventTranslationException>>()
-                                .ToQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>() //// TODO bad type inference
+                                .ToQueryResultAsync()
                                 .SelectError(_ => new PagingError.Context(uri, exception));
                         }
                     }
@@ -466,19 +467,24 @@
 
     internal static class Extensions2
     {
-        internal static IQueryResultAsync<TElement, TException> ToQueryResultAsync<TElement, TException>(
+        internal static QueryResultAsync<TElement, Nothing> ToQueryResultAsync<TElement>(
             this IEnumerable<TElement> enumerable)
         {
-            return new QueryResultAsync<TElement, TException>(enumerable);
+            return new QueryResultAsync<TElement, Nothing>(enumerable);
         }
 
-        private sealed class QueryResultAsync<TElement, TException> : IQueryResultAsync<TElement, TException>
+        internal sealed class QueryResultAsync<TElement, TException> : IQueryResultAsync<TElement, TException>
         {
             private readonly IEnumerable<TElement> enumerable;
 
             public QueryResultAsync(IEnumerable<TElement> enumerable)
             {
                 this.enumerable = enumerable;
+            }
+
+            public IQueryResultAsync<TElement, TException2> SelectError<TException2>()
+            {
+                return new QueryResultAsync<TElement, TException2>(this.enumerable);
             }
 
             public async ITask<IQueryResultNodeAsync<TElement, TException>> GetNodes()
