@@ -9,9 +9,13 @@
     using System.Net.Sockets;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using OddTrotter.Odata.v4_01.StrongConventionContext;
+
+    using static Fx.PlaygroundTests;
 
     [TestClass]
     public sealed class PlaygroundTests
@@ -264,6 +268,87 @@
                 { "Start", ExpressionVisitor.StartExpression.Body },
                 { "End", ExpressionVisitor.EndExpression.Body },
             };
+        }
+
+
+
+
+
+
+        [TestMethod]
+        public void EitherFactoryTest()
+        {
+        }
+
+
+        private sealed class EitherFactory : IEitherFactory
+        {
+            public IEitherWithFactory<TLeft, TRight> Create<TLeft, TRight>(TLeft value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEitherWithFactory<TLeft, TRight> Create<TLeft, TRight>(TRight value)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
+
+        public interface IEitherWithFactory<out TLeft, out TRight> : IEither<TLeft, TRight>
+        {
+            static abstract IEitherFactory Factory { get; }
+        }
+
+        public interface IEitherFactory
+        {
+            IEitherWithFactory<TLeft, TRight> Create<TLeft, TRight>(TLeft value);
+
+            IEitherWithFactory<TLeft, TRight> Create<TLeft, TRight>(TRight value);
+        }
+    }
+
+    public static class FactoryExtensions
+    {
+        public readonly ref struct EmptyLeft<TLeft>
+        {
+            private readonly IEitherFactory factory;
+
+            public EmptyLeft(IEitherFactory factory)
+            {
+                this.factory = factory;
+            }
+
+            public IEither<TLeft, TRight> Right<TRight>(TRight value)
+            {
+                return factory.Create<TLeft, TRight>(value);
+            }
+        }
+
+        public static EmptyLeft<TLeft> Left<TLeft>(this IEitherFactory factory)
+        {
+            return new EmptyLeft<TLeft>(factory);
+        }
+
+        public readonly ref struct EmptyRight<TRight>
+        {
+            private readonly IEitherFactory factory;
+
+            public EmptyRight(IEitherFactory factory)
+            {
+                this.factory = factory;
+            }
+
+            public IEither<TLeft, TRight> Left<TLeft>(TLeft value)
+            {
+                return factory.Create<TLeft, TRight>(value);
+            }
+        }
+
+        public static EmptyRight<TRight> Right<TRight>(this IEitherFactory factory)
+        {
+            return new EmptyRight<TRight>(factory);
         }
     }
 }
