@@ -278,6 +278,7 @@
         [TestMethod]
         public void EitherFactoryTest()
         {
+            //// TODO i don't really know where you're going with this; you were thinking that you could use this to "swap" the use of one `ieither` implementation with another across the whole project; not sure that really works though
         }
 
 
