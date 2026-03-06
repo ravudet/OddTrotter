@@ -348,17 +348,6 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private static IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError> Translate(IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError> graphQueryResult)
-        {
-            return graphQueryResult
-                .Select(element => element
-                    .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
-                    .SelectLeft(calendarEvent => CalendarEventsContext.Translate(calendarEvent))
-                    .SelectManyLeft())
-                ////.SelectError(pagingException => new PagingException("TODO", pagingException))
-                ;
-        }
-
         private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)
         {
             /*DateTimeOffset start;
