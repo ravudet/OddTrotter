@@ -14,6 +14,14 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultExtensions
     {
+
+        public static async ITask<IQueryResultAsync<TValue, TError>> Where<TValue, TError>(
+            this ITask<IQueryResultAsync<TValue, TError>> source,
+            Func<TValue, bool> predicate)
+        {
+            return (await source.ConfigureAwait(false)).Where(predicate);
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>
@@ -62,6 +70,16 @@ namespace Fx.QueryContext
             {
                 return await (await this.source.GetNodes().ConfigureAwait(false)).Where(predicate).ConfigureAwait(false);
             }
+        }
+
+        public static async ITask<IQueryResultAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
+            this ITask<IQueryResultAsync<TValueSource, TError>> source,
+            Func<TValueSource, TValueResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            return (await source.ConfigureAwait(false)).Select(selector);
         }
 
         /// <summary>

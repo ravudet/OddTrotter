@@ -104,24 +104,28 @@
 
         public async ITask<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError>> Evaluate()
         {
-            var events = await this.GetEvents().ConfigureAwait(false);
-            var translatedEvents = Translate(events) //// TODO add a `where` that takes in a `task<queryresult>`
+            var events = await this.GetEvents()
+                .Select(element => element
+                    .SelectRight(translationException => new CalendarEventTranslationException("TODO", translationException))
+                    .SelectLeft(calendarEvent => CalendarEventsContext.Translate(calendarEvent))
+                    .SelectManyLeft())
                 .Where(
                     calendarEventOrTranslationError => calendarEventOrTranslationError
                         .Apply(
                             calendarEvent => calendarEvent.Start > this.startTime, // there's a bug in the graph api; it treats gt as ge, so we need to do this extra check locally
-                            error => true));
+                            error => true))
+                .ConfigureAwait(false);
             if (where != null)
             {
-                translatedEvents = translatedEvents
+                events = events
                     .Where(
                         calendarEventOrError => calendarEventOrError.Apply(calendarEvent => this.where(calendarEvent), error => true));
             }
 
-            return translatedEvents;
+            return events;
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetEvents()
+        private async ITask<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetEvents()
         {
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
