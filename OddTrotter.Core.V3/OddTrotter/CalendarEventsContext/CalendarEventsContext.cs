@@ -130,6 +130,7 @@
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
+            //// TODO you are here
             return instanceEvents.Concat2(
                 Task.FromResult(seriesEvents)/*,
                 firstError => firstError,
