@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq.Expressions;
@@ -10,9 +11,11 @@
     using System.Threading.Tasks;
 
     using Fx.Either;
+    using Fx.QueryContext;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using OddTrotter.Graph.CalendarEventsContext;
     using OddTrotter.Odata.v4_01.StrongConventionContext;
 
     using static Fx.PlaygroundTests;
@@ -351,5 +354,265 @@
         {
             return new EmptyRight<TRight>(factory);
         }
+    }
+
+    [TestClass]
+    public sealed class OdataContexts
+    {
+        internal static async Task Foo(IUsersSource usersSource)
+        {
+            var managerSource = usersSource.Get("00000000-0000-0000-0000-000000000000");
+            var managerContext = managerSource.Get();
+            managerContext = managerContext.Expand(manager => manager.DirectReports());
+
+            var manager = await managerContext.Evaluate();
+
+            if (manager.DisplayName.IsProvided(out var displayName))
+            {
+                Console.WriteLine(displayName);
+            }
+
+
+
+
+
+
+            usersSource
+                .Get()
+                .Filter(user => user.DisplayName.Contains("foo"))
+                .Filter(user => user.DirectReports.Any(directReport => directReport.DisplayName.Contains("bar")));
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        //// TODO this is a bit much; there are (at least) 3 contexts where an EDM structured type may be used: payload, URL path, and expression; and you need a different representation of the structured type in each of those contexts
+
+
+        internal interface IUserExpression
+        {
+            IStringExpression Id { get; }
+
+            IStringExpression DisplayName { get; }
+
+            ICollectionExpression<IUserExpression> DirectReports { get; }
+        }
+
+        internal interface ICollectionExpression<T>
+        {
+            bool Any(Expression<Func<T, bool>> expression);
+        }
+
+        internal interface IStringExpression
+        {
+            bool Contains(string value);
+
+            bool Contains(IStringExpression stringExpression);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        internal interface IUsersSource
+        {
+            IUsersContext Get();
+
+            IUserSource Get(string id);
+        }
+
+        internal interface IUsersContext
+        {
+            ITask<IQueryResultAsync<IEither<User, Exception>, Exception>> Evaluate();
+
+            IUsersContext Filter(Expression<Func<IUserExpression, bool>> filter);
+        }
+
+        internal interface IUserSource
+        {
+            IUserContext Get();
+
+            IUsersSource DirectReports();
+
+            IStringSource Id();
+
+            IStringSource DisplayName();
+        }
+
+        internal interface IStringSource
+        {
+            IStringContext Get();
+        }
+
+        internal interface IStringContext
+        {
+            Task<string> Evaluate();
+        }
+
+        internal interface IUserContext
+        {
+            Task<User> Evaluate();
+
+            IUserContext Expand<T>(Expression<Func<IUserSource, T>> expander); //// TODO can you make this target only navigation properties?
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        internal sealed class User
+        {
+            internal User(
+                string id, 
+                string displayName, 
+                IEnumerable<User> directReports)
+            {
+                Id = Property.Provided(id);
+                DisplayName = Property.Provided(displayName);
+                DirectReports = Property.Navigation(directReports);
+            }
+
+            internal User()
+            {
+                this.Id = Property.NotProvided<string>();
+                this.DisplayName = Property.NotProvided<string>();
+                this.DirectReports = Property.NotProvided<IEnumerable<User>>();
+            }
+
+            public Provided<string> Id { get; set; }
+            public Provided<string> DisplayName { get; set; }
+            public NavigationProperty<Provided<IEnumerable<User>>> DirectReports { get; set; }
+        }
+
+        internal static class Property
+        {
+            internal static Provided<T>.No NotProvided<T>()
+            {
+                return OdataContexts.Provided<T>.No.Instance;
+            }
+
+            internal static Provided<T>.Yes Provided<T>(T value)
+            {
+                return new Provided<T>.Yes(value);
+            }
+
+            internal static NavigationProperty<Provided<T>> Navigation<T>(T value)
+            {
+                return new NavigationProperty<Provided<T>>(Property.Provided(value));
+            }
+        }
+
+        internal sealed class NavigationProperty<T>
+        {
+            public NavigationProperty(T value)
+            {
+                Value = value;
+            }
+
+            public T Value { get; }
+        }
+
+        internal abstract class Provided<T>
+        {
+            private Provided()
+            {
+            }
+
+            public bool IsProvided([MaybeNullWhen(false)] out T value)
+            {
+                if (this is Yes yes)
+                {
+                    value = yes.Value;
+                    return true;
+                }
+
+                value = default;
+                return false;
+            }
+
+            internal sealed class Yes : Provided<T>
+            {
+                internal Yes(T value)
+                {
+                    Value = value;
+                }
+
+                public T Value { get; }
+            }
+
+            internal sealed class No : Provided<T>
+            {
+                private No()
+                {
+                }
+
+                public static No Instance { get; } = new No();
+
+                public static implicit operator NavigationProperty<Provided<T>>(No no)
+                {
+                    return new NavigationProperty<Provided<T>>(no);
+                }
+            }
+
+            public static implicit operator T(Provided<T> provided)
+            {
+                return default!;
+            }
+        }
+
+
+
+
+
+
+
+
+
     }
 }
