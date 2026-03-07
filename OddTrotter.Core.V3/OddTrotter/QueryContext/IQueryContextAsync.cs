@@ -3,7 +3,7 @@ namespace Fx.QueryContext
 {
     using System.Threading.Tasks;
 
-    public interface IQueryContextAsync<out TClientValue, out TDataStoreValue, out TError>
+    public interface IQueryContextAsync<out TClientValue, out TDataStoreValue, out TError> //// TODO document why there is no "synchronous" query context or query result
     {
         /// <summary>
         /// placeholder

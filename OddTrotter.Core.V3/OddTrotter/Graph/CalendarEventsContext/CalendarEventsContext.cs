@@ -548,6 +548,140 @@
             }
         }
 
+        internal static IQueryResultAsync<TElement, TErrorResult> Concat3<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResultAsync<TElement, TErrorFirst> queryResult,
+            Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+            Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+        {
+            return new Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(queryResult, next, errorAggregator);
+        }
+
+        private sealed class Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResultAsync<TElement, TErrorResult>
+        {
+            private readonly IQueryResultAsync<TElement, TErrorFirst> queryResult;
+            private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+            private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+
+            public Concat3QueryResult(
+                IQueryResultAsync<TElement, TErrorFirst> queryResult,
+                Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+            {
+                this.queryResult = queryResult;
+                this.next = next;
+                this.errorAggregator = errorAggregator;
+            }
+
+            public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> GetNodes()
+            {
+                return new Node(await this.queryResult.GetNodes().ConfigureAwait(false), this.next, this.errorAggregator);
+            }
+
+            private sealed class Node : IQueryResultNodeAsync<TElement, TErrorResult>
+            {
+                private readonly IQueryResultNodeAsync<TElement, TErrorFirst> queryResult;
+                private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+                private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+
+                public Node(
+                    IQueryResultNodeAsync<TElement, TErrorFirst> queryResult,
+                    Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                    Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                {
+                    this.queryResult = queryResult;
+                    this.next = next;
+                    this.errorAggregator = errorAggregator;
+                }
+
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    return this.queryResult.ApplyAsync<TResult, TContext, Realizable<TResult>>(
+                        (element, ref context) =>
+                        {
+                            return Realizable.FromResult(leftMap(new Element(element, this.next, this.errorAggregator), ref context)).ContinueWith(_ => _.ContinueWith(_ => _, _ => throw _, _ => throw _), _ => throw _, _ => throw _).Unwrap();
+                        },
+                        (terminal, ref context) =>
+                        {
+                            var firstError = terminal
+                                .Apply(
+                                    error => new BetterNullable<TErrorFirst>(error.Value),
+                                    empty => new BetterNullable<TErrorFirst>());
+                            var nextNode = new NextNode(firstError, this.next, this.errorAggregator);
+                            return nextNode.ApplyAsync(leftMap, rightMap, ref context);
+                        },
+                        ref context);
+                }
+
+                private sealed class Element : IElementAsync<TElement, TErrorResult>
+                {
+                    private readonly IElementAsync<TElement, TErrorFirst> element;
+                    private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+                    private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+
+                    public Element(
+                        IElementAsync<TElement, TErrorFirst> element,
+                        Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                        Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                    {
+                        this.element = element;
+                        this.next = next;
+                        this.errorAggregator = errorAggregator;
+                    }
+
+                    public TElement Value
+                    {
+                        get
+                        {
+                            return this.element.Value;
+                        }
+                    }
+
+                    public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
+                    {
+                        return new Node(await this.element.Next().ConfigureAwait(false), this.next, this.errorAggregator);
+                    }
+                }
+
+                private sealed class NextNode : IQueryResultNodeAsync<TElement, TErrorResult>
+                {
+                    private readonly BetterNullable<TErrorFirst> firstError;
+                    private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+                    private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+
+                    public NextNode(
+                        BetterNullable<TErrorFirst> firstError,
+                        Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                        Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                    {
+                        this.firstError = firstError;
+                        this.next = next;
+                        this.errorAggregator = errorAggregator;
+                    }
+
+                    public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                        where TResult : allows ref struct
+                        where TContext : allows ref struct
+                        where TContinuable : IContinuable<TResult>, allows ref struct
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    private sealed class Element : IElementAsync<TElement, TErrorResult>
+                    {
+                        public TElement Value => throw new NotImplementedException();
+
+                        public ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+            }
+        }
+
         internal static IQueryResultAsync<TElement, TException> Concat2<TElement, TException>(
             this IQueryResultAsync<TElement, TException> queryResult,
             Task<IQueryResultAsync<TElement, TException>> next)
