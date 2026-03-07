@@ -666,7 +666,14 @@
                         where TContext : allows ref struct
                         where TContinuable : IContinuable<TResult>, allows ref struct
                     {
-                        throw new NotImplementedException();
+                        this.next.ToTaskWrapper().ContinueWith(
+                            queryResult =>
+                            {
+                                queryResult.GetNodes().ContinueWith(
+                                    nodes => nodes.ApplyAsync(leftMap, rightMap, ref context));
+                            },
+                            _ => throw _,
+                            _ => throw _)
                     }
 
                     private sealed class Element : IElementAsync<TElement, TErrorResult>
