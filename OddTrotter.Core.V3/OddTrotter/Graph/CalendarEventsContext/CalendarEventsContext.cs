@@ -601,7 +601,7 @@
                     return this.queryResult.ApplyAsync<TResult, TContext, Realizable<TResult>>(
                         (element, ref context) =>
                         {
-                            return Realizable.FromResult(leftMap(new Element(element, this.next, this.errorAggregator), ref context)).ContinueWith(_ => _.ContinueWith(_ => _, _ => throw _, _ => throw _), _ => throw _, _ => throw _).Unwrap();
+                            return leftMap(new Element(element, this.next, this.errorAggregator), ref context).ContinueWith(_ => _, _ => throw _, _ => throw _);
                         },
                         (terminal, ref context) =>
                         {
