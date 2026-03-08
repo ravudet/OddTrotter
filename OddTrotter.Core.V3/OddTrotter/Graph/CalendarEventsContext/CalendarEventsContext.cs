@@ -563,30 +563,48 @@
         internal static IQueryResultAsync<TElement, TErrorResult> Concat3<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultAsync<TElement, TErrorFirst> queryResult,
             Task<IQueryResultAsync<TElement, TErrorSecond>> next,
-            Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+            Func<TErrorFirst, TErrorResult> firstErrorSelector,
+            Func<TErrorSecond, TErrorResult> secondErrorSelector,
+            Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
         {
-            return new Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(queryResult, next, errorAggregator);
+            return new Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+                queryResult, 
+                next, 
+                firstErrorSelector,
+                secondErrorSelector,
+                errorAggregator);
         }
 
         private sealed class Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResultAsync<TElement, TErrorResult>
         {
             private readonly IQueryResultAsync<TElement, TErrorFirst> queryResult;
             private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
-            private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+            private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+            private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+            private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
             public Concat3QueryResult(
                 IQueryResultAsync<TElement, TErrorFirst> queryResult,
                 Task<IQueryResultAsync<TElement, TErrorSecond>> next,
-                Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
             {
                 this.queryResult = queryResult;
                 this.next = next;
+                this.firstErrorSelector = firstErrorSelector;
+                this.secondErrorSelector = secondErrorSelector;
                 this.errorAggregator = errorAggregator;
             }
 
             public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> GetNodes()
             {
-                return await Node.Create(await this.queryResult.GetNodes().ConfigureAwait(false), this.next, this.errorAggregator).ConfigureAwait(false);
+                return await Node.Create(
+                    await this.queryResult.GetNodes().ConfigureAwait(false), 
+                    this.next, 
+                    this.firstErrorSelector,
+                    this.secondErrorSelector,
+                    this.errorAggregator).ConfigureAwait(false);
             }
 
             private sealed class Node : IQueryResultNodeAsync<TElement, TErrorResult>
@@ -594,7 +612,9 @@
                 public static async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Create(
                     IQueryResultNodeAsync<TElement, TErrorFirst> queryResult,
                     Task<IQueryResultAsync<TElement, TErrorSecond>> next,
-                    Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                    Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                    Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                    Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                 {
                     if (queryResult.TryGetRight(out var terminal))
                     {
@@ -604,25 +624,41 @@
                             firstError = new BetterNullable<TErrorFirst>(error.Value);
                         }
 
-                        return new NextNode(firstError, await (await next.ConfigureAwait(false)).GetNodes().ConfigureAwait(false), errorAggregator);
+                        return new NextNode(
+                            firstError,
+                            await (await next.ConfigureAwait(false)).GetNodes().ConfigureAwait(false), 
+                            firstErrorSelector,
+                            secondErrorSelector,
+                            errorAggregator);
                     }
                     else
                     {
-                        return new Node(queryResult, next, errorAggregator);
+                        return new Node(
+                            queryResult, 
+                            next, 
+                            firstErrorSelector,
+                            secondErrorSelector,
+                            errorAggregator);
                     }
                 }
 
                 private readonly IQueryResultNodeAsync<TElement, TErrorFirst> queryResult;
                 private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
-                private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+                private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+                private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+                private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                 private Node(
                     IQueryResultNodeAsync<TElement, TErrorFirst> queryResult,
                     Task<IQueryResultAsync<TElement, TErrorSecond>> next,
-                    Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                    Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                    Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                    Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                 {
                     this.queryResult = queryResult;
                     this.next = next;
+                    this.firstErrorSelector = firstErrorSelector;
+                    this.secondErrorSelector = secondErrorSelector;
                     this.errorAggregator = errorAggregator;
                 }
 
@@ -634,7 +670,7 @@
                     return this.queryResult.ApplyAsync<TResult, TContext, Realizable<TResult>>(
                         (element, ref context) =>
                         {
-                            return leftMap(new Element(element, this.next, this.errorAggregator), ref context).ContinueWith(_ => _, _ => throw _, _ => throw _);
+                            return leftMap(new Element(element, this.next, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator), ref context).ContinueWith(_ => _, _ => throw _, _ => throw _);
                         },
                         (terminal, ref context) =>
                         {
@@ -647,15 +683,21 @@
                 {
                     private readonly IElementAsync<TElement, TErrorFirst> element;
                     private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
-                    private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+                    private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+                    private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+                    private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                     public Element(
                         IElementAsync<TElement, TErrorFirst> element,
                         Task<IQueryResultAsync<TElement, TErrorSecond>> next,
-                        Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                        Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                        Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                        Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                     {
                         this.element = element;
                         this.next = next;
+                        this.firstErrorSelector = firstErrorSelector;
+                        this.secondErrorSelector = secondErrorSelector;
                         this.errorAggregator = errorAggregator;
                     }
 
@@ -669,7 +711,12 @@
 
                     public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
                     {
-                        return await Node.Create(await this.element.Next().ConfigureAwait(false), this.next, this.errorAggregator).ConfigureAwait(false);
+                        return await Node.Create(
+                            await this.element.Next().ConfigureAwait(false), 
+                            this.next, 
+                            this.firstErrorSelector,
+                            this.secondErrorSelector,
+                            this.errorAggregator).ConfigureAwait(false);
                     }
                 }
             }
@@ -678,15 +725,21 @@
             {
                 private readonly BetterNullable<TErrorFirst> firstError;
                 private readonly IQueryResultNodeAsync<TElement, TErrorSecond> next;
-                private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+                private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+                private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+                private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                 public NextNode(
                     BetterNullable<TErrorFirst> firstError,
                     IQueryResultNodeAsync<TElement, TErrorSecond> next,
-                    Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                    Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                    Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                    Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                 {
                     this.firstError = firstError;
                     this.next = next;
+                    this.firstErrorSelector = firstErrorSelector;
+                    this.secondErrorSelector = secondErrorSelector;
                     this.errorAggregator = errorAggregator;
                 }
 
@@ -698,11 +751,11 @@
                     return this.next.ApplyAsync<TResult, TContext, TContinuable>(
                         (element, ref context) =>
                         {
-                            return leftMap(new Element(element, this.firstError, this.errorAggregator), ref context);
+                            return leftMap(new Element(element, this.firstError, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator), ref context);
                         },
                         (terminal, ref context) =>
                         {
-                            return rightMap(new Terminal(terminal, this.firstError, this.errorAggregator), ref context);
+                            return rightMap(new Terminal(terminal, this.firstError, this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator), ref context);
                         },
                         ref context);
                 }
@@ -711,15 +764,21 @@
                 {
                     private readonly IEither<IError<TErrorSecond>, IEmpty> terminal;
                     private readonly BetterNullable<TErrorFirst> firstError;
-                    private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+                    private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+                    private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+                    private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                     public Terminal(
                         IEither<IError<TErrorSecond>, IEmpty> terminal,
                         BetterNullable<TErrorFirst> firstError,
-                        Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                        Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                        Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                        Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                     {
                         this.terminal = terminal;
                         this.firstError = firstError;
+                        this.firstErrorSelector = firstErrorSelector;
+                        this.secondErrorSelector = secondErrorSelector;
                         this.errorAggregator = errorAggregator;
                     }
 
@@ -731,16 +790,24 @@
                         return this.terminal.ApplyAsync<TResult, TContext, TContinuable>(
                             (error, ref context) =>
                             {
-                                return leftMap(
-                                    new Error(this.errorAggregator(this.firstError, new BetterNullable<TErrorSecond>(error.Value))),
-                                    ref context);
+                                TErrorResult resultError;
+                                if (this.firstError.TryGetValue(out var firstError))
+                                {
+                                    resultError = this.errorAggregator(firstError, error.Value);
+                                }
+                                else
+                                {
+                                    resultError = this.secondErrorSelector(error.Value);
+                                }
+
+                                return leftMap(new Error(resultError), ref context);
                             },
                             (empty, ref context) =>
                             {
-                                if (firstError.TryGetValue(out _))
+                                if (this.firstError.TryGetValue(out var firstError))
                                 {
                                     return leftMap(
-                                        new Error(this.errorAggregator(this.firstError, new BetterNullable<TErrorSecond>())),
+                                        new Error(this.firstErrorSelector(firstError)),
                                         ref context);
                                 }
                                 else
@@ -766,15 +833,21 @@
                 {
                     private readonly IElementAsync<TElement, TErrorSecond> element;
                     private readonly BetterNullable<TErrorFirst> firstError;
-                    private readonly Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator;
+                    private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
+                    private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
+                    private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                     public Element(
                         IElementAsync<TElement, TErrorSecond> element,
                         BetterNullable<TErrorFirst> firstError,
-                        Func<BetterNullable<TErrorFirst>, BetterNullable<TErrorSecond>, TErrorResult> errorAggregator)
+                        Func<TErrorFirst, TErrorResult> firstErrorSelector,
+                        Func<TErrorSecond, TErrorResult> secondErrorSelector,
+                        Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
                     {
                         this.element = element;
                         this.firstError = firstError;
+                        this.firstErrorSelector = firstErrorSelector;
+                        this.secondErrorSelector = secondErrorSelector;
                         this.errorAggregator = errorAggregator;
                     }
 
@@ -788,7 +861,7 @@
 
                     public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
                     {
-                        return new NextNode(this.firstError, await this.element.Next().ConfigureAwait(false), this.errorAggregator);
+                        return new NextNode(this.firstError, await this.element.Next().ConfigureAwait(false), this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
                     }
                 }
             }

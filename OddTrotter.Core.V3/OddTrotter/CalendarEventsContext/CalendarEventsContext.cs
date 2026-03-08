@@ -130,6 +130,36 @@
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
+            return instanceEvents.Concat3(
+                Task.FromResult(seriesEvents),
+                (firstError, secondError) =>
+                {
+                    var hasFirst = firstError.TryGetValue(out var first);
+                    var hasSecond = secondError.TryGetValue(out var second);
+                    if (hasFirst)
+                    {
+                        if (hasSecond)
+                        {
+                            return default;
+                        }
+                        else
+                        {
+                            return first;
+                        }
+                    }
+                    else
+                    {
+                        if (hasSecond)
+                        {
+                            return second;
+                        }
+                        else
+                        {
+                            return default;
+                        }
+                    }
+                });
+
             //// TODO you are here
             return instanceEvents.Concat2(
                 Task.FromResult(seriesEvents)/*,
