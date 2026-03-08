@@ -132,43 +132,9 @@
 
             return instanceEvents.Concat3(
                 Task.FromResult(seriesEvents),
-                (firstError, secondError) =>
-                {
-                    var hasFirst = firstError.TryGetValue(out var first);
-                    var hasSecond = secondError.TryGetValue(out var second);
-                    if (hasFirst)
-                    {
-                        if (hasSecond)
-                        {
-                            return default;
-                        }
-                        else
-                        {
-                            return first;
-                        }
-                    }
-                    else
-                    {
-                        if (hasSecond)
-                        {
-                            return second;
-                        }
-                        else
-                        {
-                            return default;
-                        }
-                    }
-                });
-
-            //// TODO you are here
-            return instanceEvents.Concat2(
-                Task.FromResult(seriesEvents)/*,
                 firstError => firstError,
                 secondError => secondError,
-                (firstError, secondError) =>
-                    new Graph.PagingException(
-                            "TODO an error occurred while paging both instances events and series events",
-                            new AggregateException(firstError, secondError))*/);
+                (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));
         }
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstanceEvents()
