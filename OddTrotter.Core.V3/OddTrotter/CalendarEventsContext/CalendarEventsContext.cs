@@ -131,7 +131,7 @@
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
             return instanceEvents.Concat3(
-                Task.FromResult(seriesEvents),
+                Task.FromResult(seriesEvents), //// TODO you are here
                 firstError => firstError,
                 secondError => secondError,
                 (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));
@@ -313,7 +313,11 @@
                 newPageEndTime = this.endTime.Value;
             }
 
-            return initial.Concat2(this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime));
+            return initial.Concat3(
+                this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime),
+                firstError => firstError,
+                secondError => secondError,
+                (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred within this time slice and the next one")));
         }
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
