@@ -571,7 +571,7 @@
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
             Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
         {
-            return new Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            return new ConcatQueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
                 queryResult, 
                 next, 
                 firstErrorSelector,
@@ -579,7 +579,7 @@
                 errorAggregator);
         }
 
-        private sealed class Concat3QueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResultAsync<TElement, TErrorResult>
+        private sealed class ConcatQueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResultAsync<TElement, TErrorResult>
         {
             private readonly IQueryResultAsync<TElement, TErrorFirst> queryResult;
             private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
@@ -587,7 +587,7 @@
             private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
             private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
-            public Concat3QueryResult(
+            public ConcatQueryResult(
                 IQueryResultAsync<TElement, TErrorFirst> queryResult,
                 Task<IQueryResultAsync<TElement, TErrorSecond>> next,
                 Func<TErrorFirst, TErrorResult> firstErrorSelector,
