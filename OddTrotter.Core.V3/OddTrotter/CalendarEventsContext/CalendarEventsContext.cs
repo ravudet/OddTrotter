@@ -137,7 +137,9 @@
                 seriesEvents,
                 firstError => firstError,
                 secondError => secondError,
-                (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));
+                (firstError, secondError) => new Graph.PagingError.Context(
+                    new Uri("https://todo.com"), 
+                    new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));
         }
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstanceEvents()
