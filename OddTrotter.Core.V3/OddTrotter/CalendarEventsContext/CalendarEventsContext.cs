@@ -508,6 +508,92 @@
             return either.SelectLeft(selector);
         }
 
+
+        internal static IQueryResultAsync<TValue, TError> Take<TValue, TError>(
+            this IQueryResultAsync<TValue, TError> queryResult,
+            int count)
+        {
+            //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any error that might have occurred
+            
+            return new Tak
+        }
+
+        private sealed class TakeQueryResult<TValue, TError> : IQueryResultAsync<TValue, TError>
+        {
+            private readonly IQueryResultAsync<TValue, TError> queryResult;
+            private readonly int count;
+
+            public TakeQueryResult(
+                IQueryResultAsync<TValue, TError> queryResult,
+                int count)
+            {
+                this.queryResult = queryResult;
+                this.count = count;
+            }
+
+            public async ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
+            {
+                return new Node(await this.queryResult.GetNodes().ConfigureAwait(false), this.count);
+            }
+
+            private sealed class Node : IQueryResultNodeAsync<TValue, TError>
+            {
+                private readonly IQueryResultNodeAsync<TValue, TError> queryResult;
+                private readonly int count;
+
+                public Node(
+                    IQueryResultNodeAsync<TValue, TError> queryResult,
+                    int count)
+                {
+                    this.queryResult = queryResult;
+                    this.count = count;
+                }
+
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    return this.queryResult.ApplyAsync<TResult, TContext, TContinuable>(
+                        (element, ref context) =>
+                        {
+                            return leftMap(new Element(element, this.count), ref context);
+                        },
+                        (terminal, ref context) =>
+                        {
+                            return rightMap(terminal, ref context);
+                        },
+                        ref context);
+                }
+
+                private sealed class Element : IElementAsync<TValue, TError>
+                {
+                    private readonly IElementAsync<TValue, TError> element;
+                    private readonly int count;
+
+                    public Element(IElementAsync<TValue, TError> element, int count)
+                    {
+                        this.element = element;
+                        this.count = count;
+                    }
+
+                    public TValue Value
+                    {
+                        get
+                        {
+                            return this.element.Value;
+                        }
+                    }
+
+                    public async ITask<IQueryResultNodeAsync<TValue, TError>> Next()
+                    {
+                        return new Node(await this.element.Next().ConfigureAwait(false), count - 1);
+                    }
+                }
+            }
+        }
+
+
         internal static IQueryResultAsync<TValue, TError> TrySelect<TValue, TError>(
             this IQueryResultAsync<IEither<TValue, Nothing>, TError> queryResult)
         {
