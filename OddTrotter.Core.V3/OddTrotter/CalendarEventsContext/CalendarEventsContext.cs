@@ -130,7 +130,7 @@
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
-            return instanceEvents.Concat3(
+            return instanceEvents.Concat(
                 Task.FromResult(seriesEvents), //// TODO you are here
                 firstError => firstError,
                 secondError => secondError,
@@ -313,7 +313,7 @@
                 newPageEndTime = this.endTime.Value;
             }
 
-            return initial.Concat3(
+            return initial.Concat(
                 this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime),
                 firstError => firstError,
                 secondError => secondError,

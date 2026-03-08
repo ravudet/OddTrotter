@@ -275,7 +275,7 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat3(
+                        graphCalendarEvents = graphCalendarEvents.Concat(
                             EvaluatePage(strongConventionContext, new Uri(success.NextLink), false),
                             firstError => firstError,
                             secondError => secondError,
@@ -564,7 +564,7 @@
             return !either.Decompose(out _, out right);
         }
 
-        internal static IQueryResultAsync<TElement, TErrorResult> Concat3<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+        internal static IQueryResultAsync<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultAsync<TElement, TErrorFirst> queryResult,
             Task<IQueryResultAsync<TElement, TErrorSecond>> next,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
