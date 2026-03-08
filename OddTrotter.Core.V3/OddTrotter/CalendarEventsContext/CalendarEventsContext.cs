@@ -119,7 +119,10 @@
             {
                 events = events
                     .Where(
-                        calendarEventOrError => calendarEventOrError.Apply(calendarEvent => this.where(calendarEvent), error => true));
+                        calendarEventOrError => calendarEventOrError
+                            .Apply(
+                                calendarEvent => this.where(calendarEvent), 
+                                error => true));
             }
 
             return events;
