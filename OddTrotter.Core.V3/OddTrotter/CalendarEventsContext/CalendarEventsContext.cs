@@ -187,7 +187,7 @@
                             {
                                 //// TODO you are here
 
-                                //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever first a non-error instance
+                                //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever find a non-error instance
                                 var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
                                 return (SeriesMaster: seriesMaster, PotentialFirstInstance: await instances.FirstOrDefault(new Nothing()).SelectLeft(_ => _.AsEither()).ConfigureAwait(false)); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
                             })
