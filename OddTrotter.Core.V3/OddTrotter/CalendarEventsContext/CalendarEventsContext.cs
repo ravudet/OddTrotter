@@ -134,7 +134,7 @@
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
             return instanceEvents.Concat(
-                Task.FromResult(seriesEvents), //// TODO you are here
+                seriesEvents,
                 firstError => firstError,
                 secondError => secondError,
                 (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));

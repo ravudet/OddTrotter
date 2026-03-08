@@ -566,6 +566,21 @@
 
         internal static IQueryResultAsync<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResultAsync<TElement, TErrorFirst> queryResult,
+            IQueryResultAsync<TElement, TErrorSecond> next,
+            Func<TErrorFirst, TErrorResult> firstErrorSelector,
+            Func<TErrorSecond, TErrorResult> secondErrorSelector,
+            Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
+        {
+            return new ConcatQueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+                queryResult,
+                Task.FromResult(next), //// TODO do better
+                firstErrorSelector,
+                secondErrorSelector,
+                errorAggregator);
+        }
+
+        internal static IQueryResultAsync<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResultAsync<TElement, TErrorFirst> queryResult,
             Task<IQueryResultAsync<TElement, TErrorSecond>> next,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
