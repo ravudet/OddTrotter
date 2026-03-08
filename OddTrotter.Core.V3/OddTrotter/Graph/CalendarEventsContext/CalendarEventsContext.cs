@@ -275,7 +275,11 @@
 
                     if (success.NextLink != null)
                     {
-                        graphCalendarEvents = graphCalendarEvents.Concat2(EvaluatePage(strongConventionContext, new Uri(success.NextLink), false));
+                        graphCalendarEvents = graphCalendarEvents.Concat3(
+                            EvaluatePage(strongConventionContext, new Uri(success.NextLink), false),
+                            firstError => firstError,
+                            secondError => secondError,
+                            (firstError, secondError) => throw new Exception("TODO we should at this point know that we didn't receive an error for the first sequence..."));
                     }
 
                     return graphCalendarEvents;
