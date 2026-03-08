@@ -18,6 +18,8 @@
     using OddTrotter.Calendar;
     using OddTrotter.CalendarEventsContext;
 
+    using static System.Runtime.InteropServices.JavaScript.JSType;
+
     using StrongConventionContext = OddTrotter.Odata.v4_01.StrongConventionContext;
 
 
@@ -726,7 +728,27 @@
                         where TContext : allows ref struct
                         where TContinuable : IContinuable<TResult>, allows ref struct
                     {
-                        throw new NotImplementedException();
+                        return this.terminal.ApplyAsync<TResult, TContext, TContinuable>(
+                            (error, ref context) =>
+                            {
+                                return leftMap(
+                                    new Error(this.errorAggregator(this.firstError, new BetterNullable<TErrorSecond>(error.Value))),
+                                    ref context);
+                            },
+                            (empty, ref context) =>
+                            {
+                                if (firstError.TryGetValue(out _))
+                                {
+                                    return leftMap(
+                                        new Error(this.errorAggregator(this.firstError, new BetterNullable<TErrorSecond>())),
+                                        ref context);
+                                }
+                                else
+                                {
+                                    return rightMap(empty, ref context);
+                                }
+                            },
+                            ref context);
                     }
 
                     private sealed class Error : IError<TErrorResult>
