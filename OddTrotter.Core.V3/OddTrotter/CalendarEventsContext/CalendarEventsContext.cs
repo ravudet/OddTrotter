@@ -193,7 +193,7 @@
                             })
                         .ConfigureAwait(false))
                 .Select(
-                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and its left is the actual event and its right is the ieither of errors); can you somehow make this work?
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
                         /*.Foo2() //// TODO you need to rename these extensions
                         .Foo3()
                         .Foo2()
