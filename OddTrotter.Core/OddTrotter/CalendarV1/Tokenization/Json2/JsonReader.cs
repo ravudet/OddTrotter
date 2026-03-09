@@ -9,6 +9,8 @@
 
     using Fx;
 
+    using Stash;
+
     public static class AsyncEnumerableExtensions
     {
         public static async ITask<IEnumerable<T>> ToTask<T>(this IAsyncEnumerable<T> source)
@@ -82,11 +84,13 @@
     }
 
     public interface IReader2<TSelf, TValue, TNextReader> : IReader2<TSelf, TNextReader>
-        where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
+        where TSelf : IReader2<TSelf, TValue, TNextReader>, allows ref struct
         where TNextReader : allows ref struct
         where TValue : allows ref struct
     {
-        bool TryGetValue3(out TNextReader nextReader);
+        new TypeHolder<TSelf, TValue, TNextReader> AsReader { get; }
+
+        bool TryGetValue3(out TValue value);
     }
 
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
@@ -182,15 +186,12 @@
         public bool TryMove3(out Func<ReaderContext, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
             nextFactory = static context => new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>(
-                context.Stream,
-                context.Buffer,
-                context.CurrentByteIndex,
-                context.ValidBytes,
-                (stream, buffer, currentByteIndex, validBytes) => new ValueReader<WhitespaceReader<Nothing>>(
-                    stream,
-                    buffer,
-                    currentByteIndex,
-                    validBytes,
+                context,
+                (context) => new ValueReader<WhitespaceReader<Nothing>>(
+                    context.Stream,
+                    context.Buffer,
+                    context.CurrentByteIndex,
+                    context.ValidBytes,
                     (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
                         nestedStream,
                         nestedBuffer,
@@ -201,24 +202,45 @@
         }
     }
 
-    public sealed class WhitespaceReader<TNextReader> : IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
+    public ref struct WhitespaceReader<TNextReader> : IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
         where TNextReader : allows ref struct
     {
-        private readonly Stream stream;
-        private readonly byte[] buffer;
-        private int currentByteIndex;
-        private int validBytes;
-        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+        private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
 
         private bool finished;
 
         private readonly List<WhitespaceToken> tokens;
 
-        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader> AsReader => throw new NotImplementedException();
+        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<WhitespaceReader<TNextReader>, TNextReader>(this);
+            }
+        }
 
-        public ReaderContext Context => throw new NotImplementedException();
+        public ReaderContext Context { get; }
 
         public static Func<ReaderContext, WhitespaceReader<TNextReader>> Factory => throw new NotImplementedException();
+
+        TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader> IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>(this);
+            }
+        }
+
+        public WhitespaceReader(
+            ReaderContext context,
+            Func<ReaderContext, TNextReader> nextReaderFactory)
+        {
+            Context = context;
+            this.nextReaderFactory = nextReaderFactory;
+
+            this.tokens = new List<WhitespaceToken>();
+            this.finished = false;
+        }
 
         public WhitespaceReader(
             Stream stream,
@@ -226,15 +248,10 @@
             int currentByteIndex,
             int validBytes,
             Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+            : this(
+                  new ReaderContext(stream, buffer, currentByteIndex, validBytes),
+                  context => nextReaderFactory(context.Stream, context.Buffer, context.CurrentByteIndex, context.ValidBytes))
         {
-            this.stream = stream;
-            this.buffer = buffer;
-            this.currentByteIndex = currentByteIndex;
-            this.validBytes = validBytes;
-            this.nextReaderFactory = nextReaderFactory;
-
-            this.tokens = new List<WhitespaceToken>();
-            this.finished = false;
         }
 
         public IEnumerable<WhitespaceToken> TryGetValue(out bool read)
@@ -257,13 +274,13 @@
             // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
-                if (this.validBytes == 0)
+                if (this.Context.ValidBytes == 0)
                 {
                     // no more bytes to read
                     break;
                 }
 
-                if (this.currentByteIndex >= this.validBytes)
+                if (this.Context.CurrentByteIndex >= this.Context.ValidBytes)
                 {
                     return false;
                 }
@@ -271,14 +288,14 @@
                 WhitespaceToken whitespace;
                 try
                 {
-                    whitespace = new WhitespaceToken(this.buffer[this.currentByteIndex]);
+                    whitespace = new WhitespaceToken(this.Context.Buffer[this.Context.CurrentByteIndex]);
                 }
                 catch (Exception)
                 {
                     break;
                 }
 
-                ++this.currentByteIndex;
+                ++this.Context.CurrentByteIndex;
                 this.tokens.Add(whitespace);
             }
 
@@ -287,8 +304,8 @@
 
         public async Task Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
-            this.currentByteIndex = 0;
+            this.Context.ValidBytes = await this.Context.Stream.ReadAsync(this.Context.Buffer, 0, this.Context.Buffer.Length).ConfigureAwait(false);
+            this.Context.CurrentByteIndex = 0;
         }
 
         public TNextReader TryMove(out bool read)
@@ -299,17 +316,19 @@
                 return default!; //// TODO !
             }
 
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+            return this.nextReaderFactory(this.Context);
         }
 
-        public bool TryGetValue3(out TNextReader nextReader)
+        public bool TryGetValue3(out IEnumerable<WhitespaceToken> value)
         {
-            throw new NotImplementedException();
+            value = this.TryGetValue(out var read);
+            return read;
         }
 
         public bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory)
         {
-            throw new NotImplementedException();
+            nextFactory = this.nextReaderFactory;
+            return true;
         }
     }
 
