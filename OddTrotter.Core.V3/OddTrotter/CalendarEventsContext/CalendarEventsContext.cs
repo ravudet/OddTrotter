@@ -183,17 +183,17 @@
                 .SelectAsync(
                     async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
                         .SelectLeft(
-                            async seriesMaster =>
-                            {
-                                //// TODO you are here
-
-                                var potentialFirstInstance = await this
-                                    .GetInstancesInSeries(seriesMaster.Id)
-                                    .Take(100) //// TODO configure this
-                                    .FirstOrDefault(new Nothing())
-                                    .ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: potentialFirstInstance.SelectLeft(_ => _.AsEither())); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
-                            })
+                            async seriesMaster => 
+                                (
+                                    //// TODO you are here
+                                    SeriesMaster: seriesMaster,
+                                    PotentialFirstInstance: await this
+                                        .GetInstancesInSeries(seriesMaster.Id)
+                                        .Take(100) //// TODO configure this
+                                        .FirstOrDefault(new Nothing())
+                                        .SelectLeft(_ => _.AsEither()) //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
+                                        .ConfigureAwait(false)
+                                ))
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
