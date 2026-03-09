@@ -185,12 +185,12 @@
                         .SelectLeft(
                             async seriesMaster => 
                                 (
-                                    //// TODO you are here
                                     SeriesMaster: seriesMaster,
                                     PotentialFirstInstance: await this
                                         .GetInstancesInSeries(seriesMaster.Id)
                                         .Take(100) //// TODO configure this
                                         .FirstOrDefault(new Nothing())
+                                        //// TODO you are here
                                         .SelectLeft(_ => _.AsEither()) //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
                                         .ConfigureAwait(false)
                                 ))
