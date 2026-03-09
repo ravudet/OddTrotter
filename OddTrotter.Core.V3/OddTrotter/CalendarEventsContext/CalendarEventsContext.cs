@@ -189,12 +189,14 @@
                                     PotentialFirstInstance: await this
                                         .GetInstancesInSeries(seriesMaster.Id)
                                         .Take(100) //// TODO configure this
+                                        //// TODO you are here
+                                        //// TODO only take non-errors
+                                        .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false)) //// TODO what if there are no non-error instances? we will lose track of the error needed for supportability
                                         .FirstOrDefault(new Nothing())
                                         .ConfigureAwait(false)
                                 ))
                         .ConfigureAwait(false))
                 .Select(
-                    //// TODO you are here
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
                         /*.Foo2() //// TODO you need to rename these extensions
                         .Foo3()
