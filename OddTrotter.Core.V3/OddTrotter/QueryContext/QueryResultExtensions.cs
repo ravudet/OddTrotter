@@ -133,6 +133,13 @@ namespace Fx.QueryContext
             }
         }
 
+        public static async ITask<IEither<FirstOrDefault<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
+            this ITask<IQueryResultAsync<TElement, TError>> source,
+            TDefault @default)
+        {
+            return await (await source.ConfigureAwait(false)).FirstOrDefault(@default).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// placeholder
         /// </summary>

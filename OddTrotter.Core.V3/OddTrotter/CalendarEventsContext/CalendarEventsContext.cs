@@ -188,8 +188,12 @@
                                 //// TODO you are here
 
                                 //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever find a non-error instance
-                                var instances = await this.GetInstancesInSeries(seriesMaster.Id).ConfigureAwait(false);
-                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: await instances.FirstOrDefault(new Nothing()).SelectLeft(_ => _.AsEither()).ConfigureAwait(false)); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
+                                var potentialFirstInstance = await this
+                                    .GetInstancesInSeries(seriesMaster.Id)
+                                    .Take(100) //// TODO configure this
+                                    .FirstOrDefault(new Nothing())
+                                    .ConfigureAwait(false);
+                                return (SeriesMaster: seriesMaster, PotentialFirstInstance: potentialFirstInstance.SelectLeft(_ => _.AsEither())); //// TODO you need aseither because `foo2` below uses tuples which don't have covariance
                             })
                         .ConfigureAwait(false))
                 .Select(
@@ -509,13 +513,13 @@
         }
 
 
-        internal static IQueryResultAsync<TValue, TError> Take<TValue, TError>(
-            this IQueryResultAsync<TValue, TError> queryResult,
+        internal static async ITask<IQueryResultAsync<TValue, TError>> Take<TValue, TError>(
+            this Task<IQueryResultAsync<TValue, TError>> queryResult,
             int count)
         {
             //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any error that might have occurred
-            
-            return new Tak
+
+            return new TakeQueryResult<TValue, TError>(await queryResult.ConfigureAwait(false), count);
         }
 
         private sealed class TakeQueryResult<TValue, TError> : IQueryResultAsync<TValue, TError>
