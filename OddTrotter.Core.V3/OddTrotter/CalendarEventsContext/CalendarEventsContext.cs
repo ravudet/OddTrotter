@@ -183,18 +183,38 @@
                 .SelectAsync(
                     async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
                         .SelectLeft(
-                            async seriesMaster => 
-                                (
-                                    SeriesMaster: seriesMaster,
-                                    PotentialFirstInstance: await this
-                                        .GetInstancesInSeries(seriesMaster.Id)
-                                        .Take(100) //// TODO configure this
-                                        //// TODO you are here
-                                        //// TODO only take non-errors
-                                        .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false)) //// TODO what if there are no non-error instances? we will lose track of the error needed for supportability
-                                        .FirstOrDefault(new Nothing())
-                                        .ConfigureAwait(false)
-                                ))
+                            async seriesMaster =>
+                            {
+                                // this selector is trying to accomplish a lot; ultimately, the entire *method* is trying to get a series master and its first instance, so that we can see if the series has any instances in the time period that's been configured by the caller
+                                // by the time we get to this selector, we have the series masters, so we are now trying to get the first instance
+                                // once we "have" the instances (it is lazily evaluated), we are going to try to get the first one; *but* what if the first one has a translation error? well, we could just try to get the second one; *but*, what if there's a bug in our translation code? then *all* of the instances will have errors, and if its an unending series, we will loop forever trying to find the an instance that will never exist
+                                // so, we can't take the first non-error instance of *all* of the instances; we need to put a cap on it, so we use a `take`
+                                // then, we go ahead and get the first instance whether or not it has an error; we will use this in the case where *all* of the instances have an error
+                                // now that we have that in our back pocket just in case, we try to see if there are any *non-error* instances using a `where`; we get the first instance of *those*
+                                // if there are none, then we go back to the first error instance
+                                // and now we have the potential first instance, so we may return
+
+                                var instances = await this
+                                    .GetInstancesInSeries(seriesMaster.Id)
+                                    .Take(100) //// TODO configure this;
+                                    .ConfigureAwait(false);
+                                var potentialFirstInstance = await instances.FirstOrDefault(new Nothing()).ConfigureAwait(false);
+
+                                var nonErrorInstance = await instances
+                                    .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false))
+                                    .FirstOrDefault(new Nothing()).ConfigureAwait(false);
+                                if (!nonErrorInstance.TryGetRight(out _))
+                                {
+                                    potentialFirstInstance = nonErrorInstance;
+                                }
+
+                                //// TODO you are here
+                                return 
+                                    (
+                                        SeriesMaster: seriesMaster,
+                                        PotentialFirstInstance: potentialFirstInstance
+                                    );
+                            })
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
