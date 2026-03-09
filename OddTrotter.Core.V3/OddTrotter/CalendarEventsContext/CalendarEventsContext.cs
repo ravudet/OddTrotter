@@ -476,6 +476,7 @@
 
     internal static class Extensions
     {
+
         internal static IEither<TRight, TLeft> Foo5<TLeft, TRight>(
             this IEither<TLeft, TRight> either)
         {
