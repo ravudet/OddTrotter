@@ -565,7 +565,7 @@
             this Task<IQueryResultAsync<TValue, TError>> queryResult,
             int count)
         {
-            //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any error that might have occurred
+            //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any `terror` that might have occurred
 
             return new TakeQueryResult<TValue, TError>(await queryResult.ConfigureAwait(false), count);
         }
