@@ -133,9 +133,9 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<IEither<FirstOrDefault<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
+        public static async ITask<IEither<IEither<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
             this ITask<IQueryResultAsync<TElement, TError>> source,
-            TDefault @default)
+            TDefault @default) //// TODO at one point, you had a type for "first or default", but you got rid of it because you had some extensions that want to use tuple<..., ieither> and because `tuple` is a concrete type, you couldn't get type inference from `firstordefault` to `ieither` and so you needed to "select" the `firstordefault` with `aseither`, which looked a bit awkward; of course, there will still be cases when you need to do that for other types, but "first or default" is such a "small" concept, that i think it is fine to not define a type specifically for it //// TODO you should document this somewhere
         {
             return await (await source.ConfigureAwait(false)).FirstOrDefault(@default).ConfigureAwait(false);
         }
@@ -150,7 +150,7 @@ namespace Fx.QueryContext
         /// <param name="default"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public static async ITask<IEither<FirstOrDefault<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
+        public static async ITask<IEither<IEither<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
             this IQueryResultAsync<TElement, TError> source, 
             TDefault @default)
         {
@@ -162,23 +162,21 @@ namespace Fx.QueryContext
                         Either
                             .Right<TError>()
                             .Left(
-                                System.Linq.FirstOrDefault.Create(
-                                    Either
-                                        .Right<TDefault>()
-                                        .Left(element.Value))),
+                                Either
+                                    .Right<TDefault>()
+                                    .Left(element.Value)),
                     terminal =>
                         terminal
                             .Apply(
                                 error =>
                                     Either
-                                        .Left<FirstOrDefault<TElement, TDefault>>()
+                                        .Left<Either<TElement, TDefault>>()
                                         .Right(error.Value),
                                 empty =>
                                     Either
                                         .Right<TError>()
                                         .Left(
-                                            System.Linq.FirstOrDefault.Create(
-                                                Either.Left<TElement>().Right(@default)))));
+                                            Either.Left<TElement>().Right(@default))));
         }
 
         /// <summary>
