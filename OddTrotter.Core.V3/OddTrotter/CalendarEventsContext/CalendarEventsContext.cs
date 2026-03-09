@@ -557,6 +557,10 @@
             this IEither<TLeft, TRight> either,
             Func<TLeft, IEither<TLeftInner, TRightInner>> selector)
         {
+            //// TODO this is basically the opposite of "selectmany" (or "bind"); is "groupby" the opposite?
+            //// https://stackoverflow.com/questions/50876963/what-is-the-kind-of-inverse-operation-to-javas-stream-flatmap
+            //// https://www.javaspring.net/blog/what-is-the-kind-of-inverse-operation-to-java-s-stream-flatmap/#google_vignette
+            //// https://www.bing.com/search?pglt=129&q=what+is+the+inverse+of+a+flatmap+called&cvid=f95d050f323442c0a1a8e07489ab877d&gs_lcrp=EgRlZGdlKgYIABBFGDkyBggAEEUYOTIGCAEQABhAMgcIAhDrBxhA0gEINjQ5M2owajGoAgCwAgA&FORM=ANNTA1&PC=U531
             return either.SelectLeft(selector);
         }
 
