@@ -641,22 +641,7 @@
     [TestClass]
     public sealed class ReaderUnitTests
     {
-        [TestMethod]
-        public async Task V2Broad()
-        {
-            //// TODO `move` implementations should also be single-execution
-            //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
-            //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
-
-
-            //// TODo split this into two tests
-            //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
-            //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
-            //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
-            //// TODO commit 90833a15d48301f6528ef39209466bd0ff99a010 running `v2broad` in release mode throws an `invalidprogramexception`
-            //// TODO all of these `itask` implementations can't be object allocations or it defeats the purpose
-
-            var data =
+        private const string data =
 """
 {
     "true": true,
@@ -685,21 +670,44 @@
 }
 """;
 
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+        [TestMethod]
+        public async Task V2Broad()
+        {
+            //// TODO `move` implementations should also be single-execution
+            //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
+            //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
+
+
+            //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
+            //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
+            //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
+            //// TODO commit 90833a15d48301f6528ef39209466bd0ff99a010 running `v2broad` in release mode throws an `invalidprogramexception`
+            //// TODO all of these `itask` implementations can't be object allocations or it defeats the purpose
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 1000;
                 for (int i = 0; i < iterations; ++i)
                 {
-                    Json2.JsonReader reader;
-#if true
                     stream.Position = 0;
-                    reader = new Json2.JsonReader(stream);
+                    var reader = new Json2.JsonReader(stream);
                     await reader.Move().ConfigureAwait(false);
-#endif
 
-#if true
+                    Assert.AreEqual(stream.Length, stream.Position);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task V2Broad2()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 1000;
+                for (int i = 0; i < iterations; ++i)
+                {
                     stream.Position = 0;
-                    reader = new Json2.JsonReader(stream);
+                    var reader = new Json2.JsonReader(stream);
 
                     var context = reader.Context;
                     var whitespaceReaderFactory = await reader.AsReader.MoveInternal2().ConfigureAwait(false);
@@ -1439,7 +1447,6 @@
                     var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
                     var nothing = await whitespace38.MoveInternal1().ConfigureAwait(false);
                     Assert.AreEqual(new Nothing(), nothing);
-#endif
 
                     Assert.AreEqual(stream.Length, stream.Position);
                 }
