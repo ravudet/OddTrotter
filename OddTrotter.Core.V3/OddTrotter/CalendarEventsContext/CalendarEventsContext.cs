@@ -187,7 +187,6 @@
                             {
                                 //// TODO you are here
 
-                                //// TODO you should actually get the first *non-error* instance; however, keep in mind that, for an unending series, if there's a bug in deserializing, you won't ever find a non-error instance
                                 var potentialFirstInstance = await this
                                     .GetInstancesInSeries(seriesMaster.Id)
                                     .Take(100) //// TODO configure this
