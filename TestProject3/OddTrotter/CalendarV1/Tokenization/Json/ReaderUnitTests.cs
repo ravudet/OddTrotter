@@ -872,7 +872,7 @@
 
                     var objectReader = await @object.Reader.MoveInternal1().ConfigureAwait(false);
                     var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
-                    var membersReader = await whitespaceReader2.AsReader.MoveInternal3().ConfigureAwait(false);
+                    var membersReader = await whitespaceReader2.AsReader.MoveInternal3().ConfigureAwait(false); //// TODO make the factory on the interface *not* static, and make a todo note somewhere that you should never actually need to call this factory, it should be the factory that was initially used to construct the instance
 
                     var membersToken = membersReader.TryMove(out var read);
                     if (!read)
