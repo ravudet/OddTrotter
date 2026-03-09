@@ -200,6 +200,7 @@
                                     .ConfigureAwait(false);
                                 var potentialFirstInstance = await instances.FirstOrDefault(new Nothing()).ConfigureAwait(false);
 
+                                //// TODO perf-wise, this is no different from enumerable, but maybe you could do better
                                 var nonErrorInstance = await instances
                                     .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false))
                                     .FirstOrDefault(new Nothing()).ConfigureAwait(false);
@@ -208,7 +209,6 @@
                                     potentialFirstInstance = nonErrorInstance;
                                 }
 
-                                //// TODO you are here
                                 return 
                                     (
                                         SeriesMaster: seriesMaster,
@@ -217,6 +217,7 @@
                             })
                         .ConfigureAwait(false))
                 .Select(
+                    //// TODO you are here
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
                         /*.Foo2() //// TODO you need to rename these extensions
                         .Foo3()
