@@ -234,7 +234,7 @@
                         /*.Foo2Point5()
                         .Foo2Point5()
                         .Foo2Point5()*/
-                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Associate())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
+                        .SelectRight(_ => _.SelectRight(right => right.Swap().Associate())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
                         ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
                         .Unassociate()
                         .Unassociate()
@@ -316,7 +316,7 @@
                                 seriesMasterPlusInstance.Item1.IsCancelled,
                                 seriesMasterPlusInstance.Item1.Type,
                                 seriesMasterPlusInstance.Item2.End))
-                        .SelectRight(_ => _.SelectRight(_ => _.Foo5()))
+                        .SelectRight(_ => _.SelectRight(_ => _.Swap()))
                         .SelectRight(
                             errors => errors.SelectManyRight())
                         .SelectRight(
@@ -483,9 +483,10 @@
     internal static class Extensions
     {
 
-        internal static IEither<TRight, TLeft> Foo5<TLeft, TRight>(
+        internal static IEither<TRight, TLeft> Swap<TLeft, TRight>(
             this IEither<TLeft, TRight> either)
         {
+            //// TODO document where the name came from 
             return either.Apply(
                 left => Either.Left<TRight>().Right(left),
                 right => Either.Right<TLeft>().Left(right));
@@ -494,6 +495,7 @@
         internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Unassociate<TLeft, TLeftInner, TRightInner>(
             this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
         {
+            //// TODO document where the name came from
             return either.Apply(
                 left => Either.Right<TRightInner>().Left(Either.Right<TLeftInner>().Left(left)),
                 right => right.Apply(
