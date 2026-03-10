@@ -78,7 +78,7 @@
 
         ReaderContext Context { get; }
 
-        static abstract Func<ReaderContext, TSelf> Factory { get; }
+        Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
 
         bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory);
     }
@@ -142,7 +142,7 @@
                 0);
         }
 
-        public static Func<ReaderContext, JsonReader> Factory { get; } = static (readerContext) => new JsonReader(readerContext.Stream);
+        public Func<ReaderContext, JsonReader> Factory { get; } = static (readerContext) => new JsonReader(readerContext.Stream);
 
         public ReaderContext Context { get; }
 
@@ -221,7 +221,14 @@
 
         public ReaderContext Context { get; }
 
-        public static Func<ReaderContext, WhitespaceReader<TNextReader>> Factory => throw new NotImplementedException();
+        public Func<ReaderContext, WhitespaceReader<TNextReader>> Factory
+        {
+            get
+            {
+                var factory = this.nextReaderFactory;
+                return context => new WhitespaceReader<TNextReader>(context, factory);
+            }
+        }
 
         TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader> IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>.AsReader
         {
