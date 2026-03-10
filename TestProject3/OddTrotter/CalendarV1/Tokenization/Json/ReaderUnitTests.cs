@@ -670,7 +670,8 @@
                 }
                 else
                 {
-                    var readTask = self.Read().ToTaskWrapper().ConfigureAwait(false);
+                    var readTask = self.Read().ToTaskWrapper();
+                    return new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask);
                 }
             }
             else
@@ -771,6 +772,181 @@
             where TValue : allows ref struct
             where TNextReader : allows ref struct
         {
+            private readonly ReaderContext context;
+            private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
+            private readonly ITask<Nothing> readTask;
+
+            public MoveInternal3TaskMove(
+                ReaderContext context, 
+                Func<ReaderContext, TCurrentReader> currentReaderFactory, 
+                ITask<Nothing> readTask)
+            {
+                this.context = context;
+                this.currentReaderFactory = currentReaderFactory;
+                this.readTask = readTask;
+            }
+
+            public IConfiguredAwaitable<TNextReader> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(
+                    this.context,
+                    this.currentReaderFactory,
+                    this.readTask.ConfigureAwait(continueOnCapturedContext),
+                    continueOnCapturedContext);
+            }
+
+            private sealed class ConfiguredAwaitable : IConfiguredAwaitable<TNextReader>
+            {
+                private readonly ReaderContext context;
+                private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
+                private readonly IConfiguredAwaitable<Nothing> readTask;
+                private readonly bool continueOnCapturedContext;
+
+                public ConfiguredAwaitable(
+                    ReaderContext context,
+                    Func<ReaderContext, TCurrentReader> currentReaderFactory,
+                    IConfiguredAwaitable<Nothing> readTask,
+                    bool continueOnCapturedContext)
+                {
+                    this.context = context;
+                    this.currentReaderFactory = currentReaderFactory;
+                    this.readTask = readTask;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
+                }
+
+                public ITaskAwaiter<TNextReader> GetAwaiter()
+                {
+                    return new Awaiter(
+                        this.context,
+                        this.currentReaderFactory,
+                        this.readTask.GetAwaiter(),
+                        this.continueOnCapturedContext);
+                }
+
+                private sealed class Awaiter : ITaskAwaiter<TNextReader>
+                {
+                    private readonly ReaderContext context;
+                    private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
+                    private ITaskAwaiter<Nothing> readTask;
+                    private readonly bool continueOnCapturedContext;
+                    private bool moved;
+                    private ITaskAwaiter<TNextReader>? valueTask;
+
+                    public Awaiter(
+                        ReaderContext context,
+                        Func<ReaderContext, TCurrentReader> currentReaderFactory,
+                        ITaskAwaiter<Nothing> readTask,
+                        bool continueOnCapturedContext)
+                    {
+                        this.context = context;
+                        this.currentReaderFactory = currentReaderFactory;
+                        this.readTask = readTask;
+                        this.continueOnCapturedContext = continueOnCapturedContext;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            if (this.valueTask != null)
+                            {
+                                return this.valueTask.IsCompleted;
+                            }
+
+                            if (!this.moved)
+                            {
+                                if (!this.readTask.IsCompleted)
+                                {
+                                    return false;
+                                }
+
+                                var currentReader = this.currentReaderFactory(this.context);
+                                if (!currentReader.TryMove3(out var nextFactory))
+                                {
+                                    this.readTask = currentReader.Read().ToTaskWrapper().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                    return this.IsCompleted; //// TODO recursion probably isn't great...
+                                }
+
+                                this.moved = true;
+                            }
+
+                            if (this.moved)
+                            {
+                                var currentReader = this.currentReaderFactory(this.context);
+                                ITask<Nothing> readTask;
+                                if (currentReader.TryGetValue3(out var nextFactory))
+                                {
+                                    readTask = Task.CompletedTask.ToTaskWrapper();
+                                }
+                                else
+                                {
+                                    readTask = currentReader.Read().ToTaskWrapper();
+                                }
+
+                                this.valueTask = new MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>(
+                                    this.context,
+                                    this.currentReaderFactory,
+                                    readTask)
+                                    .ConfigureAwait(this.continueOnCapturedContext)
+                                    .GetAwaiter();
+                                return this.IsCompleted;
+                            }
+
+                            throw new Exception("TODO");
+                        }
+                    }
+
+                    public TNextReader GetResult()
+                    {
+                        return this.valueTask!.GetResult();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        //// TODO keep the list of continuations until  you create `this.valuetask` and then call it?
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        //// TODO keep the list of continuations until  you create `this.valuetask` and then call it?
+                    }
+                }
+            }
+
+            public ITaskAwaiter<TNextReader> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private sealed class MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader> : ITask<TNextReader>
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
+            where TValue : allows ref struct
+            where TNextReader : allows ref struct
+        {
+            private readonly ReaderContext context;
+            private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
+            private readonly ITask<Nothing> readTask;
+
+            public MoveInternal3TaskValue(
+                ReaderContext context,
+                Func<ReaderContext, TCurrentReader> currentReaderFactory,
+                ITask<Nothing> readTask)
+            {
+                this.context = context;
+                this.currentReaderFactory = currentReaderFactory;
+                this.readTask = readTask;
+            }
+
+            public IConfiguredAwaitable<TNextReader> ConfigureAwait(bool continueOnCapturedContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITaskAwaiter<TNextReader> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
