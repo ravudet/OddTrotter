@@ -565,7 +565,7 @@
         internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
-            return either.Foo2().Foo3();
+            return either.LiftedSequence().Foo3();
         }
 
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
@@ -578,16 +578,18 @@
                 right => Either.Left<TLeftInner>().Right(Either.Left<TRightInner>().Right(right)));
         }
 
-        internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> Foo2<TRight, TLeft1, TLeft2, TRightInner>(
+        internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> LiftSequence<TRight, TLeft1, TLeft2, TRightInner>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
+            //// TODO this operation is equivalent to haskells `fmap sequence`; i am calling it "lift" because `fmap` is a "lift": https://wiki.haskell.org/Lifting ; i supposed i *could* call it `selectsequence` because i'm using "select" as a continuation of the c# idiom that "select" means "fmap"
+
             return either.SelectLeft(tuple => tuple.Sequence());
         }
 
         internal static IEither<(T1, TLeft), TRight> Sequence<T1, TLeft, TRight>(
             this (T1, IEither<TLeft, TRight>) tuple)
         {
-            //// TODO haskell calls this "sequence": https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Traversable.html?utm_source=copilot.com
+            //// TODO haskell calls this "sequence": https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Traversable.html
 
             return tuple.Item2.SelectLeft(left => (tuple.Item1, left));
         }
