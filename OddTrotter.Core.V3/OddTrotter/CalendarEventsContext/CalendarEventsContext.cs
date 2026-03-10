@@ -565,7 +565,7 @@
         internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
-            return either.LiftedSequence().Foo3();
+            return either.LiftSequence().Foo3();
         }
 
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
