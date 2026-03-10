@@ -236,9 +236,9 @@
                         .Foo2Point5()*/
                         .SelectRight(_ => _.SelectRight(right => right.Foo5().Associate())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
                         ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
-                        .Disassociate()
-                        .Disassociate()
-                        .Disassociate()
+                        .Unassociate()
+                        .Unassociate()
+                        .Unassociate()
                         ////.SelectLeft(_ => _.SelectManyRight())
                         ////.Foo3())
                         ////.Foo4()
@@ -491,7 +491,7 @@
                 right => Either.Right<TLeft>().Left(right));
         }
 
-        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Disassociate<TLeft, TLeftInner, TRightInner>(
+        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Unassociate<TLeft, TLeftInner, TRightInner>(
             this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
         {
             return either.Apply(
