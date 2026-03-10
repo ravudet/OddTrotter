@@ -217,32 +217,23 @@
                             })
                         .ConfigureAwait(false))
                 .Select(
-                    //// TODO you are here
-                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError //// TODO i think "design-wise", it makes more sense to have `ieither<ieither<event, errors>, nothing>` (i.e. the left represents the "potential" event, and *its* left is the actual event and its right is the ieither of errors); can you somehow make this work?
-                        /*.Foo2() //// TODO you need to rename these extensions
-                        .Foo3()
-                        .Foo2()
-                        .Foo3()
-                        .Foo2()
-                        .Foo3()*/
-                        .LiftSequence()
-                        .Associate()
-                        .LiftSequence()
-                        .Associate()
-                        .LiftSequence()
-                        .Associate()
-                        /*.Foo2Point5()
-                        .Foo2Point5()
-                        .Foo2Point5()*/
-                        .SelectRight(_ => _.SelectRight(right => right.Swap().Associate())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
-                        ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
-                        .Unassociate()
-                        .Unassociate()
-                        .Unassociate()
-                        ////.SelectLeft(_ => _.SelectManyRight())
-                        ////.Foo3())
-                        ////.Foo4()
-                        ////.Foo4()
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
+                        //// TODO you are here
+                        //// TODO document what your goal is in the resulting either structure
+                        .LiftSequence() // pull the paging error out of the tuple
+                        .Associate() // move the tuple left
+                        .LiftSequence() // pull the nothing out of the tuple
+                        .Associate() // move the tuple left
+                        .LiftSequence() // pull the translation error out of the tuple
+                        .Associate() // move the tuple left
+                        .SelectRight(
+                            errorCases => errorCases
+                                .SelectRight(
+                                    nothingOrErrors => nothingOrErrors
+                                        .Swap() // move nothing to the right side
+                                    )) 
+                        .Unassociate() // move nothing to the right
+                        .Unassociate() // move nothing to the right
                         )
                 /*.Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
@@ -306,7 +297,7 @@
                 .Select(
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
                         .Associate()
-                        .Associate()
+                        ////.Associate()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
@@ -316,7 +307,7 @@
                                 seriesMasterPlusInstance.Item1.IsCancelled,
                                 seriesMasterPlusInstance.Item1.Type,
                                 seriesMasterPlusInstance.Item2.End))
-                        .SelectRight(_ => _.SelectRight(_ => _.Swap()))
+                        .SelectRight(_ => _.SelectRight(_ => _.Swap())) //// TODO better lambda names
                         .SelectRight(
                             errors => errors.SelectManyRight())
                         .SelectRight(
