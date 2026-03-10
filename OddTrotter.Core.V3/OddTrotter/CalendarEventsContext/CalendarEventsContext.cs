@@ -526,6 +526,42 @@
             return new Tuple<T1, T2>(tuple);
         }
 
+        internal sealed class PlayType
+        {
+            public string? Value { get; set; }
+        }
+
+        internal static int? Foo10(PlayType? playType)
+        {
+            return playType?.Value?.Length;
+        }
+
+        internal static IEither<int, Nothing> Foo11(IEither<PlayType, Nothing> playType)
+        {
+            return playType.Propagate(_ => _.Value).Propagate(_ => _.Length);
+        }
+
+        internal static IEither<TLeftResult, Nothing> Propagate<TLeftSource, TLeftResult>(
+            this IEither<TLeftSource, Nothing> either,
+            Func<TLeftSource, TLeftResult?> propagator)
+        {
+            //// TODO you don't need this method yet, but it does seem useful
+
+            return either.SelectLeft(propagator).SelectLeft(_ => _.ToEither()).SelectManyLeft();
+        }
+
+        internal static IEither<TValue, Nothing> ToEither<TValue>(this TValue? value)
+        {
+            if (value is null)
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+            else
+            {
+                return Either.Right<Nothing>().Left(value);
+            }
+        }
+        
         internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
