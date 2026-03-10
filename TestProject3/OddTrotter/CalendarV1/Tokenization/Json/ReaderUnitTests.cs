@@ -816,6 +816,8 @@
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
+            //// TODO remove the use of `ireader2.factory`
+            //// TODO make all of the lambdas in the `jsonreader.cs` file `static` to ensure you aren't creating any closures
             //// TODO commit 90833a15d48301f6528ef39209466bd0ff99a010 running `v2broad` in release mode throws an `invalidprogramexception`
             //// TODO all of these `itask` implementations can't be object allocations or it defeats the purpose
 
