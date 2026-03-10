@@ -571,6 +571,8 @@
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
             this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
         {
+            //// TODO haskell calls this `assoc`: https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Assoc.html (the "Assoc Either" section)
+
             return either.Apply(
                 left => left.Apply(
                     leftInner => Either.Right<Either<TRightInner, TRight>>().Left(leftInner),
