@@ -225,14 +225,20 @@
                         .Foo3()
                         .Foo2()
                         .Foo3()*/
+                        .LiftSequence()
+                        .Associate()
+                        .LiftSequence()
+                        .Associate()
+                        .LiftSequence()
+                        .Associate()
+                        /*.Foo2Point5()
                         .Foo2Point5()
-                        .Foo2Point5()
-                        .Foo2Point5()
-                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Foo3())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
+                        .Foo2Point5()*/
+                        .SelectRight(_ => _.SelectRight(right => right.Foo5().Associate())) //// TODO all of your lambdas need to have meaningful names; search for "_" to see what you need to address
                         ////.SelectRight(_ => _.SelectRight(_ => _.SelectLeft(_ => _.Foo5()))
-                        .Foo4()
-                        .Foo4()
-                        .Foo4()
+                        .Disassociate()
+                        .Disassociate()
+                        .Disassociate()
                         ////.SelectLeft(_ => _.SelectManyRight())
                         ////.Foo3())
                         ////.Foo4()
@@ -299,8 +305,8 @@
                 .TrySelect()
                 .Select(
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
-                        .Foo3()
-                        .Foo3()
+                        .Associate()
+                        .Associate()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
@@ -485,7 +491,7 @@
                 right => Either.Right<TLeft>().Left(right));
         }
 
-        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Foo4<TLeft, TLeftInner, TRightInner>(
+        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Disassociate<TLeft, TLeftInner, TRightInner>(
             this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
         {
             return either.Apply(
@@ -565,10 +571,10 @@
         internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
-            return either.LiftSequence().Foo3();
+            return either.LiftSequence().Associate();
         }
 
-        internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Foo3<TLeftInner, TRightInner, TRight>(
+        internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Associate<TLeftInner, TRightInner, TRight>(
             this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
         {
             //// TODO haskell calls this `assoc`: https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Assoc.html (the "Assoc Either" section)
