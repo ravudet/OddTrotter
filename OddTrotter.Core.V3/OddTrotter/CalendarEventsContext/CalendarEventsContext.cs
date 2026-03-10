@@ -581,12 +581,15 @@
         internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> Foo2<TRight, TLeft1, TLeft2, TRightInner>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
-            return either
-                .SelectLeft(
-                    tuple => tuple
-                        .Item2
-                        .SelectLeft(
-                            left => (tuple.Item1, left)));
+            return either.SelectLeft(tuple => tuple.Sequence());
+        }
+
+        internal static IEither<(T1, TLeft), TRight> Sequence<T1, TLeft, TRight>(
+            this (T1, IEither<TLeft, TRight>) tuple)
+        {
+            //// TODO haskell calls this "sequence": https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Traversable.html?utm_source=copilot.com
+
+            return tuple.Item2.SelectLeft(left => (tuple.Item1, left));
         }
 
 
