@@ -309,10 +309,11 @@
             return true;
         }
 
-        public async Task Read()
+        public Task Read()
         {
-            this.Context.ValidBytes = await this.Context.Stream.ReadAsync(this.Context.Buffer, 0, this.Context.Buffer.Length).ConfigureAwait(false);
-            this.Context.CurrentByteIndex = 0;
+            return this.Context.Read();
+            /*this.Context.ValidBytes = await this.Context.Stream.ReadAsync(this.Context.Buffer, 0, this.Context.Buffer.Length).ConfigureAwait(false);
+            this.Context.CurrentByteIndex = 0;*/
         }
 
         public TNextReader TryMove(out bool read)
