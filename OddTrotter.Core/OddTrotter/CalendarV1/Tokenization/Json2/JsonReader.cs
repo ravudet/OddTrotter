@@ -211,11 +211,11 @@
 
         private readonly List<WhitespaceToken> tokens;
 
-        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader> AsReader
+        public TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader> AsReader
         {
             get
             {
-                return new TypeHolder<WhitespaceReader<TNextReader>, TNextReader>(this);
+                return new TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>(this);
             }
         }
 
@@ -230,11 +230,11 @@
             }
         }
 
-        TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader> IReader2<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>.AsReader
+        TypeHolder<WhitespaceReader<TNextReader>, TNextReader> IReader2<WhitespaceReader<TNextReader>, TNextReader>.AsReader
         {
             get
             {
-                return new TypeHolder<WhitespaceReader<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>(this);
+                return new TypeHolder<WhitespaceReader<TNextReader>, TNextReader>(this);
             }
         }
 
