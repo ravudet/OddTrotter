@@ -1088,6 +1088,7 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
+            //// TODO it's in an infinite loop
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
