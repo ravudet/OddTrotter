@@ -241,15 +241,20 @@
                     //// TODO you are here
                     seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
                         .SelectLeft(
-                            seriesMasterPlusInstance => new Graph.CalendarEvent(
-                                seriesMasterPlusInstance.Item1.Id,
-                                seriesMasterPlusInstance.Item1.Subject,
-                                seriesMasterPlusInstance.Item1.Body,
-                                seriesMasterPlusInstance.Item2.Start,
-                                seriesMasterPlusInstance.Item1.IsCancelled,
-                                seriesMasterPlusInstance.Item1.Type,
-                                seriesMasterPlusInstance.Item2.End))
-                        .SelectRight(_ => _.SelectRight(_ => _.Swap())) //// TODO better lambda names
+                            seriesMasterPlusInstance => 
+                                // combine the series master and the first instance into a "canonical" calendar event; this allows the caller to see meaningful timestamps while preserving the "series" nature of the event (for things like canceling and accepting the event);
+                                // NOTE: there's an argument to be made that this class should actually return all future instances of the series event, and not preserve the data about the series, but i'm not clear what the design of the (non-graph) `calendarevent` class would look like in that case, for situations like canceling, declining, or accepting a series
+                                new Graph.CalendarEvent(
+                                    seriesMasterPlusInstance.Item1.Id,
+                                    seriesMasterPlusInstance.Item1.Subject,
+                                    seriesMasterPlusInstance.Item1.Body,
+                                    seriesMasterPlusInstance.Item2.Start,
+                                    seriesMasterPlusInstance.Item1.IsCancelled,
+                                    seriesMasterPlusInstance.Item1.Type,
+                                    seriesMasterPlusInstance.Item2.End))
+                        .SelectRight(
+                            errorCases => errorCases
+                                .SelectRight(_ => _.Swap())) //// TODO better lambda names
                         .SelectRight(
                             errors => errors.SelectManyRight())
                         .SelectRight(
