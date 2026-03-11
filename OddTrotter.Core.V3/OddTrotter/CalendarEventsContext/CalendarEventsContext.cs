@@ -218,8 +218,7 @@
                         .ConfigureAwait(false))
                 .Select(
                     seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
-                        //// TODO you are here
-                        //// TODO document what your goal is in the resulting either structure
+                        // we want to filter out series masters that don't have future instances (we *don't* want to filter errors, since they *might* represent future instances); we will do this later with a `tryselect`, so we need to get the `nothing` instances to the "right" side of the either; we are also looking to get non-error cases to the left side of the either; so, we should end up with something like `ieither<ieither<...<ieither<(seriesmaster, firstinstance), error>, error>,...> nothing>`
                         .LiftSequence() // pull the paging error out of the tuple
                         .Associate() // move the tuple left
                         .LiftSequence() // pull the nothing out of the tuple
@@ -295,9 +294,9 @@
                     })*/
                 .TrySelect()
                 .Select(
+                    //// TODO you are here
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
                         .Associate()
-                        ////.Associate()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
