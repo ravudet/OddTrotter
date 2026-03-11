@@ -1423,6 +1423,7 @@
 
 
             //// TODO we need to do better than 3.1s with 10000 iterations
+            //// TODO add a timer so that you can see if you are actually improving
             //// TODO fix perf for moveinternal3, since that's what you're currently adding
             
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
