@@ -193,7 +193,6 @@
                                 // now that we have that in our back pocket just in case, we try to see if there are any *non-error* instances using a `where`; we get the first instance of *those*
                                 // if there are none, then we go back to the first error instance
                                 // and now we have the potential first instance, so we may return
-
                                 var instances = await this
                                     .GetInstancesInSeries(seriesMaster.Id)
                                     .Take(100) //// TODO configure this;
@@ -234,11 +233,11 @@
                         .Unassociate() // move nothing to the right
                         .Unassociate() // move nothing to the right
                         .SelectLeft( // get all of the eithers nested on the left
-                            _ => _.Associate())
+                            seriesMasterPlusPontentialFirstInstanceOrErrorCases => seriesMasterPlusPontentialFirstInstanceOrErrorCases
+                                .Associate())
                         )
                 .TrySelect()
                 .Select(
-                    //// TODO you are here
                     seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
                         .SelectLeft(
                             seriesMasterPlusInstance => 
@@ -253,8 +252,11 @@
                                     seriesMasterPlusInstance.Item1.Type,
                                     seriesMasterPlusInstance.Item2.End))
                         .SelectRight(
+                            // reorder the error cases so that you can combine the different translation errors
                             errorCases => errorCases
-                                .SelectRight(_ => _.Swap())) //// TODO better lambda names
+                                .SelectRight(
+                                    pagingOrTranslation => pagingOrTranslation
+                                        .Swap()))
                         .SelectRight(
                             errors => errors.SelectManyRight())
                         .SelectRight(
@@ -268,6 +270,7 @@
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId)
         {
+            //// TODO you are here
             var pageStartTime = this.startTime;
             var pageEndTime = pageStartTime + this.firstInstanceInSeriesLookahead;
             if (this.endTime != null && this.endTime.Value < pageEndTime)
