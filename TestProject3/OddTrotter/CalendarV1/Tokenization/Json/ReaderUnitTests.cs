@@ -728,7 +728,7 @@
                 }
             }
 
-            public readonly ref struct ConfiguredAwaitable : IConfiguredAwaitable<TNextReader>
+            public readonly ref struct ConfiguredAwaitable
             {
                 private readonly int type;
 
@@ -757,16 +757,16 @@
                     this.type = 3;
                 }
 
-                public ITaskAwaiter<TNextReader> GetAwaiter()
+                public Awaiter GetAwaiter()
                 {
                     switch (this.type)
                     {
                         case 1:
-                            return this.moveInternal3TaskCompleted.GetAwaiter();
+                            return new Awaiter(this.moveInternal3TaskCompleted.GetAwaiter());
                         case 2:
-                            return this.moveInternal3TaskValue.GetAwaiter();
+                            return new Awaiter(this.moveInternal3TaskValue.GetAwaiter());
                         case 3:
-                            return this.moveInternal3TaskMove.GetAwaiter();
+                            return new Awaiter(this.moveInternal3TaskMove.GetAwaiter());
                         default:
                             throw new Exception("TODO");
                     }
@@ -798,66 +798,58 @@
                     {
                         get
                         {
-                            if (this.type == 1)
+                            switch (this.type)
                             {
-                                return this.completedAwaiter.IsCompleted;
-                            }
-                            else if (this.type == 2)
-                            {
-                                return this.taskAwaiter.IsCompleted;
-                            }
-                            else
-                            {
-                                throw new Exception("TODO");
+                                case 1:
+                                    return this.completedAwaiter.IsCompleted;
+                                case 2:
+                                    return this.taskAwaiter.IsCompleted;
+                                default:
+                                    throw new Exception("TODO");
                             }
                         }
                     }
 
                     public TNextReader GetResult()
                     {
-                        if (this.type == 1)
+                        switch (this.type)
                         {
-                            return this.completedAwaiter.GetResult();
-                        }
-                        else if (this.type == 2)
-                        {
-                            return this.taskAwaiter.GetResult();
-                        }
-                        else
-                        {
-                            throw new Exception("TODO");
+                            case 1:
+                                return this.completedAwaiter.GetResult();
+                            case 2:
+                                return this.taskAwaiter.GetResult();
+                            default:
+                                throw new Exception("TODO");
                         }
                     }
 
                     public void OnCompleted(Action continuation)
                     {
-                        if (this.type == 1)
+                        switch (this.type)
                         {
-                            this.completedAwaiter.OnCompleted(continuation);
-                        }
-                        else if (this.type == 2)
-                        {
-                            this.taskAwaiter.OnCompleted(continuation);
-                        }
-                        else
-                        {
-                            throw new Exception("TODO");
+                            case 1:
+                                this.completedAwaiter.OnCompleted(continuation);
+                                break;
+                            case 2:
+                                this.taskAwaiter.OnCompleted(continuation);
+                                break;
+                            case 3:
+                                throw new Exception("TODO");
                         }
                     }
 
                     public void UnsafeOnCompleted(Action continuation)
                     {
-                        if (this.type == 1)
+                        switch (this.type)
                         {
-                            this.completedAwaiter.UnsafeOnCompleted(continuation);
-                        }
-                        else if (this.type == 2)
-                        {
-                            this.taskAwaiter.UnsafeOnCompleted(continuation);
-                        }
-                        else
-                        {
-                            throw new Exception("TODO");
+                            case 1:
+                                this.completedAwaiter.UnsafeOnCompleted(continuation);
+                                break;
+                            case 2:
+                                this.taskAwaiter.UnsafeOnCompleted(continuation);
+                                break;
+                            case 3:
+                                throw new Exception("TODO");
                         }
                     }
                 }
