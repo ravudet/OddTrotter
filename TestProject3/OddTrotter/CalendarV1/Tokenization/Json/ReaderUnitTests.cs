@@ -670,13 +670,13 @@
                 }
                 else
                 {
-                    var readTask = self.Read().ToTaskWrapper();
+                    var readTask = self.Read();
                     return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));
                 }
             }
             else
             {
-                var readTask = self.Read().ToTaskWrapper();
+                var readTask = self.Read();
                 return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));
             }
         }
@@ -974,12 +974,12 @@
         {
             private readonly ReaderContext context;
             private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-            private readonly ITask<Nothing> readTask;
+            private readonly Task readTask;
 
             public MoveInternal3TaskValue(
                 ReaderContext context, 
                 Func<ReaderContext, TCurrentReader> currentReaderFactory, 
-                ITask<Nothing> readTask)
+                Task readTask)
             {
                 this.context = context;
                 this.currentReaderFactory = currentReaderFactory;
@@ -999,13 +999,13 @@
             {
                 private readonly ReaderContext context;
                 private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                private readonly IConfiguredAwaitable<Nothing> readTask;
+                private readonly ConfiguredTaskAwaitable readTask;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ReaderContext context,
                     Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                    IConfiguredAwaitable<Nothing> readTask,
+                    ConfiguredTaskAwaitable readTask,
                     bool continueOnCapturedContext)
                 {
                     this.context = context;
@@ -1027,7 +1027,7 @@
                 {
                     private readonly ReaderContext context;
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                    private ITaskAwaiter<Nothing> readTask;
+                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
                     private bool moved;
                     private ITaskAwaiter<TNextReader>? valueTask;
@@ -1035,7 +1035,7 @@
                     public Awaiter(
                         ReaderContext context,
                         Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                        ITaskAwaiter<Nothing> readTask,
+                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
                         bool continueOnCapturedContext)
                     {
                         this.context = context;
@@ -1063,7 +1063,7 @@
                                 var currentReader = this.currentReaderFactory(this.context);
                                 if (!currentReader.TryGetValue3(out _))
                                 {
-                                    this.readTask = currentReader.Read().ToTaskWrapper().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                    this.readTask = currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                     return this.IsCompleted; //// TODO recursion probably isn't great...
                                 }
 
@@ -1073,14 +1073,14 @@
                             if (this.moved)
                             {
                                 var currentReader = this.currentReaderFactory(this.context);
-                                ITask<Nothing> readTask;
+                                Task readTask;
                                 if (currentReader.TryMove3(out _))
                                 {
-                                    readTask = Task.CompletedTask.ToTaskWrapper();
+                                    readTask = Task.CompletedTask;
                                 }
                                 else
                                 {
-                                    readTask = currentReader.Read().ToTaskWrapper();
+                                    readTask = currentReader.Read();
                                 }
 
                                 this.valueTask = new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(
@@ -1152,12 +1152,12 @@
         {
             private readonly ReaderContext context;
             private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-            private readonly ITask<Nothing> readTask;
+            private readonly Task readTask;
 
             public MoveInternal3TaskMove(
                 ReaderContext context,
                 Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                ITask<Nothing> readTask)
+                Task readTask)
             {
                 this.context = context;
                 this.currentReaderFactory = currentReaderFactory;
@@ -1177,13 +1177,13 @@
             {
                 private readonly ReaderContext context;
                 private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                private readonly IConfiguredAwaitable<Nothing> readTask;
+                private readonly ConfiguredTaskAwaitable readTask;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ReaderContext context,
                     Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                    IConfiguredAwaitable<Nothing> readTask,
+                    ConfiguredTaskAwaitable readTask,
                     bool continueOnCapturedContext)
                 {
                     this.context = context;
@@ -1205,14 +1205,14 @@
                 {
                     private readonly ReaderContext context;
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                    private ITaskAwaiter<Nothing> readTask;
+                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
                     private Func<ReaderContext, TNextReader>? nextReaderFactory;
 
                     public Awaiter(
                         ReaderContext context,
                         Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                        ITaskAwaiter<Nothing> readTask,
+                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
                         bool continueOnCapturedContext)
                     {
                         this.context = context;
@@ -1242,7 +1242,7 @@
                             }
                             else
                             {
-                                this.readTask = currentReader.Read().ToTaskWrapper().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                this.readTask = currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
                             }
                         }
