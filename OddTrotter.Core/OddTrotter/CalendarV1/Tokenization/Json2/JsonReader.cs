@@ -182,7 +182,16 @@
 
         public bool TryMove3(out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
-            nextFactory = static context => new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
+            nextFactory = Factories.WhitespaceReaderFactory;
+            return true;
+        }
+    }
+
+    public static class Factories
+    {
+        public static WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
+        {
+            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
                 context,
                 (context) => new ValueReader<WhitespaceReader<Nothing>>(
                     context.Stream,
@@ -195,7 +204,6 @@
                         currentByteIndex,
                         nestedValidBytes,
                         (_, _, _, _) => new Nothing())));
-            return true;
         }
     }
 

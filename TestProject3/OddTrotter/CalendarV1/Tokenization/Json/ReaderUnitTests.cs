@@ -1366,7 +1366,7 @@
                     var whitespaceReaderFactory = await reader.AsReader.MoveInternal2().ConfigureAwait(false);
                     var whitespaceReader = whitespaceReaderFactory(context);
 
-                    var valueReader = await whitespaceReader.AsReader.MoveInternal3(whitespaceReader.Factory).ConfigureAwait(false);
+                    var valueReader = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
                     var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 
                     if (!(valueToken is ValueToken<WhitespaceReader<Nothing>>.Object @object))
