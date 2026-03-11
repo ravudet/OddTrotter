@@ -891,6 +891,7 @@
                                     readTask)
                                     .ConfigureAwait(this.continueOnCapturedContext)
                                     .GetAwaiter();
+                                
                                 return this.IsCompleted;
                             }
 
@@ -911,6 +912,31 @@
                     public void UnsafeOnCompleted(Action continuation)
                     {
                         //// TODO keep the list of continuations until  you create `this.valuetask` and then call it?
+
+                        this.readTask.UnsafeOnCompleted(() => this.Recurse(continuation));
+
+                        /*continuation();
+
+                        if (this.valueTask != null)
+                        {
+                            this.valueTask.UnsafeOnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.continuation = continuation;
+                        }*/
+                    }
+
+                    private void Recurse(Action continuation)
+                    {
+                        if (this.IsCompleted)
+                        {
+                            this.valueTask!.UnsafeOnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.readTask.UnsafeOnCompleted(() => this.Recurse(continuation));
+                        }
                     }
                 }
             }
@@ -1037,6 +1063,20 @@
                     public void UnsafeOnCompleted(Action continuation)
                     {
                         //// TODO wait for the last `readtask` and then add all the continuations to that
+
+                        this.readTask.UnsafeOnCompleted(() => this.Recurse(continuation));
+                    }
+
+                    private void Recurse(Action continuation)
+                    {
+                        if (this.IsCompleted)
+                        {
+                            this.readTask.UnsafeOnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.readTask.UnsafeOnCompleted(() => this.Recurse(continuation));
+                        }
                     }
                 }
             }
@@ -1116,7 +1156,7 @@
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
-                var iterations = 1;
+                var iterations = 1000;
                 for (int i = 0; i < iterations; ++i)
                 {
                     stream.Position = 0;
