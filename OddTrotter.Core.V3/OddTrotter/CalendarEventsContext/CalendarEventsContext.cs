@@ -270,7 +270,6 @@
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId)
         {
-            //// TODO you are here
             var pageStartTime = this.startTime;
             var pageEndTime = pageStartTime + this.firstInstanceInSeriesLookahead;
             if (this.endTime != null && this.endTime.Value < pageEndTime)
@@ -283,8 +282,6 @@
 
         private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
-            var initial = await GetInstancesInSeriesWithinTimeSlice(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
-
             var newPageStartTime = this.startTime;
             var newPageEndTime = newPageStartTime + this.firstInstanceInSeriesLookahead;
             if (this.endTime != null && this.endTime.Value < newPageEndTime)
@@ -292,15 +289,22 @@
                 newPageEndTime = this.endTime.Value;
             }
 
-            return initial.Concat(
-                this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime),
-                firstError => firstError,
-                secondError => secondError,
-                (firstError, secondError) => new Graph.PagingError.Context(new Uri("https://todo.com"), new Graph.ContextException("TODO an error occurred within this time slice and the next one")));
+            return await this
+                .GetInstancesInSeriesWithinTimeSlice(seriesMasterId, pageStartTime, pageEndTime)
+                .Concat(
+                    this.GetInstancesInSeries(seriesMasterId, newPageStartTime, newPageEndTime),
+                    firstError => firstError,
+                    secondError => secondError,
+                    (firstError, secondError) => 
+                        new Graph.PagingError.Context(
+                            new Uri("https://todo.com"), 
+                            new Graph.ContextException("TODO an error occurred within this time slice and the next one")))
+                .ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        private async ITask<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
+            //// TODO you are here
             var context = this.calendarSource.Events().Get(seriesMasterId).Instances(pageStartTime, pageEndTime).Get();
             if (this.isCancelled != null)
             {
