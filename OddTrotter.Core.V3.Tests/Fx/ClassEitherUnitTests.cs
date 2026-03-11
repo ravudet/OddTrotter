@@ -51,6 +51,7 @@
 
     //// TODO implement assert extensions so you can always use assert.that; this should go in `fx.test` or something
     //// TODO add `assert.that` to code quality
+    //// TODO add "good lambda parameter names" to code quality
     //// TODO add `await="true"` exception documentation to code quality
     //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality //// TODO but i think you already use object.referenceequal for this though?
     //// TODO add to code quality that if an exception has additional properties, the `tostring` method should be overloaded to include those properties? (NOTE: .NET doesn't do this)
