@@ -715,21 +715,16 @@
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
-                if (type == 1)
+                switch (this.type)
                 {
-                    return new ConfiguredAwaitable(this.moveInternal3TaskCompleted.ConfigureAwait(continueOnCapturedContext));
-                }
-                else if (type == 2)
-                {
-                    return new ConfiguredAwaitable(this.moveInternal3TaskValue.ConfigureAwait(continueOnCapturedContext));
-                }
-                else if (type == 3)
-                {
-                    return new ConfiguredAwaitable(this.moveInternal3TaskMove.ConfigureAwait(continueOnCapturedContext));
-                }
-                else
-                {
-                    throw new Exception("TODO");
+                    case 1:
+                        return new ConfiguredAwaitable(this.moveInternal3TaskCompleted.ConfigureAwait(continueOnCapturedContext));
+                    case 2:
+                        return new ConfiguredAwaitable(this.moveInternal3TaskValue.ConfigureAwait(continueOnCapturedContext));
+                    case 3:
+                        return new ConfiguredAwaitable(this.moveInternal3TaskMove.ConfigureAwait(continueOnCapturedContext));
+                    default:
+                        throw new Exception("TODO");
                 }
             }
 
@@ -764,21 +759,16 @@
 
                 public ITaskAwaiter<TNextReader> GetAwaiter()
                 {
-                    if (this.type == 1)
+                    switch (this.type)
                     {
-                        return this.moveInternal3TaskCompleted.GetAwaiter();
-                    }
-                    else if (this.type == 2)
-                    {
-                        return this.moveInternal3TaskValue.GetAwaiter();
-                    }
-                    else if (this.type == 3)
-                    {
-                        return this.moveInternal3TaskMove.GetAwaiter();
-                    }
-                    else
-                    {
-                        throw new Exception("TODO");
+                        case 1:
+                            return this.moveInternal3TaskCompleted.GetAwaiter();
+                        case 2:
+                            return this.moveInternal3TaskValue.GetAwaiter();
+                        case 3:
+                            return this.moveInternal3TaskMove.GetAwaiter();
+                        default:
+                            throw new Exception("TODO");
                     }
                 }
 
@@ -1326,7 +1316,9 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
+            //// TODO we need to do better than 3.1s with 10000 iterations
             //// TODO fix perf for moveinternal3, since that's what you're currently adding
+            
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
@@ -1356,7 +1348,7 @@
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
-                var iterations = 1000;
+                var iterations = 10000;
                 for (int i = 0; i < iterations; ++i)
                 {
                     stream.Position = 0;
