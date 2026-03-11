@@ -209,7 +209,7 @@
                                     potentialFirstInstance = nonErrorInstance;
                                 }
 
-                                return 
+                                return
                                     (
                                         SeriesMaster: seriesMaster,
                                         PotentialFirstInstance: potentialFirstInstance
@@ -230,15 +230,16 @@
                                 .SelectRight(
                                     nothingOrErrors => nothingOrErrors
                                         .Swap() // move nothing to the right side
-                                    )) 
+                                    ))
                         .Unassociate() // move nothing to the right
                         .Unassociate() // move nothing to the right
+                        .SelectLeft( // get all of the eithers nested on the left
+                            _ => _.Associate())
                         )
                 .TrySelect()
                 .Select(
                     //// TODO you are here
                     seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
-                        .Associate()
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
