@@ -239,7 +239,7 @@
                 .TrySelect()
                 .Select(
                     //// TODO you are here
-                    seriesMasterWithInstanceOrError => seriesMasterWithInstanceOrError
+                    seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
                         .SelectLeft(
                             seriesMasterPlusInstance => new Graph.CalendarEvent(
                                 seriesMasterPlusInstance.Item1.Id,
