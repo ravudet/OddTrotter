@@ -304,8 +304,12 @@
 
         private async ITask<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
-            //// TODO you are here
-            var context = this.calendarSource.Events().Get(seriesMasterId).Instances(pageStartTime, pageEndTime).Get();
+            var context = this
+                .calendarSource
+                .Events()
+                .Get(seriesMasterId)
+                .Instances(pageStartTime, pageEndTime)
+                .Get();
             if (this.isCancelled != null)
             {
                 context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
@@ -324,7 +328,7 @@
                 .OrderBy(calendarEvent => calendarEvent.Start.DateTime)
                 .Top(this.pageSize);
 
-            if (this.isCancelled.HasValue)
+            if (this.isCancelled != null)
             {
                 context = context.Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled.Value);
             }
@@ -334,16 +338,7 @@
 
         private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)
         {
-            /*DateTimeOffset start;
-            try
-            {
-                start = DateTimeOffset.Parse(calendarEvent.Start.DateTime);
-            }
-            catch (Exception exception)
-            {
-                return Either.Left<CalendarEvent>().Right(new CalendarEventTranslationException("tODO", exception));
-            }*/
-
+            //// TODO you are here
             return Either
                 .Right<CalendarEventTranslationException>()
                 .Left(
