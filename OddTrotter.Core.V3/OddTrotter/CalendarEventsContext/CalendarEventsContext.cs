@@ -298,7 +298,7 @@
                     (firstError, secondError) => 
                         new Graph.PagingError.Context(
                             new Uri("https://todo.com"), 
-                            new Graph.ContextException("TODO an error occurred within this time slice and the next one")))
+                            new Graph.ContextException("TODO an error occurred within this time slice *and* the next one")))
                 .ConfigureAwait(false);
         }
 
