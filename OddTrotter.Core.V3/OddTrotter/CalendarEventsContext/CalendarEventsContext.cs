@@ -234,59 +234,6 @@
                         .Unassociate() // move nothing to the right
                         .Unassociate() // move nothing to the right
                         )
-                /*.Select(
-                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError // what we want is ieither<(seriesmaster+firstinsatnce), ieither<seriesmastertranslationerror, ieither<instancetranslationerror, instancepagingerror>; so we are returning here and either of *that* or *nothing*
-                        .Apply(
-                            seriesMasterPlusPotentialFirstInstance => seriesMasterPlusPotentialFirstInstance
-                                .PotentialFirstInstance
-                                .Apply(
-                                    potentialFirstInstanceOrError => potentialFirstInstanceOrError
-                                        .Apply(
-                                            firstInstanceOrError => Either
-                                                .Right<Nothing>()
-                                                .Left(
-                                                    firstInstanceOrError
-                                                        .Apply(
-                                                            firstInstance => Either
-                                                                .Right<Either<Graph.CalendarEventTranslationException, Either<Graph.CalendarEventTranslationException, Graph.PagingException>>>()
-                                                                .Left(
-                                                                    (
-                                                                        SeriesMaster: seriesMasterPlusPotentialFirstInstance.SeriesMaster,
-                                                                        FirstInstance: firstInstance
-                                                                    )),
-                                                            instanceTranslationError => Either
-                                                                .Left<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance)>()
-                                                                .Right(
-                                                                    Either
-                                                                        .Left<Graph.CalendarEventTranslationException>()
-                                                                        .Right(
-                                                                            Either
-                                                                                .Right<Graph.PagingException>()
-                                                                                .Left(instanceTranslationError))))),
-                                            nothing => Either
-                                                .Left<Either<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), Either<Graph.CalendarEventTranslationException, Either<Graph.CalendarEventTranslationException, Graph.PagingException>>>>()
-                                                .Right(nothing)),
-                                    instancePagingError => Either
-                                            .Right<Nothing>()
-                                            .Left(
-                                                Either
-                                                    .Left<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance)>()
-                                                    .Right(
-                                                        Either
-                                                            .Left<Graph.CalendarEventTranslationException>()
-                                                            .Right(
-                                                                Either
-                                                                    .Left<Graph.CalendarEventTranslationException>()
-                                                                    .Right(instancePagingError))))),
-                            seriesTranslationError => Either
-                                .Right<Nothing>()
-                                .Left(
-                                    Either
-                                        .Left<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance)>()
-                                        .Right(
-                                            Either
-                                                .Right<Either<Graph.CalendarEventTranslationException, Graph.PagingException>>()
-                                                .Left(seriesTranslationError)))))*/
                 /*.TrySelect( //// TODO any way to get type inference here?
                     (IEither<IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>>, Nothing> potentialSeriesMasterPlusFirstInstanceOrError, [MaybeNullWhen(false)] out IEither<(Graph.CalendarEvent SeriesMaster, Graph.CalendarEvent FirstInstance), IEither<Graph.CalendarEventTranslationException, IEither<Graph.CalendarEventTranslationException, Graph.PagingException>>> seriesMasterWithInstanceOrError) =>
                     {
