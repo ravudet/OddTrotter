@@ -1326,7 +1326,6 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
-            //// TODO add back the class whitespace reader for cases where you don't have the factory
             //// TODO fix perf for moveinternal3, since that's what you're currently adding
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
