@@ -1401,7 +1401,8 @@
                     //var colonReader = await whitespaceReader3.AsReader.MoveInternal3(whitespaceReader3.Factory).ConfigureAwait(false);
                     var colonReader = await whitespaceReader3.MoveInternal1().ConfigureAwait(false);
                     var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
-                    var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
+                    //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
+                    var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
                     var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.True @true))
                     {
@@ -1433,7 +1434,8 @@
                     //var colon2 = await whitespace6.AsReader.MoveInternal3(whitespace6.Factory).ConfigureAwait(false);
                     var colon2 = await whitespace6.MoveInternal1().ConfigureAwait(false);
                     var whitespace7 = await colon2.MoveInternal1().ConfigureAwait(false);
-                    var value3 = await whitespace7.AsReader.MoveInternal3(whitespace7.Factory).ConfigureAwait(false);
+                    //var value3 = await whitespace7.AsReader.MoveInternal3(whitespace7.Factory).ConfigureAwait(false);
+                    var value3 = await whitespace7.MoveInternal1().ConfigureAwait(false);
                     var valueToken3 = await value3.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.False @false))
                     {
@@ -1465,7 +1467,8 @@
                     var colon3 = await whitespace9.MoveInternal1().ConfigureAwait(false);
                     //var colon3 = await whitespace9.AsReader.MoveInternal3(whitespace9.Factory).ConfigureAwait(false);
                     var whitespace10 = await colon3.MoveInternal1().ConfigureAwait(false);
-                    var value4 = await whitespace10.AsReader.MoveInternal3(whitespace10.Factory).ConfigureAwait(false);
+                    //var value4 = await whitespace10.AsReader.MoveInternal3(whitespace10.Factory).ConfigureAwait(false);
+                    var value4 = await whitespace10.MoveInternal1().ConfigureAwait(false);
                     var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
                     {
@@ -1510,7 +1513,8 @@
                     //var colon4 = await whitespace12.AsReader.MoveInternal3(whitespace12.Factory).ConfigureAwait(false);
                     var colon4 = await whitespace12.MoveInternal1().ConfigureAwait(false);
                     var whitespace13 = await colon4.MoveInternal1().ConfigureAwait(false);
-                    var value5 = await whitespace13.AsReader.MoveInternal3(whitespace13.Factory).ConfigureAwait(false);
+                    //var value5 = await whitespace13.AsReader.MoveInternal3(whitespace13.Factory).ConfigureAwait(false);
+                    var value5 = await whitespace13.MoveInternal1().ConfigureAwait(false);
                     var valueToken5 = await value5.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.String @string5))
                     {
@@ -1546,7 +1550,8 @@
                     //var colon5 = await whitespace15.AsReader.MoveInternal3(whitespace15.Factory).ConfigureAwait(false);
                     var colon5 = await whitespace15.MoveInternal1().ConfigureAwait(false);
                     var whitespace16 = await colon5.MoveInternal1().ConfigureAwait(false);
-                    var value6 = await whitespace16.AsReader.MoveInternal3(whitespace16.Factory).ConfigureAwait(false);
+                    //var value6 = await whitespace16.AsReader.MoveInternal3(whitespace16.Factory).ConfigureAwait(false);
+                    var value6 = await whitespace16.MoveInternal1().ConfigureAwait(false);
                     var valueToken6 = await value6.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Null @null))
                     {
@@ -1578,7 +1583,8 @@
                     //var colon6 = await whitespace18.AsReader.MoveInternal3(whitespace18.Factory).ConfigureAwait(false);
                     var colon6 = await whitespace18.MoveInternal1().ConfigureAwait(false);
                     var whitespace19 = await colon6.MoveInternal1().ConfigureAwait(false);
-                    var value7 = await whitespace19.AsReader.MoveInternal3(whitespace19.Factory).ConfigureAwait(false);
+                    //var value7 = await whitespace19.AsReader.MoveInternal3(whitespace19.Factory).ConfigureAwait(false);
+                    var value7 = await whitespace19.MoveInternal1().ConfigureAwait(false);
                     var valueToken7 = await value7.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken7 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Object @object2))
                     {
@@ -1609,9 +1615,11 @@
                         var nestedChars = await nestedStringDelimiter.MoveInternal1().ConfigureAwait(false);
                         var nestedStringDeliminter2 = await nestedChars.MoveInternal1().ConfigureAwait(false);
                         var nestedWhitespace = await nestedStringDeliminter2.MoveInternal1().ConfigureAwait(false);
-                        var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
+                        //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
+                        var nestedColon = await nestedWhitespace.MoveInternal1().ConfigureAwait(false);
                         var nestedWhispace2 = await nestedColon.MoveInternal1().ConfigureAwait(false);
-                        var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                        //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                        var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                         var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.True nestedTrue))
                         {
@@ -1643,7 +1651,8 @@
                         //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
                         var nestedcolon2 = await nestedwhitespace6.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace7 = await nestedcolon2.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                        //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                        var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.False nestedfalse))
                         {
@@ -1675,7 +1684,8 @@
                         //var nestedcolon3 = await nestedwhitespace9.AsReader.MoveInternal3(nestedwhitespace9.Factory).ConfigureAwait(false);
                         var nestedcolon3 = await nestedwhitespace9.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace10 = await nestedcolon3.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                        //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                        var nestedvalue4 = await nestedwhitespace10.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken4 = await nestedvalue4.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.Number nestednumber))
                         {
@@ -1720,7 +1730,8 @@
                         //var nestedcolon4 = await nestedwhitespace12.AsReader.MoveInternal3(nestedwhitespace12.Factory).ConfigureAwait(false);
                         var nestedcolon4 = await nestedwhitespace12.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace13 = await nestedcolon4.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                        //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                        var nestedvalue5 = await nestedwhitespace13.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken5 = await nestedvalue5.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.String @nestedstring5))
                         {
@@ -1756,7 +1767,8 @@
                         //var nestedcolon5 = await nestedwhitespace15.AsReader.MoveInternal3(nestedwhitespace15.Factory).ConfigureAwait(false);
                         var nestedcolon5 = await nestedwhitespace15.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace16 = await nestedcolon5.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                        //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                        var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.Null @nestednull))
                         {
@@ -1804,7 +1816,8 @@
                     //var colon7 = await whitespace22.AsReader.MoveInternal3(whitespace22.Factory).ConfigureAwait(false);
                     var colon7 = await whitespace22.MoveInternal1().ConfigureAwait(false);
                     var whitespace23 = await colon7.MoveInternal1().ConfigureAwait(false);
-                    var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
+                    //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
+                    var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
                     var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken8 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Object object3))
                     {
@@ -1847,9 +1860,11 @@
                     var chars9 = await stringDelimiter17.MoveInternal1().ConfigureAwait(false);
                     var stringDelimiter18 = await chars9.MoveInternal1().ConfigureAwait(false);
                     var whitespace27 = await stringDelimiter18.MoveInternal1().ConfigureAwait(false);
-                    var colon8 = await whitespace27.AsReader.MoveInternal3(whitespace27.Factory).ConfigureAwait(false);
+                    //var colon8 = await whitespace27.AsReader.MoveInternal3(whitespace27.Factory).ConfigureAwait(false);
+                    var colon8 = await whitespace27.MoveInternal1().ConfigureAwait(false);
                     var whitespace28 = await colon8.MoveInternal1().ConfigureAwait(false);
-                    var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
+                    //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
+                    var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
                     var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken9 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Array array))
                     {
@@ -1886,18 +1901,18 @@
                     // array
                     var comma8 = await subsequentMember10.MoveInternal1().ConfigureAwait(false);
                     var whitespace31 = await comma8.MoveInternal1().ConfigureAwait(false);
-                    var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);
-                    var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);
+                    //var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);
+                    var member9 = await whitespace31.MoveInternal1().ConfigureAwait(false);
                     var string10 = await member9.MoveInternal1().ConfigureAwait(false);
                     var stringDelimiter19 = await string10.MoveInternal1().ConfigureAwait(false);
                     var chars10 = await stringDelimiter19.MoveInternal1().ConfigureAwait(false);
                     var stringDelimiter20 = await chars10.MoveInternal1().ConfigureAwait(false);
                     var whitespace32 = await stringDelimiter20.MoveInternal1().ConfigureAwait(false);
-                    var colon9 = await whitespace32.AsReader.MoveInternal3(whitespace32.Factory).ConfigureAwait(false);
-                    var colon9 = await whitespace32.AsReader.MoveInternal3(whitespace32.Factory).ConfigureAwait(false);
+                    //var colon9 = await whitespace32.AsReader.MoveInternal3(whitespace32.Factory).ConfigureAwait(false);
+                    var colon9 = await whitespace32.MoveInternal1().ConfigureAwait(false);
                     var whitespace33 = await colon9.MoveInternal1().ConfigureAwait(false);
-                    var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
-                    var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
+                    //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
+                    var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
                     var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
                     if (!(valueToken10 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Array array2))
                     {
@@ -1951,7 +1966,8 @@
                         //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
                         var nestedColon = await nestedWhitespace.MoveInternal1().ConfigureAwait(false);
                         var nestedWhispace2 = await nestedColon.MoveInternal1().ConfigureAwait(false);
-                        var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                        //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                        var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                         var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.True nestedTrue))
                         {
@@ -1983,7 +1999,8 @@
                         //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
                         var nestedcolon2 = await nestedwhitespace6.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace7 = await nestedcolon2.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                        //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                        var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.False nestedfalse))
                         {
@@ -2015,7 +2032,8 @@
                         //var nestedcolon3 = await nestedwhitespace9.AsReader.MoveInternal3(nestedwhitespace9.Factory).ConfigureAwait(false);
                         var nestedcolon3 = await nestedwhitespace9.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace10 = await nestedcolon3.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                        //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                        var nestedvalue4 = await nestedwhitespace10.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken4 = await nestedvalue4.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.Number nestednumber))
                         {
@@ -2060,7 +2078,8 @@
                         //var nestedcolon4 = await nestedwhitespace12.AsReader.MoveInternal3(nestedwhitespace12.Factory).ConfigureAwait(false);
                         var nestedcolon4 = await nestedwhitespace12.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace13 = await nestedcolon4.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                        //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                        var nestedvalue5 = await nestedwhitespace13.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken5 = await nestedvalue5.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.String @nestedstring5))
                         {
@@ -2096,7 +2115,8 @@
                         //var nestedcolon5 = await nestedwhitespace15.AsReader.MoveInternal3(nestedwhitespace15.Factory).ConfigureAwait(false);
                         var nestedcolon5 = await nestedwhitespace15.MoveInternal1().ConfigureAwait(false);
                         var nestedwhitespace16 = await nestedcolon5.MoveInternal1().ConfigureAwait(false);
-                        var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                        //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                        var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                         var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
                         if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.Null @nestednull))
                         {
@@ -2146,7 +2166,8 @@
                     //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
                     var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
                     var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
-                    var nothing = await whitespace38.AsReader.MoveInternal3(whitespace38.Factory).ConfigureAwait(false);
+                    //var nothing = await whitespace38.AsReader.MoveInternal3(whitespace38.Factory).ConfigureAwait(false);
+                    var nothing = await whitespace38.MoveInternal1().ConfigureAwait(false);
                     Assert.AreEqual(new Nothing(), nothing);
 
                     Assert.AreEqual(stream.Length, stream.Position);
