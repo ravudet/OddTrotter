@@ -338,7 +338,6 @@
 
         private static IEither<CalendarEvent, CalendarEventTranslationException> Translate(Graph.CalendarEvent calendarEvent)
         {
-            //// TODO you are here
             return Either
                 .Right<CalendarEventTranslationException>()
                 .Left(
@@ -426,7 +425,8 @@
         internal static IEither<TRight, TLeft> Swap<TLeft, TRight>(
             this IEither<TLeft, TRight> either)
         {
-            //// TODO document where the name came from 
+            // TODO haskell calls this "swap": https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Swap.html
+
             return either.Apply(
                 left => Either.Left<TRight>().Right(left),
                 right => Either.Right<TLeft>().Left(right));
@@ -435,7 +435,8 @@
         internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Unassociate<TLeft, TLeftInner, TRightInner>(
             this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
         {
-            //// TODO document where the name came from
+            // TODO haskell calls this "unassoc": https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Assoc.html
+
             return either.Apply(
                 left => Either.Right<TRightInner>().Left(Either.Right<TLeftInner>().Left(left)),
                 right => right.Apply(
