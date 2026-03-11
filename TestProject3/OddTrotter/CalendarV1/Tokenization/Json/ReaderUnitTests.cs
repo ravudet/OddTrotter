@@ -666,7 +666,8 @@
             {
                 if (self.TryMove3(out var nextFactory))
                 {
-                    return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskCompleted<TValue, TNextReader>(self.Context, nextFactory));
+                    return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new NewCompleted<TNextReader>(nextFactory));
+                    ////return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskCompleted<TValue, TNextReader>(self.Context, nextFactory));
                 }
                 else
                 {
@@ -681,6 +682,80 @@
             }
         }
 
+        public readonly ref struct NewCompleted<TNextReader>
+            where TNextReader : allows ref struct
+        {
+            private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+
+            public NewCompleted(Func<ReaderContext, TNextReader> nextReaderFactory)
+            {
+                this.nextReaderFactory = nextReaderFactory;
+            }
+
+            public ConfiguredAwaitable ConfiguredAwait(bool continueOnCapturedContext)
+            {
+                // TODO use task.completedtask and keep a singleton of the configured awaitable
+                return new ConfiguredAwaitable(this.nextReaderFactory, ValueTask.CompletedTask.ConfigureAwait(continueOnCapturedContext));
+            }
+
+            public readonly ref struct ConfiguredAwaitable
+            {
+                private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+                private readonly ConfiguredValueTaskAwaitable configuredValueTaskAwaitable;
+
+                public ConfiguredAwaitable(
+                    Func<ReaderContext, TNextReader> nextReaderFactory, 
+                    ConfiguredValueTaskAwaitable configuredValueTaskAwaitable)
+                {
+                    this.nextReaderFactory = nextReaderFactory;
+                    this.configuredValueTaskAwaitable = configuredValueTaskAwaitable;
+                }
+
+                public Awaiter GetAwaiter()
+                {
+                    return new Awaiter(this.nextReaderFactory, this.configuredValueTaskAwaitable.GetAwaiter());
+                }
+
+                public readonly struct Awaiter : IAwaiter<Func<ReaderContext, TNextReader>>
+                {
+                    private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+                    private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter configuredValueTaskAwaitable;
+
+                    public Awaiter(
+                        Func<ReaderContext, TNextReader> nextReaderFactory,
+                        ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter configuredValueTaskAwaitable)
+                    {
+                        this.nextReaderFactory = nextReaderFactory;
+                        this.configuredValueTaskAwaitable = configuredValueTaskAwaitable;
+                    }
+
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return true;
+                        }
+                    }
+
+                    public Func<ReaderContext, TNextReader> GetResult()
+                    {
+                        return this.nextReaderFactory;
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        this.configuredValueTaskAwaitable.OnCompleted(continuation);
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        this.configuredValueTaskAwaitable.UnsafeOnCompleted(continuation);
+                    }
+                }
+            }
+        }
+
         public readonly ref struct MoveInternal3Task<TCurrentReader, TValue, TNextReader>
             where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
             where TValue : allows ref struct
@@ -691,6 +766,7 @@
             private readonly MoveInternal3TaskCompleted<TValue, TNextReader> moveInternal3TaskCompleted;
             private readonly MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader> moveInternal3TaskValue;
             private readonly MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader> moveInternal3TaskMove;
+            private readonly NewCompleted<TNextReader> newCompleted;
 
             internal MoveInternal3Task(MoveInternal3TaskCompleted<TValue, TNextReader> moveInternal3TaskCompleted)
             {
@@ -713,6 +789,13 @@
                 this.type = 3;
             }
 
+            internal MoveInternal3Task(NewCompleted<TNextReader> newCompleted)
+            {
+                this.newCompleted = newCompleted;
+
+                this.type = 4;
+            }
+
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
                 switch (this.type)
@@ -723,6 +806,8 @@
                         return new ConfiguredAwaitable(this.moveInternal3TaskValue.ConfigureAwait(continueOnCapturedContext));
                     case 3:
                         return new ConfiguredAwaitable(this.moveInternal3TaskMove.ConfigureAwait(continueOnCapturedContext));
+                    case 4:
+                        return new ConfiguredAwaitable(this.newCompleted.ConfiguredAwait(continueOnCapturedContext));
                     default:
                         throw new Exception("TODO");
                 }
@@ -735,6 +820,7 @@
                 private readonly MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskCompleted;
                 private readonly MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskValue;
                 private readonly MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskMove;
+                private readonly NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted;
 
                 internal ConfiguredAwaitable(MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskCompleted)
                 {
@@ -757,6 +843,13 @@
                     this.type = 3;
                 }
 
+                internal ConfiguredAwaitable(NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted)
+                {
+                    this.newCompleted = newCompleted;
+
+                    this.type = 4;
+                }
+
                 public Awaiter GetAwaiter()
                 {
                     switch (this.type)
@@ -767,17 +860,20 @@
                             return new Awaiter(this.moveInternal3TaskValue.GetAwaiter());
                         case 3:
                             return new Awaiter(this.moveInternal3TaskMove.GetAwaiter());
+                        case 4:
+                            return new Awaiter(this.newCompleted.GetAwaiter());
                         default:
                             throw new Exception("TODO");
                     }
                 }
 
-                public readonly struct Awaiter : ITaskAwaiter<TNextReader>
+                public readonly struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
                 {
                     private readonly int type;
 
                     private readonly MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable.Awaiter completedAwaiter;
                     private readonly ITaskAwaiter<TNextReader> taskAwaiter;
+                    private readonly NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted;
 
                     internal Awaiter(MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable.Awaiter completedAwaiter)
                     {
@@ -794,6 +890,14 @@
                         this.type = 2;
                     }
 
+                    internal Awaiter(NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted)
+                    {
+                        this.newCompleted = newCompleted;
+
+                        this.taskAwaiter = default!;
+                        this.type = 3;
+                    }
+
                     public bool IsCompleted
                     {
                         get
@@ -804,20 +908,24 @@
                                     return this.completedAwaiter.IsCompleted;
                                 case 2:
                                     return this.taskAwaiter.IsCompleted;
+                                case 3:
+                                    return this.newCompleted.IsCompleted;
                                 default:
                                     throw new Exception("TODO");
                             }
                         }
                     }
 
-                    public TNextReader GetResult()
+                    public Func<ReaderContext, TNextReader> GetResult()
                     {
                         switch (this.type)
                         {
-                            case 1:
+                            /*case 1:
                                 return this.completedAwaiter.GetResult();
                             case 2:
-                                return this.taskAwaiter.GetResult();
+                                return this.taskAwaiter.GetResult();*/
+                            case 3:
+                                return this.newCompleted.GetResult();
                             default:
                                 throw new Exception("TODO");
                         }
@@ -834,6 +942,9 @@
                                 this.taskAwaiter.OnCompleted(continuation);
                                 break;
                             case 3:
+                                this.newCompleted.OnCompleted(continuation);
+                                break;
+                            default:
                                 throw new Exception("TODO");
                         }
                     }
@@ -849,6 +960,9 @@
                                 this.taskAwaiter.UnsafeOnCompleted(continuation);
                                 break;
                             case 3:
+                                this.newCompleted.UnsafeOnCompleted(continuation);
+                                break;
+                            default:
                                 throw new Exception("TODO");
                         }
                     }
@@ -1350,7 +1464,8 @@
                     var whitespaceReaderFactory = await reader.AsReader.MoveInternal2().ConfigureAwait(false);
                     var whitespaceReader = whitespaceReaderFactory(context);
 
-                    var valueReader = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
+                    var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
+                    var valueReader = valueReaderFactory(context);
                     var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 
                     if (!(valueToken is ValueToken<WhitespaceReader<Nothing>>.Object @object))
