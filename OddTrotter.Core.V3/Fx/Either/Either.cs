@@ -116,7 +116,8 @@ namespace Fx.Either
     /// </remarks>
     public static class Either
     {
-        public readonly ref struct EmptyLeft<TLeft>
+        public readonly ref struct EmptyLeft<TLeft> //// TODO change this name, then add the following documentation:
+            //// This class was named so that it does not conflict with intellisense's ability to find the <see cref="Left"/> method
         {
             public Either<TLeft, TRight> Right<TRight>(TRight value)
             {
@@ -129,7 +130,8 @@ namespace Fx.Either
             return new EmptyLeft<TLeft>();
         }
 
-        public readonly ref struct EmptyRight<TRight>
+        public readonly ref struct EmptyRight<TRight> //// TODO change this name, then add the following documentation:
+                                                      //// This class was named so that it does not conflict with intellisense's ability to find the <see cref="Right"/> method
         {
             public Either<TLeft, TRight> Left<TLeft>(TLeft value)
             {
