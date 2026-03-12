@@ -133,13 +133,6 @@ namespace Fx.QueryContext
             }
         }
 
-        public static async ITask<IEither<IEither<TElement, TDefault>, TError>> FirstOrDefault<TElement, TError, TDefault>(
-            this ITask<IQueryResult<TElement, TError>> source,
-            TDefault @default) //// TODO at one point, you had a type for "first or default", but you got rid of it because you had some extensions that want to use tuple<..., ieither> and because `tuple` is a concrete type, you couldn't get type inference from `firstordefault` to `ieither` and so you needed to "select" the `firstordefault` with `aseither`, which looked a bit awkward; of course, there will still be cases when you need to do that for other types, but "first or default" is such a "small" concept, that i think it is fine to not define a type specifically for it //// TODO you should document this somewhere
-        {
-            return await (await source.ConfigureAwait(false)).FirstOrDefault(@default).ConfigureAwait(false);
-        }
-
         /// <summary>
         /// placeholder
         /// </summary>
@@ -154,6 +147,8 @@ namespace Fx.QueryContext
             this IQueryResult<TElement, TError> source, 
             TDefault @default)
         {
+            //// TODO at one point, you had a type for "first or default", but you got rid of it because you had some extensions that want to use tuple<..., ieither> and because `tuple` is a concrete type, you couldn't get type inference from `firstordefault` to `ieither` and so you needed to "select" the `firstordefault` with `aseither`, which looked a bit awkward; of course, there will still be cases when you need to do that for other types, but "first or default" is such a "small" concept, that i think it is fine to not define a type specifically for it //// TODO you should document this somewhere
+
             ArgumentNullException.ThrowIfNull(source);
 
             return (await source.GetNodes().ConfigureAwait(false))
