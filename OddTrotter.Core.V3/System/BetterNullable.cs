@@ -3,7 +3,7 @@ namespace System
 {
     using System.Diagnostics.CodeAnalysis;
 
-    public readonly struct BetterNullable<T>
+    public readonly struct BetterNullable<T> //// TODO i like the "optional" name from previous iterations
     {
         private readonly bool hasValue;
         private readonly T value;
