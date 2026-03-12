@@ -15,13 +15,6 @@
 
 
 
-    //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff?
-    ////    TODO OddTrotter.linq.EnumerableExtensions
-    //// TODO delete any newly dead code
-
-
-
-
     //// TODO taskextensions
     //// TODO taskwrapper
     //// TODO realizableextensions
