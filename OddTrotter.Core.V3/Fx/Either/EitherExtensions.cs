@@ -306,6 +306,7 @@ namespace Fx.Either
             where TRightSource : allows ref struct
             where TLeftResult : allows ref struct
         {
+            //// TODO do you want `typeholder` methods to return `typeholder`s?
             return either.Select(leftMap, _ => _);
         }
 
