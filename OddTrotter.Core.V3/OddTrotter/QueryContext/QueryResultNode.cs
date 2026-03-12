@@ -6,7 +6,7 @@ namespace Fx.QueryContext
 
     using Fx.Either;
 
-    public sealed class QueryResultNodeAsync<TValue, TError> : IQueryResultNode<TValue, TError>
+    public sealed class QueryResultNode<TValue, TError> : IQueryResultNode<TValue, TError>
     {
         private readonly IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source;
 
@@ -15,7 +15,7 @@ namespace Fx.QueryContext
         /// </summary>
         /// <param name="source"></param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public QueryResultNodeAsync(IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
+        public QueryResultNode(IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
         {
             ArgumentNullException.ThrowIfNull(source);
 
