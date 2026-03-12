@@ -60,7 +60,7 @@
             return await EvaluatePage(this.strongConventionContext, this.calendarRoot, true).ConfigureAwait(false);
 
 
-            //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result?
+            //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result? //// TODO i like the ecision you've made here; it makes the interfaces map the csdl, which doesn't refer at all to paging and just views things as collections of elements
         }
 
         private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> EvaluatePage(
