@@ -53,6 +53,7 @@
     ////        you should explore the `ref struct` stuff for that before doing it, though, similar to how you did `ieither`
     ////        go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
     ////        go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
+    ////    pull anything else that's useful out of calendarv1 and calendarv2 in oddtrotter.core
 
 
 
