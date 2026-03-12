@@ -671,14 +671,16 @@
                 }
                 else
                 {
-                    var readTask = self.Read();
-                    return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));
+                    /*var readTask = self.Read();
+                    return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));*/
+                    throw new Exception("TODO");
                 }
             }
             else
             {
-                var readTask = self.Read();
-                return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));
+                /*var readTask = self.Read();
+                return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>(self.Context, self.Factory, readTask));*/
+                throw new Exception("TODO");
             }
         }
 
@@ -763,37 +765,13 @@
         {
             private readonly int type;
 
-            private readonly MoveInternal3TaskCompleted<TValue, TNextReader> moveInternal3TaskCompleted;
-            private readonly MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader> moveInternal3TaskValue;
-            private readonly MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader> moveInternal3TaskMove;
             private readonly NewCompleted<TNextReader> newCompleted;
-
-            internal MoveInternal3Task(MoveInternal3TaskCompleted<TValue, TNextReader> moveInternal3TaskCompleted)
-            {
-                this.moveInternal3TaskCompleted = moveInternal3TaskCompleted;
-
-                this.type = 1;
-            }
-
-            internal MoveInternal3Task(MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader> moveInternal3TaskValue)
-            {
-                this.moveInternal3TaskValue = moveInternal3TaskValue;
-
-                this.type = 2;
-            }
-
-            internal MoveInternal3Task(MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader> moveInternal3TaskMove)
-            {
-                this.moveInternal3TaskMove = moveInternal3TaskMove;
-
-                this.type = 3;
-            }
 
             internal MoveInternal3Task(NewCompleted<TNextReader> newCompleted)
             {
                 this.newCompleted = newCompleted;
 
-                this.type = 4;
+                this.type = 1;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
@@ -801,12 +779,6 @@
                 switch (this.type)
                 {
                     case 1:
-                        return new ConfiguredAwaitable(this.moveInternal3TaskCompleted.ConfigureAwait(continueOnCapturedContext));
-                    case 2:
-                        return new ConfiguredAwaitable(this.moveInternal3TaskValue.ConfigureAwait(continueOnCapturedContext));
-                    case 3:
-                        return new ConfiguredAwaitable(this.moveInternal3TaskMove.ConfigureAwait(continueOnCapturedContext));
-                    case 4:
                         return new ConfiguredAwaitable(this.newCompleted.ConfiguredAwait(continueOnCapturedContext));
                     default:
                         throw new Exception("TODO");
@@ -817,37 +789,13 @@
             {
                 private readonly int type;
 
-                private readonly MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskCompleted;
-                private readonly MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskValue;
-                private readonly MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskMove;
                 private readonly NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted;
-
-                internal ConfiguredAwaitable(MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskCompleted)
-                {
-                    this.moveInternal3TaskCompleted = moveInternal3TaskCompleted;
-
-                    this.type = 1;
-                }
-
-                internal ConfiguredAwaitable(MoveInternal3TaskValue<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskValue)
-                {
-                    this.moveInternal3TaskValue = moveInternal3TaskValue;
-
-                    this.type = 2;
-                }
-
-                internal ConfiguredAwaitable(MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>.ConfiguredAwaitable moveInternal3TaskMove)
-                {
-                    this.moveInternal3TaskMove = moveInternal3TaskMove;
-
-                    this.type = 3;
-                }
 
                 internal ConfiguredAwaitable(NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted)
                 {
                     this.newCompleted = newCompleted;
 
-                    this.type = 4;
+                    this.type = 1;
                 }
 
                 public Awaiter GetAwaiter()
@@ -855,12 +803,6 @@
                     switch (this.type)
                     {
                         case 1:
-                            return new Awaiter(this.moveInternal3TaskCompleted.GetAwaiter());
-                        case 2:
-                            return new Awaiter(this.moveInternal3TaskValue.GetAwaiter());
-                        case 3:
-                            return new Awaiter(this.moveInternal3TaskMove.GetAwaiter());
-                        case 4:
                             return new Awaiter(this.newCompleted.GetAwaiter());
                         default:
                             throw new Exception("TODO");
@@ -871,31 +813,13 @@
                 {
                     private readonly int type;
 
-                    private readonly MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable.Awaiter completedAwaiter;
-                    private readonly ITaskAwaiter<TNextReader> taskAwaiter;
                     private readonly NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted;
-
-                    internal Awaiter(MoveInternal3TaskCompleted<TValue, TNextReader>.ConfiguredAwaitable.Awaiter completedAwaiter)
-                    {
-                        this.completedAwaiter = completedAwaiter;
-
-                        this.taskAwaiter = default!;
-                        this.type = 1;
-                    }
-
-                    public Awaiter(ITaskAwaiter<TNextReader> taskAwaiter)
-                    {
-                        this.taskAwaiter = taskAwaiter;
-
-                        this.type = 2;
-                    }
 
                     internal Awaiter(NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted)
                     {
                         this.newCompleted = newCompleted;
 
-                        this.taskAwaiter = default!;
-                        this.type = 3;
+                        this.type = 1;
                     }
 
                     public bool IsCompleted
@@ -905,10 +829,6 @@
                             switch (this.type)
                             {
                                 case 1:
-                                    return this.completedAwaiter.IsCompleted;
-                                case 2:
-                                    return this.taskAwaiter.IsCompleted;
-                                case 3:
                                     return this.newCompleted.IsCompleted;
                                 default:
                                     throw new Exception("TODO");
@@ -920,11 +840,7 @@
                     {
                         switch (this.type)
                         {
-                            /*case 1:
-                                return this.completedAwaiter.GetResult();
-                            case 2:
-                                return this.taskAwaiter.GetResult();*/
-                            case 3:
+                            case 1:
                                 return this.newCompleted.GetResult();
                             default:
                                 throw new Exception("TODO");
@@ -936,12 +852,6 @@
                         switch (this.type)
                         {
                             case 1:
-                                this.completedAwaiter.OnCompleted(continuation);
-                                break;
-                            case 2:
-                                this.taskAwaiter.OnCompleted(continuation);
-                                break;
-                            case 3:
                                 this.newCompleted.OnCompleted(continuation);
                                 break;
                             default:
@@ -954,12 +864,6 @@
                         switch (this.type)
                         {
                             case 1:
-                                this.completedAwaiter.UnsafeOnCompleted(continuation);
-                                break;
-                            case 2:
-                                this.taskAwaiter.UnsafeOnCompleted(continuation);
-                                break;
-                            case 3:
                                 this.newCompleted.UnsafeOnCompleted(continuation);
                                 break;
                             default:
