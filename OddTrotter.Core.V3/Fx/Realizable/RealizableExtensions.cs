@@ -84,7 +84,7 @@ namespace Fx.Realizable
 
             public Realizable<TResult1> ContinueWith<TResult1>(Func<TResult, TResult1> sourceContinuation, Func<Exception, TResult1> exceptionContinuation, Func<OperationCanceledException, TResult1> canceledContinuation) where TResult1 : allows ref struct
             {
-                return new Realizable<TResult1>(new Continuation<TResult, TResult1>(this, sourceContinuation));
+                return new Realizable<TResult1>(new System.Threading.Tasks.TaskExtensions2.ContinueWith2Adapter<TResult, TResult1>(this.ToFuture(), sourceContinuation, exceptionContinuation, canceledContinuation));
             }
 
             public IAwaiter<TResult> GetAwaiter()
