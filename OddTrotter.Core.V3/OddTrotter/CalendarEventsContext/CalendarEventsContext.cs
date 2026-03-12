@@ -444,53 +444,6 @@
                     rightInner => Either.Left<Either<TLeft, TLeftInner>>().Right(rightInner)));
         }
 
-        internal static IEither<TLeft, TRight> AsEither<TLeft, TRight>(this IEither<TLeft, TRight> either)
-        {
-            //// TODO you are here
-            return either;
-        }
-
-        internal interface ITuple<out T1, out T2>
-        {
-            T1 Item1 { get; }
-
-            T2 Item2 { get; }
-        }
-
-        internal sealed class Tuple<T1, T2> : ITuple<T1, T2>
-        {
-            private readonly (T1 Item1, T2 Item2) tuple;
-
-            public Tuple((T1 Item1, T2 Item2) tuple)
-            {
-                this.tuple = tuple;
-            }
-
-            public T1 Item1 => tuple.Item1;
-
-            public T2 Item2 => tuple.Item2;
-        }
-
-        internal static ITuple<T1, T2> ToTuple<T1, T2>(this (T1 Item1, T2 Item2) tuple)
-        {
-            return new Tuple<T1, T2>(tuple);
-        }
-
-        internal sealed class PlayType
-        {
-            public string? Value { get; set; }
-        }
-
-        internal static int? Foo10(PlayType? playType)
-        {
-            return playType?.Value?.Length;
-        }
-
-        internal static IEither<int, Nothing> Foo11(IEither<PlayType, Nothing> playType)
-        {
-            return playType.Propagate(_ => _.Value).Propagate(_ => _.Length);
-        }
-
         internal static IEither<TLeftResult, Nothing> Propagate<TLeftSource, TLeftResult>(
             this IEither<TLeftSource, Nothing> either,
             Func<TLeftSource, TLeftResult?> propagator)
@@ -512,12 +465,6 @@
             }
         }
         
-        internal static IEither<(TLeft1, TLeft2), IEither<TRightInner, TRight>> Foo2Point5<TLeft1, TLeft2, TRightInner, TRight>(
-            this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
-        {
-            return either.LiftSequence().Associate();
-        }
-
         internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Associate<TLeftInner, TRightInner, TRight>(
             this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
         {
