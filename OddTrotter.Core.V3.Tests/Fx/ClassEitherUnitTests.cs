@@ -20,7 +20,6 @@
 
 
 
-    //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
     //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
     //// TODO go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
 
