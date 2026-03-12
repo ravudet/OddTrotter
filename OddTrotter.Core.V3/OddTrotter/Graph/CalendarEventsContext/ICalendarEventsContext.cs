@@ -19,7 +19,7 @@
         /// <exception cref="ReadException">Thrown if an error occurred reading from the underlying stream</exception> //// TODO note that this is "reading *from the response*"
         /// <exception cref="ContextException">Thrown if the underlying response payload is not valid OData or does not represent a collection response</exception> //// TODO or represents a failure
         /// <exception cref="UnauthorizedAccessTokenException">TODO</exception>
-        Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> Evaluate();
+        Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> Evaluate();
 
         //// TODO you're really avoiding doing the `select` stuff because of the type system issues (like, what should the "not present" properties look like in the return value? and should the client be expected to check that stuff? (i.e. can you strongly type it somehow))
 

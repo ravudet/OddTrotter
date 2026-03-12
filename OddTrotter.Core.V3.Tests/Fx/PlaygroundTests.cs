@@ -440,7 +440,7 @@
 
         internal interface IUsersContext
         {
-            ITask<IQueryResultAsync<IEither<User, Exception>, Exception>> Evaluate();
+            ITask<IQueryResult<IEither<User, Exception>, Exception>> Evaluate();
 
             IUsersContext Filter(Expression<Func<IUserExpression, bool>> filter);
         }

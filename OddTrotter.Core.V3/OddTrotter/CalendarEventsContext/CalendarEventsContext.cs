@@ -33,7 +33,7 @@
     }
 
     internal sealed class CalendarEventsContext : //// TODO i think you need to rethink some of your concrete implementation names; for example, this is an implementation of a calendar event context that *leverages graph*; shouldn't the graph part be in the name?
-        IQueryContextAsync
+        IQueryContext
             <
                 IEither
                     <
@@ -43,7 +43,7 @@
                 CalendarEvent, 
                 Graph.PagingError //// TODO when you use this here, either the implementation detail (that we are using graph) is leaked, or the caller is forced to parameterize this (i.e. to use `iquerycontextasync<IEither<CalendarEvent, CalendarEventTranslationException>, CalendarEvent, TError>`) (or else the *caller* will leak implementation details); do you want to try to abstract this in some way? i think to really get that correct, you would need one or two *other* implementations of a calendar events context...
             >, 
-        IWhereQueryContextMixinAsync
+        IWhereQueryContextMixin
             <
                 IEither
                     <
@@ -102,7 +102,7 @@
             this.seriesMasterPredicate = seriesMasterPredicate;
         }
 
-        public async ITask<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError>> Evaluate()
+        public async ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.PagingError>> Evaluate()
         {
             var events = await this.GetEvents()
                 .Select(element => element
@@ -128,7 +128,7 @@
             return events;
         }
 
-        private async ITask<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetEvents()
+        private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetEvents()
         {
             var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
             var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
@@ -142,7 +142,7 @@
                     new Graph.ContextException("TODO an error occurred while paging both instances events and series events")));
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstanceEvents()
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstanceEvents()
         {
             var context = this
                 .calendarSource
@@ -166,7 +166,7 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEvents()
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEvents()
         {
             var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
             if (this.seriesMasterPredicate != null)
@@ -268,7 +268,7 @@
             return mastersWithInstances;
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId)
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId)
         {
             var pageStartTime = this.startTime;
             var pageEndTime = pageStartTime + this.firstInstanceInSeriesLookahead;
@@ -280,7 +280,7 @@
             return await this.GetInstancesInSeries(seriesMasterId, pageStartTime, pageEndTime).ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeries(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
             var newPageStartTime = this.startTime;
             var newPageEndTime = newPageStartTime + this.firstInstanceInSeriesLookahead;
@@ -302,7 +302,7 @@
                 .ConfigureAwait(false);
         }
 
-        private async ITask<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
+        private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetInstancesInSeriesWithinTimeSlice(string seriesMasterId, DateTime pageStartTime, DateTime pageEndTime)
         {
             var context = this
                 .calendarSource
@@ -318,7 +318,7 @@
             return await context.Evaluate().ConfigureAwait(false);
         }
 
-        private async Task<IQueryResultAsync<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEventMasters()
+        private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationException>, Graph.PagingError>> GetSeriesEventMasters()
         {
             var context = this
                 .calendarSource
@@ -494,8 +494,8 @@
         }
 
 
-        internal static async ITask<IQueryResultAsync<TValue, TError>> Take<TValue, TError>(
-            this Task<IQueryResultAsync<TValue, TError>> queryResult,
+        internal static async ITask<IQueryResult<TValue, TError>> Take<TValue, TError>(
+            this Task<IQueryResult<TValue, TError>> queryResult,
             int count)
         {
             //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any `terror` that might have occurred
@@ -503,38 +503,38 @@
             return new TakeQueryResult<TValue, TError>(await queryResult.ConfigureAwait(false), count);
         }
 
-        private sealed class TakeQueryResult<TValue, TError> : IQueryResultAsync<TValue, TError>
+        private sealed class TakeQueryResult<TValue, TError> : IQueryResult<TValue, TError>
         {
-            private readonly IQueryResultAsync<TValue, TError> queryResult;
+            private readonly IQueryResult<TValue, TError> queryResult;
             private readonly int count;
 
             public TakeQueryResult(
-                IQueryResultAsync<TValue, TError> queryResult,
+                IQueryResult<TValue, TError> queryResult,
                 int count)
             {
                 this.queryResult = queryResult;
                 this.count = count;
             }
 
-            public async ITask<IQueryResultNodeAsync<TValue, TError>> GetNodes()
+            public async ITask<IQueryResultNode<TValue, TError>> GetNodes()
             {
                 return new Node(await this.queryResult.GetNodes().ConfigureAwait(false), this.count);
             }
 
-            private sealed class Node : IQueryResultNodeAsync<TValue, TError>
+            private sealed class Node : IQueryResultNode<TValue, TError>
             {
-                private readonly IQueryResultNodeAsync<TValue, TError> queryResult;
+                private readonly IQueryResultNode<TValue, TError> queryResult;
                 private readonly int count;
 
                 public Node(
-                    IQueryResultNodeAsync<TValue, TError> queryResult,
+                    IQueryResultNode<TValue, TError> queryResult,
                     int count)
                 {
                     this.queryResult = queryResult;
                     this.count = count;
                 }
 
-                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
@@ -551,12 +551,12 @@
                         ref context);
                 }
 
-                private sealed class Element : IElementAsync<TValue, TError>
+                private sealed class Element : IElement<TValue, TError>
                 {
-                    private readonly IElementAsync<TValue, TError> element;
+                    private readonly IElement<TValue, TError> element;
                     private readonly int count;
 
-                    public Element(IElementAsync<TValue, TError> element, int count)
+                    public Element(IElement<TValue, TError> element, int count)
                     {
                         this.element = element;
                         this.count = count;
@@ -570,7 +570,7 @@
                         }
                     }
 
-                    public async ITask<IQueryResultNodeAsync<TValue, TError>> Next()
+                    public async ITask<IQueryResultNode<TValue, TError>> Next()
                     {
                         return new Node(await this.element.Next().ConfigureAwait(false), count - 1);
                     }
@@ -579,8 +579,8 @@
         }
 
 
-        internal static IQueryResultAsync<TValue, TError> TrySelect<TValue, TError>(
-            this IQueryResultAsync<IEither<TValue, Nothing>, TError> queryResult)
+        internal static IQueryResult<TValue, TError> TrySelect<TValue, TError>(
+            this IQueryResult<IEither<TValue, Nothing>, TError> queryResult)
         {
             return queryResult.TrySelect<IEither<TValue, Nothing>, TError, TValue>((either, [MaybeNullWhen(false)] out left) => either.TryGetLeft(out left));
         }
@@ -590,45 +590,45 @@
             return either.Decompose(out left, out _);
         }
 
-        internal static IQueryResultAsync<TResult, TError> SelectAsync<TValue, TError, TResult>(
-            this IQueryResultAsync<TValue, TError> queryResult,
+        internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
+            this IQueryResult<TValue, TError> queryResult,
             Func<TValue, Task<TResult>> selector)
         {
             return new SelectQueryResult<TValue, TError, TResult>(queryResult, selector);
         }
 
-        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResultAsync<TResult, TError>
+        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
         {
-            private readonly IQueryResultAsync<TValue, TError> queryResult;
+            private readonly IQueryResult<TValue, TError> queryResult;
             private readonly Func<TValue, Task<TResult>> selector;
 
             public SelectQueryResult(
-                IQueryResultAsync<TValue, TError> queryResult,
+                IQueryResult<TValue, TError> queryResult,
                 Func<TValue, Task<TResult>> selector)
             {
                 this.queryResult = queryResult;
                 this.selector = selector;
             }
 
-            public async ITask<IQueryResultNodeAsync<TResult, TError>> GetNodes()
+            public async ITask<IQueryResultNode<TResult, TError>> GetNodes()
             {
                 return new QueryResultNode(await this.queryResult.GetNodes().ConfigureAwait(false), this.selector);
             }
 
-            private sealed class QueryResultNode : IQueryResultNodeAsync<TResult, TError>
+            private sealed class QueryResultNode : IQueryResultNode<TResult, TError>
             {
-                private readonly IQueryResultNodeAsync<TValue, TError> queryResult;
+                private readonly IQueryResultNode<TValue, TError> queryResult;
                 private readonly Func<TValue, Task<TResult>> selector;
 
                 public QueryResultNode(
-                    IQueryResultNodeAsync<TValue, TError> queryResult,
+                    IQueryResultNode<TValue, TError> queryResult,
                     Func<TValue, Task<TResult>> selector)
                 {
                     this.queryResult = queryResult;
                     this.selector = selector;
                 }
 
-                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
+                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
                     where TResult1 : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult1>, allows ref struct
@@ -659,14 +659,14 @@
                     }
                 }
 
-                private sealed class Element : IElementAsync<TResult, TError>
+                private sealed class Element : IElement<TResult, TError>
                 {
-                    private readonly IElementAsync<TValue, TError> element;
+                    private readonly IElement<TValue, TError> element;
                     private readonly Func<TValue, Task<TResult>> selector;
 
                     public Element(
                         TResult value,
-                        IElementAsync<TValue, TError> element,
+                        IElement<TValue, TError> element,
                         Func<TValue, Task<TResult>> selector)
                     {
                         Value = value;
@@ -676,7 +676,7 @@
 
                     public TResult Value { get; }
 
-                    public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
+                    public async ITask<IQueryResultNode<TResult, TError>> Next()
                     {
                         return new QueryResultNode(await this.element.Next().ConfigureAwait(false), this.selector);
                     }

@@ -55,7 +55,7 @@
             this.top = top;
         }
 
-        public async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> Evaluate()
+        public async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> Evaluate()
         {
             return await EvaluatePage(this.strongConventionContext, this.calendarRoot, true).ConfigureAwait(false);
 
@@ -63,7 +63,7 @@
             //// TODO should this be a query result, or should this just do the query parameters thing, and let the layer above do the query result? //// TODO i like the ecision you've made here; it makes the interfaces map the csdl, which doesn't refer at all to paging and just views things as collections of elements
         }
 
-        private static async Task<IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> EvaluatePage(
+        private static async Task<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, PagingError>> EvaluatePage(
             StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext, 
             Uri uri, 
             bool throwOnFailureResponse)
@@ -368,7 +368,7 @@
             return new QueryResultAsync<TElement, Nothing>(enumerable);
         }
 
-        internal sealed class QueryResultAsync<TElement, TException> : IQueryResultAsync<TElement, TException>
+        internal sealed class QueryResultAsync<TElement, TException> : IQueryResult<TElement, TException>
         {
             private readonly IEnumerable<TElement> enumerable;
 
@@ -377,17 +377,17 @@
                 this.enumerable = enumerable;
             }
 
-            public IQueryResultAsync<TElement, TException2> SelectError<TException2>()
+            public IQueryResult<TElement, TException2> SelectError<TException2>()
             {
                 return new QueryResultAsync<TElement, TException2>(this.enumerable);
             }
 
-            public async ITask<IQueryResultNodeAsync<TElement, TException>> GetNodes()
+            public async ITask<IQueryResultNode<TElement, TException>> GetNodes()
             {
                 return await Task.FromResult(new QueryResultNode(this.enumerable.GetEnumerator())).ConfigureAwait(false); //// TODO disposable
             }
 
-            private sealed class QueryResultNode : IQueryResultNodeAsync<TElement, TException>
+            private sealed class QueryResultNode : IQueryResultNode<TElement, TException>
             {
                 private readonly IEnumerator<TElement> enumerator;
 
@@ -396,25 +396,25 @@
                     this.enumerator = enumerator;
                 }
 
-                public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                public Fx.Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TException>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TException>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
                 {
-                    RefEither<IElementAsync<TElement, TException>, IEither<IError<TException>, IEmpty>> either;
+                    RefEither<IElement<TElement, TException>, IEither<IError<TException>, IEmpty>> either;
                     if (this.enumerator.MoveNext())
                     {
-                        either = RefEither.Right<IEither<IError<TException>, IEmpty>>().Left((IElementAsync<TElement, TException>)new Element(this.enumerator.Current, this.enumerator)); //// TODO shouldn't need the cast
+                        either = RefEither.Right<IEither<IError<TException>, IEmpty>>().Left((IElement<TElement, TException>)new Element(this.enumerator.Current, this.enumerator)); //// TODO shouldn't need the cast
                     }
                     else
                     {
-                        either = RefEither.Left<IElementAsync<TElement, TException>>().Right((IEither<IError<TException>, IEmpty>)Either.Left<IError<TException>>().Right(Empty.Instance)); //// TODO shouldn't need the cast
+                        either = RefEither.Left<IElement<TElement, TException>>().Right((IEither<IError<TException>, IEmpty>)Either.Left<IError<TException>>().Right(Empty.Instance)); //// TODO shouldn't need the cast
                     }
 
                     return either.ApplyAsync(leftMap, rightMap, ref context);
                 }
 
-                private sealed class Element : IElementAsync<TElement, TException>
+                private sealed class Element : IElement<TElement, TException>
                 {
                     private readonly IEnumerator<TElement> enumerator;
 
@@ -426,7 +426,7 @@
 
                     public TElement Value { get; }
 
-                    public async ITask<IQueryResultNodeAsync<TElement, TException>> Next()
+                    public async ITask<IQueryResultNode<TElement, TException>> Next()
                     {
                         return await Task.FromResult(new QueryResultNode(this.enumerator)).ConfigureAwait(false);
                     }
@@ -450,9 +450,9 @@
             return !either.Decompose(out _, out right);
         }
 
-        internal static IQueryResultAsync<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
-            this IQueryResultAsync<TElement, TErrorFirst> queryResult,
-            IQueryResultAsync<TElement, TErrorSecond> next,
+        internal static IQueryResult<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResult<TElement, TErrorFirst> queryResult,
+            IQueryResult<TElement, TErrorSecond> next,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
             Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -465,9 +465,9 @@
                 errorAggregator);
         }
 
-        internal static async ITask<IQueryResultAsync<TElement, TErrorResult>> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
-            this ITask<IQueryResultAsync<TElement, TErrorFirst>> queryResult,
-            Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+        internal static async ITask<IQueryResult<TElement, TErrorResult>> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            this ITask<IQueryResult<TElement, TErrorFirst>> queryResult,
+            Task<IQueryResult<TElement, TErrorSecond>> next,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
             Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -480,9 +480,9 @@
                 errorAggregator);
         }
 
-        internal static IQueryResultAsync<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
-            this IQueryResultAsync<TElement, TErrorFirst> queryResult,
-            Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+        internal static IQueryResult<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
+            this IQueryResult<TElement, TErrorFirst> queryResult,
+            Task<IQueryResult<TElement, TErrorSecond>> next,
             Func<TErrorFirst, TErrorResult> firstErrorSelector,
             Func<TErrorSecond, TErrorResult> secondErrorSelector,
             Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -495,17 +495,17 @@
                 errorAggregator);
         }
 
-        private sealed class ConcatQueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResultAsync<TElement, TErrorResult>
+        private sealed class ConcatQueryResult<TElement, TErrorFirst, TErrorSecond, TErrorResult> : IQueryResult<TElement, TErrorResult>
         {
-            private readonly IQueryResultAsync<TElement, TErrorFirst> queryResult;
-            private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+            private readonly IQueryResult<TElement, TErrorFirst> queryResult;
+            private readonly Task<IQueryResult<TElement, TErrorSecond>> next;
             private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
             private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
             private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
             public ConcatQueryResult(
-                IQueryResultAsync<TElement, TErrorFirst> queryResult,
-                Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                IQueryResult<TElement, TErrorFirst> queryResult,
+                Task<IQueryResult<TElement, TErrorSecond>> next,
                 Func<TErrorFirst, TErrorResult> firstErrorSelector,
                 Func<TErrorSecond, TErrorResult> secondErrorSelector,
                 Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -517,7 +517,7 @@
                 this.errorAggregator = errorAggregator;
             }
 
-            public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> GetNodes()
+            public async ITask<IQueryResultNode<TElement, TErrorResult>> GetNodes()
             {
                 return await Node.Create(
                     await this.queryResult.GetNodes().ConfigureAwait(false), 
@@ -527,11 +527,11 @@
                     this.errorAggregator).ConfigureAwait(false);
             }
 
-            private sealed class Node : IQueryResultNodeAsync<TElement, TErrorResult>
+            private sealed class Node : IQueryResultNode<TElement, TErrorResult>
             {
-                public static async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Create(
-                    IQueryResultNodeAsync<TElement, TErrorFirst> queryResult,
-                    Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                public static async ITask<IQueryResultNode<TElement, TErrorResult>> Create(
+                    IQueryResultNode<TElement, TErrorFirst> queryResult,
+                    Task<IQueryResult<TElement, TErrorSecond>> next,
                     Func<TErrorFirst, TErrorResult> firstErrorSelector,
                     Func<TErrorSecond, TErrorResult> secondErrorSelector,
                     Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -562,15 +562,15 @@
                     }
                 }
 
-                private readonly IQueryResultNodeAsync<TElement, TErrorFirst> queryResult;
-                private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+                private readonly IQueryResultNode<TElement, TErrorFirst> queryResult;
+                private readonly Task<IQueryResult<TElement, TErrorSecond>> next;
                 private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
                 private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
                 private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                 private Node(
-                    IQueryResultNodeAsync<TElement, TErrorFirst> queryResult,
-                    Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                    IQueryResultNode<TElement, TErrorFirst> queryResult,
+                    Task<IQueryResult<TElement, TErrorSecond>> next,
                     Func<TErrorFirst, TErrorResult> firstErrorSelector,
                     Func<TErrorSecond, TErrorResult> secondErrorSelector,
                     Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -582,7 +582,7 @@
                     this.errorAggregator = errorAggregator;
                 }
 
-                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
@@ -599,17 +599,17 @@
                         ref context);
                 }
 
-                private sealed class Element : IElementAsync<TElement, TErrorResult>
+                private sealed class Element : IElement<TElement, TErrorResult>
                 {
-                    private readonly IElementAsync<TElement, TErrorFirst> element;
-                    private readonly Task<IQueryResultAsync<TElement, TErrorSecond>> next;
+                    private readonly IElement<TElement, TErrorFirst> element;
+                    private readonly Task<IQueryResult<TElement, TErrorSecond>> next;
                     private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
                     private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
                     private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                     public Element(
-                        IElementAsync<TElement, TErrorFirst> element,
-                        Task<IQueryResultAsync<TElement, TErrorSecond>> next,
+                        IElement<TElement, TErrorFirst> element,
+                        Task<IQueryResult<TElement, TErrorSecond>> next,
                         Func<TErrorFirst, TErrorResult> firstErrorSelector,
                         Func<TErrorSecond, TErrorResult> secondErrorSelector,
                         Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -629,7 +629,7 @@
                         }
                     }
 
-                    public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
+                    public async ITask<IQueryResultNode<TElement, TErrorResult>> Next()
                     {
                         return await Node.Create(
                             await this.element.Next().ConfigureAwait(false), 
@@ -641,17 +641,17 @@
                 }
             }
 
-            private sealed class NextNode : IQueryResultNodeAsync<TElement, TErrorResult>
+            private sealed class NextNode : IQueryResultNode<TElement, TErrorResult>
             {
                 private readonly BetterNullable<TErrorFirst> firstError;
-                private readonly IQueryResultNodeAsync<TElement, TErrorSecond> next;
+                private readonly IQueryResultNode<TElement, TErrorSecond> next;
                 private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
                 private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
                 private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                 public NextNode(
                     BetterNullable<TErrorFirst> firstError,
-                    IQueryResultNodeAsync<TElement, TErrorSecond> next,
+                    IQueryResultNode<TElement, TErrorSecond> next,
                     Func<TErrorFirst, TErrorResult> firstErrorSelector,
                     Func<TErrorSecond, TErrorResult> secondErrorSelector,
                     Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator)
@@ -663,7 +663,7 @@
                     this.errorAggregator = errorAggregator;
                 }
 
-                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TElement, TErrorResult>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TErrorResult>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
                     where TResult : allows ref struct
                     where TContext : allows ref struct
                     where TContinuable : IContinuable<TResult>, allows ref struct
@@ -749,16 +749,16 @@
                     }
                 }
 
-                private sealed class Element : IElementAsync<TElement, TErrorResult>
+                private sealed class Element : IElement<TElement, TErrorResult>
                 {
-                    private readonly IElementAsync<TElement, TErrorSecond> element;
+                    private readonly IElement<TElement, TErrorSecond> element;
                     private readonly BetterNullable<TErrorFirst> firstError;
                     private readonly Func<TErrorFirst, TErrorResult> firstErrorSelector;
                     private readonly Func<TErrorSecond, TErrorResult> secondErrorSelector;
                     private readonly Func<TErrorFirst, TErrorSecond, TErrorResult> errorAggregator;
 
                     public Element(
-                        IElementAsync<TElement, TErrorSecond> element,
+                        IElement<TElement, TErrorSecond> element,
                         BetterNullable<TErrorFirst> firstError,
                         Func<TErrorFirst, TErrorResult> firstErrorSelector,
                         Func<TErrorSecond, TErrorResult> secondErrorSelector,
@@ -779,7 +779,7 @@
                         }
                     }
 
-                    public async ITask<IQueryResultNodeAsync<TElement, TErrorResult>> Next()
+                    public async ITask<IQueryResultNode<TElement, TErrorResult>> Next()
                     {
                         return new NextNode(this.firstError, await this.element.Next().ConfigureAwait(false), this.firstErrorSelector, this.secondErrorSelector, this.errorAggregator);
                     }

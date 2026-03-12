@@ -20,8 +20,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
         /// </exception>
-        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
-            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+        public static async ITask<IQueryResultNode<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this ITask<IQueryResultNode<TValue, TError>> source,
             Try<TValue, TResult> @try)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -41,8 +41,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
         /// </exception>
-        public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
-            this ITask<IQueryResultNodeAsync<TValue, TError>> source,
+        public static async ITask<IQueryResultNode<TValue, TError>> Where<TValue, TError>(
+            this ITask<IQueryResultNode<TValue, TError>> source,
             Func<TValue, bool> predicate)
         {
             ArgumentNullException.ThrowIfNull(source);

@@ -131,11 +131,9 @@
                 throw new Protocol.ProtocolException("TODO", readException);
             }
 
-            //// TODO you are here
             return await bodyToken.Apply(
                 async property =>
                 {
-                    //// TODO you are here
                     var bodyReader = await ProtocolContext.Read(property.Reader, odataResponseBuilder).ConfigureAwait(false);
                     return await ProtocolContext.Read(bodyReader, odataResponseBuilder).ConfigureAwait(false);
                 },

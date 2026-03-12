@@ -64,8 +64,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="selector"/> is <see langword="null"/>
         /// </exception>
-        public static async ITask<IQueryResultNodeAsync<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
-            this IQueryResultNodeAsync<TValueSource, TError> source,
+        public static async ITask<IQueryResultNode<TValueResult, TError>> Select<TValueSource, TError, TValueResult>(
+            this IQueryResultNode<TValueSource, TError> source,
             Func<TValueSource, TValueResult> selector)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -74,7 +74,7 @@ namespace Fx.QueryContext
             return await source
                 .SelectLeft(
                     async element =>
-                        (IElementAsync<TValueResult, TError>)new SelectElementAsync<TValueSource, TError, TValueResult>(
+                        (IElement<TValueResult, TError>)new SelectElementAsync<TValueSource, TError, TValueResult>(
                             selector(element.Value),
                             await element.Next().ConfigureAwait(false),
                             selector))
@@ -82,9 +82,9 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private sealed class SelectElementAsync<TValueSource, TError, TValueResult> : IElementAsync<TValueResult, TError>
+        private sealed class SelectElementAsync<TValueSource, TError, TValueResult> : IElement<TValueResult, TError>
         {
-            private readonly IQueryResultNodeAsync<TValueSource, TError> next;
+            private readonly IQueryResultNode<TValueSource, TError> next;
             private readonly Func<TValueSource, TValueResult> selector;
 
             /// <summary>
@@ -98,7 +98,7 @@ namespace Fx.QueryContext
             /// </exception>
             public SelectElementAsync(
                 TValueResult value,
-                IQueryResultNodeAsync<TValueSource, TError> next,
+                IQueryResultNode<TValueSource, TError> next,
                 Func<TValueSource, TValueResult> selector)
             {
                 ArgumentNullException.ThrowIfNull(next);
@@ -113,7 +113,7 @@ namespace Fx.QueryContext
             public TValueResult Value { get; }
 
             /// <inheritdoc/>
-            public async ITask<IQueryResultNodeAsync<TValueResult, TError>> Next()
+            public async ITask<IQueryResultNode<TValueResult, TError>> Next()
             {
                 return await this.next.Select(this.selector).ConfigureAwait(false);
             }
@@ -131,8 +131,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="try"/> is <see langword="null"/>
         /// </exception>
-        public static async ITask<IQueryResultNodeAsync<TResult, TError>> TrySelect<TValue, TError, TResult>(
-            this IQueryResultNodeAsync<TValue, TError> source,
+        public static async ITask<IQueryResultNode<TResult, TError>> TrySelect<TValue, TError, TResult>(
+            this IQueryResultNode<TValue, TError> source,
             Try<TValue, TResult> @try)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -156,9 +156,9 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElementAsync<TResult, TError>
+        private sealed class TrySelectElementAsync<TValue, TError, TResult> : IElement<TResult, TError>
         {
-            private readonly IQueryResultNodeAsync<TValue, TError> next;
+            private readonly IQueryResultNode<TValue, TError> next;
             private readonly Try<TValue, TResult> @try;
 
             /// <summary>
@@ -170,7 +170,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="next"/> or <paramref name="try"/> is <see langword="null"/>
             /// </exception>
-            public TrySelectElementAsync(TResult value, IQueryResultNodeAsync<TValue, TError> next, Try<TValue, TResult> @try)
+            public TrySelectElementAsync(TResult value, IQueryResultNode<TValue, TError> next, Try<TValue, TResult> @try)
             {
                 ArgumentNullException.ThrowIfNull(next);
                 ArgumentNullException.ThrowIfNull(@try);
@@ -184,7 +184,7 @@ namespace Fx.QueryContext
             public TResult Value { get; }
 
             /// <inheritdoc/>
-            public async ITask<IQueryResultNodeAsync<TResult, TError>> Next()
+            public async ITask<IQueryResultNode<TResult, TError>> Next()
             {
                 return await this.next.TrySelect(this.@try).ConfigureAwait(false);
             }
@@ -201,8 +201,8 @@ namespace Fx.QueryContext
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>
         /// </exception>
-        public static async ITask<IQueryResultNodeAsync<TValue, TError>> Where<TValue, TError>(
-            this IQueryResultNodeAsync<TValue, TError> source,
+        public static async ITask<IQueryResultNode<TValue, TError>> Where<TValue, TError>(
+            this IQueryResultNode<TValue, TError> source,
             Func<TValue, bool> predicate)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -227,9 +227,9 @@ namespace Fx.QueryContext
                 .ConfigureAwait(false);
         }
 
-        private sealed class WhereElementAsync<TValue, TError> : IElementAsync<TValue, TError>
+        private sealed class WhereElementAsync<TValue, TError> : IElement<TValue, TError>
         {
-            private readonly IQueryResultNodeAsync<TValue, TError> next;
+            private readonly IQueryResultNode<TValue, TError> next;
             private readonly Func<TValue, bool> predicate;
 
             /// <summary>
@@ -241,7 +241,7 @@ namespace Fx.QueryContext
             /// <exception cref="ArgumentNullException">
             /// Thrown if <paramref name="next"/> or <paramref name="predicate"/> is <see langword="null"/>
             /// </exception>
-            public WhereElementAsync(TValue value, IQueryResultNodeAsync<TValue, TError> next, Func<TValue, bool> predicate)
+            public WhereElementAsync(TValue value, IQueryResultNode<TValue, TError> next, Func<TValue, bool> predicate)
             {
                 ArgumentNullException.ThrowIfNull(next);
                 ArgumentNullException.ThrowIfNull(predicate);
@@ -255,7 +255,7 @@ namespace Fx.QueryContext
             public TValue Value { get; }
 
             /// <inheritdoc/>
-            public async ITask<IQueryResultNodeAsync<TValue, TError>> Next()
+            public async ITask<IQueryResultNode<TValue, TError>> Next()
             {
                 return await this.next.Where(predicate).ConfigureAwait(false);
             }

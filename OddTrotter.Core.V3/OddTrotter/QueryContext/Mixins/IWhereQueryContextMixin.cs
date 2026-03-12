@@ -11,7 +11,7 @@ namespace Fx.QueryContext.Mixins
     /// <typeparam name="TClientValue"></typeparam>
     /// <typeparam name="TError"></typeparam>
     /// <typeparam name="TQueryContext"></typeparam>
-    public interface IWhereQueryContextMixinAsync<TClientValue, TDataStoreValue, TError, TQueryContext> : IQueryContextAsync<TClientValue, TDataStoreValue, TError> where TQueryContext : IQueryContextAsync<TClientValue, TDataStoreValue, TError>
+    public interface IWhereQueryContextMixin<TClientValue, TDataStoreValue, TError, TQueryContext> : IQueryContext<TClientValue, TDataStoreValue, TError> where TQueryContext : IQueryContext<TClientValue, TDataStoreValue, TError>
     {
         /// <summary>
         /// placeholder

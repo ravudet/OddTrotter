@@ -6,23 +6,23 @@ namespace Fx.QueryContext
 
     using Fx.Either;
 
-    public sealed class QueryResultNodeAsync<TValue, TError> : IQueryResultNodeAsync<TValue, TError>
+    public sealed class QueryResultNodeAsync<TValue, TError> : IQueryResultNode<TValue, TError>
     {
-        private readonly IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source;
+        private readonly IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source;
 
         /// <summary>
         /// placeholder
         /// </summary>
         /// <param name="source"></param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public QueryResultNodeAsync(IEither<IElementAsync<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
+        public QueryResultNodeAsync(IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
         {
             ArgumentNullException.ThrowIfNull(source);
 
             this.source = source;
         }
 
-        public Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElementAsync<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+        public Realizable.Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
             where TResult : allows ref struct
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct

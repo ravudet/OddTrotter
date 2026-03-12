@@ -3,7 +3,7 @@ namespace Fx.QueryContext
 {
     using System.Threading.Tasks;
 
-    public interface IElementAsync<out TValue, out TError>
+    public interface IElement<out TValue, out TError>
     {
         /// <summary>
         /// placeholder
@@ -16,6 +16,6 @@ namespace Fx.QueryContext
         /// <remarks>
         /// This method should not throw. In the event of an error, a <see cref="IError{TError}"/> should be returned instead.
         /// </remarks>
-        ITask<IQueryResultNodeAsync<TValue, TError>> Next();
+        ITask<IQueryResultNode<TValue, TError>> Next();
     }
 }

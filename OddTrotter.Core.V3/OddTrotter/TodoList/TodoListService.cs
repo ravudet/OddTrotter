@@ -64,7 +64,7 @@
             return result;
         }
 
-        private static async Task<TodoListResultBuilder> Convert(IQueryResultAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResult, DateTime lastRecordedEventTimeStamp)
+        private static async Task<TodoListResultBuilder> Convert(IQueryResult<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResult, DateTime lastRecordedEventTimeStamp)
         {
             var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
 
@@ -73,7 +73,7 @@
             return builder;
         }
 
-        private static async Task ConvertIterator(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
+        private static async Task ConvertIterator(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
         {
             bool @continue;
             while (((queryResultNode, @continue) = await ConvertApply(queryResultNode, builder).ConfigureAwait(false)).@continue)
@@ -81,7 +81,7 @@
             }
         }
 
-        private static async Task<(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError>, bool)> ConvertApply(IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
+        private static async Task<(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError>, bool)> ConvertApply(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError> queryResultNode, TodoListResultBuilder builder)
         {
             return await queryResultNode.Apply(
                 async element =>
@@ -126,7 +126,7 @@
                         builder.PagingError = error.Value;
                     }
 
-                    return await Task.FromResult(((IQueryResultNodeAsync<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError>)null!, false)).ConfigureAwait(false);
+                    return await Task.FromResult(((IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationException>, Graph.CalendarEventsContext.PagingError>)null!, false)).ConfigureAwait(false);
                 })
                 .ConfigureAwait(false);
         }
