@@ -5,7 +5,7 @@
 
     using Fx.Realizable;
 
-    public static class TaskExtensions
+    public static class TaskExtensions2
     {
         public static TaskWrapper<T> ToTaskWrapper<T>(this Task<T> task)
         {
@@ -287,7 +287,7 @@
                 canceledContinuation);
         }
 
-        private sealed class ContinueWith2Adapter<TSource, TResult> : ITask<TResult>, IConfigurableFuture<TResult>, IConfiguredAwaitable<TResult>, IFuture<TResult>
+        public sealed class ContinueWith2Adapter<TSource, TResult> : ITask<TResult>, IConfigurableFuture<TResult>, IConfiguredAwaitable<TResult>, IFuture<TResult>
             where TSource : allows ref struct
             where TResult : allows ref struct
         {
