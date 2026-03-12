@@ -18,10 +18,6 @@
 
 
 
-    //// TODO move any extensions or helpers in the `oddtrotter` folder to their appropriate "production" places
-
-
-
 
 
     //// TODO go through oddtrotter.core.v2 to see if there's any ideas to pull from there
