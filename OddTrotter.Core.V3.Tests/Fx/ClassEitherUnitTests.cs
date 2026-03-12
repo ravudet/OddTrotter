@@ -53,6 +53,8 @@
     ////    you need to move the query context stuff from the oddtrotter folder into fx.core
     ////        move any extensions or helpers into their appropriate "production" places
     ////        you should explore the `ref struct` stuff for that before doing it, though, similar to how you did `ieither`
+    ////        go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
+    ////        go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
 
 
 
