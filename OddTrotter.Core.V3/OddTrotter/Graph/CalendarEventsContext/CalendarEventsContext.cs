@@ -24,7 +24,7 @@
 
     internal sealed class CalendarEventsContext : 
         ICalendarEventsContext<CalendarEventsContext>, 
-        ICalendarEventsContext //// TODO why did you have to implement this as well? why doesn't covariance work?
+        ICalendarEventsContext
     {
         private readonly StrongConventionContext.IStrongConventionContext<CalendarEvent> strongConventionContext;
         private readonly Uri calendarRoot;
