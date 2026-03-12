@@ -620,18 +620,18 @@
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (!self.TryMove3(out var nextFactory)) //// TODO this is supposed to be a while loop
+            if (!self.TryMove3(context, out var nextFactory)) //// TODO this is supposed to be a while loop
             {
-                return self.Read().ContinueWith(
+                return self.Read(context).ContinueWith(
                     (_, context) =>
                     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning disable CS8604 // Possible null reference argument.
-                        var self = factory((ReaderContext)context);
-#pragma warning restore CS8604 // Possible null reference argument.
+                        var readerContext = (ReaderContext)context;
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                        self.TryMove3(out var nextFactory);
+                        var self = factory(readerContext!);
+
+                        self.TryMove3(readerContext!, out var nextFactory);
                         return nextFactory;
                     },
                     context);
@@ -654,15 +654,16 @@
 
         internal static MoveInternal3Task<TCurrentReader, TValue, TNextReader> MoveInternal3<TCurrentReader, TValue, TNextReader>(
             this TypeHolder<TCurrentReader, TValue, TNextReader> currentReader, 
+            ReaderContext readerContext,
             Func<ReaderContext, TCurrentReader> currentReaderFactory)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
             where TValue : allows ref struct
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (self.TryGetValue3(out _))
+            if (self.TryGetValue3(readerContext, out _))
             {
-                if (self.TryMove3(out var nextFactory))
+                if (self.TryMove3(readerContext, out var nextFactory))
                 {
                     return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new NewCompleted<TNextReader>(nextFactory));
                     ////return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskCompleted<TValue, TNextReader>(self.Context, nextFactory));
@@ -1059,9 +1060,9 @@
                                 }
 
                                 var currentReader = this.currentReaderFactory(this.context);
-                                if (!currentReader.TryGetValue3(out _))
+                                if (!currentReader.TryGetValue3(this.context, out _))
                                 {
-                                    this.readTask = currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                    this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                     return this.IsCompleted; //// TODO recursion probably isn't great...
                                 }
 
@@ -1072,13 +1073,13 @@
                             {
                                 var currentReader = this.currentReaderFactory(this.context);
                                 Task readTask;
-                                if (currentReader.TryMove3(out _))
+                                if (currentReader.TryMove3(this.context, out _))
                                 {
                                     readTask = Task.CompletedTask;
                                 }
                                 else
                                 {
-                                    readTask = currentReader.Read();
+                                    readTask = currentReader.Read(this.context);
                                 }
 
                                 this.valueTask = new MoveInternal3TaskMove<TCurrentReader, TValue, TNextReader>(
@@ -1234,13 +1235,13 @@
                             }
 
                             var currentReader = this.currentReaderFactory(this.context);
-                            if (currentReader.TryMove3(out this.nextReaderFactory))
+                            if (currentReader.TryMove3(this.context, out this.nextReaderFactory))
                             {
                                 return true;
                             }
                             else
                             {
-                                this.readTask = currentReader.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
                             }
                         }
@@ -1367,8 +1368,8 @@
                     var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, reader.Context).ConfigureAwait(false);
                     var whitespaceReader = whitespaceReaderFactory(context);
 
-                    Assert.IsTrue(whitespaceReader.TryGetValue3(out _));
-                    Assert.IsTrue(whitespaceReader.TryMove3(out var valueReaderFactory));
+                    Assert.IsTrue(whitespaceReader.TryGetValue3(context, out _));
+                    Assert.IsTrue(whitespaceReader.TryMove3(context, out var valueReaderFactory));
 
                     ////var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
                     var valueReader = valueReaderFactory(context);

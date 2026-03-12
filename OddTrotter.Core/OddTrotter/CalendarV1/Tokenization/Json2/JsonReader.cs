@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Xml.Linq;
 
     using Fx;
 
@@ -70,17 +71,19 @@
         TNextReader TryMove(out bool read);
     }
 
-    public interface IReader2<TSelf, TNextReader> : IReader<TNextReader>
+    public interface IReader2<TSelf, TNextReader>
         where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
         where TNextReader : allows ref struct
     {
+        Task Read(ReaderContext readerContext);
+
         TypeHolder<TSelf, TNextReader> AsReader { get; }
 
         ////ReaderContext Context { get; }
 
         ////Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
 
-        bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory);
+        bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory);
     }
 
     public interface IReader2<TSelf, TValue, TNextReader> : IReader2<TSelf, TNextReader>
@@ -90,7 +93,7 @@
     {
         new TypeHolder<TSelf, TValue, TNextReader> AsReader { get; }
 
-        bool TryGetValue3(out TValue value);
+        bool TryGetValue3(ReaderContext readerContext, out TValue value);
     }
 
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
@@ -154,9 +157,9 @@
             }
         }
 
-        public Task Read()
+        public Task Read(ReaderContext readerContext)
         {
-            return this.Context.Read();
+            return readerContext.Read();
 
             ////this.read = true;
         }
@@ -166,7 +169,6 @@
             ////read = this.read;
             read = true;
             return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
-                this.Context,
                 (context) => new ValueReader<WhitespaceReader<Nothing>>(
                     context.Stream,
                     context.Buffer,
@@ -180,7 +182,7 @@
                         (_, _, _, _) => new Nothing())));
         }
 
-        public bool TryMove3(out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
             nextFactory = Factories.WhitespaceReaderFactory;
             return true;
@@ -192,7 +194,6 @@
         public static WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
         {
             return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
-                context,
                 (context) => new ValueReader<WhitespaceReader<Nothing>>(
                     context.Stream,
                     context.Buffer,
@@ -224,7 +225,7 @@
             }
         }
 
-        public ReaderContext Context { get; }
+        ////public ReaderContext Context { get; }
 
         /*public Func<ReaderContext, WhitespaceReader2<TNextReader>> Factory
         {
@@ -244,17 +245,15 @@
         }
 
         public WhitespaceReader2(
-            ReaderContext context,
             Func<ReaderContext, TNextReader> nextReaderFactory)
         {
-            Context = context;
             this.nextReaderFactory = nextReaderFactory;
 
             this.tokens = new List<WhitespaceToken>();
             ////this.finished = false;
         }
 
-        public IEnumerable<WhitespaceToken> TryGetValue(out bool read)
+        public IEnumerable<WhitespaceToken> TryGetValue(ReaderContext readerContext, out bool read)
         {
             /*if (this.finished)
             {
@@ -262,25 +261,25 @@
             }
             else*/
             {
-                read = this.TryGetValue2();
+                read = this.TryGetValue2(readerContext);
             }
 
             ////this.finished = read;
             return this.tokens;
         }
 
-        private bool TryGetValue2()
+        private bool TryGetValue2(ReaderContext readerContext)
         {
             // NOTE: if you want the tokens "streamed", you can do that by having a reader that is either a "we have a whitespace" or "we are done with whitespace" token, and then "we have a whitespace" variant has the next whitespace reader
             while (true)
             {
-                if (this.Context.ValidBytes == 0)
+                if (readerContext.ValidBytes == 0)
                 {
                     // no more bytes to read
                     break;
                 }
 
-                if (this.Context.CurrentByteIndex >= this.Context.ValidBytes)
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
                 {
                     return false;
                 }
@@ -288,45 +287,34 @@
                 WhitespaceToken whitespace;
                 try
                 {
-                    whitespace = new WhitespaceToken(this.Context.Buffer[this.Context.CurrentByteIndex]);
+                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
                 }
                 catch (Exception)
                 {
                     break;
                 }
 
-                ++this.Context.CurrentByteIndex;
+                ++readerContext.CurrentByteIndex;
                 this.tokens.Add(whitespace);
             }
 
             return true;
         }
 
-        public Task Read()
+        public Task Read(ReaderContext readerContext)
         {
-            return this.Context.Read();
+            return readerContext.Read();
             /*this.Context.ValidBytes = await this.Context.Stream.ReadAsync(this.Context.Buffer, 0, this.Context.Buffer.Length).ConfigureAwait(false);
             this.Context.CurrentByteIndex = 0;*/
         }
 
-        public TNextReader TryMove(out bool read)
+        public bool TryGetValue3(ReaderContext readerContext, out IEnumerable<WhitespaceToken> value)
         {
-            this.TryGetValue(out read);
-            if (!read)
-            {
-                return default!; //// TODO !
-            }
-
-            return this.nextReaderFactory(this.Context);
-        }
-
-        public bool TryGetValue3(out IEnumerable<WhitespaceToken> value)
-        {
-            value = this.TryGetValue(out var read);
+            value = this.TryGetValue(readerContext, out var read);
             return read;
         }
 
-        public bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory)
         {
             nextFactory = this.nextReaderFactory;
             return true;
