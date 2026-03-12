@@ -296,7 +296,7 @@ namespace Fx.QueryContext
                         terminal
                             .SelectLeft(
                                 error => new SelectErrorError<TErrorResult>(selector(error.Value))))
-                .ToQueryResultNodeAsync();
+                .ToQueryResultNode();
         }
 
         private sealed class SelectErrorElement<TValue, TErrrorSource, TErrorResult> : IElement<TValue, TErrorResult>

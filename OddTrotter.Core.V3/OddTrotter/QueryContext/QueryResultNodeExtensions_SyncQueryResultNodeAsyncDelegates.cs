@@ -17,7 +17,7 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public static QueryResultNode<TValue, TError> ToQueryResultNodeAsync<TValue, TError>(
+        public static QueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(
             this IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -33,7 +33,7 @@ namespace Fx.QueryContext
         /// <param name="source"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/></exception>
-        public static async ITask<QueryResultNode<TValue, TError>> ToQueryResultNodeAsync<TValue, TError>(
+        public static async ITask<QueryResultNode<TValue, TError>> ToQueryResultNode<TValue, TError>(
             this ITask<IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>>> source)
         {
             ArgumentNullException.ThrowIfNull(source);

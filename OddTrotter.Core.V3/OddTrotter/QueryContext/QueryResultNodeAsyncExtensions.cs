@@ -78,7 +78,7 @@ namespace Fx.QueryContext
                             selector(element.Value),
                             await element.Next().ConfigureAwait(false),
                             selector))
-                .ToQueryResultNodeAsync()
+                .ToQueryResultNode()
                 .ConfigureAwait(false);
         }
 
@@ -152,7 +152,7 @@ namespace Fx.QueryContext
                             async nothing => await element.Next().TrySelect(@try).ConfigureAwait(false))
                         .SelectManyRight())
                 .SelectManyLeft()
-                .ToQueryResultNodeAsync()
+                .ToQueryResultNode()
                 .ConfigureAwait(false);
         }
 
@@ -223,7 +223,7 @@ namespace Fx.QueryContext
                         .SelectManyRight()
                         .ConfigureAwait(false))
                 .SelectManyLeft()
-                .ToQueryResultNodeAsync()
+                .ToQueryResultNode()
                 .ConfigureAwait(false);
         }
 
