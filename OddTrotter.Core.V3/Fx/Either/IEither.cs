@@ -114,6 +114,7 @@ namespace Fx.Either
             where TResult : allows ref struct
             where TContext : allows ref struct
             where TContinuable : IContinuable<TResult>, allows ref struct;
+        //// TODO make sure to document the "innerexception" stuff
     }
 
     public delegate TContinuable AsyncRefContextualizedContinuableMap<in TValue, TContext, out TContinuable, out TResult>(TValue value, ref TContext context) //// TODO you also need AsyncRefContextualizedTaskMap, AsyncRefContextualizedValueTaskMap, AsyncRefContextualizedITaskMap, AsyncRefContextualizedRealizableMap

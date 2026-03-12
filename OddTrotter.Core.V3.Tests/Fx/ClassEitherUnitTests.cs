@@ -19,9 +19,8 @@
 
 
 
-
-    //// TODO go through calendarv2 in oddtrotter.core to see if there's any ideas to pull from there
     //// TODO go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
+    ////    you just finished Fx.Either.rightmapexception
 
 
 
