@@ -16,16 +16,6 @@
 
 
 
-
-
-
-    //// TODO go through calendarv1 in oddtrotter.core to see if there's any ideas to pull from there
-    ////    you just finished Fx.Either.rightmapexception
-
-
-
-
-
     //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (mixins) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
     //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
