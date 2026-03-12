@@ -18,7 +18,6 @@
 
 
 
-    //// TODO i don't know if i like `calendareventdeserializer.extensions.try`; get this right as part of the "bare minimum" before moving forward
     //// TODO move any extensions or helpers in the `oddtrotter` folder to their appropriate "production" places
 
 
