@@ -20,6 +20,8 @@ namespace Fx.QueryContext
         public static QueryResultNode<TValue, TError> ToQueryResultNode<TValue, TError>(
             this IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>> source)
         {
+            //// TODO this doesn't belong in queryresultnodeextensions, but it also doesn't belong in the fx.either.eitherextensions; this should be in fx.querycontext.eitherextensions probably
+
             ArgumentNullException.ThrowIfNull(source);
 
             return new QueryResultNode<TValue, TError>(source);
@@ -36,6 +38,8 @@ namespace Fx.QueryContext
         public static async ITask<QueryResultNode<TValue, TError>> ToQueryResultNode<TValue, TError>(
             this ITask<IEither<IElement<TValue, TError>, IEither<IError<TError>, IEmpty>>> source)
         {
+            //// TODO this doesn't belong in queryresultnodeextensions, but it also doesn't belong in the fx.either.eitherextensions; this should be in fx.querycontext.eitherextensions probably
+
             ArgumentNullException.ThrowIfNull(source);
 
             return new QueryResultNode<TValue, TError>(await source.ConfigureAwait(false));

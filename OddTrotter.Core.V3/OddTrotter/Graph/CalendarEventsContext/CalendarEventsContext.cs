@@ -443,13 +443,6 @@
             }
         }
 
-        internal static bool TryGetRight<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TRight right)
-            where TLeft : allows ref struct
-            where TRight : allows ref struct
-        {
-            return !either.Decompose(out _, out right);
-        }
-
         internal static IQueryResult<TElement, TErrorResult> Concat<TElement, TErrorFirst, TErrorSecond, TErrorResult>(
             this IQueryResult<TElement, TErrorFirst> queryResult,
             IQueryResult<TElement, TErrorSecond> next,

@@ -10,35 +10,7 @@ namespace Fx.QueryContext
 
     public static partial class QueryResultNodeAsyncExtensions
     {
-        public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Try<TValue, TResult> @try)
-        {
-            //// TODO wrong class
-            ArgumentNullException.ThrowIfNull(@try);
-
-            if (@try(value, out var output))
-            {
-                return Either.Right<Nothing>().Left(output);
-            }
-            else
-            {
-                return Either.Left<TResult>().Right(new Nothing());
-            }
-        }
-
-        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
-        {
-            //// TODO wrong class
-            ArgumentNullException.ThrowIfNull(predicate);
-
-            if (predicate(value))
-            {
-                return Either.Right<Nothing>().Left(value);
-            }
-            else
-            {
-                return Either.Left<TValue>().Right(new Nothing());
-            }
-        }
+        
 
 
 

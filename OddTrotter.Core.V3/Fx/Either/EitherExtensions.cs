@@ -1550,5 +1550,216 @@ namespace Fx.Either
         }
 
         private static bool Context = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        internal static IEither<TLeftResult, Nothing> Propagate<TLeftSource, TLeftResult>(
+            this IEither<TLeftSource, Nothing> either,
+            Func<TLeftSource, TLeftResult?> propagator)
+        {
+            //// TODO you don't need this method yet, but it does seem useful
+
+            return either.SelectLeft(propagator).SelectLeft(_ => _.ToEither()).SelectManyLeft();
+        }
+
+        internal static IEither<TValue, Nothing> ToEither<TValue>(this TValue? value)
+        {
+            //// TODO i don't really like polluting intellisense with this
+
+            if (value is null)
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+            else
+            {
+                return Either.Right<Nothing>().Left(value);
+            }
+        }
+
+
+        public static IEither<TResult, Nothing> ToEither<TValue, TResult>(this TValue value, Fx.Try.Try<TValue, TResult> @try)
+        {
+            //// TODO i don't really like polluting intellisense with this
+            ArgumentNullException.ThrowIfNull(@try);
+
+            if (@try(value, out var output))
+            {
+                return Either.Right<Nothing>().Left(output);
+            }
+            else
+            {
+                return Either.Left<TResult>().Right(new Nothing());
+            }
+        }
+
+        public static IEither<TValue, Nothing> ToEither<TValue>(this TValue value, Func<TValue, bool> predicate)
+        {
+            //// TODO i don't really like polluting intellisense with this
+            ArgumentNullException.ThrowIfNull(predicate);
+
+            if (predicate(value))
+            {
+                return Either.Right<Nothing>().Left(value);
+            }
+            else
+            {
+                return Either.Left<TValue>().Right(new Nothing());
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        internal static IEither<TRight, TLeft> Swap<TLeft, TRight>(
+            this IEither<TLeft, TRight> either)
+        {
+            // TODO haskell calls this "swap": https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Swap.html
+
+            return either.Apply(
+                left => Either.Left<TRight>().Right(left),
+                right => Either.Right<TLeft>().Left(right));
+        }
+
+        internal static IEither<IEither<TLeft, TLeftInner>, TRightInner> Unassociate<TLeft, TLeftInner, TRightInner>(
+            this IEither<TLeft, IEither<TLeftInner, TRightInner>> either)
+        {
+            // TODO haskell calls this "unassoc": https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Assoc.html
+
+            return either.Apply(
+                left => Either.Right<TRightInner>().Left(Either.Right<TLeftInner>().Left(left)),
+                right => right.Apply(
+                    leftInner => Either.Right<TRightInner>().Left(Either.Left<TLeft>().Right(leftInner)),
+                    rightInner => Either.Left<Either<TLeft, TLeftInner>>().Right(rightInner)));
+        }
+
+        internal static IEither<TLeftInner, IEither<TRightInner, TRight>> Associate<TLeftInner, TRightInner, TRight>(
+            this IEither<IEither<TLeftInner, TRightInner>, TRight> either)
+        {
+            //// TODO haskell calls this `assoc`: https://hackage.haskell.org/package/assoc-1.1.1/docs/Data-Bifunctor-Assoc.html (the "Assoc Either" section)
+
+            return either.Apply(
+                left => left.Apply(
+                    leftInner => Either.Right<Either<TRightInner, TRight>>().Left(leftInner),
+                    rightInner => Either.Left<TLeftInner>().Right(Either.Right<TRight>().Left(rightInner))),
+                right => Either.Left<TLeftInner>().Right(Either.Left<TRightInner>().Right(right)));
+        }
+
+        internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> LiftSequence<TRight, TLeft1, TLeft2, TRightInner>(
+            this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
+        {
+            //// TODO this should probably go in a different class
+
+            //// TODO this operation is equivalent to haskells `fmap sequence`; i am calling it "lift" because `fmap` is a "lift": https://wiki.haskell.org/Lifting ; i supposed i *could* call it `selectsequence` because i'm using "select" as a continuation of the c# idiom that "select" means "fmap"
+
+            return either.SelectLeft(tuple => tuple.Sequence());
+        }
+
+        internal static IEither<(T1, TLeft), TRight> Sequence<T1, TLeft, TRight>(
+            this (T1, IEither<TLeft, TRight>) tuple)
+        {
+            //// TODO this should probably go in a different class
+            
+            //// TODO haskell calls this "sequence": https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Traversable.html
+
+            return tuple.Item2.SelectLeft(left => (tuple.Item1, left));
+        }
+
+        public static bool TryGetLeft<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TLeft left)
+        {
+            return either.Decompose(out left, out _);
+        }
+
+        internal static bool TryGetRight<TLeft, TRight>(this IEither<TLeft, TRight> either, [MaybeNullWhen(false)] out TRight right)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return !either.Decompose(out _, out right);
+        }
+
+
+
+
+
     }
 }
