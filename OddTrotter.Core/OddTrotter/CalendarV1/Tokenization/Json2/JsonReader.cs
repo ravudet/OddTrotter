@@ -184,8 +184,33 @@
 
         public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
-            nextFactory = Factories.WhitespaceReaderFactory;
+            nextFactory = WhitespaceReaderFactory;
             return true;
+        }
+
+        public static WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
+        {
+            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(ValueReaderFactory);
+        }
+
+        public static ValueReader<WhitespaceReader<Nothing>> ValueReaderFactory(ReaderContext context)
+        {
+            return new ValueReader<WhitespaceReader<Nothing>>(
+                context.Stream,
+                context.Buffer,
+                context.CurrentByteIndex,
+                context.ValidBytes,
+                (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                    nestedStream,
+                    nestedBuffer,
+                    currentByteIndex,
+                    nestedValidBytes,
+                    NothingFactory));
+        }
+
+        public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
+        {
+            return new Nothing();
         }
     }
 
@@ -193,18 +218,27 @@
     {
         public static WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
         {
-            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
-                (context) => new ValueReader<WhitespaceReader<Nothing>>(
-                    context.Stream,
-                    context.Buffer,
-                    context.CurrentByteIndex,
-                    context.ValidBytes,
-                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
-                        nestedStream,
-                        nestedBuffer,
-                        currentByteIndex,
-                        nestedValidBytes,
-                        (_, _, _, _) => new Nothing())));
+            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(Factories.ValueReaderFactory);
+        }
+
+        public static ValueReader<WhitespaceReader<Nothing>> ValueReaderFactory(ReaderContext context)
+        {
+            return new ValueReader<WhitespaceReader<Nothing>>(
+                context.Stream,
+                context.Buffer,
+                context.CurrentByteIndex,
+                context.ValidBytes,
+                (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                    nestedStream,
+                    nestedBuffer,
+                    currentByteIndex,
+                    nestedValidBytes,
+                    Factories.NothingFactory));
+        }
+
+        public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
+        {
+            return new Nothing();
         }
     }
 
