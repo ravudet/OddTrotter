@@ -16,7 +16,7 @@
 
 
     //// TODO do you actually like the way that all of the code looks in the v3 oddtrotter stuff?
-    ////    TODO OddTrotter.CalendarEventsContext.calendareventscontextwe 
+    ////    TODO OddTrotter.graph.CalendarEventsContext.calendareventscontext
     //// TODO delete any newly dead code
 
 
