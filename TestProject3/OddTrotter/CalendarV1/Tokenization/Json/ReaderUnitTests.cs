@@ -615,13 +615,11 @@
             }
         }
 
-        internal static Task<Func<ReaderContext, TNextReader>> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader)
+        internal static Task<Func<ReaderContext, TNextReader>> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            var factory = self.Factory;
-            var context = self.Context;
             if (!self.TryMove3(out var nextFactory)) //// TODO this is supposed to be a while loop
             {
                 return self.Read().ContinueWith(
@@ -1366,10 +1364,13 @@
                     var reader = new Json2.JsonReader(stream);
 
                     var context = reader.Context;
-                    var whitespaceReaderFactory = await reader.AsReader.MoveInternal2().ConfigureAwait(false);
+                    var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, reader.Context).ConfigureAwait(false);
                     var whitespaceReader = whitespaceReaderFactory(context);
 
-                    var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
+                    Assert.IsTrue(whitespaceReader.TryGetValue3(out _));
+                    Assert.IsTrue(whitespaceReader.TryMove3(out var valueReaderFactory));
+
+                    ////var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
                     var valueReader = valueReaderFactory(context);
                     var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 

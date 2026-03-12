@@ -76,9 +76,9 @@
     {
         TypeHolder<TSelf, TNextReader> AsReader { get; }
 
-        ReaderContext Context { get; }
+        ////ReaderContext Context { get; }
 
-        Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
+        ////Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
 
         bool TryMove3(out Func<ReaderContext, TNextReader> nextFactory);
     }
@@ -212,7 +212,7 @@
     {
         private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
 
-        private bool finished;
+        ////private bool finished;
 
         private readonly List<WhitespaceToken> tokens;
 
@@ -226,14 +226,14 @@
 
         public ReaderContext Context { get; }
 
-        public Func<ReaderContext, WhitespaceReader2<TNextReader>> Factory
+        /*public Func<ReaderContext, WhitespaceReader2<TNextReader>> Factory
         {
             get
             {
                 var factory = this.nextReaderFactory;
                 return context => new WhitespaceReader2<TNextReader>(context, factory);
             }
-        }
+        }*/
 
         TypeHolder<WhitespaceReader2<TNextReader>, TNextReader> IReader2<WhitespaceReader2<TNextReader>, TNextReader>.AsReader
         {
@@ -251,21 +251,21 @@
             this.nextReaderFactory = nextReaderFactory;
 
             this.tokens = new List<WhitespaceToken>();
-            this.finished = false;
+            ////this.finished = false;
         }
 
         public IEnumerable<WhitespaceToken> TryGetValue(out bool read)
         {
-            if (this.finished)
+            /*if (this.finished)
             {
                 read = true;
             }
-            else
+            else*/
             {
                 read = this.TryGetValue2();
             }
 
-            this.finished = read;
+            ////this.finished = read;
             return this.tokens;
         }
 
