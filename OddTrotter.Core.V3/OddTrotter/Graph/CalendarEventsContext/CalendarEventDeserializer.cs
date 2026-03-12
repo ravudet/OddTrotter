@@ -78,12 +78,16 @@
             {
                 dateTimeProperty
                     .Apply(
-                        @string => Either.Right<DeserializationException>().Left(@string.Value),
-                        @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                        collection => Either.Left<string>().Right(new DeserializationException("TODO")))
+                        @string => RefEither.Right<DeserializationException>().Left(@string.Value), //// TODO i'm not really sure if you want to use `refeither` here; i think it's "clever" that you are able to use the `aseither` and `asnestedeither` stuff, but i don't know that it's actually that clean or if it's worth it
+                        @object => RefEither.Left<string>().Right(new DeserializationException("TODO")),
+                        collection => RefEither.Left<string>().Right(new DeserializationException("TODO")))
+                    .AsEither
                     .SelectLeft(
                         @string => @string.Try(DateTime.Parse).SelectRight(exception => new DeserializationException("TODO", exception)))
+                    .AsEither
+                    .AsNestedEither()
                     .SelectManyLeft()
+                    .AsEither
                     .Apply(
                         (value, ref state) =>
                         {
@@ -105,9 +109,10 @@
             {
                 timeZoneProperty
                     .Apply(
-                        @string => Either.Right<DeserializationException>().Left(@string.Value),
-                        @object => Either.Left<string>().Right(new DeserializationException("TODO")),
-                        collection => Either.Left<string>().Right(new DeserializationException("TODO")))
+                        @string => RefEither.Right<DeserializationException>().Left(@string.Value),
+                        @object => RefEither.Left<string>().Right(new DeserializationException("TODO")),
+                        collection => RefEither.Left<string>().Right(new DeserializationException("TODO")))
+                    .AsEither
                     .Apply(
                         (value, ref state) =>
                         {
@@ -437,6 +442,8 @@
     {
         public static IEither<TResult, Exception> Try<TValue, TResult>(this TValue value, Func<TValue, TResult> toTry)
         {
+            //// TODO this extension really pollutes the intellisense; maybe it should just remain in the deserializer code?
+
             TResult result;
             try
             {

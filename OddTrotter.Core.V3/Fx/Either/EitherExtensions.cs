@@ -298,6 +298,17 @@ namespace Fx.Either
 
 
 
+        public static RefEither<TLeftResult, TRightSource> SelectLeft<TEither, TLeftSource, TRightSource, TLeftResult>(
+            this TypeHolder<TEither, TLeftSource, TRightSource> either,
+            Func<TLeftSource, TLeftResult> leftMap)
+            where TEither : IEither<TLeftSource, TRightSource>, allows ref struct
+            where TLeftSource : allows ref struct
+            where TRightSource : allows ref struct
+            where TLeftResult : allows ref struct
+        {
+            return either.Select(leftMap, _ => _);
+        }
+
         public static async ITask<IEither<TLeftResult, TRightSource>> SelectLeft<TLeftSource, TRightSource, TLeftResult>(
             this IEither<TLeftSource, TRightSource> either,
             Func<TLeftSource, Task<TLeftResult>> leftMap)
@@ -511,6 +522,42 @@ namespace Fx.Either
                     });
         }
 
+
+        public static TypeHolder<RefEither<TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>, TRight>, TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>, TRight> AsNestedEither<TLeft, TRight>(this TypeHolder<RefEither<IEither<TLeft, TRight>, TRight>, IEither<TLeft, TRight>, TRight> either)
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+        {
+            return either.SelectLeft(
+                left => new TypeHolder<IEither<TLeft, TRight>, TLeft, TRight>(left)).AsEither;
+        }
+
+
+        public static RefEither<TLeft, TRight> SelectManyLeft<TEither, TLeft, TEitherInner, TRight>(
+            this TypeHolder<TEither, TypeHolder<TEitherInner, TLeft, TRight>, TRight> either)
+            where TEither : IEither<TypeHolder<TEitherInner, TLeft, TRight>, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TEitherInner : IEither<TLeft, TRight>, allows ref struct
+            where TRight : allows ref struct
+        {
+            return either
+                .Apply(
+                    left =>
+                    {
+                        var selected = left;
+                        try
+                        {
+                            return selected
+                                .Apply(
+                                    nestedLeft => RefEither.Right<TRight>().Left(nestedLeft),
+                                    nestedRight => RefEither.Left<TLeft>().Right(nestedRight));
+                        }
+                        catch (RightMapException rightMapException)
+                        {
+                            throw rightMapException.InnerException!; //// TODO
+                        }
+                    },
+                    right => RefEither.Left<TLeft>().Right(right));
+        }
 
         public static async ITask<IEither<TLeft, TRight>> SelectManyLeft<TLeft, TRight>(
             this ITask<IEither<IEither<TLeft, TRight>, TRight>> either)
@@ -1074,6 +1121,30 @@ namespace Fx.Either
             where TContext : allows ref struct
         {
             either.TypeHolder().Apply(
+                (left, ref context) =>
+                {
+                    leftMap(left, ref context);
+                    return new Nothing();
+                },
+                (right, ref context) =>
+                {
+                    rightMap(right, ref context);
+                    return new Nothing();
+                },
+                ref context);
+        }
+
+        public static void Apply<TEither, TLeft, TRight, TContext>( //// TODO do "action" variants need to be added? maybe add them specifically to the `apply` methods, but not the other ones?
+            this TypeHolder<TEither, TLeft, TRight> either,
+            SomeAction<TLeft, TContext> leftMap,
+            SomeAction<TRight, TContext> rightMap,
+            ref TContext context)
+            where TEither : IEither<TLeft, TRight>, allows ref struct
+            where TLeft : allows ref struct
+            where TRight : allows ref struct
+            where TContext : allows ref struct
+        {
+            either.Apply(
                 (left, ref context) =>
                 {
                     leftMap(left, ref context);
