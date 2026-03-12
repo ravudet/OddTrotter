@@ -1368,8 +1368,10 @@
                     var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, reader.Context).ConfigureAwait(false);
                     var whitespaceReader = whitespaceReaderFactory(context);
 
-                    Assert.IsTrue(whitespaceReader.TryGetValue3(context, out _));
-                    Assert.IsTrue(whitespaceReader.TryMove3(context, out var valueReaderFactory));
+                    if (!(whitespaceReader.TryGetValue3(context, out _) && whitespaceReader.TryMove3(context, out var valueReaderFactory)))
+                    {
+                        throw new Exception("TODO");
+                    }
 
                     ////var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
                     var valueReader = valueReaderFactory(context);
