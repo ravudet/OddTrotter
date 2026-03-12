@@ -1325,6 +1325,7 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
+            //// TODO maybe `readonly` is a liability?
             //// TODO we need to do better than 3.1s with 10000 iterations
             //// TODO fix perf for moveinternal3, since that's what you're currently adding
             
