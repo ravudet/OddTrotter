@@ -20,6 +20,7 @@
     ////
     //// every `ieither` extension should have a mixin
     //// use a visitor for discriminated unions //// TODO now that you are really just exposing an `apply` method in these cases, i think you can just have `apply` be `abstract` to get the same effect
+    //// use the `either` factories instead of the constructor
 
 
 
