@@ -18,9 +18,11 @@
 
     //// patterns:
     ////
-    //// every `ieither` extension should have a mixin
     //// use a visitor for discriminated unions //// TODO now that you are really just exposing an `apply` method in these cases, i think you can just have `apply` be `abstract` to get the same effect
     //// use the `either` factories instead of the constructor
+    ////
+    //// every `ieither` extension should have a mixin
+    //// either extensions where the mapping returns an awaitable (or continuable or something "async") should be suffixed with "async" //// TODO double check that this rule is actually necessary
 
 
 
@@ -28,6 +30,7 @@
 
 
 
+    //// TODO you are in `eitherextensions`
     //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
     //// TODO there should be a typeholder property (or extension) for each interface implemented; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
     //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
