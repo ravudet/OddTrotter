@@ -21,7 +21,7 @@
     //// use a visitor for discriminated unions //// TODO now that you are really just exposing an `apply` method in these cases, i think you can just have `apply` be `abstract` to get the same effect
     //// use the `either` factories instead of the constructor
     ////
-    //// every `ieither` extension should have a mixin
+    //// every `ieither` extension should have a mixin //// TODO you could add a unit test for this
     //// either extensions where the mapping returns an awaitable (or continuable or something "async") should be suffixed with "async" //// TODO double check that this rule is actually necessary
     //// tests for either extensions need to include all combinations of source and result types being ref struct or not, including left and right being different from each other
     //// either extensions have `allows ref struct` on as many generics as possible
