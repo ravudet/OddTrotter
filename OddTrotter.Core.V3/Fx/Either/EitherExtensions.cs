@@ -477,7 +477,6 @@ namespace Fx.Either
         {
         }*/
 
-        //// TODO you are here
         private sealed class DeferredEither<TLeftSource, TRightSource, TLeftResult, TRightResult> : IEither<TLeftResult, TRightResult>
             where TLeftSource : allows ref struct
             where TRightSource : allows ref struct
@@ -1127,6 +1126,7 @@ namespace Fx.Either
 
 
 
+        //// TODO you are here
         //// TODO this maybe should be documented somewhere, but you have these variants:
         //// {
         //// teither
