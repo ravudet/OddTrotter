@@ -28,7 +28,9 @@
     //// TODO still not 100% convinced on this; try it out first: either extensions that take in `typeholder` should return `typeholder`
     //// don't have nested "map" exceptions when an implementation leverages another extensions; e.g. `selectmany` implements a right map that calls `apply`; the right map should not throw a `rightmapexception` itself because this would result in the caller receiving a `rightmapexception` with an `innerexception` of a `rightmapexception` //// TODO you could add a `debug.assert` to the map exceptions to uphold this pattern
     //// methods that convert to a `typeholder` belong in their own separate extensions classes (because they are adapting a concrete input type to a typeholder)
-
+    //// each "overload" (a change in the number or meaning of parameters) should have the "variations" that is the cross product of these dimensions:
+    ////    `either` parameter: teither, typeholder<teither>, ieither, realizable<teither>, realizable<typeholder<teither>>, realizable<ieither>, realizable<either>, itask<ieither>, task<either>, task<ieither> //// TODO note that the reason for some of this "duplication" (like `task<either>` + `task<ieither>` and `realizable<either>` + `realizable<ieither>` is because of the lack of covariance for the concrete types (`task` and `realizable` in these cases), which prevents the chaining of the fluent API when the caller has custom methods that return the concrete types
+    ////    "map" parameters: 
 
 
 
