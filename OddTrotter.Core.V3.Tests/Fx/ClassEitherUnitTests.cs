@@ -22,6 +22,8 @@
     //// use the `either` factories instead of the constructor
     //// there should be a typeholder property (or extension) for each interface implemented on ref structs; so, for example, `realizable<T>` should have `typeholder<realizable<T>, t, itask<T>> aseither` *and* `typeholder<realizable<T>, t> ascontinuable` //// TODO these should be properties so that consumers can create extensions with the same name without conflicting
     //// factory class for generic types
+    //// when exceptions are wrapped by a concrete type to adapt to an implemented interface, the concrete type should document the exception that was set to innerexception
+    //// names should be like `either`, `valueeither`, and `scopedeither`; establish this convention for other `ref struct`s as well
     ////
     //// every `ieither` extension should have a mixin
     //// either extensions where the mapping returns an awaitable (or continuable or something "async") should be suffixed with "async" //// TODO double check that this rule is actually necessary
@@ -40,9 +42,7 @@
 
 
 
-    //// TODO you are in `ieither`
-    //// TODO keep a list of all of the patterns that you need to complete (like the below thing about typeholders and implementing multiple interfaces) (what are all of the extension method variants? (async maps, ref struct, async either, etc.) (document on concrete types when `innerexception` is set)
-    //// TODO names should be like `either`, `valueeither`, and `frameeither`; establish this convention for other `ref struct`s as well //// TODO for `ref struct` maybe `scopedeither` works better than `frameeither` //// TODO `unboxableeither`? `boxableeither`?
+
 
     //// TODO implement assert extensions so you can always use assert.that; this should go in `fx.test` or something
     //// TODO add `assert.that` to code quality
