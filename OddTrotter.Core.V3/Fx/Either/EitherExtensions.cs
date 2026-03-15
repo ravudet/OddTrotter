@@ -1126,7 +1126,6 @@ namespace Fx.Either
 
 
 
-        //// TODO you are here
         //// TODO this maybe should be documented somewhere, but you have these variants:
         //// {
         //// teither

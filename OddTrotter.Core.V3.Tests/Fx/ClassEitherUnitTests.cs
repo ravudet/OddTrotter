@@ -30,7 +30,8 @@
     //// methods that convert to a `typeholder` belong in their own separate extensions classes (because they are adapting a concrete input type to a typeholder)
     //// each "overload" (a change in the number or meaning of parameters) should have the "variations" that is the cross product of these dimensions:
     ////    `either` parameter: teither, typeholder<teither>, ieither, realizable<teither>, realizable<typeholder<teither>>, realizable<ieither>, realizable<either>, itask<ieither>, task<either>, task<ieither> //// TODO note that the reason for some of this "duplication" (like `task<either>` + `task<ieither>` and `realizable<either>` + `realizable<ieither>` is because of the lack of covariance for the concrete types (`task` and `realizable` in these cases), which prevents the chaining of the fluent API when the caller has custom methods that return the concrete types
-    ////    "map" parameters: 
+    ////    "map" parameters: tcontinuable, icontinuable, realizable, task, itask, tresult, action /*TODO even though you had a use-case for this, i'm not 100% convinced on it*/
+    ////    "context" parameter: absent, ref, value
 
 
 
