@@ -27,7 +27,7 @@
     //// either extensions have `allows ref struct` on as many generics as possible
     //// TODO still not 100% convinced on this; try it out first: either extensions that take in `typeholder` should return `typeholder`
     //// don't have nested "map" exceptions when an implementation leverages another extensions; e.g. `selectmany` implements a right map that calls `apply`; the right map should not throw a `rightmapexception` itself because this would result in the caller receiving a `rightmapexception` with an `innerexception` of a `rightmapexception` //// TODO you could add a `debug.assert` to the map exceptions to uphold this pattern
-    //// methods that generate `typeholder`s belong in their own separate extensions classes (because they are adapting a concrete input type to a typeholder)
+    //// methods that convert to a `typeholder` belong in their own separate extensions classes (because they are adapting a concrete input type to a typeholder)
 
 
 
