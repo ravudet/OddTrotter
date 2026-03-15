@@ -6,7 +6,6 @@ namespace Fx.Either
     using Fx;
     using Fx.Realizable;
 
-    //// TODO you are here
     public interface IEither<TEither, TLeft, TRight> : IEither<TLeft, TRight>
         where TEither : IEither<TEither, TLeft, TRight>, allows ref struct
         where TLeft : allows ref struct

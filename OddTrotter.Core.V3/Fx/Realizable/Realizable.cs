@@ -55,7 +55,7 @@
 
                 public IAwaiter<T> GetAwaiter()
                 { 
-                    //// TODO may the task should be instantiated in the constructor of `fromexceptiontask` so that the "logic" can be shared between a configured awaitable and a non-configured one
+                    //// TODO maybe the task should be instantiated in the constructor of `fromexceptiontask` so that the "logic" can be shared between a configured awaitable and a non-configured one
                     return new ConfiguredAwaiter(Task.FromException(this.exception).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
                 }
 
