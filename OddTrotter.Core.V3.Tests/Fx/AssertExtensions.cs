@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Dynamic;
     using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Security.AccessControl;
@@ -135,7 +136,8 @@
 
 
 
-
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition)
         {
             Assert.IsTrue(condition);
@@ -226,20 +228,119 @@
             Assert.IsNotNull(value, message, parameters);
         }
 
+        public static void AreSame(this Assert assert, object expected, object actual)
+        {
+            Assert.AreSame(expected, actual);
+        }
 
+        public static void AreSame(this Assert assert, object expected, object actual, string message)
+        {
+            Assert.AreSame(expected, actual, message);
+        }
 
+        public static void AreSame(this Assert assert, object expected, object actual, string message, params object[] parameters)
+        {
+            Assert.AreSame(expected, actual, message, parameters);
+        }
 
+        public static void AreNotSame(this Assert assert, object notExpected, object actual)
+        {
+            Assert.AreNotSame(notExpected, actual);
+        }
 
+        public static void AreNotSame(this Assert assert, object notExpected, object actual, string message)
+        {
+            Assert.AreNotSame(notExpected, actual, message);
+        }
 
-
-
-
+        public static void AreNotSame(this Assert assert, object notExpected, object actual, string message, params object[] parameters)
+        {
+            Assert.AreNotSame(notExpected, actual, message, parameters);
+        }
 
         public static void AreEqual<T>(this Assert assert, T expected, T actual)
         {
             Assert.AreEqual(expected, actual);
         }
 
+        public static void AreEqual<T>(this Assert assert, T expected, T actual, string message)
+        {
+            Assert.AreEqual(expected, actual, message);
+        }
+
+        public static void AreEqual<T>(this Assert assert, T expected, T actual, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, message, parameters);
+        }
+
+        public static void AreNotEqual<T>(this Assert assert, T notExpected, T actual)
+        {
+            Assert.AreNotEqual(notExpected, actual);
+        }
+
+        public static void AreNotEqual<T>(this Assert assert, T notExpected, T actual, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, message);
+        }
+
+        public static void AreNotEqual<T>(this Assert assert, T notExpected, T actual, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, message, parameters);
+        }
+
+        public static void AreEqual(this Assert assert, object expected, object actual)
+        {
+            Assert.AreEqual(expected, actual);
+        }
+
+        public static void AreEqual(this Assert assert, object expected, object actual, string message)
+        {
+            Assert.AreEqual(expected, actual, message);
+        }
+
+        public static void AreEqual(this Assert assert, object expected, object actual, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, object notExpected, object actual)
+        {
+            Assert.AreNotEqual(notExpected, actual);
+        }
+
+        public static void AreNotEqual(this Assert assert, object notExpected, object actual, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, object notExpected, object actual, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, message, parameters);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
         {
             Assert.IsInstanceOfType(value, expectedType);
