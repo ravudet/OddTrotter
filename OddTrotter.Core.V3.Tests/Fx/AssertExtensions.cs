@@ -378,6 +378,66 @@
             Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
         }
 
+        public static void AreEqual(this Assert assert, long expected, long actual, long delta)
+        {
+            Assert.AreEqual(expected, actual, delta);
+        }
+
+        public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message)
+        {
+            Assert.AreEqual(expected, actual, delta, message);
+        }
+
+        public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, delta, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta);
+        }
+
+        public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
+        }
+
+        public static void AreEqual(this Assert assert, double expected, double actual, double delta)
+        {
+            Assert.AreEqual(expected, actual, delta);
+        }
+
+        public static void AreEqual(this Assert assert, double expected, double actual, double delta, string message)
+        {
+            Assert.AreEqual(expected, actual, delta, message);
+        }
+
+        public static void AreEqual(this Assert assert, double expected, double actual, double delta, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, delta, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, double notExpected, double actual, double delta)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta);
+        }
+
+        public static void AreNotEqual(this Assert assert, double notExpected, double actual, double delta, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, double notExpected, double actual, double delta, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
+        }
+
 
 
 
