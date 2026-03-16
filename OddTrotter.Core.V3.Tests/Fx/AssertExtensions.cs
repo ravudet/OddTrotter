@@ -10,6 +10,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using NuGet.Frameworks;
+
     public static class AssertExtensions
     {
         public readonly ref struct RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>
@@ -73,38 +75,6 @@
             return new RefStructAwaitablePlaceholder<TAwaitable, TConfiguredAwaitable, TAwaiter, TValue>(awaitable);
         }
 
-        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition)
-        {
-            Assert.IsTrue(condition);
-        }
-
-        public static void AreEqual<T>(this Assert assert, T expected, T actual)
-        {
-            Assert.AreEqual(expected, actual);
-        }
-
-        public static void IsNull(this Assert assert, object? value)
-        {
-            Assert.IsNull(value);
-        }
-
-        public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
-        {
-            Assert.IsInstanceOfType(value, expectedType);
-        }
-
-        public static T ThrowsException<T>(this Assert assert, Action action)
-            where T : Exception
-        {
-            return Assert.ThrowsException<T>(action);
-        }
-
-        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) 
-            where T : Exception
-        {
-            return await Assert.ThrowsExceptionAsync<T>(action);
-        }
-
         public readonly ref struct RefStructPlaceHolder<TValue>
             where TValue : allows ref struct
         {
@@ -135,6 +105,137 @@
             where TValue : allows ref struct
         {
             return new RefStructPlaceHolder<TValue>(value);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition)
+        {
+            Assert.IsTrue(condition);
+        }
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition)
+        {
+            Assert.IsTrue(condition);
+        }
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition, string message)
+        {
+            Assert.IsTrue(condition, message);
+        }
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition, string message)
+        {
+            Assert.IsTrue(condition, message);
+        }
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition, string message, params object[] parameters)
+        {
+            Assert.IsTrue(condition, message, parameters);
+        }
+
+        public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition, string message, params object[] parameters)
+        {
+            Assert.IsTrue(condition, message, parameters);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition)
+        {
+            Assert.IsFalse(condition);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition)
+        {
+            Assert.IsFalse(condition);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition, string message)
+        {
+            Assert.IsFalse(condition, message);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition, string message)
+        {
+            Assert.IsFalse(condition, message);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition, string message, params object[] parameters)
+        {
+            Assert.IsFalse(condition, message, parameters);
+        }
+
+        public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition, string message, params object[] parameters)
+        {
+            Assert.IsFalse(condition, message, parameters);
+        }
+
+        public static void IsNull(this Assert assert, object value)
+        {
+            Assert.IsNull(value);
+        }
+
+        public static void 
+
+
+
+
+
+
+
+
+
+
+        public static void AreEqual<T>(this Assert assert, T expected, T actual)
+        {
+            Assert.AreEqual(expected, actual);
+        }
+
+        public static void IsNull(this Assert assert, object? value)
+        {
+            Assert.IsNull(value);
+        }
+
+        public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
+        {
+            Assert.IsInstanceOfType(value, expectedType);
+        }
+
+        public static T ThrowsException<T>(this Assert assert, Action action)
+            where T : Exception
+        {
+            return Assert.ThrowsException<T>(action);
+        }
+
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) 
+            where T : Exception
+        {
+            return await Assert.ThrowsExceptionAsync<T>(action);
         }
     }
 }
