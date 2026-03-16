@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Dynamic;
+    using System.Globalization;
     using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Security.AccessControl;
@@ -436,6 +437,36 @@
         public static void AreNotEqual(this Assert assert, double notExpected, double actual, double delta, string message, params object[] parameters)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase, string message)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase, message);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase, message, parameters);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase, CultureInfo culture)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase, culture);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase, CultureInfo culture, string message)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase, culture, message);
+        }
+
+        public static void AreEqual(this Assert assert, string expected, string actual, bool ignoreCase, CultureInfo culture, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, ignoreCase, culture, message, parameters);
         }
 
 
