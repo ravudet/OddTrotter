@@ -318,6 +318,65 @@
             Assert.AreNotEqual(notExpected, actual, message, parameters);
         }
 
+        public static void AreEqual(this Assert assert, float expected, float actual, float delta)
+        {
+            Assert.AreEqual(expected, actual, delta);
+        }
+
+        public static void AreEqual(this Assert assert, float expected, float actual, float delta, string message)
+        {
+            Assert.AreEqual(expected, actual, delta, message);
+        }
+
+        public static void AreEqual(this Assert assert, float expected, float actual, float delta, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, delta, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta);
+        }
+
+        public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
+        }
+
+        public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta)
+        {
+            Assert.AreEqual(expected, actual, delta);
+        }
+
+        public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta, string message)
+        {
+            Assert.AreEqual(expected, actual, delta, message);
+        }
+
+        public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta, string message, params object[] parameters)
+        {
+            Assert.AreEqual(expected, actual, delta, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta);
+        }
+
+        public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
+        }
 
 
 
@@ -340,7 +399,6 @@
 
 
 
-        
         public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
         {
             Assert.IsInstanceOfType(value, expectedType);
