@@ -4,6 +4,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq.V2;
     using System.Runtime.CompilerServices;
+    using System.Security.AccessControl;
     using System.Threading.Tasks;
 
     using Fx.Realizable;
@@ -200,7 +201,30 @@
             Assert.IsNull(value);
         }
 
-        public static void 
+        public static void IsNull(this Assert assert, object value, string message)
+        {
+            Assert.IsNull(value, message);
+        }
+
+        public static void IsNull(this Assert assert, object value, string message, params object[] parameters)
+        {
+            Assert.IsNull(value, message, parameters);
+        }
+
+        public static void IsNotNull(this Assert assert, [NotNull] object value)
+        {
+            Assert.IsNotNull(value);
+        }
+
+        public static void IsNotNull(this Assert assert, [NotNull] object value, string message)
+        {
+            Assert.IsNotNull(value, message);
+        }
+
+        public static void IsNotNull(this Assert assert, [NotNull] object value, string message, params object[] parameters)
+        {
+            Assert.IsNotNull(value, message, parameters);
+        }
 
 
 
@@ -214,11 +238,6 @@
         public static void AreEqual<T>(this Assert assert, T expected, T actual)
         {
             Assert.AreEqual(expected, actual);
-        }
-
-        public static void IsNull(this Assert assert, object? value)
-        {
-            Assert.IsNull(value);
         }
 
         public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
