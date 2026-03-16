@@ -6,6 +6,7 @@
     using System.Globalization;
     using System.Linq.V2;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices.ObjectiveC;
     using System.Security.AccessControl;
     using System.Threading.Tasks;
 
@@ -499,33 +500,60 @@
             Assert.AreNotEqual(notExpected, actual, ignoreCase, culture, message, parameters);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public static void IsInstanceOfType(this Assert assert, object? value, Type expectedType)
+        public static void IsInstanceOfType(this Assert assert, object value, Type expectedType)
         {
             Assert.IsInstanceOfType(value, expectedType);
         }
 
+        public static void IsInstanceOfType(this Assert assert, object value, Type expectedType, string message)
+        {
+            Assert.IsInstanceOfType(value, expectedType, message);
+        }
+
+        public static void IsInstanceOfType(this Assert assert, object value, Type expectedType, string message, params object[] parameters)
+        {
+            Assert.IsInstanceOfType(value, expectedType, message, parameters);
+        }
+
+        public static void IsNotInstanceOfType(this Assert assert, object value, Type wrongType)
+        {
+            Assert.IsNotInstanceOfType(value, wrongType);
+        }
+
+        public static void IsNotInstanceOfType(this Assert assert, object value, Type wrongType, string message)
+        {
+            Assert.IsNotInstanceOfType(value, wrongType, message);
+        }
+
+        public static void IsNotInstanceOfType(this Assert assert, object value, Type wrongType, string message, params object[] parameters)
+        {
+            Assert.IsNotInstanceOfType(value, wrongType, message, parameters);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         public static T ThrowsException<T>(this Assert assert, Action action)
             where T : Exception
         {
