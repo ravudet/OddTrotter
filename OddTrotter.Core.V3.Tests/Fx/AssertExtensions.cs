@@ -469,6 +469,37 @@
             Assert.AreEqual(expected, actual, ignoreCase, culture, message, parameters);
         }
 
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase);
+        }
+
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase, message, parameters);
+        }
+
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase, CultureInfo culture)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase, culture);
+        }
+
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase, CultureInfo culture, string message)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase, culture, message);
+        }
+
+        public static void AreNotEqual(this Assert assert, string notExpected, string actual, bool ignoreCase, CultureInfo culture, string message, params object[] parameters)
+        {
+            Assert.AreNotEqual(notExpected, actual, ignoreCase, culture, message, parameters);
+        }
+
+
 
 
 
