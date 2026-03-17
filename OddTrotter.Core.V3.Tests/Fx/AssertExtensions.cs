@@ -145,61 +145,85 @@
             Assert.IsTrue(condition);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition)
         {
             Assert.IsTrue(condition);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition, string message)
         {
             Assert.IsTrue(condition, message);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition, string message)
         {
             Assert.IsTrue(condition, message);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool condition, string message, params object[] parameters)
         {
             Assert.IsTrue(condition, message, parameters);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsTrue(this Assert assert, [DoesNotReturnIf(false)] bool? condition, string message, params object[] parameters)
         {
             Assert.IsTrue(condition, message, parameters);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition)
         {
             Assert.IsFalse(condition);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition)
         {
             Assert.IsFalse(condition);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition, string message)
         {
             Assert.IsFalse(condition, message);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition, string message)
         {
             Assert.IsFalse(condition, message);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool condition, string message, params object[] parameters)
         {
             Assert.IsFalse(condition, message, parameters);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsFalse(this Assert assert, [DoesNotReturnIf(true)] bool? condition, string message, params object[] parameters)
         {
             Assert.IsFalse(condition, message, parameters);
         }
 
+        /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
+        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
         public static void IsNull(this Assert assert, object value)
         {
             Assert.IsNull(value);
