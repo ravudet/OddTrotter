@@ -530,40 +530,89 @@
             Assert.IsNotInstanceOfType(value, wrongType, message, parameters);
         }
 
+        [DoesNotReturn]
+        public static void Fail(this Assert assert)
+        {
+            Assert.Fail();
+        }
 
+        [DoesNotReturn]
+        public static void Fail(this Assert assert, string message)
+        {
+            Assert.Fail(message);
+        }
 
+        [DoesNotReturn]
+        public static void Fail(this Assert assert, string message, params object[] parameters)
+        {
+            Assert.Fail(message, parameters);
+        }
 
+        public static void Inconclusive(this Assert assert) //// TODO .NET doesn't mark this as `doesnotreturn` but i think it should
+        {
+            Assert.Inconclusive();
+        }
 
+        public static void Inconclusive(this Assert assert, string message)
+        {
+            Assert.Inconclusive(message);
+        }
 
+        public static void Inconclusive(this Assert assert, string message, params object[] parameters)
+        {
+            Assert.Inconclusive(message, parameters);
+        }
 
+        //// TODO .NET has the `equals` method to help people not use the wrong overload; that is not applicable for instances of `assert` because that `equals` overload only takes a single parameter and therefore won't be confused with `assert.areequal`; we are skipping it for that reason (and because an extension variant won't ever actually be found by the compiler)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        public static T ThrowsException<T>(this Assert assert, Action action)
-            where T : Exception
+        public static T ThrowsException<T>(this Assert assert, Action action) where T : Exception
         {
             return Assert.ThrowsException<T>(action);
         }
 
-        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) 
-            where T : Exception
+        public static T ThrowsException<T>(this Assert assert, Action action, string message) where T : Exception
+        {
+            return Assert.ThrowsException<T>(action, message);
+        }
+
+        public static T ThrowsException<T>(this Assert assert, Action action, string message, params object[] parameters) where T : Exception
+        {
+            return Assert.ThrowsException<T>(action, message, parameters);
+        }
+
+        public static T ThrowsException<T>(this Assert assert, Func<object> action) where T : Exception
+        {
+            return Assert.ThrowsException<T>(action);
+        }
+
+        public static T ThrowsException<T>(this Assert assert, Func<object> action, string message) where T : Exception
+        {
+            return Assert.ThrowsException<T>(action, message);
+        }
+
+        public static T ThrowsException<T>(this Assert assert, Func<object> action, string message, params object[] parameters) where T : Exception
+        {
+            return Assert.ThrowsException<T>(action, message, parameters);
+        }
+
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) where T : Exception
         {
             return await Assert.ThrowsExceptionAsync<T>(action);
+        }
+
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action, string message) where T : Exception
+        {
+            return await Assert.ThrowsExceptionAsync<T>(action, message).ConfigureAwait(false);
+        }
+
+        public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action, string message, params object[] parameters) where T : Exception
+        {
+            return await Assert.ThrowsExceptionAsync<T>(action, message, parameters).ConfigureAwait(false);
+        }
+
+        public static string ReplaceNullChars(this Assert assert, string input)
+        {
+            return Assert.ReplaceNullChars(input);
         }
     }
 }
