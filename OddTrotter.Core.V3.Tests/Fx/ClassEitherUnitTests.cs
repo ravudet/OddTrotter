@@ -61,7 +61,7 @@
     ////        TODO for all of your tests, because of the nature of `realizable`, you will need to have a test where the values are realized and a test where the values are not realized
     ////        TODO don't forget to implement all of the mixins for all of the fundamental ieither implementations; make sure that all wrappers for an either implement a monad so that the wrappers don't have to implement all of the mixins just to get at the underlying either's mixins
     ////        TODO it seems like you have determined that there's iawaitable, which both allows for a state machine that waits and gives the result; and then there's irealizable which can be continued and can have its value realized; maybe play with the idea that these are isomorphic and can be adapted and such
-    ////    you have a list of patterns that you used for the `fx` folder; which of those do you want to add to code quality?
+    ////    you have a list of patterns that you used for the `fx` folder; which of those do you want to add to code quality? anything that you don't add to code quality should be documented in the namespaces that follow those patterns
     ////    you need to move the query context stuff from the oddtrotter folder into fx.core
     ////        move any extensions or helpers into their appropriate "production" places
     ////        you should explore the `ref struct` stuff for that before doing it, though, similar to how you did `ieither`
