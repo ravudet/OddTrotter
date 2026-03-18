@@ -753,49 +753,49 @@
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsException{T}(Func{object})"/>
         public static T ThrowsException<T>(this Assert assert, Func<object> action) where T : Exception
         {
             return Assert.ThrowsException<T>(action);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsException{T}(Func{object}, string)"/>
         public static T ThrowsException<T>(this Assert assert, Func<object> action, string message) where T : Exception
         {
             return Assert.ThrowsException<T>(action, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsException{T}(Func{object}, string, object[])"/>
         public static T ThrowsException<T>(this Assert assert, Func<object> action, string message, params object[] parameters) where T : Exception
         {
             return Assert.ThrowsException<T>(action, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsExceptionAsync{T}(Func{Task})"/>
         public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action) where T : Exception
         {
             return await Assert.ThrowsExceptionAsync<T>(action);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsExceptionAsync{T}(Func{Task}, string)"/>
         public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action, string message) where T : Exception
         {
             return await Assert.ThrowsExceptionAsync<T>(action, message).ConfigureAwait(false);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ThrowsExceptionAsync{T}(Func{Task}, string, object[])"/>
         public static async Task<T> ThrowsExceptionAsync<T>(this Assert assert, Func<Task> action, string message, params object[] parameters) where T : Exception
         {
             return await Assert.ThrowsExceptionAsync<T>(action, message, parameters).ConfigureAwait(false);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.ReplaceNullChars(string)"/>
         public static string ReplaceNullChars(this Assert assert, string input)
         {
             return Assert.ReplaceNullChars(input);
