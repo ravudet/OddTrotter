@@ -391,126 +391,126 @@
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(float, float, float)"/>
         public static void AreEqual(this Assert assert, float expected, float actual, float delta)
         {
             Assert.AreEqual(expected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(float, float, float, string)"/>
         public static void AreEqual(this Assert assert, float expected, float actual, float delta, string message)
         {
             Assert.AreEqual(expected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(float, float, float, string, object[])"/>
         public static void AreEqual(this Assert assert, float expected, float actual, float delta, string message, params object[] parameters)
         {
             Assert.AreEqual(expected, actual, delta, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(float, float, float)"/>
         public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta)
         {
             Assert.AreNotEqual(notExpected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(float, float, float, string)"/>
         public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta, string message)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(float, float, float, string, object[])"/>
         public static void AreNotEqual(this Assert assert, float notExpected, float actual, float delta, string message, params object[] parameters)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(decimal, decimal, decimal)"/>
         public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta)
         {
             Assert.AreEqual(expected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(decimal, decimal, decimal, string)"/>
         public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta, string message)
         {
             Assert.AreEqual(expected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(decimal, decimal, decimal, string, object[])"/>
         public static void AreEqual(this Assert assert, decimal expected, decimal actual, decimal delta, string message, params object[] parameters)
         {
             Assert.AreEqual(expected, actual, delta, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(decimal, decimal, decimal)"/>
         public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta)
         {
             Assert.AreNotEqual(notExpected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(decimal, decimal, decimal, string)"/>
         public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta, string message)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(decimal, decimal, decimal, string, object[])"/>
         public static void AreNotEqual(this Assert assert, decimal notExpected, decimal actual, decimal delta, string message, params object[] parameters)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(long, long, long)"/>
         public static void AreEqual(this Assert assert, long expected, long actual, long delta)
         {
             Assert.AreEqual(expected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(long, long, long, string)"/>
         public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message)
         {
             Assert.AreEqual(expected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreEqual(long, long, long, string, object[])"/>
         public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message, params object[] parameters)
         {
             Assert.AreEqual(expected, actual, delta, message, parameters);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(long, long, long)"/>
         public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta)
         {
             Assert.AreNotEqual(notExpected, actual, delta);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(long, long, long, string)"/>
         public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta, string message)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message);
         }
 
         /// <param name="assert">The <see cref="Assert"/> instance that is being extended</param>
-        /// <inheritdoc cref="Assert.IsTrue(bool)"/>
+        /// <inheritdoc cref="Assert.AreNotEqual(long, long, long, string, object[])"/>
         public static void AreNotEqual(this Assert assert, long notExpected, long actual, long delta, string message, params object[] parameters)
         {
             Assert.AreNotEqual(notExpected, actual, delta, message, parameters);
