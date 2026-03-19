@@ -21,6 +21,8 @@
         [TestMethod]
         public void Run()
         {
+            //// TODO document somewhere in odata framework stuff your guiding principle that the interfaces should be the same for the client developer as for the service developer; this guarantees that both parties have the same understanding of the contract
+
             var requestReaderFactory = (HttpRequestMessage httpRequestMessage) => new RequestReader(httpRequestMessage);
             using (var httpClient = new HttpClient())
             {
