@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.V3", "OddTr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddTrotter.Core.V3.Tests", "OddTrotter.Core.V3.Tests\OddTrotter.Core.V3.Tests.csproj", "{599123F2-BA15-41E6-B5D5-78A38900FB68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fx.Test", "Fx.Core\Fx.Test\Fx.Test.csproj", "{7FFADE03-7367-FD22-7133-B0D2212F07C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{599123F2-BA15-41E6-B5D5-78A38900FB68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{599123F2-BA15-41E6-B5D5-78A38900FB68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{599123F2-BA15-41E6-B5D5-78A38900FB68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FFADE03-7367-FD22-7133-B0D2212F07C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FFADE03-7367-FD22-7133-B0D2212F07C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FFADE03-7367-FD22-7133-B0D2212F07C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FFADE03-7367-FD22-7133-B0D2212F07C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

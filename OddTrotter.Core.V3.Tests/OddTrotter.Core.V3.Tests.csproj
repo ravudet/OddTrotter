@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Fx.Core\Fx.Test\Fx.Test.csproj" />
     <ProjectReference Include="..\OddTrotter.Core.V3\OddTrotter.Core.V3.csproj" />
   </ItemGroup>
 
