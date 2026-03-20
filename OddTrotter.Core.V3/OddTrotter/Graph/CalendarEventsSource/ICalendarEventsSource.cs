@@ -60,7 +60,9 @@ namespace OddTrotter.Graph.CalendarEventsSource.V2
 
     internal sealed class Calendar
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private Calendar()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
         }
 
@@ -87,7 +89,9 @@ namespace OddTrotter.Graph.CalendarEventsSource.V2
 
     internal sealed class CalendarEvent
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private CalendarEvent()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
         }
 
@@ -115,7 +119,9 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal sealed class Calendar
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private Calendar()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
         }
 
@@ -124,7 +130,9 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal sealed class CalendarEvent
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private CalendarEvent()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
         }
 
