@@ -22,6 +22,7 @@
         public void Run()
         {
             //// TODO document somewhere in odata framework stuff your guiding principle that the interfaces should be the same for the client developer as for the service developer; this guarantees that both parties have the same understanding of the contract
+            //// TODO in icalendareventssource, you have a thing where you are trying to create the interfaces to pretend that there is a service between oddtrotter and graph; this would really prove the above design principle, because oddtrotter itself could have `oddtrotter.calendareventscontext` take in a client to call the intermediate service, or it could do that translation work locally; and it does this by taking the "adapted" interface in either case, so the "oddtrotter" functionality remains agnostic to the where the data is coming from
 
             var requestReaderFactory = (HttpRequestMessage httpRequestMessage) => new RequestReader(httpRequestMessage);
             using (var httpClient = new HttpClient())
