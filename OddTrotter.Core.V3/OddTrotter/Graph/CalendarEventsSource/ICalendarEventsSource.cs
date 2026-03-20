@@ -134,6 +134,8 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
     internal interface ICalendarSource
     {
         ICalendarContext Get();
+
+        ICalendarEventsSource Events();
     }
 
     internal interface ICalendarContext
@@ -145,5 +147,106 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal interface ICalendarEventsSource
     {
+        ICalendarEventsContext Get();
+    }
+
+    internal interface ICalendarEventsContext
+    {
+        Task<IEnumerable<CalendarEvent>> Evaluate();
+
+        ICalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
+
+        ICalendarEventsContext Top(uint top);
+
+        ICalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy);
+    }
+}
+
+namespace Adapter
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
+
+    using Graph = OddTrotter.Graph.CalendarEventsSource.V2;
+    using OddTrotter = OddTrotter.NonGraph.CalendarEventsSource;
+
+    internal sealed class CalendarSource : OddTrotter.ICalendarSource
+    {
+        private readonly Graph.ICalendarSource graphCalendarSource;
+
+        public CalendarSource(Graph.ICalendarSource graphCalendarSource)
+        {
+            this.graphCalendarSource = graphCalendarSource;
+        }
+
+        public OddTrotter.ICalendarEventsSource Events()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private sealed class CalendarEventsSource : OddTrotter.ICalendarEventsSource
+        {
+            private readonly Graph.ICalendarEventsSource graphCalendarEventsSource;
+
+            public CalendarEventsSource(Graph.ICalendarEventsSource graphCalendarEventsSource)
+            {
+                this.graphCalendarEventsSource = graphCalendarEventsSource;
+            }
+
+            public OddTrotter.ICalendarEventsContext Get()
+            {
+                throw new NotImplementedException();
+            }
+
+            private sealed class CalendarEventsContext : OddTrotter.ICalendarEventsContext
+            {
+                public Task<IEnumerable<OddTrotter.CalendarEvent>> Evaluate()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public OddTrotter.ICalendarEventsContext Top(uint top)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        public OddTrotter.ICalendarContext Get()
+        {
+            return new CalendarContext(this.graphCalendarSource.Get());
+        }
+
+        private sealed class CalendarContext : OddTrotter.ICalendarContext
+        {
+            private readonly Graph.ICalendarContext graphCalendarContext;
+
+            public CalendarContext(Graph.ICalendarContext graphCalendarContext)
+            {
+                this.graphCalendarContext = graphCalendarContext;
+            }
+
+            public Task<OddTrotter.Calendar> Evalaute()
+            {
+                throw new NotImplementedException();
+            }
+
+            public OddTrotter.ICalendarContext Select<TResult>(Expression<Func<OddTrotter.Calendar, TResult>> selector)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
