@@ -45,6 +45,7 @@
 
 
     //// TODO implement assert extensions so you can always use assert.that; this should go in `fx.test` or something
+    //// TODO create code quality list
     //// TODO add `assert.that` to code quality
     //// TODO add "good lambda parameter names" to code quality
     //// TODO add `await="true"` exception documentation to code quality
