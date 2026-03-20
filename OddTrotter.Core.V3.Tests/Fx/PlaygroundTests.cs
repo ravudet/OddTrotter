@@ -527,7 +527,7 @@
 
             public Provided<string> Id { get; set; }
             public Provided<string> DisplayName { get; set; }
-            public NavigationProperty<Provided<IEnumerable<User>>> DirectReports { get; set; }
+            public NavigationProperty<Provided<IEnumerable<User>>> DirectReports { get; set; } //// TODO there should be an `odatacollection` or something that has the `nextlink`
         }
 
         internal static class Property
@@ -556,6 +556,8 @@
             }
 
             public T Value { get; }
+
+            //// TODO add things like odata.context here
         }
 
         internal abstract class Provided<T>

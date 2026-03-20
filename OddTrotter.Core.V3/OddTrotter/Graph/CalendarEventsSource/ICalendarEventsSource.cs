@@ -36,3 +36,114 @@
         ICalendarEventsContext Compute<TResult>(Expression<Func<CalendarEvent, TResult>> computation, string dynamicPropertyName); //// TODO this doesn't really make sense as written, but the point is to demonstrate that the single-valued query options should be available here
     }
 }
+
+namespace OddTrotter.Graph.CalendarEventsSource.V2
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
+
+    internal interface ICalendarSource
+    {
+        ICalendarContext Get();
+
+        ICalendarEventsSource Events();
+    }
+
+    internal interface ICalendarContext
+    {
+        Task<Calendar> Evaluate();
+
+        ICalendarContext Select<TResult>(Expression<Func<Calendar, TResult>> selector);
+    }
+
+    internal sealed class Calendar
+    {
+        private Calendar()
+        {
+        }
+
+        public IEnumerable<CalendarEvent> Events { get; }
+    }
+
+    internal interface ICalendarEventsSource
+    {
+        ICalendarEventsContext Get();
+
+        ICalendarEventSource Key(string id); //// TODO this could conflict with a property, but i think that's fine because the property wouldn't take a parameter; it could also conflict with a function or something, which isn't good; try to figure that out //// TODO you could have icollectionsource which has `key(string)` (which could work with a `ascollectionsource` extension so that if there *is* a conflict, the caller has some way to disambiguate), but then what about composite keys? //// TODO i actually really like this because you can do similar things for the query options and the developer can "implement" whatever interfaces they want (so if the collection isn't indexable, that interface isn't implemented, the same way if filter is supported, that interface wouldn't be implemented)
+    }
+
+    internal interface ICalendarEventsContext
+    {
+        Task<IEnumerable<CalendarEvent>> Evaluate();
+
+        ICalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
+
+        ICalendarEventsContext Top(uint top);
+
+        ICalendarEventsContext OrderBy<TOrder>(Expression<Func<CalendarEvent, TOrder>> orderBy);
+    }
+
+    internal sealed class CalendarEvent
+    {
+        private CalendarEvent()
+        {
+        }
+
+        public string Id { get; }
+
+        //// public IEnumerable<CalendarEvent> Instances { get; }
+    }
+
+    internal interface ICalendarEventSource
+    {
+        Task<CalendarEvent> Evaluate();
+
+        ICalendarContext Select<TResult>(Expression<Func<CalendarEvent, TResult>> selector);
+
+        ICalendarEventsSource Instances(DateTime startDateTime, DateTime endTime);
+    }
+}
+
+namespace OddTrotter.NonGraph.CalendarEventsSource
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
+
+    internal sealed class Calendar
+    {
+        private Calendar()
+        {
+        }
+
+        public IEnumerable<CalendarEvent> Events { get; }
+    }
+
+    internal sealed class CalendarEvent
+    {
+        private CalendarEvent()
+        {
+        }
+
+        public string Id { get; }
+    }
+
+    internal interface ICalendarSource
+    {
+        ICalendarContext Get();
+    }
+
+    internal interface ICalendarContext
+    {
+        Task<Calendar> Evalaute();
+
+        ICalendarContext Select<TResult>(Expression<Func<Calendar, TResult>> selector);
+    }
+
+    internal interface ICalendarEventsSource
+    {
+    }
+}
