@@ -1325,8 +1325,7 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
-            //// TODO we need to do better than 2.2s with 10000 iterations in release
-            //// TODO fix perf for moveinternal3, since that's what you're currently adding
+            //// TODO you tried adding whitespacereader2 after valuereader, but ran into invalidprogram stuff; switch it back so that you have a commit where you've moved to whitespacereader2; then you can play with adding it after valuereader; but also, you *have* to make sure to do the `moveinternal2` thing before you start making more stuff into value types
             
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
@@ -1384,7 +1383,7 @@
             var valueReader = valueReaderFactory(context);
             var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 
-            if (!(valueToken is ValueToken<WhitespaceReader<Nothing>>.Object @object))
+            if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
             {
                 throw new Exception("TODO");
             }
@@ -2182,6 +2181,7 @@
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
             //var nothing = await whitespace38.AsReader.MoveInternal3(whitespace38.Factory).ConfigureAwait(false);
             var nothing = await whitespace38.MoveInternal1().ConfigureAwait(false);
+
             Assert.AreEqual(new Nothing(), nothing);
 
             Assert.AreEqual(stream.Length, stream.Position);
