@@ -1355,6 +1355,8 @@
         [TestMethod]
         public async Task V2Broad2()
         {
+            //// TODO it seems that `readonly` ref structs are a liability for performance
+
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
