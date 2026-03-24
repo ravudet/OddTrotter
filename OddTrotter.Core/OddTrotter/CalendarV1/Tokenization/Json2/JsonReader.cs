@@ -200,7 +200,7 @@
                 context.Buffer,
                 context.CurrentByteIndex,
                 context.ValidBytes,
-                (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
+                static (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
                     nestedStream,
                     nestedBuffer,
                     currentByteIndex,
