@@ -1325,7 +1325,7 @@
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
 
-            //// TODO we need to do better than 3.1s with 10000 iterations
+            //// TODO we need to do better than 2.2s with 10000 iterations in release
             //// TODO fix perf for moveinternal3, since that's what you're currently adding
             
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
@@ -1355,7 +1355,7 @@
         [TestMethod]
         public async Task V2Broad2()
         {
-            //// TODO it seems that `readonly` ref structs are a liability for performance
+            //// TODO it seems that `readonly` ref structs are a *sometimes* a liability for performance; you will probably need to do a whole bunch of testing to decide which ones should be `readonly`
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
