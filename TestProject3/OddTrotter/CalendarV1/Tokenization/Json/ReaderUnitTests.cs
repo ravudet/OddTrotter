@@ -683,7 +683,7 @@
             }
         }
 
-        public readonly ref struct NewCompleted<TNextReader>
+        public ref struct NewCompleted<TNextReader>
             where TNextReader : allows ref struct
         {
             private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
@@ -699,7 +699,7 @@
                 return new ConfiguredAwaitable(this.nextReaderFactory, ValueTask.CompletedTask.ConfigureAwait(continueOnCapturedContext));
             }
 
-            public readonly ref struct ConfiguredAwaitable
+            public ref struct ConfiguredAwaitable
             {
                 private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
                 private readonly ConfiguredValueTaskAwaitable configuredValueTaskAwaitable;
@@ -757,7 +757,7 @@
             }
         }
 
-        public readonly ref struct MoveInternal3Task<TCurrentReader, TValue, TNextReader>
+        public ref struct MoveInternal3Task<TCurrentReader, TValue, TNextReader>
             where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
             where TValue : allows ref struct
             where TNextReader : allows ref struct
@@ -784,7 +784,7 @@
                 }
             }
 
-            public readonly ref struct ConfiguredAwaitable
+            public ref struct ConfiguredAwaitable
             {
                 private readonly int type;
 
@@ -1356,6 +1356,7 @@
         public async Task V2Broad2()
         {
             //// TODO it seems that `readonly` ref structs are a *sometimes* a liability for performance; you will probably need to do a whole bunch of testing to decide which ones should be `readonly`; just keep them all *not* `readonly` for now, though
+            //// TODO also test `readonly` on any task `ref struct`s that you created
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
@@ -1379,12 +1380,7 @@
             var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, reader.Context).ConfigureAwait(false);
             var whitespaceReader = whitespaceReaderFactory(context);
 
-            if (!(whitespaceReader.TryGetValue3(context, out _) && whitespaceReader.TryMove3(context, out var valueReaderFactory)))
-            {
-                throw new Exception("TODO");
-            }
-
-            ////var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(whitespaceReaderFactory).ConfigureAwait(false);
+            var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
             var valueReader = valueReaderFactory(context);
             var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 
