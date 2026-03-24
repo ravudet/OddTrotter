@@ -219,7 +219,7 @@
         }
     }
 
-    public readonly ref struct WhitespaceReader2<TNextReader> : IReader2<WhitespaceReader2<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
+    public ref struct WhitespaceReader2<TNextReader> : IReader2<WhitespaceReader2<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
         where TNextReader : allows ref struct
     {
         private readonly Func<ReaderContext, TNextReader> nextReaderFactory;

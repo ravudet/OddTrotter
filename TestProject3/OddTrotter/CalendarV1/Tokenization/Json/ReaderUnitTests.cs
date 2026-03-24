@@ -1355,7 +1355,7 @@
         [TestMethod]
         public async Task V2Broad2()
         {
-            //// TODO it seems that `readonly` ref structs are a *sometimes* a liability for performance; you will probably need to do a whole bunch of testing to decide which ones should be `readonly`
+            //// TODO it seems that `readonly` ref structs are a *sometimes* a liability for performance; you will probably need to do a whole bunch of testing to decide which ones should be `readonly`; just keep them all *not* `readonly` for now, though
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
