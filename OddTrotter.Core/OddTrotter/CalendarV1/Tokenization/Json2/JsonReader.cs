@@ -200,12 +200,17 @@
                 context.Buffer,
                 context.CurrentByteIndex,
                 context.ValidBytes,
-                static (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
-                    nestedStream,
-                    nestedBuffer,
-                    currentByteIndex,
-                    nestedValidBytes,
-                    NothingFactory));
+                WhitespaceReaderFactory2);
+        }
+
+        public static WhitespaceReader<Nothing> WhitespaceReaderFactory2(Stream nestedStream, byte[] nestedBuffer, int currentByteIndex, int nestedValidBytes)
+        {
+            return new WhitespaceReader<Nothing>(
+                nestedStream,
+                nestedBuffer,
+                currentByteIndex,
+                nestedValidBytes,
+                NothingFactory);
         }
 
         public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
