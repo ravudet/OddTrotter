@@ -191,7 +191,7 @@ namespace Adapter
 
         public OddTrotter.ICalendarEventsSource Events()
         {
-            throw new System.NotImplementedException();
+            return new CalendarEventsSource(this.graphCalendarSource.Events());
         }
 
         private sealed class CalendarEventsSource : OddTrotter.ICalendarEventsSource
@@ -205,14 +205,22 @@ namespace Adapter
 
             public OddTrotter.ICalendarEventsContext Get()
             {
-                throw new NotImplementedException();
+                return new CalendarEventsContext(this.graphCalendarEventsSource.Get());
             }
 
             private sealed class CalendarEventsContext : OddTrotter.ICalendarEventsContext
             {
+                private readonly Graph.ICalendarEventsContext graphCalendarEventsContext;
+
+                public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
+                {
+                    this.graphCalendarEventsContext = graphCalendarEventsContext;
+                }
+
                 public Task<IEnumerable<OddTrotter.CalendarEvent>> Evaluate()
                 {
-                    throw new NotImplementedException();
+                    //// TODO these need to return queryresults
+                    return this.graphCalendarEventsContext.Evaluate();
                 }
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
