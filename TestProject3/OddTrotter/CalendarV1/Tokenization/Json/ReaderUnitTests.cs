@@ -2153,14 +2153,14 @@
                 subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
             }
 
-            /*var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
+            var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
             if (!read)
             {
                 await subsequentArrayElements.Read().ConfigureAwait(false);
                 subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
             }
 
-            var whitespace36 = subsequentArrayElementsToken.Apply(
+            /*var whitespace36 = subsequentArrayElementsToken.Apply(
                 _ => _,
                 _ => throw new Exception("TODO"));
             //var arrayEnd2 = await whitespace36.AsReader.MoveInternal3(whitespace36.Factory).ConfigureAwait(false);
