@@ -519,12 +519,12 @@
 
                     public TNextReader GetResult()
                     {
-                        var result = this.currentReader.TryMove(out _);
-                        if (result == null)
+                        return this.currentReader.TryMove(out _);
+                        /*if (result == null)
                         {
                         }
 
-                        return result;
+                        return result;*/
                     }
 
                     public void OnCompleted(Action continuation)
@@ -2179,12 +2179,12 @@
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
-            //var nothing = await whitespace38.AsReader.MoveInternal3(whitespace38.Factory).ConfigureAwait(false);
-            /*var nothing = await whitespace38.MoveInternal1().ConfigureAwait(false);
+            var nothingFactory = await whitespace38.AsReader.MoveInternal3(context, _ => throw new Exception("TODO")).ConfigureAwait(false);
+            var nothing = nothingFactory(context);
 
             Assert.AreEqual(new Nothing(), nothing);
 
-            Assert.AreEqual(stream.Length, stream.Position);*/
+            Assert.AreEqual(stream.Length, stream.Position);
         }
 
         
