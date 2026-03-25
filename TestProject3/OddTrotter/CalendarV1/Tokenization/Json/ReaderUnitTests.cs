@@ -1389,7 +1389,7 @@
             }
 
             var objectReader = await @object.Reader.MoveInternal1().ConfigureAwait(false);
-            /*var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
+            var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
             //var membersReader = await whitespaceReader2.AsReader.MoveInternal3(whitespaceReader2.Factory).ConfigureAwait(false);
             var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
 
@@ -1416,7 +1416,7 @@
             var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
-            var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
+            /*var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
             if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.True @true))
             {
                 throw new Exception("TODO");
