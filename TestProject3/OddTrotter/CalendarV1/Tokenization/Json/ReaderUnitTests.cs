@@ -1967,7 +1967,7 @@
                 <
                     WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>
                 >
-                subsequentArrayElements;
+                subsequentArrayElements;*/
             {
                 // true
                 var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
@@ -1982,7 +1982,7 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.True nestedTrue))
+                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.True nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
@@ -2015,7 +2015,7 @@
                 //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
                 var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.False nestedfalse))
+                if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.False nestedfalse))
                 {
                     throw new Exception("TODO");
                 }
@@ -2048,7 +2048,7 @@
                 //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
                 var nestedvalue4 = await nestedwhitespace10.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken4 = await nestedvalue4.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.Number nestednumber))
+                if (!(nestedvalueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.Number nestednumber))
                 {
                     throw new Exception("TODO");
                 }
@@ -2094,7 +2094,7 @@
                 //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
                 var nestedvalue5 = await nestedwhitespace13.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken5 = await nestedvalue5.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.String @nestedstring5))
+                if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.String @nestedstring5))
                 {
                     throw new Exception("TODO");
                 }
@@ -2131,7 +2131,7 @@
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
                 var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>>>>.Null @nestednull))
+                if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.Null @nestednull))
                 {
                     throw new Exception("TODO");
                 }
@@ -2150,10 +2150,10 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
+                ////subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
             }
 
-            var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
+            /*var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
             if (!read)
             {
                 await subsequentArrayElements.Read().ConfigureAwait(false);
