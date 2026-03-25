@@ -620,10 +620,11 @@
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (!self.TryMove3(context, out var nextFactory)) //// TODO this is supposed to be a while loop
+            if (!self.TryMove3(context, out var nextFactory))
             {
-                return self.Read(context).ContinueWith(
-                    (_, context) =>
+                throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
+                /*return self.Read(context).ContinueWith(
+                    async (_, context) =>
                     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                         var readerContext = (ReaderContext)context;
@@ -631,10 +632,9 @@
 
                         var self = factory(readerContext!);
 
-                        self.TryMove3(readerContext!, out var nextFactory);
-                        return nextFactory;
+                        return await self.AsReader.MoveInternal2(factory, readerContext!).ConfigureAwait(false);
                     },
-                    context);
+                    context).Unwrap();*/
             }
 
             return Task.FromResult(nextFactory);
@@ -1324,9 +1324,11 @@
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
-            //// TODO you are at ~212 with whitespacereader2 after valuereader
-            //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
+
+
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
+            //// TODO you are at ~212 with whitespacereader2 after valuereader
+            
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
