@@ -1619,7 +1619,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            /*SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>> subsequentMembers6;
+            ////SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>> subsequentMembers6;
             {
                 // true
                 var nestedMember = await nestedFirstMember.MoveInternal1().ConfigureAwait(false);
@@ -1634,7 +1634,7 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.True nestedTrue))
+                /*if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.True nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
@@ -1802,10 +1802,10 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
+                subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
             }
 
-            var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
+            /*var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
             if (!read)
             {
                 await subsequentMembers6.Read().ConfigureAwait(false);
