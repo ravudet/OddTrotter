@@ -1417,13 +1417,13 @@
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
-            /*if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.True @true))
+            if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.True @true))
             {
                 throw new Exception("TODO");
             }
 
             var subsequentMembersReader = await @true.Reader.MoveInternal1().ConfigureAwait(false);
-            var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
+            /*var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
             if (!read)
             {
                 await subsequentMembersReader.Read().ConfigureAwait(false);
