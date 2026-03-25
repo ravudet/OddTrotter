@@ -1963,11 +1963,11 @@
             }
 
             var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
-            /*SubsequentArrayElementsReader
+            SubsequentArrayElementsReader
                 <
-                    WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>
+                    WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
                 >
-                subsequentArrayElements;*/
+                subsequentArrayElements;
             {
                 // true
                 var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
@@ -2150,7 +2150,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                ////subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
+                subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
             }
 
             /*var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
