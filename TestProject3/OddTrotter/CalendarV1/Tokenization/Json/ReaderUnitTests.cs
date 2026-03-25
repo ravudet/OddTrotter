@@ -2179,7 +2179,7 @@
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
-            var nothingFactory = await whitespace38.AsReader.MoveInternal3(context, _ => throw new Exception("TODO")).ConfigureAwait(false);
+            var nothingFactory = await whitespace38.AsReader.MoveInternal3(context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory(context);
 
             Assert.AreEqual(new Nothing(), nothing);
@@ -2187,7 +2187,10 @@
             Assert.AreEqual(stream.Length, stream.Position);
         }
 
-        
+        static WhitespaceReader2<Nothing> Foo(ReaderContext context)
+        {
+            throw new Exception("TODO");
+        }
 
 
         /*private static async Task ReadToEnd<TNextReader>(Json2.StringReader<TNextReader> stringReader, Func<TNextReader, Task> readToEnd)
