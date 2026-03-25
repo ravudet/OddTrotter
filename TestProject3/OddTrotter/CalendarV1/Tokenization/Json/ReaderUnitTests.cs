@@ -1832,7 +1832,7 @@
             //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
             var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
             var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
-            /*if (!(valueToken8 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Object object3))
+            if (!(valueToken8 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Object object3))
             {
                 throw new Exception("TODO");
             }
@@ -1879,7 +1879,7 @@
             //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
             var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
             var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken9 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Array array))
+            if (!(valueToken9 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Array array))
             {
                 throw new Exception("TODO");
             }
@@ -1927,7 +1927,7 @@
             //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
             var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
             var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken10 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Array array2))
+            if (!(valueToken10 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Array array2))
             {
                 throw new Exception("TODO");
             }
@@ -1946,7 +1946,7 @@
             var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
             var value11 = await arrayElement.MoveInternal1().ConfigureAwait(false);
             var valueToken11 = await value11.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken11 is ValueToken<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.Object object4))
+            if (!(valueToken11 is ValueToken<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>.Object object4))
             {
                 throw new Exception("TODO");
             }
@@ -1963,7 +1963,7 @@
             }
 
             var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
-            SubsequentArrayElementsReader
+            /*SubsequentArrayElementsReader
                 <
                     WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>
                 >
