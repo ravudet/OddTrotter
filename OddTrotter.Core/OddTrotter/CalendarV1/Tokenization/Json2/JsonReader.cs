@@ -430,7 +430,7 @@
         }
     }
 
-    public sealed class WhitespaceToken
+    public struct WhitespaceToken
     {
         public WhitespaceToken(byte @char)
         {
