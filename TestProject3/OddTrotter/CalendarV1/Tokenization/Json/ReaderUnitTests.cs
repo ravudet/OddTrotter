@@ -1383,7 +1383,7 @@
             var valueReader = valueReaderFactory(context);
             var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
 
-            if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
+            if (!(valueToken is ValueToken<WhitespaceReader<Nothing>>.Object @object))
             {
                 throw new Exception("TODO");
             }

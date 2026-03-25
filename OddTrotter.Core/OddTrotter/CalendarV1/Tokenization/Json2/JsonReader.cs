@@ -132,7 +132,7 @@
         }
     }
 
-    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>>
+    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>>
     {
         ////private bool read;
 
@@ -149,11 +149,11 @@
 
         public ReaderContext Context { get; }
 
-        public TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>> AsReader
+        public TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> AsReader
         {
             get
             {
-                return new TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>>(this);
+                return new TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>>(this);
             }
         }
 
@@ -182,20 +182,20 @@
                         (_, _, _, _) => new Nothing())));
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>> nextFactory)
         {
             nextFactory = WhitespaceReaderFactory;
             return true;
         }
 
-        public static WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
+        public static WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
         {
-            return new WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>(ValueReaderFactory);
+            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(ValueReaderFactory);
         }
 
-        public static ValueReader<WhitespaceReader2<Nothing>> ValueReaderFactory(ReaderContext context)
+        public static ValueReader<WhitespaceReader<Nothing>> ValueReaderFactory(ReaderContext context)
         {
-            return new ValueReader<WhitespaceReader2<Nothing>>(
+            return new ValueReader<WhitespaceReader<Nothing>>(
                 context.Stream,
                 context.Buffer,
                 context.CurrentByteIndex,
@@ -203,16 +203,16 @@
                 WhitespaceReaderFactory2);
         }
 
-        public static WhitespaceReader2<Nothing> WhitespaceReaderFactory2(Stream nestedStream, byte[] nestedBuffer, int currentByteIndex, int nestedValidBytes)
+        public static WhitespaceReader<Nothing> WhitespaceReaderFactory2(Stream nestedStream, byte[] nestedBuffer, int currentByteIndex, int nestedValidBytes)
         {
-            /*return new WhitespaceReader<Nothing>(
+            return new WhitespaceReader<Nothing>(
                 nestedStream,
                 nestedBuffer,
                 currentByteIndex,
                 nestedValidBytes,
-                NothingFactory);*/
-            return new WhitespaceReader2<Nothing>(
-                static context => new Nothing());
+                NothingFactory);
+            /*return new WhitespaceReader2<Nothing>(
+                static context => new Nothing());*/
         }
 
         public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
