@@ -1324,9 +1324,7 @@
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
 
-
-            //// TODO you tried adding whitespacereader2 after valuereader, but ran into invalidprogram stuff; switch it back so that you have a commit where you've moved to whitespacereader2; then you can play with adding it after valuereader; but also, you *have* to make sure to do the `moveinternal2` thing before you start making more stuff into value types
-            
+            //// TODO you are at ~212 with whitespacereader2 after valuereader
             //// TODO fix perf for MoveInternal2, since that will only get used more as you continue making progress
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
