@@ -1639,8 +1639,8 @@
                     throw new Exception("TODO");
                 }
 
-                /*var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
-                var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
+                var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
+                /*var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
                 if (!read)
                 {
                     await nestedSubsequentMembersReader.Read().ConfigureAwait(false);
