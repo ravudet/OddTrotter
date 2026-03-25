@@ -1752,7 +1752,7 @@
                 }
 
                 var nestedstringDelimiter9 = await @nestedstring5.Reader.MoveInternal1().ConfigureAwait(false);
-                /*var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
+                var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
                 var nestedstringDelimiter10 = await nestedchars5.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1().ConfigureAwait(false);
 
@@ -1783,7 +1783,7 @@
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
                 var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.Null @nestednull))
+                if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>.Null @nestednull))
                 {
                     throw new Exception("TODO");
                 }
@@ -1802,7 +1802,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
+                ////subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
             }
 
             /*var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
