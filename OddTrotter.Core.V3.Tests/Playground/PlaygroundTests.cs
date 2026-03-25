@@ -1,4 +1,6 @@
-﻿namespace Fx
+﻿using Fx;
+
+namespace Playground
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +20,7 @@
     using OddTrotter.Graph.CalendarEventsContext;
     using OddTrotter.Odata.v4_01.StrongConventionContext;
 
-    using static Fx.PlaygroundTests;
+    using static Playground.PlaygroundTests;
 
     [TestClass]
     public sealed class PlaygroundTests
@@ -143,53 +145,53 @@
         {
             Assert.IsTrue(TryTranslateToSeriesMaster(calendarEvent => calendarEvent.Subject == "todo list", out var translated));
 
-            var graphCalendarEvent = new OddTrotter.Graph.CalendarEventsContext.CalendarEvent(
+            var graphCalendarEvent = new CalendarEvent(
                 "id",
                 "subject",
-                new OddTrotter.Graph.CalendarEventsContext.BodyStructure(
+                new BodyStructure(
                     "content"),
-                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                new TimeStructure(
                     DateTime.Parse("2026-02-19"),
                     "UTC"),
                 false,
                 "series",
-                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                new TimeStructure(
                     DateTime.Parse("2026-02-19"),
                     "UTC"));
 
             Assert.IsFalse(translated(graphCalendarEvent));
 
-            graphCalendarEvent = new OddTrotter.Graph.CalendarEventsContext.CalendarEvent(
+            graphCalendarEvent = new CalendarEvent(
                 "id",
                 "todo list",
-                new OddTrotter.Graph.CalendarEventsContext.BodyStructure(
+                new BodyStructure(
                     "content"),
-                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                new TimeStructure(
                     DateTime.Parse("2026-02-19"),
                     "UTC"),
                 false,
                 "series",
-                new OddTrotter.Graph.CalendarEventsContext.TimeStructure(
+                new TimeStructure(
                     DateTime.Parse("2026-02-19"),
                     "UTC"));
 
             Assert.IsTrue(translated(graphCalendarEvent));
         }
 
-        private static bool TryTranslateToSeriesMaster(Expression<Func<OddTrotter.CalendarEventsContext.CalendarEvent, bool>> predicate, out Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool> seriesMasterPredicate)
+        private static bool TryTranslateToSeriesMaster(Expression<Func<OddTrotter.CalendarEventsContext.CalendarEvent, bool>> predicate, out Func<CalendarEvent, bool> seriesMasterPredicate)
         {
             // note: this doesn't ever return a null predicate; we still translate when it's not a series master
 
             var calendarEventParameter = predicate.Parameters[0];
 
-            var translatedcalendarEventParameter = Expression.Parameter(typeof(OddTrotter.Graph.CalendarEventsContext.CalendarEvent), calendarEventParameter.Name);
+            var translatedcalendarEventParameter = Expression.Parameter(typeof(CalendarEvent), calendarEventParameter.Name);
             var visitor = new ExpressionVisitor(calendarEventParameter, translatedcalendarEventParameter);
             var translatedBody = visitor.Visit(predicate.Body);
 
-            Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>> translated = calendarEvent => true;
+            Expression<Func<CalendarEvent, bool>> translated = calendarEvent => true;
             translated = translated.Update(translatedBody, new[] { translated.Parameters[0] }); //// new[] { translatedcalendarEventParameter });
 
-            var lambda = Expression.Lambda<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>>(translatedBody, translatedcalendarEventParameter);
+            var lambda = Expression.Lambda<Func<CalendarEvent, bool>>(translatedBody, translatedcalendarEventParameter);
             translated = lambda;
 
             
@@ -208,14 +210,14 @@
             {
                 this.originalCalendarEventParamter = originalCalendarEventParamter;
                 this.translatedCalendarEventExpression = translatedCalendarEventExpression;
-                this.ApplicableToSeriesMaster = false;
+                ApplicableToSeriesMaster = false;
             }
 
             public bool ApplicableToSeriesMaster { get; private set; }
 
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                return this.translatedCalendarEventExpression;
+                return translatedCalendarEventExpression;
 
                 /*if (object.ReferenceEquals(node, this.originalCalendarEventParamter))
                 {
@@ -227,19 +229,19 @@
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (object.ReferenceEquals(node.Expression, this.originalCalendarEventParamter))
+                if (ReferenceEquals(node.Expression, originalCalendarEventParamter))
                 {
-                    if (ExpressionVisitor.SeriesMasterAdapters.TryGetValue(node.Member.Name, out var seriesMasterExpression))
+                    if (SeriesMasterAdapters.TryGetValue(node.Member.Name, out var seriesMasterExpression))
                     {
-                        seriesMasterExpression = this.Visit(seriesMasterExpression);
+                        seriesMasterExpression = Visit(seriesMasterExpression);
 
-                        this.ApplicableToSeriesMaster = true;
+                        ApplicableToSeriesMaster = true;
                         return seriesMasterExpression;
                     }
 
-                    if (ExpressionVisitor.CalendarEventAdapters.TryGetValue(node.Member.Name, out var calendarEventExpression))
+                    if (CalendarEventAdapters.TryGetValue(node.Member.Name, out var calendarEventExpression))
                     {
-                        calendarEventExpression = this.Visit(calendarEventExpression);
+                        calendarEventExpression = Visit(calendarEventExpression);
 
                         return calendarEventExpression;
                     }
@@ -248,28 +250,28 @@
                 return base.VisitMember(node);
             }
 
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, string>> SubjectExpression { get; } = calendarEvent => calendarEvent.Subject;
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, string>> IdExpression { get; } = calendarEvent => calendarEvent.Id;
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, string>> BodyExpression { get; } = calendarEvent => calendarEvent.Body.Content;
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, bool>> IsCancelledExpression { get; } = calendarEvent => calendarEvent.IsCancelled;
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, string>> TypeExpression { get; } = calendarEvent => calendarEvent.Type;
+            private static Expression<Func<CalendarEvent, string>> SubjectExpression { get; } = calendarEvent => calendarEvent.Subject;
+            private static Expression<Func<CalendarEvent, string>> IdExpression { get; } = calendarEvent => calendarEvent.Id;
+            private static Expression<Func<CalendarEvent, string>> BodyExpression { get; } = calendarEvent => calendarEvent.Body.Content;
+            private static Expression<Func<CalendarEvent, bool>> IsCancelledExpression { get; } = calendarEvent => calendarEvent.IsCancelled;
+            private static Expression<Func<CalendarEvent, string>> TypeExpression { get; } = calendarEvent => calendarEvent.Type;
 
             private static IReadOnlyDictionary<string, Expression> SeriesMasterAdapters { get; } = new Dictionary<string, Expression>()
             {
-                { "Subject", ExpressionVisitor.SubjectExpression.Body },
-                { "Id", ExpressionVisitor.IdExpression.Body },
-                { "Body", ExpressionVisitor.BodyExpression.Body },
-                { "IsCancelled", ExpressionVisitor.IsCancelledExpression.Body },
-                { "Type", ExpressionVisitor.TypeExpression.Body },
+                { "Subject", SubjectExpression.Body },
+                { "Id", IdExpression.Body },
+                { "Body", BodyExpression.Body },
+                { "IsCancelled", IsCancelledExpression.Body },
+                { "Type", TypeExpression.Body },
             };
 
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, DateTime>> StartExpression { get; } = calendarEvent => calendarEvent.Start.DateTime;
-            private static Expression<Func<OddTrotter.Graph.CalendarEventsContext.CalendarEvent, DateTime>> EndExpression { get; } = calendarEvent => calendarEvent.End.DateTime;
+            private static Expression<Func<CalendarEvent, DateTime>> StartExpression { get; } = calendarEvent => calendarEvent.Start.DateTime;
+            private static Expression<Func<CalendarEvent, DateTime>> EndExpression { get; } = calendarEvent => calendarEvent.End.DateTime;
 
             private static IReadOnlyDictionary<string, Expression> CalendarEventAdapters { get; } = new Dictionary<string, Expression>()
             {
-                { "Start", ExpressionVisitor.StartExpression.Body },
-                { "End", ExpressionVisitor.EndExpression.Body },
+                { "Start", StartExpression.Body },
+                { "End", EndExpression.Body },
             };
         }
 
@@ -520,9 +522,9 @@
 
             internal User()
             {
-                this.Id = Property.NotProvided<string>();
-                this.DisplayName = Property.NotProvided<string>();
-                this.DirectReports = Property.NotProvided<IEnumerable<User>>();
+                Id = Property.NotProvided<string>();
+                DisplayName = Property.NotProvided<string>();
+                DirectReports = Property.NotProvided<IEnumerable<User>>();
             }
 
             public Provided<string> Id { get; set; }
@@ -544,7 +546,7 @@
 
             internal static NavigationProperty<Provided<T>> Navigation<T>(T value)
             {
-                return new NavigationProperty<Provided<T>>(Property.Provided(value));
+                return new NavigationProperty<Provided<T>>(Provided(value));
             }
         }
 
