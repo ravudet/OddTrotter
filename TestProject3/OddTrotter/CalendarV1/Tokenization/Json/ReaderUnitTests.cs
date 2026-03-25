@@ -1634,12 +1634,12 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                /*if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>>>>.True nestedTrue))
+                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>.True nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
+                /*var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
                 var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
                 if (!read)
                 {
