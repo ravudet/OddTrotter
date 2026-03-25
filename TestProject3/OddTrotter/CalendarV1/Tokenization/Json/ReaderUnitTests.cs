@@ -2177,8 +2177,8 @@
                 _ => _,
                 _ => throw new Exception("TODO"));
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
-            /*var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
-            var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
+            var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
+            /*var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
             //var nothing = await whitespace38.AsReader.MoveInternal3(whitespace38.Factory).ConfigureAwait(false);
             var nothing = await whitespace38.MoveInternal1().ConfigureAwait(false);
 
