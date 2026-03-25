@@ -1483,12 +1483,12 @@
             //var value4 = await whitespace10.AsReader.MoveInternal3(whitespace10.Factory).ConfigureAwait(false);
             var value4 = await whitespace10.MoveInternal1().ConfigureAwait(false);
             var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
-            /*if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
+            if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Number number))
             {
                 throw new Exception("TODO");
             }
 
-            var sign = await number.Reader.MoveInternal1().ConfigureAwait(false);
+            /*var sign = await number.Reader.MoveInternal1().ConfigureAwait(false);
             var @int = await sign.MoveInternal1().ConfigureAwait(false);
             var frac = await @int.MoveInternal1().ConfigureAwait(false);
             var exp = await frac.MoveInternal1().ConfigureAwait(false);
