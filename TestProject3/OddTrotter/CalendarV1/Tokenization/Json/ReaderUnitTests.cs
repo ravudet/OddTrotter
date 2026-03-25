@@ -1488,8 +1488,8 @@
                 throw new Exception("TODO");
             }
 
-            /*var sign = await number.Reader.MoveInternal1().ConfigureAwait(false);
-            var @int = await sign.MoveInternal1().ConfigureAwait(false);
+            var sign = await number.Reader.MoveInternal1().ConfigureAwait(false);
+            /*var @int = await sign.MoveInternal1().ConfigureAwait(false);
             var frac = await @int.MoveInternal1().ConfigureAwait(false);
             var exp = await frac.MoveInternal1().ConfigureAwait(false);
             var expToken = exp.TryMove(out read);
