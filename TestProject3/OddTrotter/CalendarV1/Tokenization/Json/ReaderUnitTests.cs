@@ -1572,7 +1572,7 @@
             }
 
             var subsequentMembers5 = await @null.Reader.MoveInternal1().ConfigureAwait(false);
-            /*var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
+            var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
             if (!read)
             {
                 await subsequentMembers5.Read().ConfigureAwait(false);
@@ -1599,13 +1599,13 @@
             //var value7 = await whitespace19.AsReader.MoveInternal3(whitespace19.Factory).ConfigureAwait(false);
             var value7 = await whitespace19.MoveInternal1().ConfigureAwait(false);
             var valueToken7 = await value7.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken7 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Object @object2))
+            if (!(valueToken7 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Object @object2))
             {
                 throw new Exception("TODO");
             }
 
             var objectStart2 = await object2.Reader.MoveInternal1().ConfigureAwait(false);
-            var whitespace20 = await objectStart2.MoveInternal1().ConfigureAwait(false);
+            /*var whitespace20 = await objectStart2.MoveInternal1().ConfigureAwait(false);
             //var nestedMembers = await whitespace20.AsReader.MoveInternal3(whitespace20.Factory).ConfigureAwait(false);
             var nestedMembers = await whitespace20.MoveInternal1().ConfigureAwait(false);
             var nestedMembersToken = nestedMembers.TryMove(out read);
