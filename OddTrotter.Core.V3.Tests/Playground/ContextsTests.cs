@@ -5,6 +5,9 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+    using Fx.QueryContext;
+
     internal interface ICalendarSource
     {
         ICalendarContext Get();
@@ -44,9 +47,16 @@
         }
     }
 
+    internal sealed class PagingError
+    {
+        private PagingError()
+        {
+        }
+    }
+
     internal interface ICalendarEventsContext
     {
-        Task<Fx.QueryContext.IQueryResult<CalendarEvent, CalendarEventTranslationError>> Evaluate();
+        ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError>> Evaluate();
 
         ICalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
 
@@ -85,6 +95,9 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
+    using Fx.Either;
+    using Fx.QueryContext;
+
     internal sealed class Calendar
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -98,10 +111,9 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal sealed class CalendarEvent
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-        private CalendarEvent()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        public CalendarEvent(string id)
         {
+            Id = id;
         }
 
         public string Id { get; }
@@ -128,14 +140,21 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal sealed class CalendarEventTranslationError
     {
-        private CalendarEventTranslationError()
+        public CalendarEventTranslationError()
+        {
+        }
+    }
+
+    internal sealed class PagingError
+    {
+        public PagingError()
         {
         }
     }
 
     internal interface ICalendarEventsContext
     {
-        Task<Fx.QueryContext.IQueryResult<CalendarEvent, CalendarEventTranslationError>> Evaluate();
+        ITask<IQueryResult<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError>> Evaluate();
 
         ICalendarEventsContext Filter(Expression<Func<CalendarEvent, bool>> filter);
 
@@ -151,6 +170,7 @@ namespace Adapter
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
+    using Fx.Either;
     using Fx.QueryContext;
 
     using Graph = OddTrotter.Graph.CalendarEventsSource.V2;
@@ -193,14 +213,25 @@ namespace Adapter
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
                 }
 
-                public Task<IQueryResult<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>> Evaluate()
+                public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
-                    //// TODO these need to return queryresults
-                    return this.graphCalendarEventsContext.Evaluate();
+                    return await this
+                        .graphCalendarEventsContext
+                        .Evaluate()
+                        .Select(
+                            graphCalendarEventOrTranslationError => graphCalendarEventOrTranslationError
+                                .Select(
+                                    graphCalendarEvent => new OddTrotter.CalendarEvent(graphCalendarEvent.Id),
+                                    translationError => new OddTrotter.CalendarEventTranslationError() //// TODO
+                                    ))
+                        .SelectError(
+                            pagingError => new OddTrotter.PagingError())
+                        .ConfigureAwait(false);
                 }
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
+                    //// TODO you are here
                     throw new NotImplementedException();
                 }
 
@@ -239,6 +270,16 @@ namespace Adapter
             {
                 throw new NotImplementedException();
             }
+        }
+    }
+
+    internal static partial class Extensions
+    {
+        public static ITask<IQueryResult<TValue, TErrorResult>> SelectError<TValue, TErrorSource, TErrorResult>(
+            this ITask<IQueryResult<TValue, TErrorSource>> queryResult,
+            Func<TErrorSource, TErrorResult> selector)
+        {
+            throw new Exception("TODO");
         }
     }
 }
