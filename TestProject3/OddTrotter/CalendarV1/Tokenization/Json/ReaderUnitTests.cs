@@ -1456,7 +1456,7 @@
             }
 
             var subsequentMembers2 = await @false.Reader.MoveInternal1().ConfigureAwait(false);
-            /*var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
+            var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
                 await subsequentMembers2.Read().ConfigureAwait(false);
@@ -1483,7 +1483,7 @@
             //var value4 = await whitespace10.AsReader.MoveInternal3(whitespace10.Factory).ConfigureAwait(false);
             var value4 = await whitespace10.MoveInternal1().ConfigureAwait(false);
             var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
+            /*if (!(valueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader<Nothing>>>>>.Number number))
             {
                 throw new Exception("TODO");
             }
