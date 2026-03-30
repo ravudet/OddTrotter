@@ -615,13 +615,15 @@
             }
         }
 
-        internal static MoveInternal2Task<TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
+        internal static MoveInternal2Task<TCurrentReader, TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
             if (!self.TryMove3(context, out var nextFactory))
             {
+                new MoveInternal2ReadTask<TCurrentReader, TNextReader>(self.Read(context), factory, ref context);
+
                 ////throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
                 return self.Read(context).ContinueWith(
                     async (_, context) =>
@@ -637,15 +639,99 @@
                     context).Unwrap();
             }
 
-            return new MoveInternal2Task<TNextReader>(new NewCompleted<TNextReader>(nextFactory));
+            return new MoveInternal2Task<TCurrentReader, TNextReader>(new NewCompleted<TNextReader>(nextFactory));
         }
 
-        internal ref struct MoveInternal2Task<TNextReader>
+        internal ref struct MoveInternal2ReadTask<TCurrentReader, TNextReader>
+            where TCurrentReader : allows ref struct
+            where TNextReader : allows ref struct
+        {
+            private readonly Task readTask;
+            private readonly Func<ReaderContext, TCurrentReader> factory;
+            private readonly ref ReaderContext context;
+
+            public MoveInternal2ReadTask(
+                Task readTask,
+                Func<ReaderContext, TCurrentReader> factory, 
+                ref ReaderContext context)
+            {
+                this.readTask = readTask;
+                this.factory = factory;
+                this.context = ref context;
+            }
+
+            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.readTask.ConfigureAwait(continueOnCapturedContext));
+            }
+
+            public ref struct ConfiguredAwaitable
+            {
+                private readonly ConfiguredTaskAwaitable readTask;
+
+                public ConfiguredAwaitable(ConfiguredTaskAwaitable readTask)
+                {
+                    this.readTask = readTask;
+                }
+
+                public Awaiter GetAwaiter()
+                {
+                    return new Awaiter(this.readTask.GetAwaiter());
+                }
+
+                public struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
+                {
+                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
+
+                    public Awaiter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask)
+                    {
+                        this.readTask = readTask;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            if (!readTask.IsCompleted)
+                            {
+                                return false;
+                            }
+
+
+                        }
+                    }
+
+                    public Func<ReaderContext, TNextReader> GetResult()
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+            }
+
+            public ITaskAwaiter<Func<ReaderContext, TNextReader>> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        internal ref struct MoveInternal2Task<TCurrentReader, TNextReader>
+            where TCurrentReader : allows ref struct
             where TNextReader : allows ref struct
         {
             private readonly int type;
 
             private readonly NewCompleted<TNextReader> newCompleted;
+            private readonly MoveInternal2ReadTask<TCurrentReader, TNextReader> read;
 
             public MoveInternal2Task(NewCompleted<TNextReader> newCompleted)
             {
@@ -654,12 +740,21 @@
                 this.type = 1;
             }
 
+            public MoveInternal2Task(MoveInternal2ReadTask<TCurrentReader, TNextReader> read)
+            {
+                this.read = read;
+
+                this.type = 2;
+            }
+
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
                 switch (this.type)
                 {
                     case 1:
                         return new ConfiguredAwaitable(this.newCompleted.ConfiguredAwait(continueOnCapturedContext));
+                    case 2:
+                        return new ConfiguredAwaitable(this.read.ConfigureAwait(continueOnCapturedContext));
                     default:
                         throw new Exception("TODO");
                 }
@@ -670,6 +765,7 @@
                 private readonly int type;
 
                 private readonly NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted;
+                private readonly MoveInternal2ReadTask<TCurrentReader, TNextReader>.ConfiguredAwaitable read;
 
                 internal ConfiguredAwaitable(NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted)
                 {
@@ -678,12 +774,21 @@
                     this.type = 1;
                 }
 
+                internal ConfiguredAwaitable(MoveInternal2ReadTask<TCurrentReader, TNextReader>.ConfiguredAwaitable read)
+                {
+                    this.read = read;
+
+                    this.type = 2;
+                }
+
                 public Awaiter GetAwaiter()
                 {
                     switch (this.type)
                     {
                         case 1:
                             return new Awaiter(this.newCompleted.GetAwaiter());
+                        case 2:
+                            return new Awaiter(this.read.GetAwaiter());
                         default:
                             throw new Exception("TODO");
                     }
@@ -694,12 +799,20 @@
                     private readonly int type;
 
                     private readonly NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted;
+                    private readonly MoveInternal2ReadTask<TCurrentReader, TNextReader>.ConfiguredAwaitable.Awaiter read;
 
                     internal Awaiter(NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted)
                     {
                         this.newCompleted = newCompleted;
 
                         this.type = 1;
+                    }
+
+                    internal Awaiter(MoveInternal2ReadTask<TCurrentReader, TNextReader>.ConfiguredAwaitable.Awaiter read)
+                    {
+                        this.read = read;
+
+                        this.type = 2;
                     }
 
                     public bool IsCompleted
@@ -710,6 +823,8 @@
                             {
                                 case 1:
                                     return this.newCompleted.IsCompleted;
+                                case 2:
+                                    return this.read.IsCompleted;
                                 default:
                                     throw new Exception("TODO");
                             }
@@ -722,6 +837,8 @@
                         {
                             case 1:
                                 return this.newCompleted.GetResult();
+                            case 2:
+                                return this.read.GetResult();
                             default:
                                 throw new Exception("TODO");
                         }
@@ -734,6 +851,9 @@
                             case 1:
                                 this.newCompleted.OnCompleted(continuation);
                                 break;
+                            case 2:
+                                this.read.OnCompleted(continuation);
+                                break;
                             default:
                                 throw new Exception("TODO");
                         }
@@ -745,6 +865,9 @@
                         {
                             case 1:
                                 this.newCompleted.UnsafeOnCompleted(continuation);
+                                break;
+                            case 2:
+                                this.read.UnsafeOnCompleted(continuation);
                                 break;
                             default:
                                 throw new Exception("TODO");
@@ -804,7 +927,7 @@
         public ref struct NewCompleted<TNextReader>
             where TNextReader : allows ref struct
         {
-            private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+            private readonly Func<ReaderContext, TNextReader> nextReaderFactory; //// TODO make this `ref`?
 
             public NewCompleted(Func<ReaderContext, TNextReader> nextReaderFactory)
             {
