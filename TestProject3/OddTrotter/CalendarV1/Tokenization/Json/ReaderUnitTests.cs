@@ -622,8 +622,8 @@
             var self = currentReader.Self;
             if (!self.TryMove3(context, out var nextFactory))
             {
-                throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
-                /*return self.Read(context).ContinueWith(
+                ////throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
+                return self.Read(context).ContinueWith(
                     async (_, context) =>
                     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -634,7 +634,7 @@
 
                         return await self.AsReader.MoveInternal2(factory, readerContext!).ConfigureAwait(false);
                     },
-                    context).Unwrap();*/
+                    context).Unwrap();
             }
 
             return Task.FromResult(nextFactory);
@@ -1381,7 +1381,8 @@
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
             var valueReader = valueReaderFactory(context);
-            var valueToken = await valueReader.MoveInternal1().ConfigureAwait(false);
+            var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, context).ConfigureAwait(false);
+            var valueToken = valueTokenFactory(context);
 
             if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
             {

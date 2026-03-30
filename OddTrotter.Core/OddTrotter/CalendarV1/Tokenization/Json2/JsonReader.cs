@@ -132,7 +132,7 @@
         }
     }
 
-    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>>
+    public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>>
     {
         ////private bool read;
 
@@ -149,11 +149,11 @@
 
         public ReaderContext Context { get; }
 
-        public TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>> AsReader
+        public TypeHolder<JsonReader, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> AsReader
         {
             get
             {
-                return new TypeHolder<JsonReader, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>>(this);
+                return new TypeHolder<JsonReader, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>>(this);
             }
         }
 
@@ -164,42 +164,20 @@
             ////this.read = true;
         }
 
-        public WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>> TryMove(out bool read)
-        {
-            ////read = this.read;
-            read = true;
-            return new WhitespaceReader2<ValueReader<WhitespaceReader<Nothing>>>(
-                (context) => new ValueReader<WhitespaceReader<Nothing>>(
-                    context.Stream,
-                    context.Buffer,
-                    context.CurrentByteIndex,
-                    context.ValidBytes,
-                    (nestedStream, nestedBuffer, currentByteIndex, nestedValidBytes) => new WhitespaceReader<Nothing>(
-                        nestedStream,
-                        nestedBuffer,
-                        currentByteIndex,
-                        nestedValidBytes,
-                        (_, _, _, _) => new Nothing())));
-        }
-
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> nextFactory)
         {
             nextFactory = WhitespaceReaderFactory;
             return true;
         }
 
-        public static WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
+        public static WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
         {
-            return new WhitespaceReader2<ValueReader<WhitespaceReader2<Nothing>>>(ValueReaderFactory);
+            return new WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>(ValueReaderFactory);
         }
 
-        public static ValueReader<WhitespaceReader2<Nothing>> ValueReaderFactory(ReaderContext context)
+        public static ValueReader2<WhitespaceReader2<Nothing>> ValueReaderFactory(ReaderContext context)
         {
-            return new ValueReader<WhitespaceReader2<Nothing>>(
-                context.Stream,
-                context.Buffer,
-                context.CurrentByteIndex,
-                context.ValidBytes,
+            return new ValueReader2<WhitespaceReader2<Nothing>>(
                 WhitespaceReaderFactory2);
         }
 
@@ -449,6 +427,124 @@
         }
 
         public byte Char { get; }
+    }
+
+    public ref struct ValueReader2<TNextReader> : IReader2<ValueReader2<TNextReader>, ValueToken<TNextReader>>
+        where TNextReader : allows ref struct
+    {
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+
+        public TypeHolder<ValueReader2<TNextReader>, ValueToken<TNextReader>> AsReader
+        {
+            get
+            {
+                return new TypeHolder<ValueReader2<TNextReader>, ValueToken<TNextReader>>(this);
+            }
+        }
+
+        public ValueReader2(
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public Task Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, ValueToken<TNextReader>> nextFactory)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                nextFactory = default!; //// TODO !
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            var nextReaderFactory = this.nextReaderFactory;
+            nextFactory = context => Factory(context, nextReaderFactory);
+            return true;
+        }
+
+        private static ValueToken<TNextReader> Factory(ReaderContext readerContext, Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        {
+            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case 'f':
+                    return new ValueToken<TNextReader>.False(
+                        new FalseReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case 'n':
+                    return new ValueToken<TNextReader>.Null(
+                        new NullReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case 't':
+                    return new ValueToken<TNextReader>.True(
+                        new TrueReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case '{':
+                    return new ValueToken<TNextReader>.Object(
+                        new ObjectReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case '[':
+                    return new ValueToken<TNextReader>.Array(
+                        new ArrayReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    return new ValueToken<TNextReader>.Number(
+                        new NumberReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                case '"':
+                    return new ValueToken<TNextReader>.String(
+                        new StringReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            nextReaderFactory));
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }
+        }
     }
 
     public sealed class ValueReader<TNextReader> : IReader<ValueToken<TNextReader>>
