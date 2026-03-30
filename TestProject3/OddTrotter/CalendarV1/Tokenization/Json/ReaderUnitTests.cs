@@ -615,7 +615,7 @@
             }
         }
 
-        internal static Task<Func<ReaderContext, TNextReader>> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
+        internal static MoveInternal2Task<TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
@@ -637,9 +637,127 @@
                     context).Unwrap();
             }
 
-            return Task.FromResult(nextFactory);
+            return new MoveInternal2Task<TNextReader>(new NewCompleted<TNextReader>(nextFactory));
         }
 
+        internal ref struct MoveInternal2Task<TNextReader>
+            where TNextReader : allows ref struct
+        {
+            private readonly int type;
+
+            private readonly NewCompleted<TNextReader> newCompleted;
+
+            public MoveInternal2Task(NewCompleted<TNextReader> newCompleted)
+            {
+                this.newCompleted = newCompleted;
+
+                this.type = 1;
+            }
+
+            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            {
+                switch (this.type)
+                {
+                    case 1:
+                        return new ConfiguredAwaitable(this.newCompleted.ConfiguredAwait(continueOnCapturedContext));
+                    default:
+                        throw new Exception("TODO");
+                }
+            }
+
+            public ref struct ConfiguredAwaitable
+            {
+                private readonly int type;
+
+                private readonly NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted;
+
+                internal ConfiguredAwaitable(NewCompleted<TNextReader>.ConfiguredAwaitable newCompleted)
+                {
+                    this.newCompleted = newCompleted;
+
+                    this.type = 1;
+                }
+
+                public Awaiter GetAwaiter()
+                {
+                    switch (this.type)
+                    {
+                        case 1:
+                            return new Awaiter(this.newCompleted.GetAwaiter());
+                        default:
+                            throw new Exception("TODO");
+                    }
+                }
+
+                public readonly struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
+                {
+                    private readonly int type;
+
+                    private readonly NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted;
+
+                    internal Awaiter(NewCompleted<TNextReader>.ConfiguredAwaitable.Awaiter newCompleted)
+                    {
+                        this.newCompleted = newCompleted;
+
+                        this.type = 1;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            switch (this.type)
+                            {
+                                case 1:
+                                    return this.newCompleted.IsCompleted;
+                                default:
+                                    throw new Exception("TODO");
+                            }
+                        }
+                    }
+
+                    public Func<ReaderContext, TNextReader> GetResult()
+                    {
+                        switch (this.type)
+                        {
+                            case 1:
+                                return this.newCompleted.GetResult();
+                            default:
+                                throw new Exception("TODO");
+                        }
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        switch (this.type)
+                        {
+                            case 1:
+                                this.newCompleted.OnCompleted(continuation);
+                                break;
+                            default:
+                                throw new Exception("TODO");
+                        }
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        switch (this.type)
+                        {
+                            case 1:
+                                this.newCompleted.UnsafeOnCompleted(continuation);
+                                break;
+                            default:
+                                throw new Exception("TODO");
+                        }
+                    }
+                }
+            }
+
+            public ITaskAwaiter<Func<ReaderContext, TNextReader>> GetAwaiter()
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private static TaskWrapper<T> ToTaskWrapper<T>(this Task<T> task)
         {
