@@ -622,10 +622,11 @@
             var self = currentReader.Self;
             if (!self.TryMove3(context, out var nextFactory))
             {
-                new MoveInternal2ReadTask<TCurrentReader, TNextReader>(self.Read(context), factory, ref context);
+                //// TODO make context a `ref` field
+                return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(self.Read(context), factory, context));
 
                 ////throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
-                return self.Read(context).ContinueWith(
+                /*return self.Read(context).ContinueWith(
                     async (_, context) =>
                     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -636,7 +637,7 @@
 
                         return await self.AsReader.MoveInternal2(factory, readerContext!).ConfigureAwait(false);
                     },
-                    context).Unwrap();
+                    context).Unwrap();*/
             }
 
             return new MoveInternal2Task<TCurrentReader, TNextReader>(new NewCompleted<TNextReader>(nextFactory));
@@ -648,30 +649,40 @@
         {
             private readonly Task readTask;
             private readonly Func<ReaderContext, TCurrentReader> factory;
-            private readonly ref ReaderContext context;
+            private readonly ReaderContext context;
 
             public MoveInternal2ReadTask(
                 Task readTask,
                 Func<ReaderContext, TCurrentReader> factory, 
-                ref ReaderContext context)
+                ReaderContext context)
             {
                 this.readTask = readTask;
                 this.factory = factory;
-                this.context = ref context;
+                this.context = context;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
-                return new ConfiguredAwaitable(this.readTask.ConfigureAwait(continueOnCapturedContext));
+                return new ConfiguredAwaitable(
+                    this.readTask.ConfigureAwait(continueOnCapturedContext),
+                    this.factory,
+                    this.context);
             }
 
             public ref struct ConfiguredAwaitable
             {
                 private readonly ConfiguredTaskAwaitable readTask;
+                private readonly Func<ReaderContext, TCurrentReader> factory;
+                private readonly ReaderContext context;
 
-                public ConfiguredAwaitable(ConfiguredTaskAwaitable readTask)
+                public ConfiguredAwaitable(
+                    ConfiguredTaskAwaitable readTask,
+                    Func<ReaderContext, TCurrentReader> factory,
+                    ReaderContext context)
                 {
                     this.readTask = readTask;
+                    this.factory = factory;
+                    this.context = context;
                 }
 
                 public Awaiter GetAwaiter()
@@ -1617,7 +1628,7 @@
             var reader = new Json2.JsonReader(stream);
 
             var context = reader.Context;
-            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, reader.Context).ConfigureAwait(false);
+            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, context).ConfigureAwait(false);
             var whitespaceReader = whitespaceReaderFactory(context);
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
