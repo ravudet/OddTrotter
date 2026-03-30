@@ -232,7 +232,7 @@ namespace Adapter
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstanceEvents()
                 {
-                    //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance
+                    //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance; or, if `filter(event => event.starttime > {foo})` has been called, just use `{foo}`
                     
                     await this
                         .graphCalendarEventsContext
