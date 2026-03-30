@@ -215,6 +215,7 @@ namespace Adapter
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
+                    //// TODO you are here
                     return await this
                         .graphCalendarEventsContext
                         .Evaluate()
@@ -229,9 +230,21 @@ namespace Adapter
                         .ConfigureAwait(false);
                 }
 
+                private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstanceEvents()
+                {
+                    //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance
+                    
+                    await this
+                        .graphCalendarEventsContext
+                        .Filter(calendarEvent => calendarEvent.Type == "singleInstance")
+                        .Filter(calendarEvent => calendarEvent.Start.DateTime > this.startTime) //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                        .Top(this.pageSize)
+                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
+                        .Evaluate()
+                }
+
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
-                    //// TODO you are here
                     throw new NotImplementedException();
                 }
 
