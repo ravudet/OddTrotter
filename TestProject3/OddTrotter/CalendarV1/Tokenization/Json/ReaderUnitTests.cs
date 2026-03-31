@@ -1608,6 +1608,7 @@
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
             //// TODO you are at ~210
             
+            //// TODO pass the context by reference to the reader? there *are* 4 fields on it, that's a lot to copy
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
