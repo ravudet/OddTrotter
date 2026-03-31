@@ -75,7 +75,20 @@
 
         public string Id { get; }
 
+        public string Type { get; }
+
+        public TimeStructure Start { get; }
+
         //// public IEnumerable<CalendarEvent> Instances { get; }
+
+        public sealed class TimeStructure
+        {
+            private TimeStructure()
+            {
+            }
+
+            public DateTime DateTime { get; }
+        }
     }
 
     internal interface ICalendarEventSource
@@ -232,15 +245,25 @@ namespace Adapter
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstanceEvents()
                 {
-                    //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance; or, if `filter(event => event.starttime > {foo})` has been called, just use `{foo}`
-                    
-                    await this
+                    //// TODO only filter starttime if a filter has been called on us
+                    //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
+
+                    var startTime = DateTime.UtcNow;
+                    var pageSize = 100U; //// TODO configure this
+
+                    return await this
                         .graphCalendarEventsContext
                         .Filter(calendarEvent => calendarEvent.Type == "singleInstance")
-                        .Filter(calendarEvent => calendarEvent.Start.DateTime > this.startTime) //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
-                        .Top(this.pageSize)
-                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
+                        .Filter(calendarEvent => calendarEvent.Start.DateTime > startTime) //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                        .Top(pageSize) //// TODO should this even be part of the chain? should you just preserve if `top` was called on you?
+                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime)
                         .Evaluate()
+                        .ConfigureAwait(false);
+                }
+
+                private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
+                {
+                    //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance; or, if `filter(event => event.starttime > {foo})` has been called, just use `{foo}`
                 }
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
