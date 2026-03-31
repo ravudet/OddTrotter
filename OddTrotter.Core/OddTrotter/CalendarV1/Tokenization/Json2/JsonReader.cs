@@ -479,7 +479,7 @@
             }
 
             var nextReaderFactory = this.nextReaderFactory;
-            nextFactory = () => Factory(readerContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need the closure anymore
+            nextFactory = () => Factory(readerContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need to close the readercontext anymore (and by the way, the reader context being closed is a bug...)
             return true;
         }
 
