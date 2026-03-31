@@ -130,6 +130,17 @@
             readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ConfigureAwait(false);
             readerContext.CurrentByteIndex = 0;
         }
+
+        public static Task Read2(this ReaderContext readerContext)
+        {
+            return readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ContinueWith(
+                _ =>
+                {
+                    //// TODO avoid this closure
+                    readerContext.ValidBytes = _.Result;
+                    readerContext.CurrentByteIndex = 0;
+                });
+        }
     }
 
     public ref struct JsonReader : IReader2<JsonReader, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>>
@@ -294,6 +305,7 @@
 
         public Task Read(ReaderContext readerContext)
         {
+            //// TODO remove this method? callers already have to know about the context, let them call it directly
             return readerContext.Read();
             /*this.Context.ValidBytes = await this.Context.Stream.ReadAsync(this.Context.Buffer, 0, this.Context.Buffer.Length).ConfigureAwait(false);
             this.Context.CurrentByteIndex = 0;*/

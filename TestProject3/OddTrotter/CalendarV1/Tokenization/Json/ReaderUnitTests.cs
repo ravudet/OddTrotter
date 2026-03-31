@@ -623,7 +623,7 @@
             if (!self.TryMove3(context, out var nextFactory))
             {
                 //// TODO make context a `ref` field
-                return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(self.Read(context), factory, context));
+                return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(context.Read(), factory, context));
 
                 ////throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
                 /*return self.Read(context).ContinueWith(
@@ -729,7 +729,7 @@
                             var currentReader = this.factory(this.context);
                             if (!currentReader.TryMove3(this.context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
                             {
-                                this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                this.readTask = this.context.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
                             }
 
@@ -1606,7 +1606,7 @@
 
 
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
-            //// TODO you are at ~210 with whitespacetoken
+            //// TODO you are at ~210
             
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
