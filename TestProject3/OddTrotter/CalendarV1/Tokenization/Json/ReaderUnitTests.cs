@@ -644,7 +644,7 @@
         }
 
         internal ref struct MoveInternal2ReadTask<TCurrentReader, TNextReader>
-            where TCurrentReader : allows ref struct
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
             private readonly Task readTask;
@@ -666,7 +666,8 @@
                 return new ConfiguredAwaitable(
                     this.readTask.ConfigureAwait(continueOnCapturedContext),
                     this.factory,
-                    this.context);
+                    this.context,
+                    continueOnCapturedContext);
             }
 
             public ref struct ConfiguredAwaitable
@@ -674,29 +675,46 @@
                 private readonly ConfiguredTaskAwaitable readTask;
                 private readonly Func<ReaderContext, TCurrentReader> factory;
                 private readonly ReaderContext context;
+                private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ConfiguredTaskAwaitable readTask,
                     Func<ReaderContext, TCurrentReader> factory,
-                    ReaderContext context)
+                    ReaderContext context,
+                    bool continueOnCapturedContext)
                 {
                     this.readTask = readTask;
                     this.factory = factory;
                     this.context = context;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
                 }
 
                 public Awaiter GetAwaiter()
                 {
-                    return new Awaiter(this.readTask.GetAwaiter());
+                    return new Awaiter(
+                        this.readTask.GetAwaiter(),
+                        this.factory,
+                        this.context,
+                        this.continueOnCapturedContext);
                 }
 
                 public struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
                 {
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
+                    private readonly Func<ReaderContext, TCurrentReader> factory;
+                    private readonly ReaderContext context;
+                    private readonly bool continueOnCapturedContext;
 
-                    public Awaiter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask)
+                    public Awaiter(
+                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
+                        Func<ReaderContext, TCurrentReader> factory,
+                        ReaderContext context,
+                        bool continueOnCapturedContext)
                     {
                         this.readTask = readTask;
+                        this.factory = factory;
+                        this.context = context;
+                        this.continueOnCapturedContext = continueOnCapturedContext;
                     }
 
                     public bool IsCompleted
@@ -708,23 +726,32 @@
                                 return false;
                             }
 
+                            var currentReader = this.factory(this.context);
+                            if (!currentReader.TryMove3(this.context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
+                            {
+                                this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                return this.IsCompleted;
+                            }
 
+                            return true;
                         }
                     }
 
                     public Func<ReaderContext, TNextReader> GetResult()
                     {
-                        throw new NotImplementedException();
+                        var currentReader = this.factory(this.context);
+                        currentReader.TryMove3(this.context, out var nextFactory);
+                        return nextFactory;
                     }
 
                     public void OnCompleted(Action continuation)
                     {
-                        throw new NotImplementedException();
+                        this.readTask.OnCompleted(continuation);
                     }
 
                     public void UnsafeOnCompleted(Action continuation)
                     {
-                        throw new NotImplementedException();
+                        this.readTask.UnsafeOnCompleted(continuation);
                     }
                 }
             }
@@ -736,7 +763,7 @@
         }
 
         internal ref struct MoveInternal2Task<TCurrentReader, TNextReader>
-            where TCurrentReader : allows ref struct
+            where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
             private readonly int type;

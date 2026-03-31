@@ -305,7 +305,7 @@
             return read;
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory) //// TODO i think the nextfactory doesn't need an input parameter since move and getvalue both take in the context themselves
         {
             nextFactory = this.nextReaderFactory;
             return true;
