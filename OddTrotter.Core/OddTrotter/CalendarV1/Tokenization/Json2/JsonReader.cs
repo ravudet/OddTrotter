@@ -83,7 +83,7 @@
 
         ////Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
 
-        bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory);
+        bool TryMove3(ReaderContext readerContext, out Func<TNextReader> nextFactory);
     }
 
     public interface IReader2<TSelf, TValue, TNextReader> : IReader2<TSelf, TNextReader>
@@ -156,7 +156,7 @@
                 0);
         }
 
-        public Func<ReaderContext, JsonReader> Factory { get; } = static (readerContext) => new JsonReader(readerContext.Stream);
+        public Func<JsonReader> Factory { get; } = static () => new JsonReader();
 
         public ReaderContext Context { get; }
 
@@ -175,18 +175,18 @@
             ////this.read = true;
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> nextFactory)
         {
             nextFactory = WhitespaceReaderFactory;
             return true;
         }
 
-        public static WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>> WhitespaceReaderFactory(ReaderContext context)
+        public static WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>> WhitespaceReaderFactory()
         {
             return new WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>(ValueReaderFactory);
         }
 
-        public static ValueReader2<WhitespaceReader2<Nothing>> ValueReaderFactory(ReaderContext context)
+        public static ValueReader2<WhitespaceReader2<Nothing>> ValueReaderFactory()
         {
             return new ValueReader2<WhitespaceReader2<Nothing>>(
                 WhitespaceReaderFactory2);
@@ -201,7 +201,7 @@
                 nestedValidBytes,
                 NothingFactory);*/
             return new WhitespaceReader2<Nothing>(
-                static context => new Nothing());
+                static () => new Nothing());
         }
 
         public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
@@ -213,7 +213,7 @@
     public ref struct WhitespaceReader2<TNextReader> : IReader2<WhitespaceReader2<TNextReader>, IEnumerable<WhitespaceToken>, TNextReader>
         where TNextReader : allows ref struct
     {
-        private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+        private readonly Func<TNextReader> nextReaderFactory;
 
         ////private bool finished;
 
@@ -247,7 +247,7 @@
         }
 
         public WhitespaceReader2(
-            Func<ReaderContext, TNextReader> nextReaderFactory)
+            Func<TNextReader> nextReaderFactory)
         {
             this.nextReaderFactory = nextReaderFactory;
 
@@ -317,7 +317,7 @@
             return read;
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, TNextReader> nextFactory) //// TODO i think the nextfactory doesn't need an input parameter since move and getvalue both take in the context themselves
+        public bool TryMove3(ReaderContext readerContext, out Func<TNextReader> nextFactory) //// TODO i think the nextfactory doesn't need an input parameter since move and getvalue both take in the context themselves
         {
             nextFactory = this.nextReaderFactory;
             return true;
@@ -465,7 +465,7 @@
             return readerContext.Read();
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ReaderContext, ValueToken<TNextReader>> nextFactory)
+        public bool TryMove3(ReaderContext readerContext, out Func<ValueToken<TNextReader>> nextFactory)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -479,7 +479,7 @@
             }
 
             var nextReaderFactory = this.nextReaderFactory;
-            nextFactory = context => Factory(context, nextReaderFactory);
+            nextFactory = () => Factory(readerContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need the closure anymore
             return true;
         }
 

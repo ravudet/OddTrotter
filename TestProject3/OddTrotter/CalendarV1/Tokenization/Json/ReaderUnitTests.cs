@@ -615,7 +615,7 @@
             }
         }
 
-        internal static MoveInternal2Task<TCurrentReader, TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<ReaderContext, TCurrentReader> factory, ReaderContext context)
+        internal static MoveInternal2Task<TCurrentReader, TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<TCurrentReader> factory, ReaderContext context)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
@@ -648,12 +648,12 @@
             where TNextReader : allows ref struct
         {
             private readonly Task readTask;
-            private readonly Func<ReaderContext, TCurrentReader> factory;
+            private readonly Func<TCurrentReader> factory;
             private readonly ReaderContext context;
 
             public MoveInternal2ReadTask(
                 Task readTask,
-                Func<ReaderContext, TCurrentReader> factory, 
+                Func<TCurrentReader> factory, 
                 ReaderContext context)
             {
                 this.readTask = readTask;
@@ -673,13 +673,13 @@
             public ref struct ConfiguredAwaitable
             {
                 private readonly ConfiguredTaskAwaitable readTask;
-                private readonly Func<ReaderContext, TCurrentReader> factory;
+                private readonly Func<TCurrentReader> factory;
                 private readonly ReaderContext context;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ConfiguredTaskAwaitable readTask,
-                    Func<ReaderContext, TCurrentReader> factory,
+                    Func<TCurrentReader> factory,
                     ReaderContext context,
                     bool continueOnCapturedContext)
                 {
@@ -698,16 +698,16 @@
                         this.continueOnCapturedContext);
                 }
 
-                public struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
+                public struct Awaiter : ITaskAwaiter<Func<TNextReader>>
                 {
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
-                    private readonly Func<ReaderContext, TCurrentReader> factory;
+                    private readonly Func<TCurrentReader> factory;
                     private readonly ReaderContext context;
                     private readonly bool continueOnCapturedContext;
 
                     public Awaiter(
                         ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
-                        Func<ReaderContext, TCurrentReader> factory,
+                        Func<TCurrentReader> factory,
                         ReaderContext context,
                         bool continueOnCapturedContext)
                     {
@@ -726,7 +726,7 @@
                                 return false;
                             }
 
-                            var currentReader = this.factory(this.context);
+                            var currentReader = this.factory();
                             if (!currentReader.TryMove3(this.context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
                             {
                                 this.readTask = this.context.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
@@ -737,9 +737,9 @@
                         }
                     }
 
-                    public Func<ReaderContext, TNextReader> GetResult()
+                    public Func<TNextReader> GetResult()
                     {
-                        var currentReader = this.factory(this.context);
+                        var currentReader = this.factory();
                         currentReader.TryMove3(this.context, out var nextFactory);
                         return nextFactory;
                     }
@@ -832,7 +832,7 @@
                     }
                 }
 
-                public readonly struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
+                public readonly struct Awaiter : ITaskAwaiter<Func<TNextReader>>
                 {
                     private readonly int type;
 
@@ -869,7 +869,7 @@
                         }
                     }
 
-                    public Func<ReaderContext, TNextReader> GetResult()
+                    public Func<TNextReader> GetResult()
                     {
                         switch (this.type)
                         {
@@ -934,7 +934,7 @@
         internal static MoveInternal3Task<TCurrentReader, TValue, TNextReader> MoveInternal3<TCurrentReader, TValue, TNextReader>(
             this TypeHolder<TCurrentReader, TValue, TNextReader> currentReader,
             ReaderContext readerContext,
-            Func<ReaderContext, TCurrentReader> currentReaderFactory)
+            Func<TCurrentReader> currentReaderFactory)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
             where TValue : allows ref struct
             where TNextReader : allows ref struct
@@ -965,9 +965,9 @@
         public ref struct NewCompleted<TNextReader>
             where TNextReader : allows ref struct
         {
-            private readonly Func<ReaderContext, TNextReader> nextReaderFactory; //// TODO make this `ref`?
+            private readonly Func<TNextReader> nextReaderFactory; //// TODO make this `ref`?
 
-            public NewCompleted(Func<ReaderContext, TNextReader> nextReaderFactory)
+            public NewCompleted(Func<TNextReader> nextReaderFactory)
             {
                 this.nextReaderFactory = nextReaderFactory;
             }
@@ -980,11 +980,11 @@
 
             public ref struct ConfiguredAwaitable
             {
-                private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+                private readonly Func<TNextReader> nextReaderFactory;
                 private readonly ConfiguredValueTaskAwaitable configuredValueTaskAwaitable;
 
                 public ConfiguredAwaitable(
-                    Func<ReaderContext, TNextReader> nextReaderFactory,
+                    Func<TNextReader> nextReaderFactory,
                     ConfiguredValueTaskAwaitable configuredValueTaskAwaitable)
                 {
                     this.nextReaderFactory = nextReaderFactory;
@@ -996,13 +996,13 @@
                     return new Awaiter(this.nextReaderFactory, this.configuredValueTaskAwaitable.GetAwaiter());
                 }
 
-                public readonly struct Awaiter : IAwaiter<Func<ReaderContext, TNextReader>>
+                public readonly struct Awaiter : IAwaiter<Func<TNextReader>>
                 {
-                    private readonly Func<ReaderContext, TNextReader> nextReaderFactory;
+                    private readonly Func<TNextReader> nextReaderFactory;
                     private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter configuredValueTaskAwaitable;
 
                     public Awaiter(
-                        Func<ReaderContext, TNextReader> nextReaderFactory,
+                        Func<TNextReader> nextReaderFactory,
                         ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter configuredValueTaskAwaitable)
                     {
                         this.nextReaderFactory = nextReaderFactory;
@@ -1018,7 +1018,7 @@
                         }
                     }
 
-                    public Func<ReaderContext, TNextReader> GetResult()
+                    public Func<TNextReader> GetResult()
                     {
                         return this.nextReaderFactory;
                     }
@@ -1087,7 +1087,7 @@
                     }
                 }
 
-                public readonly struct Awaiter : ITaskAwaiter<Func<ReaderContext, TNextReader>>
+                public readonly struct Awaiter : ITaskAwaiter<Func<TNextReader>>
                 {
                     private readonly int type;
 
@@ -1114,7 +1114,7 @@
                         }
                     }
 
-                    public Func<ReaderContext, TNextReader> GetResult()
+                    public Func<TNextReader> GetResult()
                     {
                         switch (this.type)
                         {
@@ -1485,7 +1485,7 @@
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
-                    private Func<ReaderContext, TNextReader>? nextReaderFactory;
+                    private Func<TNextReader>? nextReaderFactory;
 
                     public Awaiter(
                         ReaderContext context,
@@ -1528,7 +1528,7 @@
 
                     public TNextReader GetResult()
                     {
-                        return this.nextReaderFactory!(this.context);
+                        return this.nextReaderFactory!();
                     }
 
                     public void OnCompleted(Action continuation)
@@ -1657,12 +1657,12 @@
 
             var context = reader.Context;
             var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, context).ConfigureAwait(false);
-            var whitespaceReader = whitespaceReaderFactory(context);
+            var whitespaceReader = whitespaceReaderFactory();
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
-            var valueReader = valueReaderFactory(context);
+            var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, context).ConfigureAwait(false);
-            var valueToken = valueTokenFactory(context);
+            var valueToken = valueTokenFactory();
 
             if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
             {
@@ -2461,14 +2461,14 @@
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
             var nothingFactory = await whitespace38.AsReader.MoveInternal3(context, Foo).ConfigureAwait(false);
-            var nothing = nothingFactory(context);
+            var nothing = nothingFactory();
 
             Assert.AreEqual(new Nothing(), nothing);
 
             Assert.AreEqual(stream.Length, stream.Position);
         }
 
-        static WhitespaceReader2<Nothing> Foo(ReaderContext context)
+        static WhitespaceReader2<Nothing> Foo()
         {
             throw new Exception("TODO");
         }
