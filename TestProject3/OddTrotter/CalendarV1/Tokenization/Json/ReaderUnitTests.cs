@@ -615,7 +615,7 @@
             }
         }
 
-        internal static MoveInternal2Task<TCurrentReader, TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<TCurrentReader> factory, ReaderContext context)
+        internal static MoveInternal2Task<TCurrentReader, TNextReader> MoveInternal2<TCurrentReader, TNextReader>(this TypeHolder<TCurrentReader, TNextReader> currentReader, Func<TCurrentReader> factory, ref ReaderContext context)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
@@ -623,7 +623,7 @@
             if (!self.TryMove3(context, out var nextFactory))
             {
                 //// TODO make context a `ref` field
-                return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(context.Read(), factory, context));
+                return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(context.Read(), factory, ref context));
 
                 ////throw new Exception("TODO check that moveinternal2 logic works, then improve performance as much as possible");
                 /*return self.Read(context).ContinueWith(
@@ -649,16 +649,16 @@
         {
             private readonly Task readTask;
             private readonly Func<TCurrentReader> factory;
-            private readonly ReaderContext context;
+            private readonly ref ReaderContext context;
 
             public MoveInternal2ReadTask(
                 Task readTask,
                 Func<TCurrentReader> factory, 
-                ReaderContext context)
+                ref ReaderContext context)
             {
                 this.readTask = readTask;
                 this.factory = factory;
-                this.context = context;
+                this.context = ref context;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
@@ -666,7 +666,7 @@
                 return new ConfiguredAwaitable(
                     this.readTask.ConfigureAwait(continueOnCapturedContext),
                     this.factory,
-                    this.context,
+                    ref this.context,
                     continueOnCapturedContext);
             }
 
@@ -674,18 +674,18 @@
             {
                 private readonly ConfiguredTaskAwaitable readTask;
                 private readonly Func<TCurrentReader> factory;
-                private readonly ReaderContext context;
+                private readonly ref ReaderContext context;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ConfiguredTaskAwaitable readTask,
                     Func<TCurrentReader> factory,
-                    ReaderContext context,
+                    ref ReaderContext context,
                     bool continueOnCapturedContext)
                 {
                     this.readTask = readTask;
                     this.factory = factory;
-                    this.context = context;
+                    this.context = ref context;
                     this.continueOnCapturedContext = continueOnCapturedContext;
                 }
 
@@ -694,7 +694,7 @@
                     return new Awaiter(
                         this.readTask.GetAwaiter(),
                         this.factory,
-                        this.context,
+                        ref this.context,
                         this.continueOnCapturedContext);
                 }
 
@@ -708,7 +708,7 @@
                     public Awaiter(
                         ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
                         Func<TCurrentReader> factory,
-                        ReaderContext context,
+                        ref ReaderContext context,
                         bool continueOnCapturedContext)
                     {
                         this.readTask = readTask;
@@ -1657,12 +1657,12 @@
             var reader = new Json2.JsonReader(stream);
 
             var context = reader.Context;
-            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, context).ConfigureAwait(false);
+            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
             var whitespaceReader = whitespaceReaderFactory();
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
             var valueReader = valueReaderFactory();
-            var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, context).ConfigureAwait(false);
+            var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
 
             if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
