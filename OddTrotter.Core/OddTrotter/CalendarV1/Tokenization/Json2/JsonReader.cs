@@ -83,7 +83,7 @@
 
         ////Func<ReaderContext, TSelf> Factory { get; } //// TODO you should remove this once all of the readers are converted to `ref struct`; it should never need to be called, the factory that was originally used to instantiate the `ireader2` should be re-used instead (the one that the caller got from `trymove3`)
 
-        bool TryMove3(ReaderContext readerContext, out Func<TNextReader> nextFactory);
+        bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory);
     }
 
     public interface IReader2<TSelf, TValue, TNextReader> : IReader2<TSelf, TNextReader>
@@ -175,7 +175,7 @@
             ////this.read = true;
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> nextFactory)
+        public bool TryMove3(ref ReaderContext readerContext, out Func<WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> nextFactory)
         {
             nextFactory = WhitespaceReaderFactory;
             return true;
@@ -317,7 +317,7 @@
             return read;
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<TNextReader> nextFactory) //// TODO i think the nextfactory doesn't need an input parameter since move and getvalue both take in the context themselves
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory) //// TODO i think the nextfactory doesn't need an input parameter since move and getvalue both take in the context themselves
         {
             nextFactory = this.nextReaderFactory;
             return true;
@@ -465,7 +465,7 @@
             return readerContext.Read();
         }
 
-        public bool TryMove3(ReaderContext readerContext, out Func<ValueToken<TNextReader>> nextFactory)
+        public bool TryMove3(ref ReaderContext readerContext, out Func<ValueToken<TNextReader>> nextFactory)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -478,8 +478,9 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            var localReaderContext = readerContext;
             var nextReaderFactory = this.nextReaderFactory;
-            nextFactory = () => Factory(readerContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need to close the readercontext anymore (and by the way, the reader context being closed is a bug...)
+            nextFactory = () => Factory(localReaderContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need to close the readercontext anymore (and by the way, the reader context being closed is a bug...)
             return true;
         }
 

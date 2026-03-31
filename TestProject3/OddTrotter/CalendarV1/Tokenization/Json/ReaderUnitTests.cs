@@ -698,11 +698,13 @@
                         this.continueOnCapturedContext);
                 }
 
-                public struct Awaiter : ITaskAwaiter<Func<TNextReader>>
+                public unsafe struct Awaiter : ITaskAwaiter<Func<TNextReader>>
                 {
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly Func<TCurrentReader> factory;
-                    private readonly ReaderContext context;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly ReaderContext* context;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private readonly bool continueOnCapturedContext;
 
                     public Awaiter(
@@ -713,7 +715,9 @@
                     {
                         this.readTask = readTask;
                         this.factory = factory;
-                        this.context = context;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.context = (ReaderContext*)Unsafe.AsPointer(ref context);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                         this.continueOnCapturedContext = continueOnCapturedContext;
                     }
 
@@ -726,10 +730,11 @@
                                 return false;
                             }
 
+                            var context = Unsafe.AsRef<ReaderContext>(this.context);
                             var currentReader = this.factory();
-                            if (!currentReader.TryMove3(this.context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
+                            if (!currentReader.TryMove3(context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
                             {
-                                this.readTask = this.context.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
+                                this.readTask = context.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
                             }
 
@@ -739,8 +744,9 @@
 
                     public Func<TNextReader> GetResult()
                     {
+                        var context = Unsafe.AsRef<ReaderContext>(this.context);
                         var currentReader = this.factory();
-                        currentReader.TryMove3(this.context, out var nextFactory);
+                        currentReader.TryMove3(context, out var nextFactory);
                         return nextFactory;
                     }
 
