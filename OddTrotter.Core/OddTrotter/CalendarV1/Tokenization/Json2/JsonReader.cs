@@ -684,6 +684,15 @@
         {
         }
 
+        public abstract TResult Apply<TResult>(
+            Func<FalseReader<TNextReader>, TResult> @false,
+            Func<NullReader<TNextReader>, TResult> @null,
+            Func<TrueReader<TNextReader>, TResult> @true,
+            Func<ObjectReader<TNextReader>, TResult> @object,
+            Func<ArrayReader<TNextReader>, TResult> array,
+            Func<NumberReader<TNextReader>, TResult> number,
+            Func<StringReader<TNextReader>, TResult> @string);
+
         public sealed class False : ValueToken<TNextReader>
         {
             public False(FalseReader<TNextReader> reader)
@@ -692,6 +701,11 @@
             }
 
             public FalseReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return @false(this.Reader);
+            }
         }
 
         public sealed class Null : ValueToken<TNextReader>
@@ -702,6 +716,11 @@
             }
 
             public NullReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return @null(this.Reader);
+            }
         }
 
         public sealed class True : ValueToken<TNextReader>
@@ -712,6 +731,11 @@
             }
 
             public TrueReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return @true(this.Reader);
+            }
         }
 
         public sealed class Object : ValueToken<TNextReader>
@@ -722,6 +746,11 @@
             }
 
             public ObjectReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return @object(this.Reader);
+            }
         }
 
         public sealed class Array : ValueToken<TNextReader>
@@ -732,6 +761,11 @@
             }
 
             public ArrayReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return array(this.Reader);
+            }
         }
 
         public sealed class Number : ValueToken<TNextReader>
@@ -742,6 +776,11 @@
             }
 
             public NumberReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return number(this.Reader);
+            }
         }
 
         public sealed class String : ValueToken<TNextReader>
@@ -752,6 +791,11 @@
             }
 
             public StringReader<TNextReader> Reader { get; }
+
+            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
+            {
+                return @string(this.Reader);
+            }
         }
     }
 
