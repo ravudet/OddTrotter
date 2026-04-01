@@ -1314,7 +1314,7 @@
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
                     private bool moved;
-                    private ITaskAwaiter<TNextReader>? valueTask;
+                    private ITaskAwaiter<TNextReader>? valueTask = null;
 
                     public Awaiter(
                         ReaderContext context,
@@ -1491,7 +1491,7 @@
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
-                    private Func<TNextReader>? nextReaderFactory;
+                    private Func<TNextReader>? nextReaderFactory = null;
 
                     public Awaiter(
                         ReaderContext context,
@@ -2467,7 +2467,7 @@
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
-            var nothingFactory = await whitespace38.AsReader.MoveInternal3(context, Foo).ConfigureAwait(false);
+            var nothingFactory = await whitespace38.AsReader.MoveInternal3(ref context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory();
 
             Assert.AreEqual(new Nothing(), nothing);
