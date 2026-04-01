@@ -703,7 +703,7 @@
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly Func<TCurrentReader> factory;
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private readonly ReaderContext* context;
+                    private readonly ReaderContext* context; //// TODO it's "mostly" ok for this to be a pointer because, for the caller to make use of the resulting `tnextreader`, the caller must maintain a reference to the `readercontext`; *however*, if that caller, let's say A, returns the task up the call stack to `B`, and `B` just wants to wait for the work to be completed, but not use the `tnextreader`, then the garbage collector could collect e.g. the stream in `readercontext` which would result in the task being defunct (not sure what the behavior would be, actually)
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private readonly bool continueOnCapturedContext;
 
