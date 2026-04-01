@@ -2421,12 +2421,21 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.True nestedTrue))
+                if (!nestedValueToken
+                    .Apply(
+                        static @false => default,
+                        static @null => default,
+                        static @true => RefNullable.Create(@true),
+                        static @object => default,
+                        static array => default,
+                        static number => default,
+                        static @string => default)
+                    .TryGetValue(out var nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedSubsequentMembersReader = await nestedTrue.MoveInternal1().ConfigureAwait(false);
                 var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
                 if (!read)
                 {
