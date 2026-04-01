@@ -620,7 +620,7 @@
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (!self.TryMove3(context, out var nextFactory))
+            if (!self.TryMove3(ref context, out var nextFactory))
             {
                 //// TODO make context a `ref` field
                 return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(context.Read(), factory, ref context));
@@ -732,7 +732,7 @@
 
                             var context = Unsafe.AsRef<ReaderContext>(this.context);
                             var currentReader = this.factory();
-                            if (!currentReader.TryMove3(context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
+                            if (!currentReader.TryMove3(ref context, out _)) //// TODO this assumes `trymove3` is idempotent, which is probably not good
                             {
                                 this.readTask = context.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
@@ -746,7 +746,7 @@
                     {
                         var context = Unsafe.AsRef<ReaderContext>(this.context);
                         var currentReader = this.factory();
-                        currentReader.TryMove3(context, out var nextFactory);
+                        currentReader.TryMove3(ref context, out var nextFactory);
                         return nextFactory;
                     }
 
@@ -939,7 +939,7 @@
 
         internal static MoveInternal3Task<TCurrentReader, TValue, TNextReader> MoveInternal3<TCurrentReader, TValue, TNextReader>(
             this TypeHolder<TCurrentReader, TValue, TNextReader> currentReader,
-            ReaderContext readerContext,
+            ref ReaderContext readerContext,
             Func<TCurrentReader> currentReaderFactory)
             where TCurrentReader : Json2.IReader2<TCurrentReader, TValue, TNextReader>, allows ref struct
             where TValue : allows ref struct
@@ -948,7 +948,7 @@
             var self = currentReader.Self;
             if (self.TryGetValue3(readerContext, out _))
             {
-                if (self.TryMove3(readerContext, out var nextFactory))
+                if (self.TryMove3(ref readerContext, out var nextFactory))
                 {
                     return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new NewCompleted<TNextReader>(nextFactory));
                     ////return new MoveInternal3Task<TCurrentReader, TValue, TNextReader>(new MoveInternal3TaskCompleted<TValue, TNextReader>(self.Context, nextFactory));
@@ -1357,7 +1357,7 @@
                             if (this.moved)
                             {
                                 var currentReader = this.currentReaderFactory(this.context);
-                                Task readTask;
+                                /*Task readTask;
                                 if (currentReader.TryMove3(this.context, out _))
                                 {
                                     readTask = Task.CompletedTask;
@@ -1372,7 +1372,7 @@
                                     this.currentReaderFactory,
                                     readTask)
                                     .ConfigureAwait(this.continueOnCapturedContext)
-                                    .GetAwaiter();
+                                    .GetAwaiter();*/
 
                                 return this.IsCompleted;
                             }
@@ -1520,11 +1520,11 @@
                             }
 
                             var currentReader = this.currentReaderFactory(this.context);
-                            if (currentReader.TryMove3(this.context, out this.nextReaderFactory))
+                            /*if (currentReader.TryMove3(this.context, out this.nextReaderFactory))
                             {
                                 return true;
                             }
-                            else
+                            else*/
                             {
                                 this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
@@ -1666,7 +1666,7 @@
             var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
             var whitespaceReader = whitespaceReaderFactory();
 
-            var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(context, whitespaceReaderFactory).ConfigureAwait(false);
+            var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
             var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
