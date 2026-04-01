@@ -2463,6 +2463,19 @@
                 //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
                 var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
+                if (!nestedvalueToken3
+                    .Apply(
+                        static @false => default,
+                        static @null => default,
+                        static @true => RefNullable.Create(@true),
+                        static @object => default,
+                        static array => default,
+                        static number => default,
+                        static @string => default)
+                    .TryGetValue(out var nestedTrue))
+                {
+                    throw new Exception("TODO");
+                }
                 if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.False nestedfalse))
                 {
                     throw new Exception("TODO");
