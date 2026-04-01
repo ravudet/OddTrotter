@@ -2235,12 +2235,21 @@
             //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
             var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
             var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken8 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Object object3))
+            if (!valueToken8
+                .Apply(
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => RefNullable.Create(@object),
+                    static array => default,
+                    static number => default,
+                    static @string => default)
+                .TryGetValue(out var object3))
             {
                 throw new Exception("TODO");
             }
 
-            var objectStart3 = await object3.Reader.MoveInternal1().ConfigureAwait(false);
+            var objectStart3 = await object3.MoveInternal1().ConfigureAwait(false);
             var whitespace24 = await objectStart3.MoveInternal1().ConfigureAwait(false);
             //var members3 = await whitespace24.AsReader.MoveInternal3(whitespace24.Factory).ConfigureAwait(false);
             var members3 = await whitespace24.MoveInternal1().ConfigureAwait(false);
@@ -2282,12 +2291,21 @@
             //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
             var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
             var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken9 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Array array))
+            if (!valueToken9
+                .Apply(
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => default,
+                    static array => RefNullable.Create(array),
+                    static number => default,
+                    static @string => default)
+                .TryGetValue(out var array))
             {
                 throw new Exception("TODO");
             }
 
-            var arrayStart = await array.Reader.MoveInternal1().ConfigureAwait(false);
+            var arrayStart = await array.MoveInternal1().ConfigureAwait(false);
             var whitespace29 = await arrayStart.MoveInternal1().ConfigureAwait(false);
             //var arrayElements = await whitespace29.AsReader.MoveInternal3(whitespace29.Factory).ConfigureAwait(false);
             var arrayElements = await whitespace29.MoveInternal1().ConfigureAwait(false);
@@ -2330,12 +2348,21 @@
             //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
             var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
             var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken10 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Array array2))
+            if (!valueToken10
+                .Apply(
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => default,
+                    static array => RefNullable.Create(array),
+                    static number => default,
+                    static @string => default)
+                .TryGetValue(out var array2))
             {
                 throw new Exception("TODO");
             }
 
-            var arrayStart2 = await array2.Reader.MoveInternal1().ConfigureAwait(false);
+            var arrayStart2 = await array2.MoveInternal1().ConfigureAwait(false);
             var whitespace34 = await arrayStart2.MoveInternal1().ConfigureAwait(false);
             //var arrayElements2 = await whitespace34.AsReader.MoveInternal3(whitespace34.Factory).ConfigureAwait(false);
             var arrayElements2 = await whitespace34.MoveInternal1().ConfigureAwait(false);
@@ -2349,12 +2376,21 @@
             var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
             var value11 = await arrayElement.MoveInternal1().ConfigureAwait(false);
             var valueToken11 = await value11.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken11 is ValueToken<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>.Object object4))
+            if (!valueToken11
+                .Apply(
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => RefNullable.Create(@object),
+                    static array => default,
+                    static number => default,
+                    static @string => default)
+                .TryGetValue(out var object4))
             {
                 throw new Exception("TODO");
             }
 
-            var objectStart4 = await object4.Reader.MoveInternal1().ConfigureAwait(false);
+            var objectStart4 = await object4.MoveInternal1().ConfigureAwait(false);
             var whitespace35 = await objectStart4.MoveInternal1().ConfigureAwait(false);
             //var members4 = await whitespace35.AsReader.MoveInternal3(whitespace35.Factory).ConfigureAwait(false);
             var members4 = await whitespace35.MoveInternal1().ConfigureAwait(false);
