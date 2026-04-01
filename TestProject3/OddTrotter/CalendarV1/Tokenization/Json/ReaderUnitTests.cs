@@ -1948,12 +1948,21 @@
             //var value7 = await whitespace19.AsReader.MoveInternal3(whitespace19.Factory).ConfigureAwait(false);
             var value7 = await whitespace19.MoveInternal1().ConfigureAwait(false);
             var valueToken7 = await value7.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken7 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Object @object2))
+            if (!valueToken7
+                .Apply(
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => RefNullable.Create(@object),
+                    static array => default,
+                    static number => default,
+                    static @string => default)
+                .TryGetValue(out var object2))
             {
                 throw new Exception("TODO");
             }
 
-            var objectStart2 = await object2.Reader.MoveInternal1().ConfigureAwait(false);
+            var objectStart2 = await object2.MoveInternal1().ConfigureAwait(false);
             var whitespace20 = await objectStart2.MoveInternal1().ConfigureAwait(false);
             //var nestedMembers = await whitespace20.AsReader.MoveInternal3(whitespace20.Factory).ConfigureAwait(false);
             var nestedMembers = await whitespace20.MoveInternal1().ConfigureAwait(false);
@@ -1983,12 +1992,21 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedValueToken is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>.True nestedTrue))
+                if (!nestedValueToken
+                    .Apply(
+                        static @false => default,
+                        static @null => default,
+                        static @true => RefNullable.Create(@true),
+                        static @object => default,
+                        static array => default,
+                        static number => default,
+                        static @string => default)
+                    .TryGetValue(out var nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedSubsequentMembersReader = await nestedTrue.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedSubsequentMembersReader = await nestedTrue.MoveInternal1().ConfigureAwait(false);
                 var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
                 if (!read)
                 {
