@@ -186,6 +186,8 @@ namespace Adapter
     using Fx.Either;
     using Fx.QueryContext;
 
+    using OddTrotter.Graph.CalendarEventsContext;
+
     using Graph = OddTrotter.Graph.CalendarEventsSource.V2;
     using OddTrotter = OddTrotter.NonGraph.CalendarEventsSource;
 
@@ -243,10 +245,11 @@ namespace Adapter
                     //// TODO you are here
 
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
+                    var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
-                    return await this
-                        .graphCalendarEventsContext
-                        .Evaluate()
+                    var combined = instanceEvents.Concat(seriesEvents, _ => _, _ => _, (_, _) => throw new Exception("tODO"));
+
+                    return combined
                         .Select(
                             graphCalendarEventOrTranslationError => graphCalendarEventOrTranslationError
                                 .Select(
@@ -254,8 +257,7 @@ namespace Adapter
                                     translationError => new OddTrotter.CalendarEventTranslationError() //// TODO
                                     ))
                         .SelectError(
-                            pagingError => new OddTrotter.PagingError())
-                        .ConfigureAwait(false);
+                            pagingError => new OddTrotter.PagingError());
                 }
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstanceEvents()
@@ -289,7 +291,6 @@ namespace Adapter
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
-                    throw new NotImplementedException();
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
@@ -327,6 +328,15 @@ namespace Adapter
             {
                 throw new NotImplementedException();
             }
+        }
+
+        internal static Expression<Func<CalendarEvent, bool>> StartTimeGreaterThan(DateTime dateTime)
+        {
+            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(StartTimeGreaterThan) + dateTime.Ticks.ToString());
+            foo.Update(foo.Body, new[] { ticks });
+
+            return foo;
         }
     }
 
