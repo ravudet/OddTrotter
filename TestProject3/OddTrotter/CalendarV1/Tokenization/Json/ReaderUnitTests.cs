@@ -1906,12 +1906,21 @@
             //var value6 = await whitespace16.AsReader.MoveInternal3(whitespace16.Factory).ConfigureAwait(false);
             var value6 = await whitespace16.MoveInternal1().ConfigureAwait(false);
             var valueToken6 = await value6.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.Null @null))
+            if (!valueToken6
+                .Apply(
+                    @false => default,
+                    @null => RefNullable.Create(@null),
+                    @true => default,
+                    @object => default,
+                    array => default,
+                    number => default,
+                    @string => default)
+                .TryGetValue(out var @null))
             {
                 throw new Exception("TODO");
             }
 
-            var subsequentMembers5 = await @null.Reader.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembers5 = await @null.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken5 = subsequentMembers5.TryMove(out read);
             if (!read)
             {
