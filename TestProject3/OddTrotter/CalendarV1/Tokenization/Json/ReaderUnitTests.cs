@@ -1678,13 +1678,21 @@
             var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
-
-            if (!(valueToken is ValueToken<WhitespaceReader2<Nothing>>.Object @object))
+            if (!valueToken
+                .Apply(
+                    @false => default,
+                    @null => default,
+                    @true => default,
+                    @object => RefNullable.Create(@object),
+                    array => default,
+                    number => default,
+                    @string => default)
+                .TryGetValue(out var @object))
             {
                 throw new Exception("TODO");
             }
 
-            var objectReader = await @object.Reader.MoveInternal1().ConfigureAwait(false);
+            var objectReader = await @object.MoveInternal1().ConfigureAwait(false);
             var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
             //var membersReader = await whitespaceReader2.AsReader.MoveInternal3(whitespaceReader2.Factory).ConfigureAwait(false);
             var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
@@ -1713,12 +1721,21 @@
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
-            if (!(valueToken2 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>.True @true))
+            if (!valueToken2
+                .Apply(
+                    @false => default,
+                    @null => default,
+                    @true => RefNullable.Create(@true),
+                    @object => default,
+                    array => default,
+                    number => default,
+                    @string => default)
+                .TryGetValue(out var @true))
             {
                 throw new Exception("TODO");
             }
 
-            var subsequentMembersReader = await @true.Reader.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
             if (!read)
             {

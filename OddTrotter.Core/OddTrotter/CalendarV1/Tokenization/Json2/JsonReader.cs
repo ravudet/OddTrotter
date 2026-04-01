@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection.Metadata.Ecma335;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Xml.Linq;
@@ -691,7 +692,8 @@
             Func<ObjectReader<TNextReader>, TResult> @object,
             Func<ArrayReader<TNextReader>, TResult> array,
             Func<NumberReader<TNextReader>, TResult> number,
-            Func<StringReader<TNextReader>, TResult> @string);
+            Func<StringReader<TNextReader>, TResult> @string)
+            where TResult : allows ref struct;
 
         public sealed class False : ValueToken<TNextReader>
         {
@@ -1189,6 +1191,15 @@
                     this.currentByteIndex,
                     this.validBytes,
                     this.nextReaderFactory));
+        }
+    }
+
+    public static class RefNullable
+    {
+        public static RefNullable<T> Create<T>(T value)
+            where T : allows ref struct
+        {
+            return new RefNullable<T>(value);
         }
     }
 
