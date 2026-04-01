@@ -221,14 +221,29 @@ namespace Adapter
             {
                 private readonly Graph.ICalendarEventsContext graphCalendarEventsContext;
 
+                private readonly DateTime? startTime;
+
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
+                    : this(
+                          graphCalendarEventsContext,
+                          null)
+                {
+                }
+
+                public CalendarEventsContext(
+                    Graph.ICalendarEventsContext graphCalendarEventsContext,
+                    DateTime? startTime)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
+                    this.startTime = startTime;
                 }
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
                     //// TODO you are here
+
+                    var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
+
                     return await this
                         .graphCalendarEventsContext
                         .Evaluate()
@@ -248,17 +263,23 @@ namespace Adapter
                     //// TODO only filter starttime if a filter has been called on us
                     //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
 
-                    var startTime = DateTime.UtcNow;
                     var pageSize = 100U; //// TODO configure this
 
-                    return await this
+                    var calendarEvents = this
                         .graphCalendarEventsContext
-                        .Filter(calendarEvent => calendarEvent.Type == "singleInstance")
-                        .Filter(calendarEvent => calendarEvent.Start.DateTime > startTime) //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                        .Filter(calendarEvent => calendarEvent.Type == "singleInstance");
+
+                    if (this.startTime != null)
+                    {
+                        calendarEvents = calendarEvents
+                            .Filter(calendarEvent => calendarEvent.Start.DateTime > this.startTime); //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                    }
+
+                    calendarEvents = calendarEvents
                         .Top(pageSize) //// TODO should this even be part of the chain? should you just preserve if `top` was called on you?
-                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime)
-                        .Evaluate()
-                        .ConfigureAwait(false);
+                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
+
+                    return await calendarEvents.Evaluate().ConfigureAwait(false);
                 }
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
