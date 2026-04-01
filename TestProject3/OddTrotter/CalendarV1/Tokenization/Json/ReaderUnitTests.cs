@@ -1680,13 +1680,13 @@
             var valueToken = valueTokenFactory();
             if (!valueToken
                 .Apply(
-                    @false => default,
-                    @null => default,
-                    @true => default,
-                    @object => RefNullable.Create(@object),
-                    array => default,
-                    number => default,
-                    @string => default)
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => RefNullable.Create(@object),
+                    static array => default,
+                    static number => default,
+                    static @string => default)
                 .TryGetValue(out var @object))
             {
                 throw new Exception("TODO");
@@ -1723,13 +1723,13 @@
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
             if (!valueToken2
                 .Apply(
-                    @false => default,
-                    @null => default,
-                    @true => RefNullable.Create(@true),
-                    @object => default,
-                    array => default,
-                    number => default,
-                    @string => default)
+                    static @false => default,
+                    static @null => default,
+                    static @true => RefNullable.Create(@true),
+                    static @object => default,
+                    static array => default,
+                    static number => default,
+                    static @string => default)
                 .TryGetValue(out var @true))
             {
                 throw new Exception("TODO");
@@ -1765,13 +1765,13 @@
             var valueToken3 = await value3.MoveInternal1().ConfigureAwait(false);
             if (!valueToken3
                 .Apply(
-                    @false => RefNullable.Create(@false),
-                    @null => default,
-                    @true => default,
-                    @object => default,
-                    array => default,
-                    number => default,
-                    @string => default)
+                    static @false => RefNullable.Create(@false),
+                    static @null => default,
+                    static @true => default,
+                    static @object => default,
+                    static array => default,
+                    static number => default,
+                    static @string => default)
                 .TryGetValue(out var @false))
             {
                 throw new Exception("TODO");
@@ -1807,13 +1807,13 @@
             var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
             if (!valueToken4
                 .Apply(
-                    @false => default,
-                    @null => default,
-                    @true => default,
-                    @object => default,
-                    array => default,
-                    number => RefNullable.Create(number),
-                    @string => default)
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => default,
+                    static array => default,
+                    static number => RefNullable.Create(number),
+                    static @string => default)
                 .TryGetValue(out var number))
             {
                 throw new Exception("TODO");
@@ -1862,13 +1862,13 @@
             var valueToken5 = await value5.MoveInternal1().ConfigureAwait(false);
             if (!valueToken5
                 .Apply(
-                    @false => default,
-                    @null => default,
-                    @true => default,
-                    @object => default,
-                    array => default,
-                    number => default,
-                    @string => RefNullable.Create(@string))
+                    static @false => default,
+                    static @null => default,
+                    static @true => default,
+                    static @object => default,
+                    static array => default,
+                    static number => default,
+                    static @string => RefNullable.Create(@string))
                 .TryGetValue(out var @string5))
             {
                 throw new Exception("TODO");
@@ -1908,13 +1908,13 @@
             var valueToken6 = await value6.MoveInternal1().ConfigureAwait(false);
             if (!valueToken6
                 .Apply(
-                    @false => default,
-                    @null => RefNullable.Create(@null),
-                    @true => default,
-                    @object => default,
-                    array => default,
-                    number => default,
-                    @string => default)
+                    static @false => default,
+                    static @null => RefNullable.Create(@null),
+                    static @true => default,
+                    static @object => default,
+                    static array => default,
+                    static number => default,
+                    static @string => default)
                 .TryGetValue(out var @null))
             {
                 throw new Exception("TODO");
