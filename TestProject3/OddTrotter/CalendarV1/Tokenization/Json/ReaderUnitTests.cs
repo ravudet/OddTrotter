@@ -703,7 +703,7 @@
                     private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
                     private readonly Func<TCurrentReader> factory;
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private readonly ReaderContext* context; //// TODO it's "mostly" ok for this to be a pointer because, for the caller to make use of the resulting `tnextreader`, the caller must maintain a reference to the `readercontext`; *however*, if that caller, let's say A, returns the task up the call stack to `B`, and `B` just wants to wait for the work to be completed, but not use the `tnextreader`, then the garbage collector could collect e.g. the stream in `readercontext` which would result in the task being defunct (not sure what the behavior would be, actually)
+                    private readonly ReaderContext* context; //// TODO it's "mostly" ok for this to be a pointer because, for the caller to make use of the resulting `tnextreader`, the caller must maintain a reference to the `readercontext`; *however*, if that caller, let's say A, returns the task up the call stack to `B`, and `B` just wants to wait for the work to be completed, but not use the `tnextreader`, then the garbage collector could collect e.g. the stream in `readercontext` which would result in the task being defunct (not sure what the behavior would be, actually); AND THEN NOTE: that this actually isn't even possible to do because `A` cannot return the task to `B` because the compiler recognizes that the `readercontext` was passed by `ref` and therefore the task may have references to something that will leave scope; that's kind of beautiful actually
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private readonly bool continueOnCapturedContext;
 
@@ -1614,7 +1614,6 @@
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
             //// TODO you are at ~209
             
-            //// TODO pass the context by reference to the reader? there *are* 4 fields on it, that's a lot to copy
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?
@@ -1656,6 +1655,15 @@
                 Console.WriteLine(timer.ElapsedTicks);
             }
         }
+
+        /*public static TestExtensions.MoveInternal2Task<JsonReader, WhitespaceReader2<ValueReader2<WhitespaceReader2<Nothing>>>> DoWork2(Stream stream)
+        {
+            stream.Position = 0;
+            var reader = new Json2.JsonReader(stream);
+
+            var context = reader.Context;
+            return reader.AsReader.MoveInternal2(reader.Factory, ref context);
+        }*/
 
         public static async Task DoWork(Stream stream)
         {
