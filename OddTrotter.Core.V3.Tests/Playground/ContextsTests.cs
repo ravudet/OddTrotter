@@ -230,10 +230,12 @@ namespace Adapter
                 private readonly DateTime? startTime;
                 private readonly DateTime? endTime;
                 private readonly bool? isCancelled;
+                private readonly Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate;
 
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
                     : this(
                           graphCalendarEventsContext,
+                          null,
                           null,
                           null,
                           null)
@@ -244,13 +246,15 @@ namespace Adapter
                     Graph.ICalendarEventsContext graphCalendarEventsContext,
                     DateTime? startTime,
                     DateTime? endTime,
-                    bool? isCancelled)
+                    bool? isCancelled, 
+                    Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
 
                     this.startTime = startTime;
                     this.endTime = endTime;
                     this.isCancelled = isCancelled;
+                    this.seriesMasterPredicate = seriesMasterPredicate;
                 }
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
@@ -343,7 +347,8 @@ namespace Adapter
                         this.graphCalendarEventsContext,
                         startTime,
                         this.endTime,
-                        this.isCancelled);
+                        this.isCancelled,
+                        this.seriesMasterPredicate);
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
