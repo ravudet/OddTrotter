@@ -320,6 +320,11 @@ namespace Adapter
 
                 }
 
+                private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEventMasters()
+                {
+                    //// TODO use the predicate *here* if avaialbe instead of the caller (better for potential re-use)
+                }
+
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
                     DateTime? startTime = null;
