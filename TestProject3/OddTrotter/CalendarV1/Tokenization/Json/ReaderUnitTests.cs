@@ -2078,16 +2078,7 @@
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
                 var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken6
-                    .Apply(
-                        static @false => default,
-                        static @null => RefNullable.Value(@null),
-                        static @true => default,
-                        static @object => default,
-                        static array => default,
-                        static number => default,
-                        static @string => default)
-                    .TryGetValue(out var nestednull))
+                if (!nestedvalueToken6.TryNull().TryGetValue(out var nestednull))
                 {
                     throw new Exception("TODO");
                 }
@@ -2136,16 +2127,7 @@
             //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
             var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
             var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken8
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => RefNullable.Value(@object),
-                    static array => default,
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var object3))
+            if (!valueToken8.TryObject().TryGetValue(out var object3))
             {
                 throw new Exception("TODO");
             }
@@ -2192,16 +2174,7 @@
             //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
             var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
             var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken9
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => default,
-                    static array => RefNullable.Value(array),
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var array))
+            if (!valueToken9.TryArray().TryGetValue(out var array))
             {
                 throw new Exception("TODO");
             }
@@ -2249,16 +2222,7 @@
             //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
             var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
             var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken10
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => default,
-                    static array => RefNullable.Value(array),
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var array2))
+            if (!valueToken10.TryArray().TryGetValue(out var array2))
             {
                 throw new Exception("TODO");
             }
@@ -2277,16 +2241,7 @@
             var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
             var value11 = await arrayElement.MoveInternal1().ConfigureAwait(false);
             var valueToken11 = await value11.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken11
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => RefNullable.Value(@object),
-                    static array => default,
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var object4))
+            if (!valueToken11.TryObject().TryGetValue(out var object4))
             {
                 throw new Exception("TODO");
             }
@@ -2322,16 +2277,7 @@
                 //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
                 var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
                 var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-                if (!nestedValueToken
-                    .Apply(
-                        static @false => default,
-                        static @null => default,
-                        static @true => RefNullable.Value(@true),
-                        static @object => default,
-                        static array => default,
-                        static number => default,
-                        static @string => default)
-                    .TryGetValue(out var nestedTrue))
+                if (!nestedValueToken.TryTrue().TryGetValue(out var nestedTrue))
                 {
                     throw new Exception("TODO");
                 }
@@ -2364,16 +2310,7 @@
                 //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
                 var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken3
-                    .Apply(
-                        static @false => RefNullable.Value(@false),
-                        static @null => default,
-                        static @true => default,
-                        static @object => default,
-                        static array => default,
-                        static number => default,
-                        static @string => default)
-                    .TryGetValue(out var nestedfalse))
+                if (!nestedvalueToken3.TryFalse().TryGetValue(out var nestedfalse))
                 {
                     throw new Exception("TODO");
                 }
