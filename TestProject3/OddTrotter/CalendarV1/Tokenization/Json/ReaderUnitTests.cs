@@ -2343,16 +2343,7 @@
                 //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
                 var nestedvalue4 = await nestedwhitespace10.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken4 = await nestedvalue4.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken4
-                    .Apply(
-                        static @false => default,
-                        static @null => default,
-                        static @true => default,
-                        static @object => default,
-                        static array => default,
-                        static number => RefNullable.Value(number),
-                        static @string => default)
-                    .TryGetValue(out var nestednumber))
+                if (!nestedvalueToken4.TryNumber().TryGetValue(out var nestednumber))
                 {
                     throw new Exception("TODO");
                 }
@@ -2398,16 +2389,7 @@
                 //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
                 var nestedvalue5 = await nestedwhitespace13.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken5 = await nestedvalue5.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken5
-                    .Apply(
-                        static @false => default,
-                        static @null => default,
-                        static @true => default,
-                        static @object => default,
-                        static array => default,
-                        static number => default,
-                        static @string => RefNullable.Value(@string))
-                    .TryGetValue(out var nestedstring5))
+                if (!nestedvalueToken5.TryString().TryGetValue(out var nestedstring5))
                 {
                     throw new Exception("TODO");
                 }
@@ -2444,16 +2426,7 @@
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
                 var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken6
-                    .Apply(
-                        static @false => default,
-                        static @null => RefNullable.Value(@null),
-                        static @true => default,
-                        static @object => default,
-                        static array => default,
-                        static number => default,
-                        static @string => default)
-                    .TryGetValue(out var nestednull))
+                if (!nestedvalueToken6.TryNull().TryGetValue(out var nestednull))
                 {
                     throw new Exception("TODO");
                 }
