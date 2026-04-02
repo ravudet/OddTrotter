@@ -678,14 +678,61 @@
         }
     }
 
-    public abstract class ValueToken<TNextReader>
+    public ref struct ValueToken<TNextReader>
         where TNextReader : allows ref struct
     {
-        private ValueToken()
+        private readonly int type;
+        private readonly FalseReader<TNextReader>? falseReader;
+        private readonly NullReader<TNextReader>? nullReader;
+        private readonly TrueReader<TNextReader>? trueReader;
+        private readonly ObjectReader<TNextReader>? objectReader;
+        private readonly ArrayReader<TNextReader>? arrayReader;
+        private readonly NumberReader<TNextReader>? numberReader;
+        private readonly StringReader<TNextReader>? stringReader;
+
+        public ValueToken(FalseReader<TNextReader> falseReader)
         {
+            this.type = 1;
+            this.falseReader = falseReader;
         }
 
-        public abstract TResult Apply<TResult>(
+        public ValueToken(NullReader<TNextReader> nullReader)
+        {
+            this.type = 2;
+            this.nullReader = nullReader;
+        }
+
+        public ValueToken(TrueReader<TNextReader> trueReader)
+        {
+            this.type = 3;
+            this.trueReader = trueReader;
+        }
+
+        public ValueToken(ObjectReader<TNextReader> objectReader)
+        {
+            this.type = 4;
+            this.objectReader = objectReader;
+        }
+
+        public ValueToken(ArrayReader<TNextReader> arrayReader)
+        {
+            this.type = 5;
+            this.arrayReader = arrayReader;
+        }
+
+        public ValueToken(NumberReader<TNextReader> numberReader)
+        {
+            this.type = 6;
+            this.numberReader = numberReader;
+        }
+
+        public ValueToken(StringReader<TNextReader> stringReader)
+        {
+            this.type = 7;
+            this.stringReader = stringReader;
+        }
+
+        public TResult Apply<TResult>(
             Func<FalseReader<TNextReader>, TResult> @false,
             Func<NullReader<TNextReader>, TResult> @null,
             Func<TrueReader<TNextReader>, TResult> @true,
@@ -693,7 +740,28 @@
             Func<ArrayReader<TNextReader>, TResult> array,
             Func<NumberReader<TNextReader>, TResult> number,
             Func<StringReader<TNextReader>, TResult> @string)
-            where TResult : allows ref struct;
+            where TResult : allows ref struct
+        {
+            switch (this.type)
+            {
+                case 1:
+                    return @false(this.falseReader!);
+                case 2:
+                    return @null(this.nullReader!);
+                case 3:
+                    return @true(this.trueReader!);
+                case 4:
+                    return @object(this.objectReader!);
+                case 5:
+                    return @array(this.arrayReader!);
+                case 6:
+                    return @number(this.numberReader!);
+                case 7:
+                    return @string(this.stringReader!);
+                default:
+                    throw new Exception("TODO visitor");
+            }
+        }
 
         public RefNullable<FalseReader<TNextReader>> TryFalse()
         {
@@ -987,111 +1055,6 @@
         private static RefNullable<StringReader<TNextReader>> StringNumber(NumberReader<TNextReader> _)
         {
             return new RefNullable<StringReader<TNextReader>>();
-        }
-
-        internal sealed class False : ValueToken<TNextReader>
-        {
-            public False(FalseReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public FalseReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return @false(this.Reader);
-            }
-        }
-
-        internal sealed class Null : ValueToken<TNextReader>
-        {
-            public Null(NullReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public NullReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return @null(this.Reader);
-            }
-        }
-
-        internal sealed class True : ValueToken<TNextReader>
-        {
-            public True(TrueReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public TrueReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return @true(this.Reader);
-            }
-        }
-
-        internal sealed class Object : ValueToken<TNextReader>
-        {
-            public Object(ObjectReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public ObjectReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return @object(this.Reader);
-            }
-        }
-
-        internal sealed class Array : ValueToken<TNextReader>
-        {
-            public Array(ArrayReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public ArrayReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return array(this.Reader);
-            }
-        }
-
-        internal sealed class Number : ValueToken<TNextReader>
-        {
-            public Number(NumberReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public NumberReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return number(this.Reader);
-            }
-        }
-
-        internal sealed class String : ValueToken<TNextReader>
-        {
-            public String(StringReader<TNextReader> reader)
-            {
-                Reader = reader;
-            }
-
-            public StringReader<TNextReader> Reader { get; }
-
-            public override TResult Apply<TResult>(Func<FalseReader<TNextReader>, TResult> @false, Func<NullReader<TNextReader>, TResult> @null, Func<TrueReader<TNextReader>, TResult> @true, Func<ObjectReader<TNextReader>, TResult> @object, Func<ArrayReader<TNextReader>, TResult> array, Func<NumberReader<TNextReader>, TResult> number, Func<StringReader<TNextReader>, TResult> @string)
-            {
-                return @string(this.Reader);
-            }
         }
     }
 
