@@ -821,6 +821,48 @@
             return new RefNullable<TrueReader<TNextReader>>();
         }
 
+        public RefNullable<ObjectReader<TNextReader>> TryObject()
+        {
+            return this.Apply(
+                ObjectFalse,
+                ObjectNull,
+                ObjectTrue,
+                RefNullable.Value,
+                ObjectArray,
+                ObjectNumber,
+                ObjectString);
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectFalse(FalseReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectNull(NullReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectTrue(TrueReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectArray(ArrayReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectNumber(NumberReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
+        private static RefNullable<ObjectReader<TNextReader>> ObjectString(StringReader<TNextReader> _)
+        {
+            return new RefNullable<ObjectReader<TNextReader>>();
+        }
+
         public sealed class False : ValueToken<TNextReader>
         {
             public False(FalseReader<TNextReader> reader)
