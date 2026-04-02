@@ -79,6 +79,10 @@
 
         public TimeStructure Start { get; }
 
+        public TimeStructure End { get; }
+
+        public bool IsCancelled { get; }
+
         //// public IEnumerable<CalendarEvent> Instances { get; }
 
         public sealed class TimeStructure
@@ -224,20 +228,29 @@ namespace Adapter
                 private readonly Graph.ICalendarEventsContext graphCalendarEventsContext;
 
                 private readonly DateTime? startTime;
+                private readonly DateTime? endTime;
+                private readonly bool? isCancelled;
 
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
                     : this(
                           graphCalendarEventsContext,
+                          null,
+                          null,
                           null)
                 {
                 }
 
                 public CalendarEventsContext(
                     Graph.ICalendarEventsContext graphCalendarEventsContext,
-                    DateTime? startTime)
+                    DateTime? startTime,
+                    DateTime? endTime,
+                    bool? isCancelled)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
+
                     this.startTime = startTime;
+                    this.endTime = endTime;
+                    this.isCancelled = isCancelled;
                 }
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
@@ -274,6 +287,18 @@ namespace Adapter
                     {
                         calendarEvents = calendarEvents
                             .Filter(calendarEvent => calendarEvent.Start.DateTime > this.startTime); //// TODO i can't decide if `timestructure.datetime` should be a string and we should call `this.startTime.ToString()` here, or if `timestructure.datetime` is supposed to be a datetime; look at the csdl probably...
+                    }
+
+                    if (this.endTime != null)
+                    {
+                        calendarEvents = calendarEvents
+                            .Filter(calendarEvent => calendarEvent.End.DateTime < this.endTime);
+                    }
+
+                    if (this.isCancelled != null)
+                    {
+                        calendarEvents = calendarEvents
+                            .Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled);
                     }
 
                     calendarEvents = calendarEvents
@@ -316,7 +341,9 @@ namespace Adapter
 
                     return new CalendarEventsContext(
                         this.graphCalendarEventsContext,
-                        startTime);
+                        startTime,
+                        this.endTime,
+                        this.isCancelled);
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
