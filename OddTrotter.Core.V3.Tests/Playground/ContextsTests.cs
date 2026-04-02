@@ -286,11 +286,37 @@ namespace Adapter
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
                 {
                     //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance; or, if `filter(event => event.starttime > {foo})` has been called, just use `{foo}`
+                    //// TODO the querycontext needs to call this with `.Filter(CalendarSource.EndTimeLessThan(this.endTime.Value))` for it to work right now
                     
+
                 }
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
+                    DateTime? startTime = null;
+                    if (filter.Parameters.Count == 1)
+                    {
+                        var parameterName = filter.Parameters[0].Name;
+                        if (parameterName != null)
+                        {
+                            if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
+                            {
+                                if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
+                                {
+                                    startTime = new DateTime(startTimeTicks);
+                                }
+                            }
+                        }
+                    }
+
+                    if (startTime == null)
+                    {
+                        throw new NotImplementedException("TODO");
+                    }
+
+                    return new CalendarEventsContext(
+                        this.graphCalendarEventsContext,
+                        startTime);
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
