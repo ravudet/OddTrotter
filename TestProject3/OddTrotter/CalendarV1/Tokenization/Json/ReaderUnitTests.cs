@@ -1678,16 +1678,7 @@
             var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
-            if (!valueToken
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => RefNullable.Value(@object),
-                    static array => default,
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var @object))
+            if (!valueToken.TryObject().TryGetValue(out var @object))
             {
                 throw new Exception("TODO");
             }
@@ -1721,16 +1712,7 @@
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken2
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => RefNullable.Value(@true),
-                    static @object => default,
-                    static array => default,
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var @true))
+            if (!valueToken2.TryTrue().TryGetValue(out var @true))
             {
                 throw new Exception("TODO");
             }
