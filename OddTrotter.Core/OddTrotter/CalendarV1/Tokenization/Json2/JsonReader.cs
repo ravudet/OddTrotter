@@ -989,7 +989,7 @@
             return new RefNullable<StringReader<TNextReader>>();
         }
 
-        public sealed class False : ValueToken<TNextReader>
+        internal sealed class False : ValueToken<TNextReader>
         {
             public False(FalseReader<TNextReader> reader)
             {
@@ -1004,7 +1004,7 @@
             }
         }
 
-        public sealed class Null : ValueToken<TNextReader>
+        internal sealed class Null : ValueToken<TNextReader>
         {
             public Null(NullReader<TNextReader> reader)
             {
@@ -1019,7 +1019,7 @@
             }
         }
 
-        public sealed class True : ValueToken<TNextReader>
+        internal sealed class True : ValueToken<TNextReader>
         {
             public True(TrueReader<TNextReader> reader)
             {
@@ -1034,7 +1034,7 @@
             }
         }
 
-        public sealed class Object : ValueToken<TNextReader>
+        internal sealed class Object : ValueToken<TNextReader>
         {
             public Object(ObjectReader<TNextReader> reader)
             {
@@ -1049,7 +1049,7 @@
             }
         }
 
-        public sealed class Array : ValueToken<TNextReader>
+        internal sealed class Array : ValueToken<TNextReader>
         {
             public Array(ArrayReader<TNextReader> reader)
             {
@@ -1064,7 +1064,7 @@
             }
         }
 
-        public sealed class Number : ValueToken<TNextReader>
+        internal sealed class Number : ValueToken<TNextReader>
         {
             public Number(NumberReader<TNextReader> reader)
             {
@@ -1079,7 +1079,7 @@
             }
         }
 
-        public sealed class String : ValueToken<TNextReader>
+        internal sealed class String : ValueToken<TNextReader>
         {
             public String(StringReader<TNextReader> reader)
             {
