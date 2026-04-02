@@ -1683,7 +1683,7 @@
                     static @false => default,
                     static @null => default,
                     static @true => default,
-                    static @object => RefNullable.Create(@object),
+                    static @object => RefNullable.Value(@object),
                     static array => default,
                     static number => default,
                     static @string => default)
@@ -1725,7 +1725,7 @@
                 .Apply(
                     static @false => default,
                     static @null => default,
-                    static @true => RefNullable.Create(@true),
+                    static @true => RefNullable.Value(@true),
                     static @object => default,
                     static array => default,
                     static number => default,
@@ -1763,16 +1763,7 @@
             //var value3 = await whitespace7.AsReader.MoveInternal3(whitespace7.Factory).ConfigureAwait(false);
             var value3 = await whitespace7.MoveInternal1().ConfigureAwait(false);
             var valueToken3 = await value3.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken3
-                .Apply(
-                    static @false => RefNullable.Create(@false),
-                    static @null => default,
-                    static @true => default,
-                    static @object => default,
-                    static array => default,
-                    static number => default,
-                    static @string => default)
-                .TryGetValue(out var @false))
+            if (!valueToken3.TryFalse().TryGetValue(out var @false))
             {
                 throw new Exception("TODO");
             }
@@ -1812,7 +1803,7 @@
                     static @true => default,
                     static @object => default,
                     static array => default,
-                    static number => RefNullable.Create(number),
+                    static number => RefNullable.Value(number),
                     static @string => default)
                 .TryGetValue(out var number))
             {
@@ -1868,7 +1859,7 @@
                     static @object => default,
                     static array => default,
                     static number => default,
-                    static @string => RefNullable.Create(@string))
+                    static @string => RefNullable.Value(@string))
                 .TryGetValue(out var @string5))
             {
                 throw new Exception("TODO");
@@ -1909,7 +1900,7 @@
             if (!valueToken6
                 .Apply(
                     static @false => default,
-                    static @null => RefNullable.Create(@null),
+                    static @null => RefNullable.Value(@null),
                     static @true => default,
                     static @object => default,
                     static array => default,
@@ -1953,7 +1944,7 @@
                     static @false => default,
                     static @null => default,
                     static @true => default,
-                    static @object => RefNullable.Create(@object),
+                    static @object => RefNullable.Value(@object),
                     static array => default,
                     static number => default,
                     static @string => default)
@@ -1996,7 +1987,7 @@
                     .Apply(
                         static @false => default,
                         static @null => default,
-                        static @true => RefNullable.Create(@true),
+                        static @true => RefNullable.Value(@true),
                         static @object => default,
                         static array => default,
                         static number => default,
@@ -2036,7 +2027,7 @@
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
                 if (!nestedvalueToken3
                     .Apply(
-                        static @false => RefNullable.Create(@false),
+                        static @false => RefNullable.Value(@false),
                         static @null => default,
                         static @true => default,
                         static @object => default,
@@ -2083,7 +2074,7 @@
                         static @true => default,
                         static @object => default,
                         static array => default,
-                        static number => RefNullable.Create(number),
+                        static number => RefNullable.Value(number),
                         static @string => default)
                     .TryGetValue(out var nestednumber))
                 {
@@ -2139,7 +2130,7 @@
                         static @object => default,
                         static array => default,
                         static number => default,
-                        static @string => RefNullable.Create(@string))
+                        static @string => RefNullable.Value(@string))
                     .TryGetValue(out var nestedstring5))
                 {
                     throw new Exception("TODO");
@@ -2180,7 +2171,7 @@
                 if (!nestedvalueToken6
                     .Apply(
                         static @false => default,
-                        static @null => RefNullable.Create(@null),
+                        static @null => RefNullable.Value(@null),
                         static @true => default,
                         static @object => default,
                         static array => default,
@@ -2240,7 +2231,7 @@
                     static @false => default,
                     static @null => default,
                     static @true => default,
-                    static @object => RefNullable.Create(@object),
+                    static @object => RefNullable.Value(@object),
                     static array => default,
                     static number => default,
                     static @string => default)
@@ -2297,7 +2288,7 @@
                     static @null => default,
                     static @true => default,
                     static @object => default,
-                    static array => RefNullable.Create(array),
+                    static array => RefNullable.Value(array),
                     static number => default,
                     static @string => default)
                 .TryGetValue(out var array))
@@ -2354,7 +2345,7 @@
                     static @null => default,
                     static @true => default,
                     static @object => default,
-                    static array => RefNullable.Create(array),
+                    static array => RefNullable.Value(array),
                     static number => default,
                     static @string => default)
                 .TryGetValue(out var array2))
@@ -2381,7 +2372,7 @@
                     static @false => default,
                     static @null => default,
                     static @true => default,
-                    static @object => RefNullable.Create(@object),
+                    static @object => RefNullable.Value(@object),
                     static array => default,
                     static number => default,
                     static @string => default)
@@ -2425,7 +2416,7 @@
                     .Apply(
                         static @false => default,
                         static @null => default,
-                        static @true => RefNullable.Create(@true),
+                        static @true => RefNullable.Value(@true),
                         static @object => default,
                         static array => default,
                         static number => default,
@@ -2465,7 +2456,7 @@
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
                 if (!nestedvalueToken3
                     .Apply(
-                        static @false => RefNullable.Create(@false),
+                        static @false => RefNullable.Value(@false),
                         static @null => default,
                         static @true => default,
                         static @object => default,
@@ -2512,7 +2503,7 @@
                         static @true => default,
                         static @object => default,
                         static array => default,
-                        static number => RefNullable.Create(number),
+                        static number => RefNullable.Value(number),
                         static @string => default)
                     .TryGetValue(out var nestednumber))
                 {
@@ -2568,7 +2559,7 @@
                         static @object => default,
                         static array => default,
                         static number => default,
-                        static @string => RefNullable.Create(@string))
+                        static @string => RefNullable.Value(@string))
                     .TryGetValue(out var nestedstring5))
                 {
                     throw new Exception("TODO");
@@ -2609,7 +2600,7 @@
                 if (!nestedvalueToken6
                     .Apply(
                         static @false => default,
-                        static @null => RefNullable.Create(@null),
+                        static @null => RefNullable.Value(@null),
                         static @true => default,
                         static @object => default,
                         static array => default,

@@ -695,6 +695,132 @@
             Func<StringReader<TNextReader>, TResult> @string)
             where TResult : allows ref struct;
 
+        public RefNullable<FalseReader<TNextReader>> TryFalse()
+        {
+            return this.Apply(
+                RefNullable.Value,
+                FalseNull,
+                FalseTrue,
+                FalseObject,
+                FalseArray,
+                FalseNumber,
+                FalseString);
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseNull(NullReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseTrue(TrueReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseObject(ObjectReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseArray(ArrayReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseNumber(NumberReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        private static RefNullable<FalseReader<TNextReader>> FalseString(StringReader<TNextReader> _)
+        {
+            return new RefNullable<FalseReader<TNextReader>>();
+        }
+
+        public RefNullable<NullReader<TNextReader>> TryNull()
+        {
+            return this.Apply(
+                NullFalse,
+                RefNullable.Value,
+                NullTrue,
+                NullObject,
+                NullArray,
+                NullNumber,
+                NullString);
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullFalse(FalseReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullTrue(TrueReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullObject(ObjectReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullArray(ArrayReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullNumber(NumberReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        private static RefNullable<NullReader<TNextReader>> NullString(StringReader<TNextReader> _)
+        {
+            return new RefNullable<NullReader<TNextReader>>();
+        }
+
+        public RefNullable<TrueReader<TNextReader>> TryTrue()
+        {
+            return this.Apply(
+                TrueFalse,
+                TrueNull,
+                RefNullable.Value,
+                TrueObject,
+                TrueArray,
+                TrueNumber,
+                TrueString);
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueFalse(FalseReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueNull(NullReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueObject(ObjectReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueArray(ArrayReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueNumber(NumberReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
+        private static RefNullable<TrueReader<TNextReader>> TrueString(StringReader<TNextReader> _)
+        {
+            return new RefNullable<TrueReader<TNextReader>>();
+        }
+
         public sealed class False : ValueToken<TNextReader>
         {
             public False(FalseReader<TNextReader> reader)
@@ -1196,10 +1322,16 @@
 
     public static class RefNullable
     {
-        public static RefNullable<T> Create<T>(T value)
+        public static RefNullable<T> Value<T>(T value)
             where T : allows ref struct
         {
             return new RefNullable<T>(value);
+        }
+
+        public static RefNullable<T> Null<T>()
+            where T : allows ref struct
+        {
+            return new RefNullable<T>();
         }
     }
 
