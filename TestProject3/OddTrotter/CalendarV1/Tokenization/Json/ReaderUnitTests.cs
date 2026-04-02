@@ -1778,16 +1778,7 @@
             //var value4 = await whitespace10.AsReader.MoveInternal3(whitespace10.Factory).ConfigureAwait(false);
             var value4 = await whitespace10.MoveInternal1().ConfigureAwait(false);
             var valueToken4 = await value4.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken4
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => default,
-                    static array => default,
-                    static number => RefNullable.Value(number),
-                    static @string => default)
-                .TryGetValue(out var number))
+            if (!valueToken4.TryNumber().TryGetValue(out var number))
             {
                 throw new Exception("TODO");
             }
@@ -1833,16 +1824,7 @@
             //var value5 = await whitespace13.AsReader.MoveInternal3(whitespace13.Factory).ConfigureAwait(false);
             var value5 = await whitespace13.MoveInternal1().ConfigureAwait(false);
             var valueToken5 = await value5.MoveInternal1().ConfigureAwait(false);
-            if (!valueToken5
-                .Apply(
-                    static @false => default,
-                    static @null => default,
-                    static @true => default,
-                    static @object => default,
-                    static array => default,
-                    static number => default,
-                    static @string => RefNullable.Value(@string))
-                .TryGetValue(out var @string5))
+            if (!valueToken5.TryString().TryGetValue(out var @string5))
             {
                 throw new Exception("TODO");
             }
