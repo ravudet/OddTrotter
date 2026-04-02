@@ -1612,7 +1612,8 @@
 
 
             //// TODO 522d8139ea5a8695e2bb52a76895052f535fa360 was the jsonreader to ref struct commit
-            //// TODO you are at ~209
+            //// TODO you are at ~209 after valuereader
+            //// TODO with apply, you are at 210 mostly, getting as low as 208
             
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
