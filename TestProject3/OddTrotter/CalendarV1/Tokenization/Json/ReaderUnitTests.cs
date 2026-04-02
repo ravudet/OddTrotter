@@ -2465,23 +2465,19 @@
                 var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
                 if (!nestedvalueToken3
                     .Apply(
-                        static @false => default,
+                        static @false => RefNullable.Create(@false),
                         static @null => default,
-                        static @true => RefNullable.Create(@true),
+                        static @true => default,
                         static @object => default,
                         static array => default,
                         static number => default,
                         static @string => default)
-                    .TryGetValue(out var nestedTrue))
-                {
-                    throw new Exception("TODO");
-                }
-                if (!(nestedvalueToken3 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.False nestedfalse))
+                    .TryGetValue(out var nestedfalse))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedsubsequentMembers2 = await nestedfalse.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -2509,12 +2505,21 @@
                 //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
                 var nestedvalue4 = await nestedwhitespace10.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken4 = await nestedvalue4.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken4 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.Number nestednumber))
+                if (!nestedvalueToken4
+                    .Apply(
+                        static @false => default,
+                        static @null => default,
+                        static @true => default,
+                        static @object => default,
+                        static array => default,
+                        static number => RefNullable.Create(number),
+                        static @string => default)
+                    .TryGetValue(out var nestednumber))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedsign = await nestednumber.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedsign = await nestednumber.MoveInternal1().ConfigureAwait(false);
                 var nestedint = await nestedsign.MoveInternal1().ConfigureAwait(false);
                 var nestedfrac = await nestedint.MoveInternal1().ConfigureAwait(false);
                 var nestedexp = await nestedfrac.MoveInternal1().ConfigureAwait(false);
@@ -2555,12 +2560,21 @@
                 //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
                 var nestedvalue5 = await nestedwhitespace13.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken5 = await nestedvalue5.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken5 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.String @nestedstring5))
+                if (!nestedvalueToken5
+                    .Apply(
+                        static @false => default,
+                        static @null => default,
+                        static @true => default,
+                        static @object => default,
+                        static array => default,
+                        static number => default,
+                        static @string => RefNullable.Create(@string))
+                    .TryGetValue(out var nestedstring5))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedstringDelimiter9 = await @nestedstring5.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiter9 = await @nestedstring5.MoveInternal1().ConfigureAwait(false);
                 var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
                 var nestedstringDelimiter10 = await nestedchars5.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1().ConfigureAwait(false);
@@ -2592,12 +2606,21 @@
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
                 var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
                 var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!(nestedvalueToken6 is ValueToken<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<SubsequentArrayElementsReader<WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>>>>>>.Null @nestednull))
+                if (!nestedvalueToken6
+                    .Apply(
+                        static @false => default,
+                        static @null => RefNullable.Create(@null),
+                        static @true => default,
+                        static @object => default,
+                        static array => default,
+                        static number => default,
+                        static @string => default)
+                    .TryGetValue(out var nestednull))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedsubsequentMembers5 = await @nestednull.Reader.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers5 = await @nestednull.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken5 = nestedsubsequentMembers5.TryMove(out read);
                 if (!read)
                 {
