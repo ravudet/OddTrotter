@@ -490,7 +490,7 @@
             switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
             {
                 case 'f':
-                    return new ValueToken<TNextReader>.False(
+                    return new ValueToken<TNextReader>(
                         new FalseReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -498,7 +498,7 @@
                             readerContext.ValidBytes,
                             nextReaderFactory));
                 case 'n':
-                    return new ValueToken<TNextReader>.Null(
+                    return new ValueToken<TNextReader>(
                         new NullReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -506,7 +506,7 @@
                             readerContext.ValidBytes,
                             nextReaderFactory));
                 case 't':
-                    return new ValueToken<TNextReader>.True(
+                    return new ValueToken<TNextReader>(
                         new TrueReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -514,7 +514,7 @@
                             readerContext.ValidBytes,
                             nextReaderFactory));
                 case '{':
-                    return new ValueToken<TNextReader>.Object(
+                    return new ValueToken<TNextReader>(
                         new ObjectReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -522,7 +522,7 @@
                             readerContext.ValidBytes,
                             nextReaderFactory));
                 case '[':
-                    return new ValueToken<TNextReader>.Array(
+                    return new ValueToken<TNextReader>(
                         new ArrayReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -540,7 +540,7 @@
                 case '7':
                 case '8':
                 case '9':
-                    return new ValueToken<TNextReader>.Number(
+                    return new ValueToken<TNextReader>(
                         new NumberReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
@@ -548,7 +548,7 @@
                             readerContext.ValidBytes,
                             nextReaderFactory));
                 case '"':
-                    return new ValueToken<TNextReader>.String(
+                    return new ValueToken<TNextReader>(
                         new StringReader<TNextReader>(
                             readerContext.Stream,
                             readerContext.Buffer,
