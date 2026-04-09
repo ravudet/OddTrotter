@@ -647,12 +647,12 @@
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
-            private readonly Task readTask;
+            private readonly ValueTask readTask;
             private readonly Func<TCurrentReader> factory;
             private readonly ref ReaderContext context;
 
             public MoveInternal2ReadTask(
-                Task readTask,
+                ValueTask readTask,
                 Func<TCurrentReader> factory, 
                 ref ReaderContext context)
             {
@@ -672,13 +672,13 @@
 
             public ref struct ConfiguredAwaitable
             {
-                private readonly ConfiguredTaskAwaitable readTask;
+                private readonly ConfiguredValueTaskAwaitable readTask;
                 private readonly Func<TCurrentReader> factory;
                 private readonly ref ReaderContext context;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
-                    ConfiguredTaskAwaitable readTask,
+                    ConfiguredValueTaskAwaitable readTask,
                     Func<TCurrentReader> factory,
                     ref ReaderContext context,
                     bool continueOnCapturedContext)
@@ -700,7 +700,7 @@
 
                 public unsafe struct Awaiter : ITaskAwaiter<Func<TNextReader>>
                 {
-                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
+                    private ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask;
                     private readonly Func<TCurrentReader> factory;
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private readonly ReaderContext* context; //// TODO it's "mostly" ok for this to be a pointer because, for the caller to make use of the resulting `tnextreader`, the caller must maintain a reference to the `readercontext`; *however*, if that caller, let's say A, returns the task up the call stack to `B`, and `B` just wants to wait for the work to be completed, but not use the `tnextreader`, then the garbage collector could collect e.g. the stream in `readercontext` which would result in the task being defunct (not sure what the behavior would be, actually); AND THEN NOTE: that this actually isn't even possible to do because `A` cannot return the task to `B` because the compiler recognizes that the `readercontext` was passed by `ref` and therefore the task may have references to something that will leave scope; that's kind of beautiful actually
@@ -708,7 +708,7 @@
                     private readonly bool continueOnCapturedContext;
 
                     public Awaiter(
-                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
+                        ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask,
                         Func<TCurrentReader> factory,
                         ref ReaderContext context,
                         bool continueOnCapturedContext)
@@ -1258,12 +1258,12 @@
         {
             private readonly ReaderContext context;
             private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-            private readonly Task readTask;
+            private readonly ValueTask readTask;
 
             public MoveInternal3TaskValue(
                 ReaderContext context,
                 Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                Task readTask)
+                ValueTask readTask)
             {
                 this.context = context;
                 this.currentReaderFactory = currentReaderFactory;
@@ -1283,13 +1283,13 @@
             {
                 private readonly ReaderContext context;
                 private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                private readonly ConfiguredTaskAwaitable readTask;
+                private readonly ConfiguredValueTaskAwaitable readTask;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ReaderContext context,
                     Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                    ConfiguredTaskAwaitable readTask,
+                    ConfiguredValueTaskAwaitable readTask,
                     bool continueOnCapturedContext)
                 {
                     this.context = context;
@@ -1311,7 +1311,7 @@
                 {
                     private readonly ReaderContext context;
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
+                    private ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
                     private bool moved;
                     private ITaskAwaiter<TNextReader>? valueTask = null;
@@ -1319,7 +1319,7 @@
                     public Awaiter(
                         ReaderContext context,
                         Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
+                        ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask,
                         bool continueOnCapturedContext)
                     {
                         this.context = context;
@@ -1436,12 +1436,12 @@
         {
             private readonly ReaderContext context;
             private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-            private readonly Task readTask;
+            private readonly ValueTask readTask;
 
             public MoveInternal3TaskMove(
                 ReaderContext context,
                 Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                Task readTask)
+                ValueTask readTask)
             {
                 this.context = context;
                 this.currentReaderFactory = currentReaderFactory;
@@ -1461,13 +1461,13 @@
             {
                 private readonly ReaderContext context;
                 private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                private readonly ConfiguredTaskAwaitable readTask;
+                private readonly ConfiguredValueTaskAwaitable readTask;
                 private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     ReaderContext context,
                     Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                    ConfiguredTaskAwaitable readTask,
+                    ConfiguredValueTaskAwaitable readTask,
                     bool continueOnCapturedContext)
                 {
                     this.context = context;
@@ -1489,14 +1489,14 @@
                 {
                     private readonly ReaderContext context;
                     private readonly Func<ReaderContext, TCurrentReader> currentReaderFactory;
-                    private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask;
+                    private ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask;
                     private readonly bool continueOnCapturedContext;
                     private Func<TNextReader>? nextReaderFactory = null;
 
                     public Awaiter(
                         ReaderContext context,
                         Func<ReaderContext, TCurrentReader> currentReaderFactory,
-                        ConfiguredTaskAwaitable.ConfiguredTaskAwaiter readTask,
+                        ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter readTask,
                         bool continueOnCapturedContext)
                     {
                         this.context = context;

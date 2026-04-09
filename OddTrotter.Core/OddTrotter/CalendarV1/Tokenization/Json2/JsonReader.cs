@@ -76,7 +76,7 @@
         where TSelf : IReader2<TSelf, TNextReader>, allows ref struct
         where TNextReader : allows ref struct
     {
-        Task Read(ReaderContext readerContext);
+        ValueTask Read(ReaderContext readerContext);
 
         TypeHolder<TSelf, TNextReader> AsReader { get; }
 
@@ -126,9 +126,9 @@
 
     public static class ReaderContextExtensions
     {
-        public static async Task Read(this ReaderContext readerContext)
+        public static async ValueTask Read(this ReaderContext readerContext)
         {
-            readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ConfigureAwait(false);
+            readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer.AsMemory()).ConfigureAwait(false);
             readerContext.CurrentByteIndex = 0;
         }
 
@@ -169,7 +169,7 @@
             }
         }
 
-        public Task Read(ReaderContext readerContext)
+        public ValueTask Read(ReaderContext readerContext)
         {
             return readerContext.Read();
 
@@ -304,7 +304,7 @@
             return true;
         }
 
-        public Task Read(ReaderContext readerContext)
+        public ValueTask Read(ReaderContext readerContext)
         {
             //// TODO remove this method? callers already have to know about the context, let them call it directly
             return readerContext.Read();
@@ -461,7 +461,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read(ReaderContext readerContext)
+        public ValueTask Read(ReaderContext readerContext)
         {
             return readerContext.Read();
         }
