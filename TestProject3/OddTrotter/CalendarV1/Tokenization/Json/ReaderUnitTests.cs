@@ -466,7 +466,7 @@
                     private readonly Json2.IReader<TNextReader> currentReader;
                     private readonly bool continueOnCapturedContext;
 
-                    private System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter? task;
+                    private System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? task;
 
                     public TaskAwaiter(Json2.IReader<TNextReader> currentReader, bool continueOnCapturedContext)
                     {
@@ -548,7 +548,7 @@
             {
                 private readonly Json2.IReader<TNextReader> currentReader;
 
-                private System.Runtime.CompilerServices.TaskAwaiter? task;
+                private System.Runtime.CompilerServices.ValueTaskAwaiter? task;
 
                 public TaskAwaiter(Json2.IReader<TNextReader> currentReader)
                 {

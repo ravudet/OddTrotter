@@ -405,7 +405,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -586,7 +586,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1100,7 +1100,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1167,7 +1167,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1234,7 +1234,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1359,7 +1359,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1413,7 +1413,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1602,7 +1602,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1779,7 +1779,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1897,7 +1897,7 @@
         
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -1965,7 +1965,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2093,7 +2093,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2147,7 +2147,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2294,7 +2294,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2493,7 +2493,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2620,7 +2620,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2764,7 +2764,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2899,7 +2899,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -2966,7 +2966,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -3082,7 +3082,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -3169,7 +3169,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -3298,7 +3298,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
@@ -3404,7 +3404,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
         public TNextReader TryMove(out bool read)
@@ -3528,7 +3528,7 @@
 
         public async ValueTask Read()
         {
-            this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
+            this.validBytes = await this.stream.ReadAsync(this.buffer.AsMemory()).ConfigureAwait(false);
             this.currentByteIndex = 0;
         }
 
