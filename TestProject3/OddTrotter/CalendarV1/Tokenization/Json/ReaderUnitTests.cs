@@ -1619,7 +1619,10 @@
             //// TODO with apply, you are at 210 mostly, getting as low as 208
             //// TODO ~208 range, getting as low as 206 with valuetoken
             //// TODO after updating to valuetask and stuff, you are now generally at 207, as low as 206
-            
+        
+            //// TODO you are realizing the the "nextfactory" can't be re-used to create the reader because, for something like whitespace or false (and a bunch more), there's state in the current reader instance (like the whitespaces that have already been read or which character in "false" we are at)
+            //// TODO does readercontext.read2() make sense now with valuetask?
+
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
             //// TODO make sure the check the perf after the fact; it should get better with the ref structs, right?

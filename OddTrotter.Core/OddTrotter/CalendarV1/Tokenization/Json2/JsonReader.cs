@@ -11,6 +11,8 @@
 
     using Fx;
 
+    using OddTrotter.CalendarV1.Tokenization.Readers;
+
     using Stash;
 
     public static class AsyncEnumerableExtensions
@@ -1055,6 +1057,77 @@
         private static RefNullable<StringReader<TNextReader>> StringNumber(NumberReader<TNextReader> _)
         {
             return new RefNullable<StringReader<TNextReader>>();
+        }
+    }
+
+    public ref struct FalseReader2<TNextReader> : IReader2<FalseReader2<TNextReader>, FalseToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+        private const string literal = "false";
+        private int currentCharacter;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+
+        public TypeHolder<FalseReader2<TNextReader>, FalseToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<FalseReader2<TNextReader>, FalseToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<FalseReader2<TNextReader>, TNextReader> IReader2<FalseReader2<TNextReader>, TNextReader>.AsReader //// TODO you need different names? or is it actually "by design" that these conflict and the "parent" one can't be called?
+        {
+            get
+            {
+                return new TypeHolder<FalseReader2<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public FalseReader2(
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public FalseToken TryGetValue(out bool read)
+        {
+            for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
+            {
+                (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, this.literal[this.currentCharacter]);
+                if (!read)
+                {
+                    return default!; //// TODO !
+                }
+            }
+
+            read = true;
+            return FalseToken.Instance;
+        }
+
+        public TNextReader TryMove(out bool read)
+        {
+            this.TryGetValue(out read);
+            if (!read)
+            {
+                return default!; //// TODO !
+            }
+
+            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+        }
+
+        public bool TryGetValue3(ReaderContext readerContext, out FalseToken value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            throw new NotImplementedException();
         }
     }
 
