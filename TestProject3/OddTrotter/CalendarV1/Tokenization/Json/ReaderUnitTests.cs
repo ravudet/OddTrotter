@@ -968,6 +968,9 @@
             }
         }
 
+        private static ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter ConfiguredValueTaskAwaitableTrue = ValueTask.CompletedTask.ConfigureAwait(true).GetAwaiter();
+        private static ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter ConfiguredValueTaskAwaitableFalse = ValueTask.CompletedTask.ConfigureAwait(false).GetAwaiter();
+
         public ref struct NewCompleted<TNextReader>
             where TNextReader : allows ref struct
         {
@@ -981,25 +984,25 @@
             public ConfiguredAwaitable ConfiguredAwait(bool continueOnCapturedContext)
             {
                 // TODO use task.completedtask and keep a singleton of the configured awaitable
-                return new ConfiguredAwaitable(this.nextReaderFactory, ValueTask.CompletedTask.ConfigureAwait(continueOnCapturedContext));
+                return new ConfiguredAwaitable(this.nextReaderFactory, continueOnCapturedContext);
             }
 
             public ref struct ConfiguredAwaitable
             {
                 private readonly Func<TNextReader> nextReaderFactory;
-                private readonly ConfiguredValueTaskAwaitable configuredValueTaskAwaitable;
+                private readonly bool continueOnCapturedContext;
 
                 public ConfiguredAwaitable(
                     Func<TNextReader> nextReaderFactory,
-                    ConfiguredValueTaskAwaitable configuredValueTaskAwaitable)
+                    bool continueOnCapturedContext)
                 {
                     this.nextReaderFactory = nextReaderFactory;
-                    this.configuredValueTaskAwaitable = configuredValueTaskAwaitable;
+                    this.continueOnCapturedContext = continueOnCapturedContext;
                 }
 
                 public Awaiter GetAwaiter()
                 {
-                    return new Awaiter(this.nextReaderFactory, this.configuredValueTaskAwaitable.GetAwaiter());
+                    return new Awaiter(this.nextReaderFactory, ValueTask.CompletedTask.ConfigureAwait(this.continueOnCapturedContext).GetAwaiter());
                 }
 
                 public readonly struct Awaiter : IAwaiter<Func<TNextReader>>
@@ -1615,6 +1618,7 @@
             //// TODO you are at ~209 after valuereader
             //// TODO with apply, you are at 210 mostly, getting as low as 208
             //// TODO ~208 range, getting as low as 206 with valuetoken
+            //// TODO after updating to valuetask and stuff, you are now generally at 207, as low as 206
             
             //// TODO "unit" readers like `objectreader` should have `trygetvalue` which returns the "known reader" chain, and then `trymove` *only* returns the "next reader"
             //// TODO change reader to use ref struct somehow (maybe there's a step between `trymove` and `ref struct` that is just `struct`
