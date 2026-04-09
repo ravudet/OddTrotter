@@ -67,7 +67,7 @@
     public interface IReader<out TNextReader>
         where TNextReader : allows ref struct
     {
-        Task Read();
+        ValueTask Read();
 
         TNextReader TryMove(out bool read);
     }
@@ -403,7 +403,7 @@
             return true;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -584,7 +584,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1098,7 +1098,7 @@
             return FalseToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1165,7 +1165,7 @@
             return NullToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1232,7 +1232,7 @@
             return TrueToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1282,9 +1282,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> TryMove(out bool read)
@@ -1357,7 +1357,7 @@
             return ObjectStartToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1411,7 +1411,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1555,9 +1555,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public MemberReader<SubsequentMembersReader<TNextReader>> TryMove(out bool read)
@@ -1600,7 +1600,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1703,9 +1703,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> TryMove(out bool read)
@@ -1777,7 +1777,7 @@
             return ColonToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1831,9 +1831,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public CommaReader<WhitespaceReader<MemberReader<TNextReader>>> TryMove(out bool read)
@@ -1895,7 +1895,7 @@
             return CommaToken.Instance;
         }
         
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -1963,7 +1963,7 @@
             return ObjectEndToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2017,9 +2017,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>> TryMove(out bool read)
@@ -2091,7 +2091,7 @@
             return ArrayStartToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2145,7 +2145,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2250,9 +2250,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public ValueReader<TNextReader> TryMove(out bool read)
@@ -2292,7 +2292,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2427,9 +2427,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public CommaReader<WhitespaceReader<ArrayElementReader<TNextReader>>> TryMove(out bool read)
@@ -2491,7 +2491,7 @@
             return ArrayEndToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2545,9 +2545,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public SignReader<IntReader<FracReader<ExpReader<TNextReader>>>> TryMove(out bool read)
@@ -2618,7 +2618,7 @@
             return SignToken.Negative.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2762,7 +2762,7 @@
         }
 
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2897,7 +2897,7 @@
             return true;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -2964,7 +2964,7 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -3080,7 +3080,7 @@
             return new EToken((byte)'e');
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -3167,7 +3167,7 @@
             }
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -3296,7 +3296,7 @@
             return true;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -3337,9 +3337,9 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public Task Read()
+        public ValueTask Read()
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         public StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> TryMove(out bool read)
@@ -3402,7 +3402,7 @@
             return StringDelimiterToken.Instance;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
@@ -3526,7 +3526,7 @@
             return true;
         }
 
-        public async Task Read()
+        public async ValueTask Read()
         {
             this.validBytes = await this.stream.ReadAsync(this.buffer, 0, this.buffer.Length).ConfigureAwait(false);
             this.currentByteIndex = 0;
