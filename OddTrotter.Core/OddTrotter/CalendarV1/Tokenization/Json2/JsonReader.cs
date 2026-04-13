@@ -1154,6 +1154,36 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
+        public TypeHolder<aReader<TNextReader>, aToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<aReader<TNextReader>, aToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<aReader<TNextReader>, TNextReader> IReader2<aReader<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<aReader<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryGetValue3(ref ReaderContext readerContext, out aToken value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public sealed class aToken
