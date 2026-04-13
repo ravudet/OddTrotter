@@ -96,7 +96,7 @@
     {
         new TypeHolder<TSelf, TValue, TNextReader> AsReader { get; }
 
-        bool TryGetValue3(ReaderContext readerContext, out TValue value);
+        bool TryGetValue3(ref ReaderContext readerContext, out TValue value);
     }
 
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
@@ -314,7 +314,7 @@
             this.Context.CurrentByteIndex = 0;*/
         }
 
-        public bool TryGetValue3(ReaderContext readerContext, out IEnumerable<WhitespaceToken> value)
+        public bool TryGetValue3(ref ReaderContext readerContext, out IEnumerable<WhitespaceToken> value)
         {
             value = this.TryGetValue(readerContext, out var read);
             return read;
@@ -1060,64 +1060,61 @@
         }
     }
 
-    public ref struct FalseReader2<TNextReader> : IReader2<FalseReader2<TNextReader>, FalseToken, TNextReader>
+    public ref struct FalseReader2<TNextReader> : IReader2<FalseReader2<TNextReader>, fReader<aReader<lReader<sReader<eReader<TNextReader>>>>>>
         where TNextReader : allows ref struct
     {
-        private const string literal = "false";
-        private int currentCharacter;
         private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        public TypeHolder<FalseReader2<TNextReader>, FalseToken, TNextReader> AsReader
-        {
-            get
-            {
-                return new TypeHolder<FalseReader2<TNextReader>, FalseToken, TNextReader>(this);
-            }
-        }
-
-        TypeHolder<FalseReader2<TNextReader>, TNextReader> IReader2<FalseReader2<TNextReader>, TNextReader>.AsReader //// TODO you need different names? or is it actually "by design" that these conflict and the "parent" one can't be called?
-        {
-            get
-            {
-                return new TypeHolder<FalseReader2<TNextReader>, TNextReader>(this);
-            }
-        }
-
-        public FalseReader2(
-            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        public FalseReader2(Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.nextReaderFactory = nextReaderFactory;
         }
 
-        public FalseToken TryGetValue(out bool read)
-        {
-            for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
-            {
-                (read, this.currentByteIndex, this.validBytes) = Helpers.TryReadChar(this.stream, this.buffer, this.currentByteIndex, this.validBytes, this.literal[this.currentCharacter]);
-                if (!read)
-                {
-                    return default!; //// TODO !
-                }
-            }
+        public TypeHolder<FalseReader2<TNextReader>, fReader<aReader<lReader<sReader<eReader<TNextReader>>>>>> AsReader => throw new NotImplementedException();
 
-            read = true;
-            return FalseToken.Instance;
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
         }
 
-        public TNextReader TryMove(out bool read)
+        public bool TryMove3(ref ReaderContext readerContext, out Func<fReader<aReader<lReader<sReader<eReader<TNextReader>>>>>> nextFactory)
         {
-            this.TryGetValue(out read);
-            if (!read)
-            {
-                return default!; //// TODO !
-            }
+            var nextReaderFactory = this.nextReaderFactory;
+            nextFactory = () =>
+                new fReader<aReader<lReader<sReader<eReader<TNextReader>>>>>(
+                    () => new aReader<lReader<sReader<eReader<TNextReader>>>>(
+                        () => new lReader<sReader<eReader<TNextReader>>>(
+                            () => new sReader<eReader<TNextReader>>(
+                                () => new eReader<TNextReader>(
+                                    nextReaderFactory)))));
+            return true;
+        }
+    }
 
-            return this.nextReaderFactory(this.stream, this.buffer, this.currentByteIndex, this.validBytes);
+    public ref struct fReader<TNextReader> : IReader2<fReader<TNextReader>, fToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public fReader(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
         }
 
-        public bool TryGetValue3(ReaderContext readerContext, out FalseToken value)
+        public TypeHolder<fReader<TNextReader>, fToken, TNextReader> AsReader
         {
-            throw new NotImplementedException();
+            get
+            {
+                return new TypeHolder<fReader<TNextReader>, fToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<fReader<TNextReader>, TNextReader> IReader2<fReader<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<fReader<TNextReader>, TNextReader>(this);
+            }
         }
 
         public ValueTask Read(ReaderContext readerContext)
@@ -1125,15 +1122,17 @@
             return readerContext.Read();
         }
 
+        public bool TryGetValue3(ref ReaderContext readerContext, out fToken value)
+        {
+            value = fToken.Instance;
+            return Helpers.TryReadChar(ref readerContext, 'f');
+        }
+
         public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
         {
-            throw new NotImplementedException();
+            nextFactory = this.nextReaderFactory;
+            return true;
         }
-    }
-
-    public ref struct fReader<TNextReader> : IReader2<fReader<TNextReader>, fToken, TNextReader>
-        where TNextReader : allows ref struct
-    {
     }
 
     public sealed class fToken
@@ -1148,6 +1147,13 @@
     public ref struct aReader<TNextReader> : IReader2<aReader<TNextReader>, aToken, TNextReader>
         where TNextReader : allows ref struct
     {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public aReader(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
     }
 
     public sealed class aToken
@@ -1162,6 +1168,13 @@
     public ref struct lReader<TNextReader> : IReader2<lReader<TNextReader>, lToken, TNextReader>
         where TNextReader : allows ref struct
     {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public lReader(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
     }
 
     public sealed class lToken
@@ -1176,6 +1189,13 @@
     public ref struct sReader<TNextReader> : IReader2<sReader<TNextReader>, sToken, TNextReader>
         where TNextReader : allows ref struct
     {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public sReader(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
     }
 
     public sealed class sToken
@@ -1190,6 +1210,13 @@
     public ref struct eReader<TNextReader> : IReader2<eReader<TNextReader>, eToken, TNextReader>
         where TNextReader : allows ref struct
     {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public eReader(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
     }
 
     public sealed class eToken
@@ -3719,6 +3746,26 @@
 
     public static class Helpers
     {
+        public static bool TryReadChar(ref ReaderContext readerContext, char character)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                return false;
+            }
+
+            ReadChar(ref readerContext, character);
+            ++readerContext.CurrentByteIndex;
+            return true;
+        }
+
+        private static void ReadChar(ref ReaderContext readerContext, char character)
+        {
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != character)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+        }
+
         public static (bool Read, int CurrentByteIndex, int ValidBytes) TryReadChar(Stream stream, byte[] buffer, int currentByteIndex, int validBytes, char character)
         {
             if (currentByteIndex >= validBytes)
