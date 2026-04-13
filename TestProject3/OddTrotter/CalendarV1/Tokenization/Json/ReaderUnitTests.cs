@@ -1621,6 +1621,8 @@
             //// TODO ~208 range, getting as low as 206 with valuetoken
             //// TODO after updating to valuetask and stuff, you are now generally at 207, as low as 206
         
+            //// TODO at some point, you decided to remove the "state" from the readers, so that stuff like whitespace reader and falsereader, etc. wouldn't need to keep track of "where they are"; you did this because you made the `nextreader`s stateless so that you could re-use them, which you need in the move extension tasks to loop the stream reading; however, you *could* have trygetvalue and trymove give back the "new" factory (which either has the state closed or returns the parameterized state with the method) whenever `false` is returned
+
             //// TODO you are realizing the the "nextfactory" can't be re-used to create the reader because, for something like whitespace or false (and a bunch more), there's state in the current reader instance (like the whitespaces that have already been read or which character in "false" we are at)
             //// TODO remove the `read` method from the reader
             //// TODO once you've removed all of the state, the only thing left is the next reader factory, which itself can be removed if you have a generic type constraint requiring a `new` default constructor
