@@ -946,7 +946,7 @@
             where TNextReader : allows ref struct
         {
             var self = currentReader.Self;
-            if (self.TryGetValue3(readerContext, out _))
+            if (self.TryGetValue3(ref readerContext, out _))
             {
                 if (self.TryMove3(ref readerContext, out var nextFactory))
                 {
@@ -1347,8 +1347,9 @@
                                     return false;
                                 }
 
+                                var context = this.context;
                                 var currentReader = this.currentReaderFactory(this.context);
-                                if (!currentReader.TryGetValue3(this.context, out _))
+                                if (!currentReader.TryGetValue3(ref context, out _))
                                 {
                                     this.readTask = currentReader.Read(this.context).ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                     return this.IsCompleted; //// TODO recursion probably isn't great...
