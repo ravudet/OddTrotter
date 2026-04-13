@@ -2146,6 +2146,8 @@ namespace Fx.Either
         internal static IEither<IEither<(TLeft1, TLeft2), TRightInner>, TRight> LiftSequence<TRight, TLeft1, TLeft2, TRightInner>(
             this IEither<(TLeft1, IEither<TLeft2, TRightInner>), TRight> either)
         {
+            //// TODO what if the tuple was on the right? would you write such an extension?
+
             //// TODO this should probably go in a different class
 
             //// TODO this operation is equivalent to haskells `fmap sequence`; i am calling it "lift" because `fmap` is a "lift": https://wiki.haskell.org/Lifting ; i supposed i *could* call it `selectsequence` because i'm using "select" as a continuation of the c# idiom that "select" means "fmap"

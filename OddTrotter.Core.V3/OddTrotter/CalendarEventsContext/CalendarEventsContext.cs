@@ -376,6 +376,7 @@
 
             if (TryTranslateToSeriesMaster(predicate, out var seriesMasterPredicate))
             {
+                //// TODO you need to apply this to the instance events too
                 return new CalendarEventsContext(
                     this.calendarSource,
                     this.startTime,
