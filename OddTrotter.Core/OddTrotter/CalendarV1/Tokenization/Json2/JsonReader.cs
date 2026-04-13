@@ -1313,6 +1313,44 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
+        public TypeHolder<eReader<TNextReader>, eToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<eReader<TNextReader>, eToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<eReader<TNextReader>, TNextReader> IReader2<eReader<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<eReader<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryGetValue3(ref ReaderContext readerContext, out eToken value)
+        {
+            value = eToken.Instance;
+            return Helpers.TryReadChar(ref readerContext, 'e');
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            var stream = readerContext.Stream;
+            var buffer = readerContext.Buffer;
+            var currentByteIndex = readerContext.CurrentByteIndex;
+            var validBytes = readerContext.ValidBytes;
+            var nextReaderFactory = this.nextReaderFactory;
+
+            nextFactory = () => nextReaderFactory(stream, buffer, currentByteIndex, validBytes);
+            return true;
+        }
     }
 
     public sealed class eToken
