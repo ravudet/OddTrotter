@@ -1177,12 +1177,14 @@
 
         public bool TryGetValue3(ref ReaderContext readerContext, out aToken value)
         {
-            throw new NotImplementedException();
+            value = aToken.Instance;
+            return Helpers.TryReadChar(ref readerContext, 'a');
         }
 
         public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
         {
-            throw new NotImplementedException();
+            nextFactory = this.nextReaderFactory;
+            return true;
         }
     }
 
@@ -1240,9 +1242,9 @@
     public ref struct eReader<TNextReader> : IReader2<eReader<TNextReader>, eToken, TNextReader>
         where TNextReader : allows ref struct
     {
-        private readonly Func<TNextReader> nextReaderFactory;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
 
-        public eReader(Func<TNextReader> nextReaderFactory)
+        public eReader(Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
         {
             this.nextReaderFactory = nextReaderFactory;
         }
