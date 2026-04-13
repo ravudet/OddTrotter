@@ -5,6 +5,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq.V2;
+    using System.Reflection.Metadata;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Text;
@@ -14,6 +15,8 @@
 
     using OddTrotter.CalendarV1.Tokenization.Json2;
     using OddTrotter.CalendarV1.Tokenization.Readers;
+
+    using Stash;
 
     public static class ReaderExtensions
     {
@@ -1764,7 +1767,45 @@
                 throw new Exception("TODO");
             }
 
-            var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
+            //// TODO
+            if (!@false.TryMove3(ref context, out var more1))
+            {
+                throw new Exception("tODO");
+            }
+
+            context.CurrentByteIndex += 7;
+            var more1Reader = more1();
+            if (!more1Reader.TryGetValue3(ref context, out _) || !more1Reader.TryMove3(ref context, out var more2))
+            {
+                throw new Exception("tODO");
+            }
+
+            var more2Reader = more2();
+            if (!more2Reader.TryGetValue3(ref context, out _) || !more2Reader.TryMove3(ref context, out var more3))
+            {
+                throw new Exception("tODO");
+            }
+
+            var more3Reader = more3();
+            if (!more3Reader.TryGetValue3(ref context, out _) || !more3Reader.TryMove3(ref context, out var more4))
+            {
+                throw new Exception("tODO");
+            }
+
+            var more4Reader = more4();
+            if (!more4Reader.TryGetValue3(ref context, out _) || !more4Reader.TryMove3(ref context, out var more5))
+            {
+                throw new Exception("tODO");
+            }
+
+            var more5Reader = more5();
+            if (!more5Reader.TryGetValue3(ref context, out _) || !more5Reader.TryMove3(ref context, out var more6))
+            {
+                throw new Exception("tODO");
+            }
+
+            var subsequentMembers2 = more6();
+            //var subsequentMembers2 = await @false.AsReader.MoveInternal2().ConfigureAwait(false);
             var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -1981,7 +2022,43 @@
                     throw new Exception("TODO");
                 }
 
-                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                //// TODO
+                if (!nestedfalse.TryMove3(ref context, out var _more1))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more1Reader = _more1();
+                if (!_more1Reader.TryGetValue3(ref context, out _) || !_more1Reader.TryMove3(ref context, out var _more2))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more2Reader = _more2();
+                if (!_more2Reader.TryGetValue3(ref context, out _) || !_more2Reader.TryMove3(ref context, out var _more3))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more3Reader = _more3();
+                if (!_more3Reader.TryGetValue3(ref context, out _) || !_more3Reader.TryMove3(ref context, out var _more4))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more4Reader = _more4();
+                if (!_more4Reader.TryGetValue3(ref context, out _) || !_more4Reader.TryMove3(ref context, out var _more5))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more5Reader = _more5();
+                if (!_more5Reader.TryGetValue3(ref context, out _) || !_more5Reader.TryMove3(ref context, out var _more6))                {
+                    throw new Exception("tODO");
+                }
+
+                var nestedsubsequentMembers2 = _more6();
+                //var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -2329,7 +2406,44 @@
                     throw new Exception("TODO");
                 }
 
-                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                //// TODO
+                if (!nestedfalse.TryMove3(ref context, out var _more1))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more1Reader = _more1();
+                if (!_more1Reader.TryGetValue3(ref context, out _) || !_more1Reader.TryMove3(ref context, out var _more2))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more2Reader = _more2();
+                if (!_more2Reader.TryGetValue3(ref context, out _) || !_more2Reader.TryMove3(ref context, out var _more3))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more3Reader = _more3();
+                if (!_more3Reader.TryGetValue3(ref context, out _) || !_more3Reader.TryMove3(ref context, out var _more4))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more4Reader = _more4();
+                if (!_more4Reader.TryGetValue3(ref context, out _) || !_more4Reader.TryMove3(ref context, out var _more5))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var _more5Reader = _more5();
+                if (!_more5Reader.TryGetValue3(ref context, out _) || !_more5Reader.TryMove3(ref context, out var _more6))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var nestedsubsequentMembers2 = _more6();
+                //var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {

@@ -493,11 +493,7 @@
             {
                 case 'f':
                     return new ValueToken<TNextReader>(
-                        new FalseReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
+                        new FalseReader2<TNextReader>(
                             nextReaderFactory));
                 case 'n':
                     return new ValueToken<TNextReader>(
@@ -610,11 +606,7 @@
             {
                 case 'f':
                     return new ValueToken<TNextReader>(
-                        new FalseReader<TNextReader>(
-                            this.stream,
-                            this.buffer,
-                            this.currentByteIndex,
-                            this.validBytes,
+                        new FalseReader2<TNextReader>(
                             this.nextReaderFactory));
                 case 'n':
                     return new ValueToken<TNextReader>(
@@ -684,7 +676,7 @@
         where TNextReader : allows ref struct
     {
         private readonly int type;
-        private readonly FalseReader<TNextReader>? falseReader;
+        private readonly RefNullable<FalseReader2<TNextReader>> falseReader;
         private readonly NullReader<TNextReader>? nullReader;
         private readonly TrueReader<TNextReader>? trueReader;
         private readonly ObjectReader<TNextReader>? objectReader;
@@ -692,10 +684,10 @@
         private readonly NumberReader<TNextReader>? numberReader;
         private readonly StringReader<TNextReader>? stringReader;
 
-        public ValueToken(FalseReader<TNextReader> falseReader)
+        public ValueToken(FalseReader2<TNextReader> falseReader)
         {
             this.type = 1;
-            this.falseReader = falseReader;
+            this.falseReader = new RefNullable<FalseReader2<TNextReader>>(falseReader);
         }
 
         public ValueToken(NullReader<TNextReader> nullReader)
@@ -735,7 +727,7 @@
         }
 
         public TResult Apply<TResult>(
-            Func<FalseReader<TNextReader>, TResult> @false,
+            Func<FalseReader2<TNextReader>, TResult> @false,
             Func<NullReader<TNextReader>, TResult> @null,
             Func<TrueReader<TNextReader>, TResult> @true,
             Func<ObjectReader<TNextReader>, TResult> @object,
@@ -747,7 +739,8 @@
             switch (this.type)
             {
                 case 1:
-                    return @false(this.falseReader!);
+                    this.falseReader.TryGetValue(out var reader);
+                    return @false(reader!);
                 case 2:
                     return @null(this.nullReader!);
                 case 3:
@@ -765,7 +758,7 @@
             }
         }
 
-        public RefNullable<FalseReader<TNextReader>> TryFalse()
+        public RefNullable<FalseReader2<TNextReader>> TryFalse()
         {
             return this.Apply(
                 RefNullable.Value,
@@ -777,34 +770,34 @@
                 FalseString);
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseNull(NullReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseNull(NullReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseTrue(TrueReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseTrue(TrueReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseObject(ObjectReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseObject(ObjectReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseArray(ArrayReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseArray(ArrayReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseNumber(NumberReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseNumber(NumberReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseString(StringReader<TNextReader> _)
+        private static RefNullable<FalseReader2<TNextReader>> FalseString(StringReader<TNextReader> _)
         {
-            return new RefNullable<FalseReader<TNextReader>>();
+            return new RefNullable<FalseReader2<TNextReader>>();
         }
 
         public RefNullable<NullReader<TNextReader>> TryNull()
@@ -819,7 +812,7 @@
                 NullString);
         }
 
-        private static RefNullable<NullReader<TNextReader>> NullFalse(FalseReader<TNextReader> _)
+        private static RefNullable<NullReader<TNextReader>> NullFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<NullReader<TNextReader>>();
         }
@@ -861,7 +854,7 @@
                 TrueString);
         }
 
-        private static RefNullable<TrueReader<TNextReader>> TrueFalse(FalseReader<TNextReader> _)
+        private static RefNullable<TrueReader<TNextReader>> TrueFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<TrueReader<TNextReader>>();
         }
@@ -903,7 +896,7 @@
                 ObjectString);
         }
 
-        private static RefNullable<ObjectReader<TNextReader>> ObjectFalse(FalseReader<TNextReader> _)
+        private static RefNullable<ObjectReader<TNextReader>> ObjectFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<ObjectReader<TNextReader>>();
         }
@@ -945,7 +938,7 @@
                 ArrayString);
         }
 
-        private static RefNullable<ArrayReader<TNextReader>> ArrayFalse(FalseReader<TNextReader> _)
+        private static RefNullable<ArrayReader<TNextReader>> ArrayFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<ArrayReader<TNextReader>>();
         }
@@ -987,7 +980,7 @@
                 NumberString);
         }
 
-        private static RefNullable<NumberReader<TNextReader>> NumberFalse(FalseReader<TNextReader> _)
+        private static RefNullable<NumberReader<TNextReader>> NumberFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<NumberReader<TNextReader>>();
         }
@@ -1029,7 +1022,7 @@
                 RefNullable.Value);
         }
 
-        private static RefNullable<StringReader<TNextReader>> StringFalse(FalseReader<TNextReader> _)
+        private static RefNullable<StringReader<TNextReader>> StringFalse(FalseReader2<TNextReader> _)
         {
             return new RefNullable<StringReader<TNextReader>>();
         }
