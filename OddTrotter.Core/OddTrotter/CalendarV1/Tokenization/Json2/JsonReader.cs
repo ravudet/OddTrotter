@@ -1207,6 +1207,38 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
+        public TypeHolder<lReader<TNextReader>, lToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<lReader<TNextReader>, lToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<lReader<TNextReader>, TNextReader> IReader2<lReader<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<lReader<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryGetValue3(ref ReaderContext readerContext, out lToken value)
+        {
+            value = lToken.Instance;
+            return Helpers.TryReadChar(ref readerContext, 'l');
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            nextFactory = this.nextReaderFactory;
+            return true;
+        }
     }
 
     public sealed class lToken
@@ -1228,6 +1260,38 @@
             this.nextReaderFactory = nextReaderFactory;
         }
 
+        public TypeHolder<sReader<TNextReader>, sToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<sReader<TNextReader>, sToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<sReader<TNextReader>, TNextReader> IReader2<sReader<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<sReader<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryGetValue3(ref ReaderContext readerContext, out sToken value)
+        {
+            value = sToken.Instance;
+            return Helpers.TryReadChar(ref readerContext, 's');
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            nextFactory = this.nextReaderFactory;
+            return true;
+        }
     }
 
     public sealed class sToken
