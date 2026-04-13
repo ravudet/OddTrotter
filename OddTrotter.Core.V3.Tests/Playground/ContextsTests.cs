@@ -260,6 +260,7 @@ namespace Adapter
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
                     //// TODO you are here
+                    //// TODO i don't remember if there's something in this method you still need to do, but you are actually in the seriesevent masters stuff, and you're thinking about what it should look like to filter (look at the todos there)
 
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
                     var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
@@ -347,6 +348,9 @@ namespace Adapter
                     {
                         throw new NotImplementedException("TODO");
                     }
+
+                    //// TODO you need to check if the filter applies to series masters in a special way; you need to apply that to series masters and instance events
+                    //// TODO you need to passthrough other filters
 
                     return new CalendarEventsContext(
                         this.graphCalendarEventsContext,
