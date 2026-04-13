@@ -1131,6 +1131,76 @@
         }
     }
 
+    public ref struct fReader<TNextReader> : IReader2<fReader<TNextReader>, fToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+    }
+
+    public sealed class fToken
+    {
+        private fToken()
+        {
+        }
+
+        public static fToken Instance { get; } = new fToken();
+    }
+
+    public ref struct aReader<TNextReader> : IReader2<aReader<TNextReader>, aToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+    }
+
+    public sealed class aToken
+    {
+        private aToken()
+        {
+        }
+
+        public static aToken Instance { get; } = new aToken();
+    }
+
+    public ref struct lReader<TNextReader> : IReader2<lReader<TNextReader>, lToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+    }
+
+    public sealed class lToken
+    {
+        private lToken()
+        {
+        }
+
+        public static lToken Instance { get; } = new lToken();
+    }
+
+    public ref struct sReader<TNextReader> : IReader2<sReader<TNextReader>, sToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+    }
+
+    public sealed class sToken
+    {
+        private sToken()
+        {
+        }
+
+        public static sToken Instance { get; } = new sToken();
+    }
+
+    public ref struct eReader<TNextReader> : IReader2<eReader<TNextReader>, eToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+    }
+
+    public sealed class eToken
+    {
+        private eToken()
+        {
+        }
+
+        public static eToken Instance { get; } = new eToken();
+    }
+
     public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
         where TNextReader : allows ref struct
     {
