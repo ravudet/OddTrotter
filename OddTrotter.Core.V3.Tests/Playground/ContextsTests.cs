@@ -245,14 +245,12 @@ namespace Adapter
                     Graph.ICalendarEventsContext graphCalendarEventsContext,
                     DateTime? startTime,
                     DateTime? endTime,
-                    bool? isCancelled, 
                     Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
 
                     this.startTime = startTime;
                     this.endTime = endTime;
-                    this.isCancelled = isCancelled;
                     this.seriesMasterPredicate = seriesMasterPredicate;
                 }
 
@@ -379,8 +377,10 @@ namespace Adapter
 
                 private static void ExtractSeriesMasterFilter(
                     Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter,
-                    out Expression<Func<Graph.CalendarEvent, bool>> seriesMasterFilter,
-                    out Expression<Func<Graph.CalendarEvent, bool>> remainingFilter)
+                    out Expression<Func<Graph.CalendarEvent, bool>> seriesMasterFilter, // the things that are supported by graph, and are consistent across all instances in a series
+                    out Func<Graph.CalendarEvent, bool> seriesMasterPredicate, // the things that are *not* supported by graph, and are consistent across all instances in a series
+                    out Expression<Func<Graph.CalendarEvent, bool>> remainingFilter // the things are *not* consistent across all instances in a series
+                    )
                 {
                 }
 
