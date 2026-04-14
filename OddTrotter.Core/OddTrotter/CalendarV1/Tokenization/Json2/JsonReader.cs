@@ -99,6 +99,16 @@
         bool TryGetValue3(ref ReaderContext readerContext, out TValue value);
     }
 
+    public interface IReader2<TSelf, TContext, TValue, TNextReader> : IReader2<TSelf, TNextReader>
+        where TSelf : IReader2<TSelf, TContext, TValue, TNextReader>, allows ref struct
+        where TNextReader : allows ref struct
+        where TValue : allows ref struct
+    {
+        new TypeHolder<TSelf, TValue, TNextReader> AsReader { get; }
+
+        bool TryGetValue3(ref ReaderContext readerContext, out TValue value, out TContext context, out Func<TContext, TSelf> currentReaderFactory);
+    }
+
     public interface IReader<out TValue, out TNextReader> : IReader<TNextReader>
         where TValue : allows ref struct
         where TNextReader : allows ref struct
@@ -1353,6 +1363,81 @@
         }
 
         public static eToken Instance { get; } = new eToken();
+    }
+
+    public ref struct FalseReader3<TNextReader> : IReader2<FalseReader3<TNextReader>, int, FalseToken, TNextReader>
+        where TNextReader : allows ref struct
+    {
+        private readonly string literal = "false";
+        private int currentCharacter;
+        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+
+        public TypeHolder<FalseReader3<TNextReader>, FalseToken, TNextReader> AsReader
+        {
+            get
+            {
+                return new TypeHolder<FalseReader3<TNextReader>, FalseToken, TNextReader>(this);
+            }
+        }
+
+        TypeHolder<FalseReader3<TNextReader>, TNextReader> IReader2<FalseReader3<TNextReader>, TNextReader>.AsReader
+        {
+            get
+            {
+                return new TypeHolder<FalseReader3<TNextReader>, TNextReader>(this);
+            }
+        }
+
+        public FalseReader3(
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        private FalseReader3(
+            int currentCharacter,
+            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        {
+            this.currentCharacter = currentCharacter;
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public bool TryGetValue3(ref ReaderContext readerContext, out FalseToken value, out int context, out Func<int, FalseReader3<TNextReader>> currentReaderFactory)
+        {
+            for (; this.currentCharacter < this.literal.Length; ++this.currentCharacter)
+            {
+                if (!Helpers.TryReadChar(ref readerContext, this.literal[this.currentCharacter]))
+                {
+                    value = default!; //// TODO !
+                    context = this.currentCharacter;
+                    var nextReaderFactory = this.nextReaderFactory;
+                    currentReaderFactory = currentCharacter => new FalseReader3<TNextReader>(
+                        currentCharacter,
+                        nextReaderFactory);
+                    return false;
+                }
+            }
+
+            value = FalseToken.Instance;
+            context = default;
+            currentReaderFactory = default!; //// TODO !
+            return true;
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<TNextReader> nextFactory)
+        {
+            var stream = readerContext.Stream;
+            //// TODO you are here
+            var nextReaderFactory = this.nextReaderFactory;
+            nextFactory = () => nextReaderFactory()
+
+            return true;
+        }
     }
 
     public sealed class FalseReader<TNextReader> : IReader<FalseToken, TNextReader>
