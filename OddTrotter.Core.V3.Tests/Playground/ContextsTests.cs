@@ -229,7 +229,6 @@ namespace Adapter
 
                 private readonly DateTime? startTime;
                 private readonly DateTime? endTime;
-                private readonly bool? isCancelled;
                 private readonly Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate;
 
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
@@ -300,11 +299,7 @@ namespace Adapter
                             .Filter(calendarEvent => calendarEvent.End.DateTime < this.endTime);
                     }
 
-                    if (this.isCancelled != null)
-                    {
-                        calendarEvents = calendarEvents
-                            .Filter(calendarEvent => calendarEvent.IsCancelled == this.isCancelled);
-                    }
+                    //// TODO make sure iscancelled can be called by the consumer
 
                     calendarEvents = calendarEvents
                         .Top(pageSize) //// TODO should this even be part of the chain? should you just preserve if `top` was called on you?
@@ -328,6 +323,14 @@ namespace Adapter
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
+                    ExtractStartTime(filter, out var startTime, out filter);
+                    ExtractEndTime(filter, out var endTime, out filter);
+                    ExtractSeriesMasterFilter(filter, out var seriesMasterFilter, out var instanceFilter);
+
+
+
+
+
                     DateTime? startTime = null;
                     if (filter.Parameters.Count == 1)
                     {
@@ -358,6 +361,27 @@ namespace Adapter
                         this.endTime,
                         this.isCancelled,
                         this.seriesMasterPredicate);
+                }
+
+                private static void ExtractStartTime(
+                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter, 
+                    out DateTime? startTime, 
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>> remainingFilter)
+                {
+                }
+
+                private static void ExtractEndTime(
+                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter, 
+                    out DateTime? endTime, 
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>> remainingFilter)
+                {
+                }
+
+                private static void ExtractSeriesMasterFilter(
+                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter,
+                    out Expression<Func<Graph.CalendarEvent, bool>> seriesMasterFilter,
+                    out Expression<Func<Graph.CalendarEvent, bool>> remainingFilter)
+                {
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
