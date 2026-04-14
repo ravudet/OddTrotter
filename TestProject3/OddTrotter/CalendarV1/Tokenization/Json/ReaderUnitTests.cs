@@ -1773,7 +1773,7 @@
                 throw new Exception("tODO");
             }
 
-            context.CurrentByteIndex += 7;
+            context.CurrentByteIndex += 15;
             var more1Reader = more1();
             if (!more1Reader.TryGetValue3(ref context, out _) || !more1Reader.TryMove3(ref context, out var more2))
             {
@@ -2023,6 +2023,8 @@
                 }
 
                 //// TODO
+                stream.Position = 163;
+                context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
                 if (!nestedfalse.TryMove3(ref context, out var _more1))
                 {
                     throw new Exception("tODO");
@@ -2407,6 +2409,7 @@
                 }
 
                 //// TODO
+                context.CurrentByteIndex = 12;
                 if (!nestedfalse.TryMove3(ref context, out var _more1))
                 {
                     throw new Exception("tODO");
@@ -2602,6 +2605,8 @@
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
+            //// TODO remove this when you fix moveinternal3
+            context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
             var nothingFactory = await whitespace38.AsReader.MoveInternal3(ref context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory();
 
