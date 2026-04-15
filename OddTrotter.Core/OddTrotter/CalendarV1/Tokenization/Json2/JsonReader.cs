@@ -725,6 +725,8 @@
 
         public ValueToken(ObjectReader<TNextReader> objectReader)
         {
+            //// TODO you are here
+            //// TODO you need two value tokens
             this.type = 8;
             this.objectReader = objectReader;
         }
