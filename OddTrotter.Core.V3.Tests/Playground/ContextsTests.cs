@@ -312,6 +312,10 @@ namespace Adapter
                     //// TODO the querycontext needs to call this with `.Filter(CalendarSource.EndTimeLessThan(this.endTime.Value))` for it to work right now
                     
 
+
+
+                    //// TODO you are going to use the `instancefilter` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering)
+
                 }
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEventMasters()
@@ -321,29 +325,27 @@ namespace Adapter
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
                 {
-                    ExtractStartTime(filter, out var startTime, out filter);
-                    ExtractEndTime(filter, out var endTime, out filter);
-                    ExtractSeriesMasterFilter(filter, out var seriesMasterFilter, out var instanceFilter);
+                    Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter = filter;
+
+                    ExtractStartTime(
+                        remainingFilter, 
+                        out var startTime,
+                        out remainingFilter);
+                    ExtractEndTime(
+                        remainingFilter, 
+                        out var endTime, 
+                        out remainingFilter);
+                    ExtractSeriesMasterFilter(
+                        remainingFilter, 
+                        out var seriesMasterFilter, 
+                        out var seriesMasterPredicate, 
+                        out var instanceFilter);
 
 
 
 
 
-                    DateTime? startTime = null;
-                    if (filter.Parameters.Count == 1)
-                    {
-                        var parameterName = filter.Parameters[0].Name;
-                        if (parameterName != null)
-                        {
-                            if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
-                            {
-                                if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
-                                {
-                                    startTime = new DateTime(startTimeTicks);
-                                }
-                            }
-                        }
-                    }
+                    
 
                     if (startTime == null)
                     {
@@ -362,24 +364,51 @@ namespace Adapter
                 }
 
                 private static void ExtractStartTime(
-                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter, 
+                    Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter, 
                     out DateTime? startTime, 
-                    out Expression<Func<OddTrotter.CalendarEvent, bool>> remainingFilter)
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter)
                 {
+                    if (currentFilter == null)
+                    {
+                        startTime = null;
+                        remainingFilter = null;
+                        return;
+                    }
+
+                    if (currentFilter.Parameters.Count == 1)
+                    {
+                        var parameterName = currentFilter.Parameters[0].Name;
+                        if (parameterName != null)
+                        {
+                            if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
+                            {
+                                if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
+                                {
+                                    startTime = new DateTime(startTimeTicks);
+                                    remainingFilter = null;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    startTime = null;
+                    remainingFilter = currentFilter;
+                    return;
                 }
 
                 private static void ExtractEndTime(
-                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter, 
+                    Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter, 
                     out DateTime? endTime, 
-                    out Expression<Func<OddTrotter.CalendarEvent, bool>> remainingFilter)
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter)
                 {
                 }
 
                 private static void ExtractSeriesMasterFilter(
-                    Expression<Func<OddTrotter.CalendarEvent, bool>> currentFilter,
+                    Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
                     out Expression<Func<Graph.CalendarEvent, bool>> seriesMasterFilter, // the things that are supported by graph, and are consistent across all instances in a series
                     out Func<Graph.CalendarEvent, bool> seriesMasterPredicate, // the things that are *not* supported by graph, and are consistent across all instances in a series
-                    out Expression<Func<Graph.CalendarEvent, bool>> remainingFilter // the things are *not* consistent across all instances in a series
+                    out Expression<Func<Graph.CalendarEvent, bool>>? remainingFilter // the things are *not* consistent across all instances in a series
                     )
                 {
                 }
