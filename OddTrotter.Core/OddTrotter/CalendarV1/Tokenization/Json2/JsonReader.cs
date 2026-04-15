@@ -205,7 +205,7 @@
                 WhitespaceReaderFactory2);
         }
 
-        public static WhitespaceReader2<Nothing> WhitespaceReaderFactory2(Stream nestedStream, byte[] nestedBuffer, int currentByteIndex, int nestedValidBytes)
+        public static WhitespaceReader2<Nothing> WhitespaceReaderFactory2()
         {
             /*return new WhitespaceReader<Nothing>(
                 nestedStream,
@@ -214,10 +214,10 @@
                 nestedValidBytes,
                 NothingFactory);*/
             return new WhitespaceReader2<Nothing>(
-                static () => new Nothing());
+                NothingFactory);
         }
 
-        public static Nothing NothingFactory(Stream stream, byte[] buffer, int currentByteIndex, int validBytes)
+        public static Nothing NothingFactory()
         {
             return new Nothing();
         }
@@ -457,7 +457,7 @@
     public ref struct ValueReader2<TNextReader> : IReader2<ValueReader2<TNextReader>, ValueToken<TNextReader>>
         where TNextReader : allows ref struct
     {
-        private readonly Func<Stream, byte[], int, int, TNextReader> nextReaderFactory;
+        private readonly Func<TNextReader> nextReaderFactory;
 
         public TypeHolder<ValueReader2<TNextReader>, ValueToken<TNextReader>> AsReader
         {
@@ -468,7 +468,7 @@
         }
 
         public ValueReader2(
-            Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+            Func<TNextReader> nextReaderFactory)
         {
             this.nextReaderFactory = nextReaderFactory;
         }
@@ -497,7 +497,7 @@
             return true;
         }
 
-        private static ValueToken<TNextReader> Factory(ReaderContext readerContext, Func<Stream, byte[], int, int, TNextReader> nextReaderFactory)
+        private static ValueToken<TNextReader> Factory(ReaderContext readerContext, Func<TNextReader> nextReaderFactory)
         {
             switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
             {
@@ -508,7 +508,7 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 case 'n':
                     return new ValueToken<TNextReader>(
                         new NullReader<TNextReader>(
@@ -516,7 +516,7 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 case 't':
                     return new ValueToken<TNextReader>(
                         new TrueReader<TNextReader>(
@@ -524,14 +524,10 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 case '{':
                     return new ValueToken<TNextReader>(
-                        new ObjectReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
+                        new ObjectReader2<TNextReader>(
                             nextReaderFactory));
                 case '[':
                     return new ValueToken<TNextReader>(
@@ -540,7 +536,7 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 case '-':
                 case '0':
                 case '1':
@@ -558,7 +554,7 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 case '"':
                     return new ValueToken<TNextReader>(
                         new StringReader<TNextReader>(
@@ -566,7 +562,7 @@
                             readerContext.Buffer,
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
-                            nextReaderFactory));
+                            (_, _, _, _) => nextReaderFactory()));
                 default:
                     throw new Exception("tODO invalid JSON");
             }
@@ -698,6 +694,7 @@
         private readonly NullReader<TNextReader>? nullReader;
         private readonly TrueReader<TNextReader>? trueReader;
         private readonly ObjectReader<TNextReader>? objectReader;
+        private readonly RefNullable<ObjectReader2<TNextReader>> objectReader2;
         private readonly ArrayReader<TNextReader>? arrayReader;
         private readonly NumberReader<TNextReader>? numberReader;
         private readonly StringReader<TNextReader>? stringReader;
@@ -720,9 +717,15 @@
             this.trueReader = trueReader;
         }
 
-        public ValueToken(ObjectReader<TNextReader> objectReader)
+        public ValueToken(ObjectReader2<TNextReader> objectReader)
         {
             this.type = 4;
+            this.objectReader2 = new RefNullable<ObjectReader2<TNextReader>>(objectReader);
+        }
+
+        public ValueToken(ObjectReader<TNextReader> objectReader)
+        {
+            this.type = 8;
             this.objectReader = objectReader;
         }
 
@@ -764,13 +767,15 @@
                 case 3:
                     return @true(this.trueReader!);
                 case 4:
-                    return @object(this.objectReader!);
+                    return @object(this.objectReader2!);
                 case 5:
                     return @array(this.arrayReader!);
                 case 6:
                     return @number(this.numberReader!);
                 case 7:
                     return @string(this.stringReader!);
+                case 8:
+                    return @object(this.objectReader!);
                 default:
                     throw new Exception("TODO visitor");
             }
@@ -1651,6 +1656,66 @@
         public static TrueToken Instance { get; } = new TrueToken();
     }
 
+    public ref struct ObjectReader2<TNextReader> : IReader2<ObjectReader2<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
+        where TNextReader : allows ref struct
+    {
+        private readonly Func<TNextReader> nextReaderFactory;
+
+        public ObjectReader2(Func<TNextReader> nextReaderFactory)
+        {
+            this.nextReaderFactory = nextReaderFactory;
+        }
+
+        public TypeHolder<ObjectReader2<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>> AsReader
+        {
+            get
+            {
+                return new TypeHolder<ObjectReader2<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>(this);
+            }
+        }
+
+        public ValueTask Read(ReaderContext readerContext)
+        {
+            return readerContext.Read();
+        }
+
+        public bool TryMove3(ref ReaderContext readerContext, out Func<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>> nextFactory)
+        {
+            var stream = readerContext.Stream;
+            var buffer = readerContext.Buffer;
+            var currentByteIndex = readerContext.CurrentByteIndex;
+            var validBytes = readerContext.ValidBytes;
+            var nextReaderFactory = this.nextReaderFactory;
+            nextFactory = () => new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>(
+                stream,
+                buffer,
+                currentByteIndex,
+                validBytes,
+                (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>(
+                    stream,
+                    buffer,
+                    currentByteIndex,
+                    validBytes,
+                    (stream, buffer, currentByteIndex, validBytes) => new MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>(
+                        stream,
+                        buffer,
+                        currentByteIndex,
+                        validBytes,
+                        (stream, buffer, currentByteIndex, validBytes) => new WhitespaceReader<ObjectEndReader<TNextReader>>(
+                            stream,
+                            buffer,
+                            currentByteIndex,
+                            validBytes,
+                            (stream, buffer, currentByteIndex, validBytes) => new ObjectEndReader<TNextReader>(
+                                stream,
+                                buffer,
+                                currentByteIndex,
+                                validBytes,
+                                (stream, buffer, currentByteIndex, validBytes) => nextReaderFactory())))));
+            return true;
+        }
+    }
+
     public sealed class ObjectReader<TNextReader> : IReader<ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
         where TNextReader : allows ref struct
     {
@@ -2072,6 +2137,7 @@
             }
         }
     }
+
     public sealed class MemberReader<TNextReader> : IReader<StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
         where TNextReader : allows ref struct
     {
