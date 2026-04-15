@@ -314,7 +314,7 @@ namespace Adapter
 
 
 
-                    //// TODO you are going to use the `instancefilter` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering)
+                    //// TODO you are going to use the `instancefilter` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering (actually, the subject filtering case will be more like "if the oddtrotter one understands it, we can do better performance, but if it doesn't, we will pass it through and graph won't understand it, so the call will fail", which isn't necessarily great, but the whole point is that we need to support *at least* what graph supports, and if you give stuff to us in a format that we understand, we do better)
 
                 }
 
@@ -411,6 +411,7 @@ namespace Adapter
                     out Expression<Func<Graph.CalendarEvent, bool>>? remainingFilter // the things are *not* consistent across all instances in a series
                     )
                 {
+                    //// TODO if subject is tested and in a format that can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
