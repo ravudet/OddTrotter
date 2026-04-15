@@ -1770,7 +1770,7 @@
             }
 
             //// TODO
-            context.CurrentByteIndex = 15;
+            /*context.CurrentByteIndex = 15;
             if (!@false.TryGetValue3(ref context, out _, out _, out _))
             {
                 throw new Exception("tODO");
@@ -1781,8 +1781,8 @@
                 throw new Exception("tODO");
             }
 
-            var subsequentMembers2 = more1();
-            //var subsequentMembers2 = await @false.AsReader.MoveInternal2().ConfigureAwait(false);
+            var subsequentMembers2 = more1();*/
+            var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -2000,7 +2000,7 @@
                 }
 
                 //// TODO
-                context.CurrentByteIndex = 3;
+                /*context.CurrentByteIndex = 3;
                 if (!nestedfalse.TryGetValue3(ref context, out _, out _, out _))
                 {
                     throw new Exception("tODO");
@@ -2011,8 +2011,8 @@
                     throw new Exception("tODO");
                 }
 
-                var nestedsubsequentMembers2 = _more1();
-                //var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers2 = _more1();*/
+                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -2361,7 +2361,7 @@
                 }
 
                 //// TODO
-                context.CurrentByteIndex = 15;
+                /*context.CurrentByteIndex = 15;
                 if (!nestedfalse.TryGetValue3(ref context, out _, out _, out _))
                 {
                     throw new Exception("tODO");
@@ -2372,8 +2372,8 @@
                     throw new Exception("tODO");
                 }
 
-                var nestedsubsequentMembers2 = _more1();
-                //var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers2 = _more1();*/
+                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
