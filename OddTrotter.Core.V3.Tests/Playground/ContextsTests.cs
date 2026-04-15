@@ -411,6 +411,7 @@ namespace Adapter
                     out Expression<Func<Graph.CalendarEvent, bool>>? remainingFilter // the things are *not* consistent across all instances in a series
                     )
                 {
+                    //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
                     //// TODO if subject is tested and in a format that can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
                 }
 
