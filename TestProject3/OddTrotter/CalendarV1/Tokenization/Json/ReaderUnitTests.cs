@@ -1702,8 +1702,11 @@
                 throw new Exception("TODO");
             }
 
-            var objectReader = await @object.MoveInternal1().ConfigureAwait(false);
-            var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);
+            var objectstartfactory = await @object.AsReader.MoveInternal2(null!, ref context).ConfigureAwait(false);
+            var objectstart = objectstartfactory();
+            var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+            /*var objectReader = await @object.MoveInternal1().ConfigureAwait(false);
+            var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);*/
             //var membersReader = await whitespaceReader2.AsReader.MoveInternal3(whitespaceReader2.Factory).ConfigureAwait(false);
             var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
 
