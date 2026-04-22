@@ -1697,12 +1697,13 @@
             var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
-            if (!valueToken.TryObject().TryGetValue(out var @object))
+            if (!valueToken.TryObject(out var objectFactory))
             {
                 throw new Exception("TODO");
             }
 
-            var objectstartfactory = await @object.AsReader.MoveInternal2(null!, ref context).ConfigureAwait(false);
+            var @object = objectFactory();
+            var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
             var objectstart = objectstartfactory();
             var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
             /*var objectReader = await @object.MoveInternal1().ConfigureAwait(false);

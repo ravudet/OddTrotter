@@ -491,8 +491,17 @@
                 throw new Exception("TODO invalid JSON");
             }
 
-            var localReaderContext = readerContext;
             var nextReaderFactory = this.nextReaderFactory;
+            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case '{':
+                    nextFactory = () => new ValueToken2<TNextReader>(
+                        () => new ObjectReader2<TNextReader>(
+                            nextReaderFactory));
+                    return true;
+            }
+
+            var localReaderContext = readerContext;
             nextFactory = () => Factory(localReaderContext, nextReaderFactory); //// TODO once the subsequent readers follow the new pattern, you shouldn't need to close the readercontext anymore (and by the way, the reader context being closed is a bug...)
             return true;
         }
@@ -525,10 +534,6 @@
                             readerContext.CurrentByteIndex,
                             readerContext.ValidBytes,
                             (_, _, _, _) => nextReaderFactory()));
-                case '{':
-                    return new ValueToken2<TNextReader>(
-                        new ObjectReader2<TNextReader>(
-                            nextReaderFactory));
                 case '[':
                     return new ValueToken2<TNextReader>(
                         new ArrayReader<TNextReader>(
@@ -1073,7 +1078,7 @@
         private readonly FalseReader<TNextReader>? falseReader;
         private readonly NullReader<TNextReader>? nullReader;
         private readonly TrueReader<TNextReader>? trueReader;
-        private readonly RefNullable<ObjectReader2<TNextReader>> objectReader;
+        private readonly Func<ObjectReader2<TNextReader>>? objectReader;
         private readonly ArrayReader<TNextReader>? arrayReader;
         private readonly NumberReader<TNextReader>? numberReader;
         private readonly StringReader<TNextReader>? stringReader;
@@ -1096,10 +1101,10 @@
             this.trueReader = trueReader;
         }
 
-        public ValueToken2(ObjectReader2<TNextReader> objectReader)
+        public ValueToken2(Func<ObjectReader2<TNextReader>> objectReader)
         {
             this.type = 4;
-            this.objectReader = new RefNullable<ObjectReader2<TNextReader>>(objectReader);
+            this.objectReader = objectReader;
         }
 
         public ValueToken2(ArrayReader<TNextReader> arrayReader)
@@ -1124,7 +1129,7 @@
             Func<FalseReader<TNextReader>, TResult> @false,
             Func<NullReader<TNextReader>, TResult> @null,
             Func<TrueReader<TNextReader>, TResult> @true,
-            Func<ObjectReader2<TNextReader>, TResult> @object,
+            Func<Func<ObjectReader2<TNextReader>>, TResult> @object,
             Func<ArrayReader<TNextReader>, TResult> array,
             Func<NumberReader<TNextReader>, TResult> number,
             Func<StringReader<TNextReader>, TResult> @string)
@@ -1174,7 +1179,7 @@
             return new RefNullable<FalseReader<TNextReader>>();
         }
 
-        private static RefNullable<FalseReader<TNextReader>> FalseObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<FalseReader<TNextReader>> FalseObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<FalseReader<TNextReader>>();
         }
@@ -1216,7 +1221,7 @@
             return new RefNullable<NullReader<TNextReader>>();
         }
 
-        private static RefNullable<NullReader<TNextReader>> NullObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<NullReader<TNextReader>> NullObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<NullReader<TNextReader>>();
         }
@@ -1258,7 +1263,7 @@
             return new RefNullable<TrueReader<TNextReader>>();
         }
 
-        private static RefNullable<TrueReader<TNextReader>> TrueObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<TrueReader<TNextReader>> TrueObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<TrueReader<TNextReader>>();
         }
@@ -1278,46 +1283,47 @@
             return new RefNullable<TrueReader<TNextReader>>();
         }
 
-        public RefNullable<ObjectReader2<TNextReader>> TryObject()
+        public bool TryObject(out Func<ObjectReader2<TNextReader>> objectReader)
         {
-            return this.Apply(
+            objectReader = this.Apply(
                 ObjectFalse,
                 ObjectNull,
                 ObjectTrue,
-                RefNullable.Value,
+                _ => _,
                 ObjectArray,
                 ObjectNumber,
-                ObjectString);
+                ObjectString)!; //// TODO !
+            return objectReader != null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectFalse(FalseReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectFalse(FalseReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectNull(NullReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectNull(NullReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectTrue(TrueReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectTrue(TrueReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectArray(ArrayReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectArray(ArrayReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectNumber(NumberReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectNumber(NumberReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
-        private static RefNullable<ObjectReader2<TNextReader>> ObjectString(StringReader<TNextReader> _)
+        private static Func<ObjectReader2<TNextReader>>? ObjectString(StringReader<TNextReader> _)
         {
-            return new RefNullable<ObjectReader2<TNextReader>>();
+            return null;
         }
 
         public RefNullable<ArrayReader<TNextReader>> TryArray()
@@ -1347,7 +1353,7 @@
             return new RefNullable<ArrayReader<TNextReader>>();
         }
 
-        private static RefNullable<ArrayReader<TNextReader>> ArrayObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<ArrayReader<TNextReader>> ArrayObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<ArrayReader<TNextReader>>();
         }
@@ -1389,7 +1395,7 @@
             return new RefNullable<NumberReader<TNextReader>>();
         }
 
-        private static RefNullable<NumberReader<TNextReader>> NumberObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<NumberReader<TNextReader>> NumberObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<NumberReader<TNextReader>>();
         }
@@ -1431,7 +1437,7 @@
             return new RefNullable<StringReader<TNextReader>>();
         }
 
-        private static RefNullable<StringReader<TNextReader>> StringObject(ObjectReader2<TNextReader> _)
+        private static RefNullable<StringReader<TNextReader>> StringObject(Func<ObjectReader2<TNextReader>> _)
         {
             return new RefNullable<StringReader<TNextReader>>();
         }
