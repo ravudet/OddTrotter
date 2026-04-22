@@ -1,9 +1,13 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.Json3
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
+
+    using OddTrotter.Odata.v4_01.ConventionContext;
 
     public readonly ref struct TypeHolder<TSelf, T1>
         where TSelf : allows ref struct
@@ -46,7 +50,7 @@
 
     public sealed class ReaderContext
     {
-        public ReaderContext(
+        private ReaderContext(
             Stream stream,
             byte[] buffer,
             int currentByteIndex,
@@ -62,6 +66,11 @@
         public byte[] Buffer { get; }
         public int CurrentByteIndex { get; set; }
         public int ValidBytes { get; set; }
+
+        public static ReaderContext FromStream(Stream stream, byte[] buffer)
+        {
+            return new ReaderContext(stream, buffer, 0, 0);
+        }
     }
 
     public static class ReaderContextExtensions
@@ -92,9 +101,9 @@
         TypeHolder<TSelf, TNextReader, TContext> AsMoveReader { get; }
 
         bool TryMove(
-            ref ReaderContext readerContext, 
-            [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader, 
-            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context, 
+            ref ReaderContext readerContext,
+            [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader,
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context,
             [NotNullWhen(false)][MaybeNullWhen(true)] out Func<TContext, TSelf> currentReaderFactory);
     }
 
@@ -106,11 +115,142 @@
         TypeHolder<TSelf, TNextReader, TContext, TValue> AsValueReader { get; }
 
         bool TryGetValue(
-            ref ReaderContext readerContext, 
+            ref ReaderContext readerContext,
             [NotNullWhen(true)][MaybeNullWhen(false)] out TValue value,
-            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context, 
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context,
             [NotNullWhen(false)][MaybeNullWhen(true)] out Func<TContext, TSelf> currentReaderFactory);
     }
 
+    public ref struct JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing>
+    {
+        public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing>(this);
+            }
+        }
 
+        public bool TryMove(
+            ref ReaderContext readerContext,
+            [MaybeNullWhen(false), NotNullWhen(true)] out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader,
+            [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context,
+            [MaybeNullWhen(true), NotNullWhen(false)] out Func<Nothing, JsonReader> currentReaderFactory)
+        {
+            context = default;
+            currentReaderFactory = default;
+            nextReader = new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>();
+            return true;
+        }
+    }
+
+    public ref struct WhitespaceReader<TNextReader> : IValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
+        where TNextReader : new(), allows ref struct //// TODO the `new()` thing is really just an optimization; other libraries following the same reader pattern don't have to have this constaint, and can just pass "next reader factories" around
+    {
+        private readonly List<WhitespaceToken> tokens;
+
+        public WhitespaceReader()
+            : this(new List<WhitespaceToken>())
+        {
+        }
+
+        private WhitespaceReader(List<WhitespaceToken> tokens)
+        {
+            this.tokens = tokens;
+        }
+
+        private static WhitespaceReader<TNextReader> Factory(List<WhitespaceToken> tokens)
+        {
+            return new WhitespaceReader<TNextReader>(tokens);
+        }
+
+        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>(this);
+            }
+        }
+
+        public TypeHolder<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>>(this);
+            }
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out List<WhitespaceToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context, [MaybeNullWhen(true), NotNullWhen(false)] out Func<List<WhitespaceToken>, WhitespaceReader<TNextReader>> currentReaderFactory)
+        {
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    value = default;
+                    context = this.tokens;
+                    currentReaderFactory = Factory;
+                    return false;
+                }
+
+                WhitespaceToken whitespace;
+                try
+                {
+                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                this.tokens.Add(whitespace);
+            }
+
+            value = this.tokens;
+            context = default;
+            currentReaderFactory = default;
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out TNextReader nextReader, [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context, [MaybeNullWhen(true), NotNullWhen(false)] out Func<List<WhitespaceToken>, WhitespaceReader<TNextReader>> currentReaderFactory)
+        {
+            if (!this.TryGetValue(ref readerContext, out _, out context, out currentReaderFactory))
+            {
+                nextReader = default;
+                return false;
+            }
+        }
+    }
+
+    public struct WhitespaceToken
+    {
+        public WhitespaceToken(byte @char)
+        {
+            switch (@char)
+            {
+                case 0x20:
+                case 0x09:
+                case 0x0A:
+                case 0x0D:
+                    this.Char = @char;
+                    break;
+                default:
+                    throw new Exception("TODO invalid JSON");
+            }
+
+        }
+
+        public byte Char { get; }
+    }
+
+    public ref struct ValueReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
 }
