@@ -229,11 +229,26 @@ namespace Adapter
 
                 private readonly DateTime? startTime;
                 private readonly DateTime? endTime;
-                private readonly Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate;
+
+                /// <summary>
+                /// a filter was applied that matches a property that has consistent values across all instances in a series and the filter is known to be supported by graph (e.g. iscancelled)
+                /// </summary>
+                private readonly Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph;
+
+                /// <summary>
+                /// a filter was applied that matches a property that has consistent values across all instances in a series and the filter is known to be not supported by graph (e.g. subject)
+                /// </summary>
+                private readonly Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph;
+
+                /// <summary>
+                /// a filter was applied that matches a property that does not have consistent values across all instances in a series (regardless of whether the filter is known to be supported by graph) (e.g. start) //// TODO you don't actually have anything that should reach here if the caller is just matching on a single property; this should only be reached right now when they are using a more complex expression (like using binary operators or comparing properties to other properties)
+                /// </summary>
+                private readonly Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances;
 
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
                     : this(
                           graphCalendarEventsContext,
+                          null,
                           null,
                           null,
                           null,
@@ -245,13 +260,17 @@ namespace Adapter
                     Graph.ICalendarEventsContext graphCalendarEventsContext,
                     DateTime? startTime,
                     DateTime? endTime,
-                    Func<OddTrotter.CalendarEvent, bool>? seriesMasterPredicate)
+                    Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph,
+                    Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph,
+                    Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
 
                     this.startTime = startTime;
                     this.endTime = endTime;
-                    this.seriesMasterPredicate = seriesMasterPredicate;
+                    this.filterConsistentAcrossInstancesAndSupportedByGraph = filterConsistentAcrossInstancesAndSupportedByGraph;
+                    this.filterConsistentAcrossInstancesAndNotSupportedByGraph = filterConsistentAcrossInstancesAndNotSupportedByGraph;
+                    this.filterNotConsistentAcrossInstances = filterNotConsistentAcrossInstances;
                 }
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
@@ -297,6 +316,12 @@ namespace Adapter
                             .Filter(calendarEvent => calendarEvent.End.DateTime < this.endTime);
                     }
 
+                    if (this.filterConsistentAcrossInstancesAndSupportedByGraph != null)
+                    {
+                        calendarEvents = calendarEvents
+                            .Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
+                    }
+
                     //// TODO make sure iscancelled can be called by the consumer
 
                     calendarEvents = calendarEvents
@@ -337,9 +362,9 @@ namespace Adapter
                         out remainingFilter);
                     ExtractSeriesMasterFilter(
                         remainingFilter, 
-                        out var seriesMasterFilter, 
-                        out var seriesMasterPredicate, 
-                        out var instanceFilter);
+                        out var filterConsistentAcrossInstancesAndSupportedByGraph, 
+                        out var filterConsistentAcrossInstancesAndNotSupportedByGraph, 
+                        out var filterNotConsistentAcrossInstances);
 
 
 
@@ -406,13 +431,13 @@ namespace Adapter
 
                 private static void ExtractSeriesMasterFilter(
                     Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
-                    out Expression<Func<Graph.CalendarEvent, bool>> seriesMasterFilter, // the things that are supported by graph, and are consistent across all instances in a series
-                    out Func<Graph.CalendarEvent, bool> seriesMasterPredicate, // the things that are *not* supported by graph, and are consistent across all instances in a series
-                    out Expression<Func<Graph.CalendarEvent, bool>>? remainingFilter // the things are *not* consistent across all instances in a series
+                    out Expression<Func<Graph.CalendarEvent, bool>> filterConsistentAcrossInstancesAndSupportedByGraph,
+                    out Func<Graph.CalendarEvent, bool> filterConsistentAcrossInstancesAndNotSupportedByGraph,
+                    out Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances
                     )
                 {
                     //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
-                    //// TODO if subject is tested and in a format that can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
+                    //// TODO if subject is tested and in a format that you can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
