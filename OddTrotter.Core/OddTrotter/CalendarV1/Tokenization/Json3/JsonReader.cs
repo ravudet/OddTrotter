@@ -122,6 +122,20 @@
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
     }
 
+    public interface ITokenReader<TSelf, TToken, TContext>
+        where TSelf : ITokenReader<TSelf, TToken, TContext>, allows ref struct
+        where TToken : allows ref struct
+    {
+        TypeHolder<TSelf, TToken, TContext> AsTokenReader { get; }
+
+        bool TryGetToken(
+            ref ReaderContext readerContext,
+            [NotNullWhen(true)][MaybeNullWhen(false)] out Func<TToken> token,
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
+
+        static abstract TSelf Create(TContext context);
+    }
+
     public ref struct JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing>
     {
         public TypeHolder<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing> AsMoveReader
@@ -265,10 +279,10 @@
         public byte Char { get; }
     }
 
-    public ref struct ValueReader<TNextReader> : IMoveReader<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing>
+    public ref struct ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing>
         where TNextReader : new(), allows ref struct
     {
-        public TypeHolder<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing> AsMoveReader
+        public TypeHolder<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing> AsTokenReader
         {
             get
             {
@@ -281,12 +295,14 @@
             return new ValueReader<TNextReader>();
         }
 
-        public bool TryMove(
-            ref ReaderContext readerContext, 
+        public bool TryGetToken(
+            ref ReaderContext readerContext,
+            [MaybeNullWhen(false), NotNullWhen(true)] out Func<ValueToken<TNextReader>> token,
             [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
+                token = default;
                 context = default;
                 return false;
             }
@@ -299,36 +315,25 @@
             switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
             {
                 case 'f':
-                    return new ValueToken<TNextReader>(); //// TODO you need to add back the out tnextreader parameter, or you could have a new interface for "token" readers?
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new FalseReader<TNextReader>());
+                    return true;
                 case 'n':
-                    return new ValueToken2<TNextReader>(
-                        new NullReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
-                            (_, _, _, _) => nextReaderFactory()));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new NullReader<TNextReader>());
+                    return true;
                 case 't':
-                    return new ValueToken2<TNextReader>(
-                        new TrueReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
-                            (_, _, _, _) => nextReaderFactory()));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new TrueReader<TNextReader>());
+                    return true;
                 case '{':
-                    nextFactory = () => new ValueToken2<TNextReader>(
-                        () => new ObjectReader2<TNextReader>(
-                            nextReaderFactory));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new ObjectReader<TNextReader>());
                     return true;
                 case '[':
-                    return new ValueToken2<TNextReader>(
-                        new ArrayReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
-                            (_, _, _, _) => nextReaderFactory()));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new ArrayReader<TNextReader>());
+                    return true;
                 case '-':
                 case '0':
                 case '1':
@@ -340,29 +345,82 @@
                 case '7':
                 case '8':
                 case '9':
-                    return new ValueToken2<TNextReader>(
-                        new NumberReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
-                            (_, _, _, _) => nextReaderFactory()));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new NumberReader<TNextReader>());
+                    return true;
                 case '"':
-                    return new ValueToken2<TNextReader>(
-                        new StringReader<TNextReader>(
-                            readerContext.Stream,
-                            readerContext.Buffer,
-                            readerContext.CurrentByteIndex,
-                            readerContext.ValidBytes,
-                            (_, _, _, _) => nextReaderFactory()));
+                    context = default;
+                    token = () => new ValueToken<TNextReader>(new StringReader<TNextReader>());
+                    return true;
                 default:
                     throw new Exception("tODO invalid JSON");
             }
         }
     }
+
+    public ref struct ValueToken<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+        public ValueToken(FalseReader<TNextReader> falseReader)
+        {
+        }
+
+        public ValueToken(NullReader<TNextReader> nullReader)
+        {
+        }
+
+        public ValueToken(TrueReader<TNextReader> trueReader)
+        {
+        }
+
+        public ValueToken(ObjectReader<TNextReader> objectReader)
+        {
+        }
+
+        public ValueToken(ArrayReader<TNextReader> arrayReader)
+        {
+        }
+
+        public ValueToken(NumberReader<TNextReader> numberReader)
+        {
+        }
+
+        public ValueToken(StringReader<TNextReader> stringReader)
+        {
+        }
     }
 
-    public struct ValueToken<TNextReader>
+    public ref struct FalseReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct NullReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct TrueReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct ObjectReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct ArrayReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct NumberReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct StringReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
