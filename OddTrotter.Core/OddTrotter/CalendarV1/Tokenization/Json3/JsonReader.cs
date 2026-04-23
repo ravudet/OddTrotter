@@ -95,21 +95,22 @@
 
     public interface IMoveReader<TSelf, TNextReader, TContext>
         where TSelf : IMoveReader<TSelf, TNextReader, TContext>, allows ref struct
-        where TNextReader : allows ref struct
+        where TNextReader : new(), allows ref struct
         // TContext can't be a ref struct, because it's what we use when we need a task to read more from `readercontext`
     {
         TypeHolder<TSelf, TNextReader, TContext> AsMoveReader { get; }
 
         bool TryMove(
             ref ReaderContext readerContext,
-            [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader,
-            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context,
-            [NotNullWhen(false)][MaybeNullWhen(true)] out Func<TContext, TSelf> currentReaderFactory);
+            // [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader, //// TODO we don't need this because we have `tnextreader : new()`
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
+
+        static abstract TSelf Create(TContext context);
     }
 
     public interface IValueReader<TSelf, TNextReader, TContext, TValue> : IMoveReader<TSelf, TNextReader, TContext>
         where TSelf : IMoveReader<TSelf, TNextReader, TContext>, allows ref struct
-        where TNextReader : allows ref struct
+        where TNextReader : new(), allows ref struct
         where TValue : allows ref struct
     {
         TypeHolder<TSelf, TNextReader, TContext, TValue> AsValueReader { get; }
@@ -117,8 +118,7 @@
         bool TryGetValue(
             ref ReaderContext readerContext,
             [NotNullWhen(true)][MaybeNullWhen(false)] out TValue value,
-            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context,
-            [NotNullWhen(false)][MaybeNullWhen(true)] out Func<TContext, TSelf> currentReaderFactory);
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
     }
 
     public ref struct JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>, Nothing>
@@ -131,15 +131,18 @@
             }
         }
 
+        public static JsonReader Create(Nothing context)
+        {
+            return new JsonReader();
+        }
+
         public bool TryMove(
             ref ReaderContext readerContext,
-            [MaybeNullWhen(false), NotNullWhen(true)] out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader,
-            [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context,
-            [MaybeNullWhen(true), NotNullWhen(false)] out Func<Nothing, JsonReader> currentReaderFactory)
+            ////[MaybeNullWhen(false), NotNullWhen(true)] out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader,
+            [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             context = default;
-            currentReaderFactory = default;
-            nextReader = new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>();
+            ////nextReader = new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>();
             return true;
         }
     }
@@ -159,11 +162,6 @@
             this.tokens = tokens;
         }
 
-        private static WhitespaceReader<TNextReader> Factory(List<WhitespaceToken> tokens)
-        {
-            return new WhitespaceReader<TNextReader>(tokens);
-        }
-
         public TypeHolder<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>> AsValueReader
         {
             get
@@ -180,7 +178,10 @@
             }
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out List<WhitespaceToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context, [MaybeNullWhen(true), NotNullWhen(false)] out Func<List<WhitespaceToken>, WhitespaceReader<TNextReader>> currentReaderFactory)
+        public bool TryGetValue(
+            ref ReaderContext readerContext, 
+            [MaybeNullWhen(false), NotNullWhen(true)] out List<WhitespaceToken> value, 
+            [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
             while (true)
             {
@@ -194,7 +195,6 @@
                 {
                     value = default;
                     context = this.tokens;
-                    currentReaderFactory = Factory;
                     return false;
                 }
 
@@ -214,20 +214,27 @@
 
             value = this.tokens;
             context = default;
-            currentReaderFactory = default;
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out TNextReader nextReader, [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context, [MaybeNullWhen(true), NotNullWhen(false)] out Func<List<WhitespaceToken>, WhitespaceReader<TNextReader>> currentReaderFactory)
+        public bool TryMove(
+            ref ReaderContext readerContext, 
+            ////[MaybeNullWhen(false), NotNullWhen(true)] out TNextReader nextReader,
+            [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context, out currentReaderFactory))
+            if (!this.TryGetValue(ref readerContext, out _, out context))
             {
-                nextReader = default;
+                ////nextReader = default;
                 return false;
             }
 
-            nextReader = new();
+            ////nextReader = new();
             return true;
+        }
+
+        public static WhitespaceReader<TNextReader> Create(List<WhitespaceToken> context)
+        {
+            return new WhitespaceReader<TNextReader>(context);
         }
     }
 

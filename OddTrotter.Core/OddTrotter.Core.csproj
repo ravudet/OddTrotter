@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace />
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
