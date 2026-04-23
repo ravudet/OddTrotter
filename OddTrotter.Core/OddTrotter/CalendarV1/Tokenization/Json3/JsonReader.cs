@@ -4,10 +4,9 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using OddTrotter.Odata.v4_01.ConventionContext;
 
     public readonly ref struct TypeHolder<TSelf, T1>
         where TSelf : allows ref struct
@@ -266,27 +265,101 @@
         public byte Char { get; }
     }
 
-    public ref struct ValueReader<TNextReader> : IValueReader<ValueReader<TNextReader>, TNextReader, Nothing, ValueToken<TNextReader>>
+    public ref struct ValueReader<TNextReader> : IMoveReader<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing>
         where TNextReader : new(), allows ref struct
     {
-        public TypeHolder<ValueReader<TNextReader>, TNextReader, Nothing, ValueToken<TNextReader>> AsValueReader => throw new NotImplementedException();
-
-        public TypeHolder<ValueReader<TNextReader>, TNextReader, Nothing> AsMoveReader => throw new NotImplementedException();
+        public TypeHolder<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<ValueReader<TNextReader>, ValueToken<TNextReader>, Nothing>(this);
+            }
+        }
 
         public static ValueReader<TNextReader> Create(Nothing context)
         {
-            throw new NotImplementedException();
+            return new ValueReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ValueToken<TNextReader> value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(
+            ref ReaderContext readerContext, 
+            [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            throw new NotImplementedException();
-        }
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                context = default;
+                return false;
+            }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
-        {
-            throw new NotImplementedException();
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case 'f':
+                    return new ValueToken<TNextReader>(); //// TODO you need to add back the out tnextreader parameter, or you could have a new interface for "token" readers?
+                case 'n':
+                    return new ValueToken2<TNextReader>(
+                        new NullReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            (_, _, _, _) => nextReaderFactory()));
+                case 't':
+                    return new ValueToken2<TNextReader>(
+                        new TrueReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            (_, _, _, _) => nextReaderFactory()));
+                case '{':
+                    nextFactory = () => new ValueToken2<TNextReader>(
+                        () => new ObjectReader2<TNextReader>(
+                            nextReaderFactory));
+                    return true;
+                case '[':
+                    return new ValueToken2<TNextReader>(
+                        new ArrayReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            (_, _, _, _) => nextReaderFactory()));
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    return new ValueToken2<TNextReader>(
+                        new NumberReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            (_, _, _, _) => nextReaderFactory()));
+                case '"':
+                    return new ValueToken2<TNextReader>(
+                        new StringReader<TNextReader>(
+                            readerContext.Stream,
+                            readerContext.Buffer,
+                            readerContext.CurrentByteIndex,
+                            readerContext.ValidBytes,
+                            (_, _, _, _) => nextReaderFactory()));
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }
         }
+    }
     }
 
     public struct ValueToken<TNextReader>
