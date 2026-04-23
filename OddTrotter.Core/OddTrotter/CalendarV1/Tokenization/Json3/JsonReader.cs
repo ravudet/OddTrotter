@@ -152,7 +152,7 @@
     public ref struct WhitespaceReader<TNextReader> : IValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
         where TNextReader : new(), allows ref struct //// TODO the `new()` thing is really just an optimization; other libraries following the same reader pattern don't have to have this constaint, and can just pass "next reader factories" around
     {
-        private readonly List<WhitespaceToken> tokens;
+        private List<WhitespaceToken> tokens;
 
         public WhitespaceReader()
             : this(new List<WhitespaceToken>())
@@ -185,6 +185,11 @@
             [MaybeNullWhen(false), NotNullWhen(true)] out List<WhitespaceToken> value, 
             [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
+            if (this.tokens == null)
+            {
+                this.tokens = new List<WhitespaceToken>();
+            }
+
             while (true)
             {
                 if (readerContext.ValidBytes == 0)
@@ -261,7 +266,30 @@
         public byte Char { get; }
     }
 
-    public ref struct ValueReader<TNextReader>
+    public ref struct ValueReader<TNextReader> : IValueReader<ValueReader<TNextReader>, TNextReader, Nothing, ValueToken<TNextReader>>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<ValueReader<TNextReader>, TNextReader, Nothing, ValueToken<TNextReader>> AsValueReader => throw new NotImplementedException();
+
+        public TypeHolder<ValueReader<TNextReader>, TNextReader, Nothing> AsMoveReader => throw new NotImplementedException();
+
+        public static ValueReader<TNextReader> Create(Nothing context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ValueToken<TNextReader> value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public struct ValueToken<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
