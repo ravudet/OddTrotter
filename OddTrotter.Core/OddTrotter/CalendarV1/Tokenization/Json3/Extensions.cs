@@ -89,7 +89,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private readonly ReaderContext* readerContext;
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private Func<TToken>? factory;
+                    private Func<TToken>? factory = null;
                     private TContext context;
 
                     public TaskAwaiter(

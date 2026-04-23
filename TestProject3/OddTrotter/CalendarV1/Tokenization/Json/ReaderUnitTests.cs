@@ -1682,6 +1682,10 @@
             var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!valueToken.TryObject(out var @object))
+            {
+                throw new Exception("TODO");
+            }
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
@@ -1728,9 +1732,7 @@
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
 
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-            /*var valueReader = valueReaderFactory();
+            var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
             if (!valueToken.TryObject(out var objectFactory))
@@ -1739,7 +1741,10 @@
             }
 
             var @object = objectFactory();
-            var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+            /*var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
             var objectstart = objectstartfactory();
             var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
             /*var objectReader = await @object.MoveInternal1().ConfigureAwait(false);

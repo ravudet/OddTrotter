@@ -316,23 +316,23 @@
             {
                 case 'f':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new FalseReader<TNextReader>());
+                    token = ValueToken<TNextReader>.False;
                     return true;
                 case 'n':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new NullReader<TNextReader>());
+                    token = ValueToken<TNextReader>.Null;
                     return true;
                 case 't':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new TrueReader<TNextReader>());
+                    token = ValueToken<TNextReader>.True;
                     return true;
                 case '{':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new ObjectReader<TNextReader>());
+                    token = ValueToken<TNextReader>.Object;
                     return true;
                 case '[':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new ArrayReader<TNextReader>());
+                    token = ValueToken<TNextReader>.Array;
                     return true;
                 case '-':
                 case '0':
@@ -346,11 +346,11 @@
                 case '8':
                 case '9':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new NumberReader<TNextReader>());
+                    token = ValueToken<TNextReader>.Number;
                     return true;
                 case '"':
                     context = default;
-                    token = () => new ValueToken<TNextReader>(new StringReader<TNextReader>());
+                    token = ValueToken<TNextReader>.String;
                     return true;
                 default:
                     throw new Exception("tODO invalid JSON");
@@ -361,32 +361,104 @@
     public ref struct ValueToken<TNextReader>
         where TNextReader : new(), allows ref struct
     {
-        public ValueToken(FalseReader<TNextReader> falseReader)
+        private int type { get; init; }
+
+        public static ValueToken<TNextReader> False()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 1,
+            };
         }
 
-        public ValueToken(NullReader<TNextReader> nullReader)
+        public static ValueToken<TNextReader> Null()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 2,
+            };
         }
 
-        public ValueToken(TrueReader<TNextReader> trueReader)
+        public static ValueToken<TNextReader> True()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 3,
+            };
         }
 
-        public ValueToken(ObjectReader<TNextReader> objectReader)
+        public static ValueToken<TNextReader> Object()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 4,
+            };
         }
 
-        public ValueToken(ArrayReader<TNextReader> arrayReader)
+        public static ValueToken<TNextReader> Array()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 5,
+            };
         }
 
-        public ValueToken(NumberReader<TNextReader> numberReader)
+        public static ValueToken<TNextReader> Number()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 6,
+            };
         }
 
-        public ValueToken(StringReader<TNextReader> stringReader)
+        public static ValueToken<TNextReader> String()
         {
+            return new ValueToken<TNextReader>()
+            {
+                type = 7,
+            };
+        }
+
+        public bool TryFalse(out FalseReader<TNextReader> falseReader)
+        {
+            falseReader = default;
+            return this.type == 1;
+        }
+
+        public bool TryNull(out NullReader<TNextReader> nullReader)
+        {
+            nullReader = default;
+            return this.type == 2;
+        }
+
+        public bool TryTrue(out TrueReader<TNextReader> trueReader)
+        {
+            trueReader = default;
+            return this.type == 3;
+        }
+
+        public bool TryObject(out ObjectReader<TNextReader> objectReader)
+        {
+            objectReader = default;
+            return this.type == 4;
+        }
+
+        public bool TryArray(out ArrayReader<TNextReader> arrayReader)
+        {
+            arrayReader = default;
+            return this.type == 5;
+        }
+
+        public bool TryNumber(out NumberReader<TNextReader> numberReader)
+        {
+            numberReader = default;
+            return this.type == 6;
+        }
+
+        public bool TryString(out StringReader<TNextReader> stringReader)
+        {
+            stringReader = default;
+            return this.type == 7;
         }
     }
 
