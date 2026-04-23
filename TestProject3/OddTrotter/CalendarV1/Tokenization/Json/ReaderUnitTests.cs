@@ -1681,6 +1681,7 @@
 
             var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
