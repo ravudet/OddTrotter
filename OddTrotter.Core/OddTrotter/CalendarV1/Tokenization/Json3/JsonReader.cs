@@ -225,6 +225,9 @@
                 nextReader = default;
                 return false;
             }
+
+            nextReader = new();
+            return true;
         }
     }
 

@@ -624,8 +624,8 @@
             where TCurrentReader : Json2.IReader2<TCurrentReader, TNextReader>, allows ref struct
             where TNextReader : allows ref struct
         {
-            var self = currentReader.Self;
-            if (!self.TryMove3(ref context, out var nextFactory))
+            //var self = currentReader.Self;
+            if (!currentReader.Self.TryMove3(ref context, out var nextFactory))
             {
                 //// TODO make context a `ref` field
                 return new MoveInternal2Task<TCurrentReader, TNextReader>(new MoveInternal2ReadTask<TCurrentReader, TNextReader>(context.Read(), factory, ref context));
@@ -1655,6 +1655,33 @@
                 }
             }
         }*/
+
+        [TestMethod]
+        public async Task V3Broad()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await V3DoWork(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task V3DoWork(Stream stream)
+        {
+            stream.Position = 0;
+            var context = Json3.ReaderContext.FromStream(stream, new byte[20]);
+            await Task.CompletedTask;
+            /*var reader = new Json3.JsonReader();
+
+            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+            var whitespaceReader = whitespaceReaderFactory();*/
+        }
 
         [TestMethod]
         public async Task V2Broad2()
