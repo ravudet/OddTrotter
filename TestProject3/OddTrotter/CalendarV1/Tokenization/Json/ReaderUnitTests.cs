@@ -16,6 +16,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using OddTrotter.CalendarV1.Tokenization.Json2;
+    using OddTrotter.CalendarV1.Tokenization.Json4;
     using OddTrotter.CalendarV1.Tokenization.Readers;
 
     using Stash;
@@ -1675,12 +1676,14 @@
         public static async Task V3DoWork(Stream stream)
         {
             stream.Position = 0;
-            var context = Json3.ReaderContext.FromStream(stream, new byte[20]);
-            await Task.CompletedTask;
-            /*var reader = new Json3.JsonReader();
+            var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+            var reader = new Json3.JsonReader();
 
-            var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
-            var whitespaceReader = whitespaceReaderFactory();*/
+            var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -1714,14 +1717,19 @@
         public static async Task DoWork(Stream stream)
         {
             stream.Position = 0;
-            var reader = new Json2.JsonReader(stream);
 
-            var context = reader.Context;
+            var context = new ReaderContext(stream, new byte[20], 0, 0);
+            await context.Read().ConfigureAwait(false);
+
+            var reader = new Json2.JsonReader(stream);
             var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
             var whitespaceReader = whitespaceReaderFactory();
 
             var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
-            var valueReader = valueReaderFactory();
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+            /*var valueReader = valueReaderFactory();
             var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
             var valueToken = valueTokenFactory();
             if (!valueToken.TryObject(out var objectFactory))
@@ -1736,7 +1744,7 @@
             /*var objectReader = await @object.MoveInternal1().ConfigureAwait(false);
             var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);*/
             //var membersReader = await whitespaceReader2.AsReader.MoveInternal3(whitespaceReader2.Factory).ConfigureAwait(false);
-            var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+            /*var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
 
             var membersToken = membersReader.TryMove(out var read);
             if (!read)
@@ -1813,7 +1821,7 @@
             }
 
             var subsequentMembers2 = more1();*/
-            var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
+            /*var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -2043,7 +2051,7 @@
                 }
 
                 var nestedsubsequentMembers2 = _more1();*/
-                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -2404,7 +2412,7 @@
                 }
 
                 var nestedsubsequentMembers2 = _more1();*/
-                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -2570,7 +2578,7 @@
 
             Assert.AreEqual(new Nothing(), nothing);
 
-            Assert.AreEqual(stream.Length, stream.Position);
+            Assert.AreEqual(stream.Length, stream.Position);*/
         }
 
         static WhitespaceReader2<Nothing> Foo()

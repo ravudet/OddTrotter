@@ -2,7 +2,9 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace OddTrotter.CalendarV1.Tokenization.Json3
+using OddTrotter.CalendarV1.Tokenization.Json3;
+
+namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 {
     public static class Extensions
     {
@@ -189,7 +191,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json3
 
                     public TNextReader GetResult()
                     {
-                        return new();
+                        return default!; //// TODO !
                     }
 
                     public void OnCompleted(Action continuation)
