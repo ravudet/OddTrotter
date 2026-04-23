@@ -129,7 +129,7 @@
         TypeHolder<TSelf, TToken, TContext> AsTokenReader { get; }
 
         bool TryGetToken(
-            ref ReaderContext readerContext,
+            ref ReaderContext readerContext, //// TODO use `in` instead of `ref`?
             [NotNullWhen(true)][MaybeNullWhen(false)] out Func<TToken> token,
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
 
