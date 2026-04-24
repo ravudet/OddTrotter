@@ -698,6 +698,23 @@
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public ref struct SubsequentMembersReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {

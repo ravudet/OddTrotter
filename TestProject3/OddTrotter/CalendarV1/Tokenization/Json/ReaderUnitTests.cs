@@ -1699,6 +1699,8 @@
                 throw new Exception("TODO");
             }
 
+            var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(7, context.CurrentByteIndex);
         }
