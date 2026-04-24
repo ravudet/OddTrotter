@@ -383,26 +383,51 @@ namespace Adapter
                         out var filterConsistentAcrossInstancesAndNotSupportedByGraph, 
                         out var filterNotConsistentAcrossInstances);
 
-
-
-
-
-                    
-
-                    if (startTime == null)
+                    if (startTime != null)
                     {
-                        throw new NotImplementedException("TODO");
+                        // they have called something like:
+                        //
+                        // ```
+                        // events
+                        //      .Filter(calendarEvent => calendarEvent.Start > DateTime.Parse("2026-04-24")
+                        //      .Filter(calendarEvent => calendarEvent.Start > DateTime.Parse("2026-03-24");
+                        // ```
+                        //
+                        // Since multiple calls to `Filter` are treated as a logical "and", we should take the greater value,
+                        // since events that match the larger value also match the smaller value.
+                        startTime = Max(startTime.Value, this.startTime);
                     }
 
-                    //// TODO you need to check if the filter applies to series masters in a special way; you need to apply that to series masters and instance events
-                    //// TODO you need to passthrough other filters
+                    //// TODO add endtime logic
 
                     return new CalendarEventsContext(
                         this.graphCalendarEventsContext,
-                        startTime,
-                        this.endTime,
-                        this.isCancelled,
+                        startTime ?? this.startTime,
+                        endTime ?? this.endTime,
+                        filterConsistentAcrossInstancesAndSupportedByGraph ?? this.con,
                         this.seriesMasterPredicate);
+                }
+
+                private static DateTime Max(DateTime first, DateTime? second)
+                {
+                    if (second == null)
+                    {
+                        return first;
+                    }
+
+                    return Max(first, second);
+                }
+
+                private static DateTime Max(DateTime first, DateTime second)
+                {
+                    if (first > second)
+                    {
+                        return first;
+                    }
+                    else
+                    {
+                        return second;
+                    }
                 }
 
                 private static void ExtractStartTime(
