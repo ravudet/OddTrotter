@@ -322,13 +322,30 @@ namespace Adapter
                             .Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
                     }
 
+                    if (this.filterNotConsistentAcrossInstances != null)
+                    {
+                        calendarEvents = calendarEvents
+                            .Filter(this.filterNotConsistentAcrossInstances);
+                    }
+
                     //// TODO make sure iscancelled can be called by the consumer
 
                     calendarEvents = calendarEvents
                         .Top(pageSize) //// TODO should this even be part of the chain? should you just preserve if `top` was called on you?
                         .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
 
-                    return await calendarEvents.Evaluate().ConfigureAwait(false);
+                    var instanceEvents = await calendarEvents.Evaluate().ConfigureAwait(false);
+
+                    if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
+                    {
+                        instanceEvents = instanceEvents
+                            .Where(
+                                calendarEventOrError => 
+                                    calendarEventOrError.TryGetLeft(out var calendarEvent) &&
+                                    this.filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent));
+                    }
+
+                    return instanceEvents;
                 }
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
