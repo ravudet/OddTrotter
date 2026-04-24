@@ -130,7 +130,7 @@
 
         bool TryGetToken(
             ref ReaderContext readerContext, //// TODO use `in` instead of `ref`?
-            [NotNullWhen(true)][MaybeNullWhen(false)] out Func<TToken> token,
+            [NotNullWhen(true)][MaybeNullWhen(false)] out Func<TToken> token, //// TODO these are tokens, call them something else; if they were tokens, you could use `ivaluereader`; they *might* actually be "readers" in a way, and so they would be `imovereader`s, but because there are multiple options for the next reader, you can't give back a concrete instance using `new()` //// TODO actually, maybe you can if the tokens themselves do the "reading"; so, for example, `valuereader` be a `imovereader` and it would return a `valuetoken`, which, when `apply` is called (which now needs to receive `readercontext`), would read the data from the payload to determine which of the delegates to call (which is done right now in `valuereader` and the `valuetoken` is initialized with the conclusion); something i don't like about this approach is that it can't be strongly typed in an interface (in a general way) because different readers will have different numbers of "possible" next readers, so you would need (like tuple) multiple interfaces to handle different numbers of type parameters; you *could* do something like `itoken<tnextreader, ttherest> where ttherest : itoken tresult apply<tresult>(func<tnextreader, tresult>, func<ttherest, tresult>)`, but i've only gotten that to work with abstract classes, not interfaces (not saying it is impossible with interfaces), and so that would prevent you from using ref struct; also, the performance on that is probably terrible
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
 
         static abstract TSelf Create(TContext context);
@@ -578,16 +578,31 @@
     {
     }
 
-
-
-
-
-
-
     public ref struct MembersReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public ref struct ObjectEndReader<TNextReader>
         where TNextReader : new(), allows ref struct
