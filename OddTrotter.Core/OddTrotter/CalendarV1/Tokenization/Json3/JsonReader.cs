@@ -512,12 +512,48 @@
     {
     }
 
-    public ref struct StringReader<TNextReader>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public ref struct StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing> AsMoveReader => throw new NotImplementedException();
+
+        public static StringReader<TNextReader> Create(Nothing context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public ref struct StringDelimiterReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
-
-
+    public ref struct CharsReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
 
 
 
@@ -732,11 +768,32 @@
 
 
 
-    public ref struct MemberReader<TNextReader>
+    public ref struct MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>, Nothing>(this);
+            }
+        }
+
+        public static MemberReader<TNextReader> Create(Nothing context)
+        {
+            return new MemberReader<TNextReader>();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return true;
+        }
+    }
+
+    public ref struct ColonReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
-
 
 
 
