@@ -107,6 +107,8 @@
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
 
         static abstract TSelf Create(TContext context);
+
+        static abstract TNextReader Create();
     }
 
     public interface IValueReader<TSelf, TNextReader, TContext, TValue> : IMoveReader<TSelf, TNextReader, TContext>
@@ -149,6 +151,11 @@
         public static JsonReader Create(Nothing context)
         {
             return new JsonReader();
+        }
+
+        public static WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> Create()
+        {
+            return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>();
         }
 
         public bool TryMove(
@@ -255,6 +262,11 @@
         public static WhitespaceReader<TNextReader> Create(List<WhitespaceToken> context)
         {
             return new WhitespaceReader<TNextReader>(context);
+        }
+
+        public static TNextReader Create()
+        {
+            return new TNextReader();
         }
     }
 
@@ -477,9 +489,31 @@
     {
     }
 
-    public ref struct ObjectReader<TNextReader>
+    public ref struct ObjectReader<TNextReader> : IMoveReader<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>, Nothing>
         where TNextReader : new(), allows ref struct
     {
+        public TypeHolder<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>, Nothing>(this);
+            }
+        }
+
+        public static ObjectReader<TNextReader> Create(Nothing context)
+        {
+            return new ObjectReader<TNextReader>();
+        }
+
+        public static ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> Create()
+        {
+            return new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public ref struct ArrayReader<TNextReader>
@@ -493,6 +527,29 @@
     }
 
     public ref struct StringReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+
+
+
+
+
+
+
+
+    public ref struct ObjectStartReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct MembersReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
+
+    public ref struct ObjectEndReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }

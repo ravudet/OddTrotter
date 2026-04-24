@@ -405,7 +405,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             }
 
             return new Move1Task<TCurrentReader, TNextReader, TContext>(
-                new Move1CompletedTask<TNextReader>());
+                new Move1CompletedTask<TCurrentReader, TNextReader, TContext>());
         }
 
         public ref struct Move1ReadTask<TCurrentReader, TNextReader, TContext>
@@ -530,7 +530,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             }
         }
 
-        public ref struct Move1CompletedTask<TNextReader>
+        public ref struct Move1CompletedTask<TCurrentReader, TNextReader, TContext>
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader, TContext>, allows ref struct
             where TNextReader : new(), allows ref struct
         {
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
@@ -571,7 +572,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 
                     public TNextReader GetResult()
                     {
-                        return default!; //// TODO !
+                        return TCurrentReader.Create();
                     }
 
                     public void OnCompleted(Action continuation)
@@ -598,10 +599,10 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
         {
             private readonly int type;
 
-            private readonly Move1CompletedTask<TNextReader> completed;
+            private readonly Move1CompletedTask<TCurrentReader, TNextReader, TContext> completed;
             private readonly Move1ReadTask<TCurrentReader, TNextReader, TContext> read;
 
-            public Move1Task(Move1CompletedTask<TNextReader> completed)
+            public Move1Task(Move1CompletedTask<TCurrentReader, TNextReader, TContext> completed)
             {
                 this.completed = completed;
 
@@ -630,9 +631,9 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             {
                 private readonly int type;
 
-                private readonly Move1CompletedTask<TNextReader>.ConfiguredAwaitable completed;
+                private readonly Move1CompletedTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable completed;
 
-                public ConfiguredAwaitable(Move1CompletedTask<TNextReader>.ConfiguredAwaitable completed)
+                public ConfiguredAwaitable(Move1CompletedTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable completed)
                 {
                     this.completed = completed;
 
@@ -654,10 +655,10 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                 {
                     private readonly int type;
 
-                    private readonly Move1CompletedTask<TNextReader>.ConfiguredAwaitable.TaskAwaiter completed;
+                    private readonly Move1CompletedTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable.TaskAwaiter completed;
                     private readonly Move1ReadTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable.TaskAwaiter read;
 
-                    public TaskAwaiter(Move1CompletedTask<TNextReader>.ConfiguredAwaitable.TaskAwaiter completed)
+                    public TaskAwaiter(Move1CompletedTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable.TaskAwaiter completed)
                     {
                         this.completed = completed;
 
