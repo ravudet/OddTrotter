@@ -1692,9 +1692,10 @@
 
             var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
 
             Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(1, context.CurrentByteIndex);
+            Assert.AreEqual(7, context.CurrentByteIndex);
         }
 
         [TestMethod]
