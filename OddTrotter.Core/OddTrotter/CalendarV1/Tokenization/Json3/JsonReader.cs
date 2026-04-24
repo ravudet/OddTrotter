@@ -107,8 +107,6 @@
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
 
         static abstract TSelf Create(TContext context);
-
-        static abstract TNextReader Create();
     }
 
     public interface IValueReader<TSelf, TNextReader, TContext, TValue> : IMoveReader<TSelf, TNextReader, TContext>
@@ -151,11 +149,6 @@
         public static JsonReader Create(Nothing context)
         {
             return new JsonReader();
-        }
-
-        public static WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> Create()
-        {
-            return new WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>();
         }
 
         public bool TryMove(
@@ -262,11 +255,6 @@
         public static WhitespaceReader<TNextReader> Create(List<WhitespaceToken> context)
         {
             return new WhitespaceReader<TNextReader>(context);
-        }
-
-        public static TNextReader Create()
-        {
-            return new TNextReader();
         }
     }
 
@@ -505,14 +493,10 @@
             return new ObjectReader<TNextReader>();
         }
 
-        public static ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> Create()
-        {
-            return new ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>();
-        }
-
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            throw new NotImplementedException();
+            context = default;
+            return true;
         }
     }
 
@@ -539,10 +523,60 @@
 
 
 
-    public ref struct ObjectStartReader<TNextReader>
+    public ref struct ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, Nothing, ObjectStartToken>
         where TNextReader : new(), allows ref struct
     {
+        public TypeHolder<ObjectStartReader<TNextReader>, TNextReader, Nothing, ObjectStartToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<ObjectStartReader<TNextReader>, TNextReader, Nothing, ObjectStartToken>(this);
+            }
+        }
+
+        public TypeHolder<ObjectStartReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<ObjectStartReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static ObjectStartReader<TNextReader> Create(Nothing context)
+        {
+            return new ObjectStartReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ObjectStartToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (!Helpers.TryReadChar(ref readerContext, '{'))
+            {
+                value = default;
+                context = default;
+                return false;
+            }
+
+            context = default;
+            value = new ObjectStartToken();
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            context = default;
+            return true;
+        }
     }
+
+    public ref struct ObjectStartToken
+    {
+    }
+
+
+
+
+
+
 
     public ref struct MembersReader<TNextReader>
         where TNextReader : new(), allows ref struct
@@ -552,5 +586,36 @@
     public ref struct ObjectEndReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
+    }
+
+
+
+
+
+
+
+    public static class Helpers
+    {
+
+        public static bool TryReadChar(ref ReaderContext readerContext, char character)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                return false;
+            }
+
+            ReadChar(ref readerContext, character);
+            ++readerContext.CurrentByteIndex;
+            return true;
+        }
+
+        private static void ReadChar(ref ReaderContext readerContext, char character)
+        {
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != character)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+        }
+
     }
 }
