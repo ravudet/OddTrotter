@@ -106,7 +106,7 @@
         bool TryMove(
             ref ReaderContext readerContext,
             // [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader, //// TODO we don't need this because we have `tnextreader : new()`
-            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
+            [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context); //// TODO is it faster to have a context-free move reader interface? currently, you return a `nothing` that is stored in a task sometimes and then passed to the `create(tcontext)` method, that's not "the best" probably
 
         static abstract TSelf Create(TContext context);
     }
@@ -676,11 +676,49 @@
         }
     }
 
-    public ref struct FirstMemberReader<TNextReader>
+    public ref struct FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>, Nothing>(this);
+            }
+        }
+
+        public static FirstMemberReader<TNextReader> Create(Nothing context)
+        {
+            return new FirstMemberReader<TNextReader>();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return true;
+        }
+    }
+
+    public ref struct SubsequentMembersReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+    public ref struct MemberReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
 
 
 
