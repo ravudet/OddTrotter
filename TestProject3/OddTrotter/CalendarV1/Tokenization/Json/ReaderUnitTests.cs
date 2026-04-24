@@ -1615,6 +1615,9 @@
         /*[TestMethod]
         public async Task V2Broad()
         {
+            //// TODO i think it "means" something that your implementations all have no instance members; they could be static extensions on `readercontext` probably somehow, and not even have allocations on the stack, i think
+
+
             //// TODO `move` implementations should also be single-execution
             //// TODO they shouldn't be allowed to call `read` unless `false` was previously returned
             //// TODO the `trygetvalue` implementations need to follow the whitespace pattern of `finished`
