@@ -530,6 +530,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
     public ref struct StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing>
         where TNextReader : new(), allows ref struct
     {
@@ -556,6 +566,7 @@
         where TNextReader : new(), allows ref struct
     {
     }
+
     public ref struct CharsReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
