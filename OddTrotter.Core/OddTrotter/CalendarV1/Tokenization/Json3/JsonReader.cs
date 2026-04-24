@@ -8,6 +8,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using OddTrotter.CalendarV1.Tokenization.Json2;
+
     public readonly ref struct TypeHolder<TSelf, T1>
         where TSelf : allows ref struct
         where T1 : allows ref struct
@@ -126,7 +128,7 @@
         where TSelf : ITokenReader<TSelf, TToken, TContext>, allows ref struct
         where TToken : allows ref struct
     {
-        TypeHolder<TSelf, TToken, TContext> AsTokenReader { get; }
+        TypeHolder<TSelf, TToken, TContext> AsTokenReader { get; } //// TODO you could have an interface implementation for this if you add a `TSelf Self { get; }` property, but it doesn't really matter because `ref struct`s can't take advantage of interface implementations anyway
 
         bool TryGetToken(
             ref ReaderContext readerContext, //// TODO use `in` instead of `ref`?
@@ -523,6 +525,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public ref struct ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, Nothing, ObjectStartToken>
         where TNextReader : new(), allows ref struct
     {
@@ -578,7 +596,87 @@
     {
     }
 
-    public ref struct MembersReader<TNextReader>
+    public ref struct MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<MembersReader<TNextReader>, MembersToken<TNextReader>, Nothing> AsTokenReader
+        {
+            get
+            {
+                return new TypeHolder<MembersReader<TNextReader>, MembersToken<TNextReader>, Nothing>(this);
+            }
+        }
+
+        public static MembersReader<TNextReader> Create(Nothing context)
+        {
+            return new MembersReader<TNextReader>();
+        }
+
+        public bool TryGetToken(
+            ref ReaderContext readerContext,
+            [MaybeNullWhen(false), NotNullWhen(true)] out Func<MembersToken<TNextReader>> token, 
+            [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                context = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] == '"')
+            {
+                token = MembersToken<TNextReader>.Some;
+            }
+            else
+            {
+                token = MembersToken<TNextReader>.None;
+            }
+
+            return true;
+        }
+    }
+
+    public ref struct MembersToken<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+        private int type { get; init; }
+
+        public static MembersToken<TNextReader> None()
+        {
+            return new MembersToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static MembersToken<TNextReader> Some()
+        {
+            return new MembersToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryNone([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
+
+        public bool TrySome(out FirstMemberReader<TNextReader> firstMemberReader)
+        {
+            firstMemberReader = default;
+            return this.type == 2;
+        }
+    }
+
+    public ref struct FirstMemberReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }

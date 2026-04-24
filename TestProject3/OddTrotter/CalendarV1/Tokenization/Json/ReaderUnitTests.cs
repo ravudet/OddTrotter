@@ -1693,6 +1693,11 @@
             var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!membersToken.TrySome(out var firstMemberReader))
+            {
+                throw new Exception("TODO");
+            }
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(7, context.CurrentByteIndex);
@@ -1757,7 +1762,7 @@
             /*var objectReader = await @object.MoveInternal1().ConfigureAwait(false);
             var whitespaceReader2 = await objectReader.MoveInternal1().ConfigureAwait(false);*/
             //var membersReader = await whitespaceReader2.AsReader.MoveInternal3(whitespaceReader2.Factory).ConfigureAwait(false);
-            /*var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+            var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
 
             var membersToken = membersReader.TryMove(out var read);
             if (!read)
@@ -1771,7 +1776,7 @@
                 some => some);
 
             // true
-            var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+            /*var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
             var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.MoveInternal1().ConfigureAwait(false);
             var charsReader = await stringDelimiterReader.MoveInternal1().ConfigureAwait(false);
