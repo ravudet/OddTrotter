@@ -563,7 +563,13 @@
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            context = default;
+            if (!this.TryGetValue(ref readerContext, out _, out context))
+            {
+                ////nextReader = default;
+                return false;
+            }
+
+            ////nextReader = new();
             return true;
         }
     }
