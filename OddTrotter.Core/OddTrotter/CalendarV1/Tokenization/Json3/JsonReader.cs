@@ -533,16 +533,22 @@
     public ref struct StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing>
         where TNextReader : new(), allows ref struct
     {
-        public TypeHolder<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing> AsMoveReader => throw new NotImplementedException();
+        public TypeHolder<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing>(this);
+            }
+        }
 
         public static StringReader<TNextReader> Create(Nothing context)
         {
-            throw new NotImplementedException();
+            return new StringReader<TNextReader>();
         }
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 
