@@ -350,9 +350,12 @@ namespace Adapter
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
                 {
+
+                    //// TODO you are here
+
                     //// TODO you could actually use recurrence.range.startdate for series events to find the "earliest" instance; or, if `filter(event => event.starttime > {foo})` has been called, just use `{foo}`
                     //// TODO the querycontext needs to call this with `.Filter(CalendarSource.EndTimeLessThan(this.endTime.Value))` for it to work right now
-                    
+
 
 
 
@@ -421,11 +424,32 @@ namespace Adapter
                         endTime = Min(endTime.Value, this.endTime.Value);
                     }
 
-                    //// TODO you are here
-                    //// TODO add branches for the 3 filters
-                    if (filterConsistentAcrossInstancesAndSupportedByGraph != null && )
+                    if (filterConsistentAcrossInstancesAndSupportedByGraph == null)
                     {
+                        filterConsistentAcrossInstancesAndSupportedByGraph = this.filterConsistentAcrossInstancesAndSupportedByGraph;
+                    }
+                    else if (this.filterConsistentAcrossInstancesAndSupportedByGraph != null)
+                    {
+                        //// TODO
+                        /*filterConsistentAcrossInstancesAndSupportedByGraph = Expression.And(this.filterConsistentAcrossInstancesAndSupportedByGraph, filterConsistentAcrossInstancesAndSupportedByGraph);*/
+                    }
 
+                    if (filterConsistentAcrossInstancesAndNotSupportedByGraph == null)
+                    {
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph = this.filterConsistentAcrossInstancesAndNotSupportedByGraph;
+                    }
+                    else if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
+                    {
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph = calendarEvent => this.filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent) && filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent);
+                    }
+
+                    if (filterNotConsistentAcrossInstances == null)
+                    {
+                        filterNotConsistentAcrossInstances = this.filterNotConsistentAcrossInstances;
+                    }
+                    else if (this.filterNotConsistentAcrossInstances != null)
+                    {
+                        //// TODO
                     }
 
                     return new CalendarEventsContext(
