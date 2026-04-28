@@ -8,8 +8,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using OddTrotter.CalendarV1.Tokenization.Json2;
-
     public readonly ref struct TypeHolder<TSelf, T1>
         where TSelf : allows ref struct
         where T1 : allows ref struct
@@ -562,8 +560,56 @@
         }
     }
 
-    public ref struct StringDelimiterReader<TNextReader>
+    public ref struct StringDelimiterReader<TNextReader> : IValueReader<StringDelimiterReader<TNextReader>, TNextReader, Nothing, StringDelimiterToken>
         where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<StringDelimiterReader<TNextReader>, TNextReader, Nothing, StringDelimiterToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<StringDelimiterReader<TNextReader>, TNextReader, Nothing, StringDelimiterToken>(this);
+            }
+        }
+
+        public TypeHolder<StringDelimiterReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<StringDelimiterReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static StringDelimiterReader<TNextReader> Create(Nothing context)
+        {
+            return new StringDelimiterReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out StringDelimiterToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (!Helpers.TryReadChar(ref readerContext, '"'))
+            {
+                value = default;
+                context = default;
+                return false;
+            }
+
+            context = default;
+            value = new StringDelimiterToken();
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (!this.TryGetValue(ref readerContext, out _, out context))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public ref struct StringDelimiterToken
     {
     }
 
