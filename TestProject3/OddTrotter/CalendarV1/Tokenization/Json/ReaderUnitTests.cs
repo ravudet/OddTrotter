@@ -1714,8 +1714,10 @@
                 throw new Exception("TODO");
             }
 
+            var subsequentMembersReader = await @true.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
             Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(15, context.CurrentByteIndex);
+            Assert.AreEqual(19, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -1805,12 +1807,13 @@
             {
                 throw new Exception("TODO");
             }
+            
+            var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
 
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
-            /*var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
-            var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
+            /*var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
             if (!read)
             {
                 await subsequentMembersReader.Read().ConfigureAwait(false);

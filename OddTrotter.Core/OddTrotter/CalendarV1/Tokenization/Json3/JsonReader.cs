@@ -472,8 +472,72 @@
     {
     }
 
-    public ref struct TrueReader<TNextReader>
+    public ref struct TrueReader<TNextReader> : IValueReader<TrueReader<TNextReader>, TNextReader, int, TrueToken>
         where TNextReader : new(), allows ref struct
+    {
+        private static readonly string literal = "true"; //// TODO const?
+        private int currentCharacter;
+
+        public TrueReader()
+            : this(0)
+        {
+        }
+
+        private TrueReader(int currentCharacter)
+        {
+            this.currentCharacter = currentCharacter;
+        }
+
+        public TypeHolder<TrueReader<TNextReader>, TNextReader, int, TrueToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<TrueReader<TNextReader>, TNextReader, int, TrueToken>(this);
+            }
+        }
+
+        public TypeHolder<TrueReader<TNextReader>, TNextReader, int> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<TrueReader<TNextReader>, TNextReader, int>(this);
+            }
+        }
+
+        public static TrueReader<TNextReader> Create(int context)
+        {
+            return new TrueReader<TNextReader>(context);
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out TrueToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        {
+            for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
+            {
+                if (!Helpers.TryReadChar(ref readerContext, literal[this.currentCharacter]))
+                {
+                    value = default;
+                    context = this.currentCharacter;
+                    return false;
+                }
+            }
+
+            context = default;
+            value = new TrueToken();
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        {
+            if (!this.TryGetValue(ref readerContext, out _, out context))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public ref struct TrueToken
     {
     }
 
