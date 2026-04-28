@@ -8,6 +8,8 @@
     using Fx.Either;
     using Fx.QueryContext;
 
+    //// TODO you can have a roslyn analyzer that notices that the model is out of sync with the interfaces; you could also have quick actions like "i don't want a post on this collection" and it will annotate the model to say that post isn't allowed (or whatever other things like this there are)
+
     internal interface ICalendarSource
     {
         ICalendarContext Get();
@@ -22,7 +24,7 @@
         ICalendarContext Select<TResult>(Expression<Func<Calendar, TResult>> selector);
     }
 
-    internal sealed class Calendar
+    internal sealed class Calendar //// TODO use the "DTO" suffix (data transfer object) or the "OTW" suffix (over the wire)
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private Calendar()
