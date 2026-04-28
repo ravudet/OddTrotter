@@ -332,7 +332,7 @@ namespace Adapter
 
                     calendarEvents = calendarEvents
                         .Top(pageSize) //// TODO should this even be part of the chain? should you just preserve if `top` was called on you?
-                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime);
+                        .OrderBy(calendarEvent => calendarEvent.Start.DateTime); //// TODO do we care about the order? because we don't have a way to get the order in the instances of series masters, right? without retrieving all of the master data?
 
                     var instanceEvents = await calendarEvents.Evaluate().ConfigureAwait(false);
 
