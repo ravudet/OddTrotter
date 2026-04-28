@@ -275,7 +275,7 @@ namespace Adapter
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
-                    //// TODO you are here
+                    //// TODO you are here potentially
                     //// TODO i don't remember if there's something in this method you still need to do, but you are actually in the seriesevent masters stuff, and you're thinking about what it should look like to filter (look at the todos there)
 
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
@@ -398,8 +398,22 @@ namespace Adapter
                         startTime = Max(startTime.Value, this.startTime);
                     }
 
-                    //// TODO add endtime logic
-
+                    if (endTime != null)
+                    {
+                        // they have called something like:
+                        //
+                        // ```
+                        // events
+                        //      .Filter(calendarEvent => calendarEvent.Start < DateTime.Parse("2026-04-24")
+                        //      .Filter(calendarEvent => calendarEvent.Start < DateTime.Parse("2026-03-24");
+                        // ```
+                        //
+                        // Since multiple calls to `Filter` are treated as a logical "and", we should take the lesser value,
+                        // since events that match the smaller value also match the larger value.
+                        endTime = Min(endTime.Value, this.endTime);
+                    }
+                    
+                    //// TODO you are here
                     return new CalendarEventsContext(
                         this.graphCalendarEventsContext,
                         startTime ?? this.startTime,
@@ -421,6 +435,28 @@ namespace Adapter
                 private static DateTime Max(DateTime first, DateTime second)
                 {
                     if (first > second)
+                    {
+                        return first;
+                    }
+                    else
+                    {
+                        return second;
+                    }
+                }
+
+                private static DateTime Min(DateTime first, DateTime? second)
+                {
+                    if (second == null)
+                    {
+                        return first;
+                    }
+
+                    return Max(first, second);
+                }
+
+                private static DateTime Min(DateTime first, DateTime second)
+                {
+                    if (first < second)
                     {
                         return first;
                     }
