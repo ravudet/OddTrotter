@@ -613,10 +613,152 @@
     {
     }
 
-    public ref struct CharsReader<TNextReader>
+    /// <summary>
+    /// TODO i'm concerned that when trymove returns true, you can't call anything anymore because we've already "used up" the state or something; you should look into this; it's not necessarily "bad" if this is the case, but you should document it at the very least
+    /// </summary>
+    /// <typeparam name="TNextReader"></typeparam>
+    public ref struct CharsReader<TNextReader> : IValueReader<CharsReader<TNextReader>, TNextReader, (List<CharToken>, bool), IEnumerable<CharToken>>
         where TNextReader : new(), allows ref struct
     {
+        private List<CharToken> charTokens;
+
+        private bool isEscaping;
+
+        public CharsReader()
+            : this(new List<CharToken>(), false)
+        {
+        }
+
+        private CharsReader(List<CharToken> charTokens, bool isEscaping)
+        {
+            this.charTokens = charTokens;
+            this.isEscaping = isEscaping;
+        }
+
+        public TypeHolder<CharsReader<TNextReader>, TNextReader, (List<CharToken>, bool), IEnumerable<CharToken>> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<CharsReader<TNextReader>, TNextReader, (List<CharToken>, bool), IEnumerable<CharToken>>(this);
+            }
+        }
+
+        public TypeHolder<CharsReader<TNextReader>, TNextReader, (List<CharToken>, bool)> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<CharsReader<TNextReader>, TNextReader, (List<CharToken>, bool)>(this);
+            }
+        }
+
+        public static CharsReader<TNextReader> Create((List<CharToken>, bool) context)
+        {
+            return new CharsReader<TNextReader>(context.Item1, context.Item2);
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<CharToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
+        {
+            if (this.charTokens == null)
+            {
+                this.charTokens = new List<CharToken>();
+            }
+
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    // read more from the stream
+                    value = default;
+                    context = (this.charTokens, false);
+                    return false;
+                }
+
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                if (currentByte == 0x5C)
+                {
+                    ++readerContext.CurrentByteIndex;
+                    if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                    {
+                        value = default;
+                        context = (this.charTokens, true); //// TODO you need to leverage the context that we are in the middle of an escape
+                        return false;
+                    }
+
+                    if (readerContext.ValidBytes == 0)
+                    {
+                        throw new Exception("TODO invalid JSON");
+                    }
+
+                    throw new Exception("TODO escaped characters are not yet supported");
+                }
+
+                CharToken @char;
+                try
+                {
+                    @char = CharToken.Unescaped(currentByte);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                this.charTokens.Add(@char);
+            }
+
+            value = this.charTokens;
+            context = default;
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
+        {
+            if (!this.TryGetValue(ref readerContext, out _, out context))
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
+
+    public struct CharToken
+    {
+        private int type { get; init; }
+
+        public byte Char { get; private init; }
+
+        public static CharToken Unescaped(byte @char)
+        {
+            if (!IsValid(@char))
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            return new CharToken()
+            {
+                type = 1,
+                Char = @char,
+            };
+        }
+
+        private static bool IsValid(byte @char)
+        {
+            return
+                (@char >= 0x20 && @char <= 0x21) ||
+                (@char >= 0x23 && @char <= 0x5B) ||
+                (@char >= 0x5D); //// TODO the upper bound here in the standard is not actually a valid byte...
+        }
+    }
+
+
+
 
 
 
