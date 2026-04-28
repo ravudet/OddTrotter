@@ -1703,9 +1703,10 @@
             var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var charsReader = await stringDelimiterReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var stringDelimiterReader2 = await charsReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
 
             Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(8, context.CurrentByteIndex);
+            Assert.AreEqual(12, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -1783,11 +1784,12 @@
             var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.MoveInternal1().ConfigureAwait(false);
             var charsReader = await stringDelimiterReader.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiterReader2 = await charsReader.MoveInternal1().ConfigureAwait(false);
+
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
-            /*var stringDelimiterReader2 = await charsReader.MoveInternal1().ConfigureAwait(false);
-            var whitespaceReader3 = await stringDelimiterReader2.MoveInternal1().ConfigureAwait(false);
+            /*var whitespaceReader3 = await stringDelimiterReader2.MoveInternal1().ConfigureAwait(false);
             //var colonReader = await whitespaceReader3.AsReader.MoveInternal3(whitespaceReader3.Factory).ConfigureAwait(false);
             var colonReader = await whitespaceReader3.MoveInternal1().ConfigureAwait(false);
             var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
