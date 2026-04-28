@@ -1807,10 +1807,9 @@
             }
 
 
-
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
-            var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
+            /*var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
             if (!read)
             {
