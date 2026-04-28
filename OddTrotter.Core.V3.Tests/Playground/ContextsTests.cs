@@ -354,8 +354,14 @@ namespace Adapter
 
 
 
+                    /*if (this.filterNotConsistentAcrossInstances != null)
+                    {
+                        //// TODO you pass this to instance events as a filter; if the underlying filter is not supported by graph, this would lead to a behavior where the filter is applied to series events (because it's applied in-memory), but the instance events would all be error responses; not sure that is the best experience
+                        seriesMasters = seriesMasters.Where(this.filterNotConsistentAcrossInstances.Compile());
+                    }*/
 
-                    //// TODO you are going to use the `instancefilter` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering (actually, the subject filtering case will be more like "if the oddtrotter one understands it, we can do better performance, but if it doesn't, we will pass it through and graph won't understand it, so the call will fail", which isn't necessarily great, but the whole point is that we need to support *at least* what graph supports, and if you give stuff to us in a format that we understand, we do better)
+
+                    //// TODO you are going to use the `filterConsistentAcrossInstancesAndNotSupportedByGraph` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering (actually, the subject filtering case will be more like "if the oddtrotter one understands it, we can do better performance, but if it doesn't, we will pass it through and graph won't understand it, so the call will fail", which isn't necessarily great, but the whole point is that we need to support *at least* what graph supports, and if you give stuff to us in a format that we understand, we do better)
 
                 }
 
@@ -373,12 +379,6 @@ namespace Adapter
                     }
 
                     var seriesMasters = await calendarEvents.Evaluate().ConfigureAwait(false);
-
-                    if (this.filterNotConsistentAcrossInstances != null)
-                    {
-                        //// TODO you pass this to instance events as a filter; if the underlying filter is not supported by graph, this would lead to a behavior where the filter is applied to series events (because it's applied in-memory), but the instance events would all be error responses; not sure that is the best experience
-                        seriesMasters = seriesMasters.Where(this.filterNotConsistentAcrossInstances.Compile());
-                    }
 
                     if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
                     {
