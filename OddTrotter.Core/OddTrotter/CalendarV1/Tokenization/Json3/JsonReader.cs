@@ -728,7 +728,7 @@
         }
     }
 
-    public struct CharToken
+    public struct CharToken //// TODO making this readonly preliminarily had good results...
     {
         private int type { get; init; }
 
