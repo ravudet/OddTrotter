@@ -383,7 +383,11 @@ namespace Adapter
                         out var filterConsistentAcrossInstancesAndNotSupportedByGraph, 
                         out var filterNotConsistentAcrossInstances);
 
-                    if (startTime != null)
+                    if (startTime == null)
+                    {
+                        startTime = this.startTime;
+                    }
+                    else if (this.startTime != null)
                     {
                         // they have called something like:
                         //
@@ -395,10 +399,14 @@ namespace Adapter
                         //
                         // Since multiple calls to `Filter` are treated as a logical "and", we should take the greater value,
                         // since events that match the larger value also match the smaller value.
-                        startTime = Max(startTime.Value, this.startTime);
+                        startTime = Max(startTime.Value, this.startTime.Value);
                     }
 
-                    if (endTime != null)
+                    if (endTime == null)
+                    {
+                        endTime = this.endTime;
+                    }
+                    else if (this.endTime != null)
                     {
                         // they have called something like:
                         //
@@ -410,26 +418,23 @@ namespace Adapter
                         //
                         // Since multiple calls to `Filter` are treated as a logical "and", we should take the lesser value,
                         // since events that match the smaller value also match the larger value.
-                        endTime = Min(endTime.Value, this.endTime);
+                        endTime = Min(endTime.Value, this.endTime.Value);
                     }
-                    
+
                     //// TODO you are here
+                    //// TODO add branches for the 3 filters
+                    if (filterConsistentAcrossInstancesAndSupportedByGraph != null && )
+                    {
+
+                    }
+
                     return new CalendarEventsContext(
                         this.graphCalendarEventsContext,
-                        startTime ?? this.startTime,
-                        endTime ?? this.endTime,
-                        filterConsistentAcrossInstancesAndSupportedByGraph ?? this.con,
-                        this.seriesMasterPredicate);
-                }
-
-                private static DateTime Max(DateTime first, DateTime? second)
-                {
-                    if (second == null)
-                    {
-                        return first;
-                    }
-
-                    return Max(first, second);
+                        startTime,
+                        endTime,
+                        filterConsistentAcrossInstancesAndSupportedByGraph,
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph,
+                        filterNotConsistentAcrossInstances);
                 }
 
                 private static DateTime Max(DateTime first, DateTime second)
@@ -442,16 +447,6 @@ namespace Adapter
                     {
                         return second;
                     }
-                }
-
-                private static DateTime Min(DateTime first, DateTime? second)
-                {
-                    if (second == null)
-                    {
-                        return first;
-                    }
-
-                    return Max(first, second);
                 }
 
                 private static DateTime Min(DateTime first, DateTime second)
