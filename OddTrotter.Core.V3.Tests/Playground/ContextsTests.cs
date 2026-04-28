@@ -338,11 +338,7 @@ namespace Adapter
 
                     if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
                     {
-                        instanceEvents = instanceEvents
-                            .Where(
-                                calendarEventOrError => 
-                                    calendarEventOrError.TryGetLeft(out var calendarEvent) &&
-                                    this.filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent));
+                        instanceEvents = instanceEvents.Where(this.filterConsistentAcrossInstancesAndNotSupportedByGraph);
                     }
 
                     return instanceEvents;
@@ -365,7 +361,31 @@ namespace Adapter
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEventMasters()
                 {
-                    //// TODO use the predicate *here* if avaialbe instead of the caller (better for potential re-use)
+                    var calendarEvents = this
+                        .graphCalendarEventsContext
+                        .Filter(calendarEvent => calendarEvent.Type == "seriesMaster");
+
+                    //// TODO make sure iscancelled can be called by the consumer
+
+                    if (this.filterConsistentAcrossInstancesAndSupportedByGraph != null)
+                    {
+                        calendarEvents = calendarEvents.Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
+                    }
+
+                    var seriesMasters = await calendarEvents.Evaluate().ConfigureAwait(false);
+
+                    if (this.filterNotConsistentAcrossInstances != null)
+                    {
+                        //// TODO you pass this to instance events as a filter; if the underlying filter is not supported by graph, this would lead to a behavior where the filter is applied to series events (because it's applied in-memory), but the instance events would all be error responses; not sure that is the best experience
+                        seriesMasters = seriesMasters.Where(this.filterNotConsistentAcrossInstances.Compile());
+                    }
+
+                    if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
+                    {
+                        seriesMasters = seriesMasters.Where(this.filterConsistentAcrossInstancesAndNotSupportedByGraph);
+                    }
+
+                    return seriesMasters;
                 }
 
                 public OddTrotter.ICalendarEventsContext Filter(Expression<Func<OddTrotter.CalendarEvent, bool>> filter)
@@ -591,6 +611,13 @@ namespace Adapter
             Func<TErrorSource, TErrorResult> selector)
         {
             throw new Exception("TODO");
+        }
+
+        public static IQueryResult<IEither<TValue, TDeserializationError>, TPagingError> Where<TValue, TDeserializationError, TPagingError>(
+            this IQueryResult<IEither<TValue, TDeserializationError>, TPagingError> queryResult,
+            Func<TValue, bool> predicate)
+        {
+            return queryResult.Where(either => !either.TryGetLeft(out var value) || predicate(value));
         }
     }
 }
