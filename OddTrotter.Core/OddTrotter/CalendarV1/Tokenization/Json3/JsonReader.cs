@@ -728,7 +728,7 @@
         }
     }
 
-    public struct CharToken //// TODO making this readonly preliminarily had good results...
+    public struct CharToken //// TODO making this readonly preliminarily had good perf results...
     {
         private int type { get; init; }
 
