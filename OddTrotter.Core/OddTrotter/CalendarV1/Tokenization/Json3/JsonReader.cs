@@ -995,8 +995,56 @@
         }
     }
 
-    public ref struct ColonReader<TNextReader>
+    public ref struct ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, Nothing, ColonToken>
         where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<ColonReader<TNextReader>, TNextReader, Nothing, ColonToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<ColonReader<TNextReader>, TNextReader, Nothing, ColonToken>(this);
+            }
+        }
+
+        public TypeHolder<ColonReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<ColonReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static ColonReader<TNextReader> Create(Nothing context)
+        {
+            return new ColonReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ColonToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (!Helpers.TryReadChar(ref readerContext, ':'))
+            {
+                value = default;
+                context = default;
+                return false;
+            }
+
+            context = default;
+            value = new ColonToken();
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (!this.TryGetValue(ref readerContext, out _, out context))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public ref struct ColonToken
     {
     }
 
