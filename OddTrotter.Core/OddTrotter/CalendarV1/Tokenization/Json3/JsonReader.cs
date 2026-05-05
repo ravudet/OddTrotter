@@ -2,9 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Mime;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -242,14 +244,7 @@
             ////[MaybeNullWhen(false), NotNullWhen(true)] out TNextReader nextReader,
             [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                ////nextReader = default;
-                return false;
-            }
-
-            ////nextReader = new();
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
 
         public static WhitespaceReader<TNextReader> Create(List<WhitespaceToken> context)
@@ -872,16 +867,7 @@
 
         public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ObjectStartToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!Helpers.TryReadChar(ref readerContext, '{'))
-            {
-                value = default;
-                context = default;
-                return false;
-            }
-
-            context = default;
-            value = new ObjectStartToken();
-            return true;
+            return Helpers.TryReadChar(ref readerContext, '{');
         }
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
@@ -1003,39 +989,82 @@
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public ref struct SubsequentMembersReader<TNextReader>
+    public ref struct SubsequentMembersReader<TNextReader> : ITokenReader<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>, Nothing>
         where TNextReader : new(), allows ref struct
     {
+        public TypeHolder<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>, Nothing> AsTokenReader
+        {
+            get
+            {
+                return new TypeHolder<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>, Nothing>(this);
+            }
+        }
+
+        public static SubsequentMembersReader<TNextReader> Create(Nothing context)
+        {
+            return new SubsequentMembersReader<TNextReader>();
+        }
+
+        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<SubsequentMembersToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            //// TODO is it actually faster to make a copy of the reader context here since you are dereferencing it a lot? this doesn't mean that the `ireader` contract needs to change, because sometimes you barely use the parameter at all, but sometimes maybe it makes more sense to make a local copy
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO");
+            }
+
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] == ',')
+            {
+                token = SubsequentMembersToken<TNextReader>.More;
+            }
+            else
+            {
+                token = SubsequentMembersToken<TNextReader>.None;
+            }
+
+            return true;
+        }
     }
 
+    public ref struct SubsequentMembersToken<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+        private int type { get; init; }
 
+        public static SubsequentMembersToken<TNextReader> None()
+        {
+            return new SubsequentMembersToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
 
+        public static SubsequentMembersToken<TNextReader> More()
+        {
+            return new SubsequentMembersToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
 
+        public bool TryNone([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
 
-
-
-
-
-
-
-
+        public bool TryMore(out SubsequentMemberReader<SubsequentMembersReader<TNextReader>> subsequentMemberReader)
+        {
+            subsequentMemberReader = default;
+            return this.type == 2;
+        }
+    }
 
     public ref struct MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>, Nothing>
         where TNextReader : new(), allows ref struct
@@ -1085,26 +1114,12 @@
 
         public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ColonToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!Helpers.TryReadChar(ref readerContext, ':'))
-            {
-                value = default;
-                context = default;
-                return false;
-            }
-
-            context = default;
-            value = new ColonToken();
-            return true;
+            return Helpers.TryReadChar(ref readerContext, ':');
         }
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                return false;
-            }
-
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
     }
 
@@ -1112,6 +1127,66 @@
     {
     }
 
+    public ref struct SubsequentMemberReader<TNextReader> : IMoveReader<SubsequentMemberReader<TNextReader>, CommaReader<WhitespaceReader<MemberReader<TNextReader>>>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<SubsequentMemberReader<TNextReader>, CommaReader<WhitespaceReader<MemberReader<TNextReader>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<SubsequentMemberReader<TNextReader>, CommaReader<WhitespaceReader<MemberReader<TNextReader>>>, Nothing>(this);
+            }
+        }
+
+        public static SubsequentMemberReader<TNextReader> Create(Nothing context)
+        {
+            return new SubsequentMemberReader<TNextReader>();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return true;
+        }
+    }
+
+    public ref struct CommaReader<TNextReader> : IValueReader<CommaReader<TNextReader>, TNextReader, Nothing, CommaToken>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<CommaReader<TNextReader>, TNextReader, Nothing, CommaToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<CommaReader<TNextReader>, TNextReader, Nothing, CommaToken>(this);
+            }
+        }
+
+        public TypeHolder<CommaReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<CommaReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static CommaReader<TNextReader> Create(Nothing context)
+        {
+            return new CommaReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out CommaToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return Helpers.TryReadChar(ref readerContext, ',');
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public ref struct CommaToken
+    {
+    }
 
 
 

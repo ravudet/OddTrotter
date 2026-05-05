@@ -621,6 +621,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                 {
                     case 1:
                         return new ConfiguredAwaitable(this.completed.ConfigureAwait(continueOnCapturedContext));
+                    case 2:
+                        return new ConfiguredAwaitable(this.read.ConfigureAwait(continueOnCapturedContext));
                     default:
                         throw new Exception("TODO");
                 }
@@ -631,6 +633,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                 private readonly int type;
 
                 private readonly Move1CompletedTask<TNextReader>.ConfiguredAwaitable completed;
+                private readonly Move1ReadTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable read;
 
                 public ConfiguredAwaitable(Move1CompletedTask<TNextReader>.ConfiguredAwaitable completed)
                 {
@@ -639,12 +642,21 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     this.type = 1;
                 }
 
+                public ConfiguredAwaitable(Move1ReadTask<TCurrentReader, TNextReader, TContext>.ConfiguredAwaitable read)
+                {
+                    this.read = read;
+
+                    this.type = 2;
+                }
+
                 public TaskAwaiter GetAwaiter()
                 {
                     switch (this.type)
                     {
                         case 1:
                             return new TaskAwaiter(this.completed.GetAwaiter());
+                        case 2:
+                            return new TaskAwaiter(this.read.GetAwaiter());
                         default:
                             throw new Exception("TODO");
                     }
