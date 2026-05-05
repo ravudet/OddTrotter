@@ -523,12 +523,7 @@
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                return false;
-            }
-
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
     }
 
@@ -554,7 +549,6 @@
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            context = default;
             return true;
         }
     }
@@ -645,26 +639,12 @@
 
         public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out StringDelimiterToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!Helpers.TryReadChar(ref readerContext, '"'))
-            {
-                value = default;
-                context = default;
-                return false;
-            }
-
-            context = default;
-            value = new StringDelimiterToken();
-            return true;
+            return Helpers.TryReadChar(ref readerContext, '"');
         }
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                return false;
-            }
-
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
     }
 
@@ -778,12 +758,7 @@
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                return false;
-            }
-
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
     }
 
@@ -872,14 +847,7 @@
 
         public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            if (!this.TryGetValue(ref readerContext, out _, out context))
-            {
-                ////nextReader = default;
-                return false;
-            }
-
-            ////nextReader = new();
-            return true;
+            return this.TryGetValue(ref readerContext, out _, out context);
         }
     }
 
