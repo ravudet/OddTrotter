@@ -1738,6 +1738,30 @@
                 throw new Exception("TODO");
             }
 
+            var subsequentMembers2 = await @false.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var subsequentMembersToken2 = await subsequentMembers2.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!subsequentMembersToken2.TryMore(out var subsequentMember2))
+            {
+                throw new Exception("TODO");
+            }
+
+            // 1234
+            var comma2 = await subsequentMember2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var whitespace8 = await comma2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var member3 = await whitespace8.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var string3 = await member3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var stringDelimiter5 = await string3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var chars3 = await stringDelimiter5.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var stringDelimiter6 = await chars3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var whitespace9 = await stringDelimiter6.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var colon3 = await whitespace9.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var whitespace10 = await colon3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var value4 = await whitespace10.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var valueToken4 = await value4.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!valueToken4.TryNumber(out var number))
+            {
+                throw new Exception("TODO");
+            }
 
             Assert.AreEqual(40, stream.Position);
             Assert.AreEqual(15, context.CurrentByteIndex);

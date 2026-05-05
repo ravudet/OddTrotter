@@ -7,6 +7,7 @@
     using System.IO;
     using System.Net.Mime;
     using System.Runtime.CompilerServices;
+    using System.Runtime.Serialization.Json;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -457,8 +458,67 @@
         }
     }
 
-    public ref struct FalseReader<TNextReader>
+    public ref struct FalseReader<TNextReader> : IValueReader<FalseReader<TNextReader>, TNextReader, int, FalseToken>
         where TNextReader : new(), allows ref struct
+    {
+        private static readonly string literal = "false"; //// TODO const?
+        private int currentCharacter;
+
+        public FalseReader()
+            : this(0)
+        {
+        }
+
+        private FalseReader(int currentCharacter)
+        {
+            this.currentCharacter = currentCharacter;
+        }
+
+        public TypeHolder<FalseReader<TNextReader>, TNextReader, int, FalseToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<FalseReader<TNextReader>, TNextReader, int, FalseToken>(this);
+            }
+        }
+
+        public TypeHolder<FalseReader<TNextReader>, TNextReader, int> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<FalseReader<TNextReader>, TNextReader, int>(this);
+            }
+        }
+
+        public static FalseReader<TNextReader> Create(int context)
+        {
+            return new FalseReader<TNextReader>(context);
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out FalseToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        {
+            for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
+            {
+                if (!Helpers.TryReadChar(ref readerContext, literal[this.currentCharacter]))
+                {
+                    value = default;
+                    context = this.currentCharacter;
+                    return false;
+                }
+            }
+
+            context = default;
+            value = new FalseToken();
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public ref struct FalseToken
     {
     }
 
