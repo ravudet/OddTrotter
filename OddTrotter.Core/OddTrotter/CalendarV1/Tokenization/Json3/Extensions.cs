@@ -117,7 +117,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 
                             var readerContext = Unsafe.AsRef<ReaderContext>(this.readerContext);
                             var currentReader = TCurrentReader.Create(this.context);
-                            if (!currentReader.TryGetToken(ref readerContext, out var factory, out this.context!)) //// TODO !
+                            if (!currentReader.TryGetToken(ref readerContext, out this.factory, out this.context!)) //// TODO !
                             {
                                 this.taskAwaiter = readerContext.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
@@ -306,7 +306,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     private readonly int type;
 
                     private readonly Move2CompletedTask<TToken>.ConfiguredAwaitable.TaskAwaiter completed;
-                    private readonly Move2ReadTask<TCurrentReader, TToken, TContext>.ConfiguredAwaitable.TaskAwaiter read;
+                    private Move2ReadTask<TCurrentReader, TToken, TContext>.ConfiguredAwaitable.TaskAwaiter read;
 
                     public TaskAwaiter(Move2CompletedTask<TToken>.ConfiguredAwaitable.TaskAwaiter completed)
                     {

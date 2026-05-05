@@ -1763,8 +1763,10 @@
                 throw new Exception("TODO");
             }
 
-            Assert.AreEqual(40, stream.Position);
-            Assert.AreEqual(15, context.CurrentByteIndex);
+            //// TODO you are here
+            //// TODO you need to run the perf numbers for this, then implement numberreader
+            Assert.AreEqual(60, stream.Position);
+            Assert.AreEqual(17, context.CurrentByteIndex);
         }
 
         [TestMethod]
