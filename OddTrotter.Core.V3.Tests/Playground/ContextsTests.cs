@@ -208,11 +208,14 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 namespace Adapter
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq.Expressions;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using Fx.Either;
     using Fx.QueryContext;
+    using Fx.Realizable;
 
     using OddTrotter.Graph.CalendarEventsContext;
 
@@ -370,11 +373,97 @@ namespace Adapter
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
                 {
-                    var seriesEventMastesrs = this.GetSeriesEventMasters();
-
+                    var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
                     //// TODO you are here
+                    var mastersWithInstances = seriesEventMasters
+                .SelectAsync(
+                    async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
+                        .SelectLeft(
+                            async seriesMaster =>
+                            {
+                                // this selector is trying to accomplish a lot; ultimately, the entire *method* is trying to get a series master and its first instance, so that we can see if the series has any instances in the time period that's been configured by the caller
+                                // by the time we get to this selector, we have the series masters, so we are now trying to get the first instance
+                                // once we "have" the instances (it is lazily evaluated), we are going to try to get the first one; *but* what if the first one has a translation error? well, we could just try to get the second one; *but*, what if there's a bug in our translation code? then *all* of the instances will have errors, and if its an unending series, we will loop forever trying to find the an instance that will never exist
+                                // so, we can't take the first non-error instance of *all* of the instances; we need to put a cap on it, so we use a `take`
+                                // then, we go ahead and get the first instance whether or not it has an error; we will use this in the case where *all* of the instances have an error
+                                // now that we have that in our back pocket just in case, we try to see if there are any *non-error* instances using a `where`; we get the first instance of *those*
+                                // if there are none, then we go back to the first error instance
+                                // and now we have the potential first instance, so we may return
+                                var instances = await this
+                                    .GetInstancesInSeries(seriesMaster.Id)
+                                    .Take(100) //// TODO configure this;
+                                    .ConfigureAwait(false);
+                                var potentialFirstInstance = await instances.FirstOrDefault(new Nothing()).ConfigureAwait(false);
 
-                    
+                                //// TODO perf-wise, this is no different from enumerable, but maybe you could do better
+                                var nonErrorInstance = await instances
+                                    .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false))
+                                    .FirstOrDefault(new Nothing()).ConfigureAwait(false);
+                                if (!nonErrorInstance.TryGetRight(out _))
+                                {
+                                    potentialFirstInstance = nonErrorInstance;
+                                }
+
+                                return
+                                    (
+                                        SeriesMaster: seriesMaster,
+                                        PotentialFirstInstance: potentialFirstInstance
+                                    );
+                            })
+                        .ConfigureAwait(false))
+                .Select(
+                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
+                        // we want to filter out series masters that don't have future instances (we *don't* want to filter errors, since they *might* represent future instances); we will do this later with a `tryselect`, so we need to get the `nothing` instances to the "right" side of the either; we are also looking to get non-error cases to the left side of the either; so, we should end up with something like `ieither<ieither<...<ieither<(seriesmaster, firstinstance), error>, error>,...> nothing>`
+                        .LiftSequence() // pull the paging error out of the tuple
+                        .Associate() // move the tuple left
+                        .LiftSequence() // pull the nothing out of the tuple
+                        .Associate() // move the tuple left
+                        .LiftSequence() // pull the translation error out of the tuple
+                        .Associate() // move the tuple left
+                        .SelectRight(
+                            errorCases => errorCases
+                                .SelectRight(
+                                    nothingOrErrors => nothingOrErrors
+                                        .Swap() // move nothing to the right side
+                                    ))
+                        .Unassociate() // move nothing to the right
+                        .Unassociate() // move nothing to the right
+                        .SelectLeft( // get all of the eithers nested on the left
+                            seriesMasterPlusPontentialFirstInstanceOrErrorCases => seriesMasterPlusPontentialFirstInstanceOrErrorCases
+                                .Associate())
+                        )
+                .TrySelect()
+                .Select(
+                    seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
+                        .SelectLeft(
+                            seriesMasterPlusInstance =>
+                                // combine the series master and the first instance into a "canonical" calendar event; this allows the caller to see meaningful timestamps while preserving the "series" nature of the event (for things like canceling and accepting the event);
+                                // NOTE: there's an argument to be made that this class should actually return all future instances of the series event, and not preserve the data about the series, but i'm not clear what the design of the (non-graph) `calendarevent` class would look like in that case, for situations like canceling, declining, or accepting a series
+                                new Graph.CalendarEvent(
+                                    seriesMasterPlusInstance.Item1.Id,
+                                    seriesMasterPlusInstance.Item1.Subject,
+                                    seriesMasterPlusInstance.Item1.Body,
+                                    seriesMasterPlusInstance.Item2.Start,
+                                    seriesMasterPlusInstance.Item1.IsCancelled,
+                                    seriesMasterPlusInstance.Item1.Type,
+                                    seriesMasterPlusInstance.Item2.End))
+                        .SelectRight(
+                            // reorder the error cases so that you can combine the different translation errors
+                            errorCases => errorCases
+                                .SelectRight(
+                                    pagingOrTranslation => pagingOrTranslation
+                                        .Swap()))
+                        .SelectRight(
+                            errors => errors.SelectManyRight())
+                        .SelectRight(
+                            translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
+                                .SelectRight(
+                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO include the paging error and include everything we know about the series master"))
+                                .Coalesce()));
+
+                    return mastersWithInstances;
+
+
 
 
 
@@ -676,6 +765,191 @@ namespace Adapter
             Func<TValue, bool> predicate)
         {
             return queryResult.Where(either => !either.TryGetLeft(out var value) || predicate(value));
+        }
+
+        internal static async ITask<IQueryResult<TValue, TError>> Take<TValue, TError>(
+            this Task<IQueryResult<TValue, TError>> queryResult,
+            int count)
+        {
+            //// TODO note somewhere that if you find `count` elements before getting to the end, you don't end up preserving any `terror` that might have occurred
+
+            return new TakeQueryResult<TValue, TError>(await queryResult.ConfigureAwait(false), count);
+        }
+
+        private sealed class TakeQueryResult<TValue, TError> : IQueryResult<TValue, TError>
+        {
+            private readonly IQueryResult<TValue, TError> queryResult;
+            private readonly int count;
+
+            public TakeQueryResult(
+                IQueryResult<TValue, TError> queryResult,
+                int count)
+            {
+                this.queryResult = queryResult;
+                this.count = count;
+            }
+
+            public async ITask<IQueryResultNode<TValue, TError>> GetNodes()
+            {
+                return new Node(await this.queryResult.GetNodes().ConfigureAwait(false), this.count);
+            }
+
+            private sealed class Node : IQueryResultNode<TValue, TError>
+            {
+                private readonly IQueryResultNode<TValue, TError> queryResult;
+                private readonly int count;
+
+                public Node(
+                    IQueryResultNode<TValue, TError> queryResult,
+                    int count)
+                {
+                    this.queryResult = queryResult;
+                    this.count = count;
+                }
+
+                public Realizable<TResult> ApplyAsync<TResult, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TValue, TError>, TContext, TContinuable, TResult> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult> rightMap, ref TContext context)
+                    where TResult : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult>, allows ref struct
+                {
+                    return this.queryResult.ApplyAsync<TResult, TContext, TContinuable>(
+                        (element, ref context) =>
+                        {
+                            return leftMap(new Element(element, this.count), ref context);
+                        },
+                        (terminal, ref context) =>
+                        {
+                            return rightMap(terminal, ref context);
+                        },
+                        ref context);
+                }
+
+                private sealed class Element : IElement<TValue, TError>
+                {
+                    private readonly IElement<TValue, TError> element;
+                    private readonly int count;
+
+                    public Element(IElement<TValue, TError> element, int count)
+                    {
+                        this.element = element;
+                        this.count = count;
+                    }
+
+                    public TValue Value
+                    {
+                        get
+                        {
+                            return this.element.Value;
+                        }
+                    }
+
+                    public async ITask<IQueryResultNode<TValue, TError>> Next()
+                    {
+                        return new Node(await this.element.Next().ConfigureAwait(false), count - 1);
+                    }
+                }
+            }
+        }
+
+
+        internal static IQueryResult<TValue, TError> TrySelect<TValue, TError>(
+            this IQueryResult<IEither<TValue, Nothing>, TError> queryResult)
+        {
+            return queryResult.TrySelect<IEither<TValue, Nothing>, TError, TValue>((either, [MaybeNullWhen(false)] out left) => either.TryGetLeft(out left));
+        }
+
+        internal static IQueryResult<TResult, TError> SelectAsync<TValue, TError, TResult>(
+            this IQueryResult<TValue, TError> queryResult,
+            Func<TValue, Task<TResult>> selector)
+        {
+            return new SelectQueryResult<TValue, TError, TResult>(queryResult, selector);
+        }
+
+        private sealed class SelectQueryResult<TValue, TError, TResult> : IQueryResult<TResult, TError>
+        {
+            private readonly IQueryResult<TValue, TError> queryResult;
+            private readonly Func<TValue, Task<TResult>> selector;
+
+            public SelectQueryResult(
+                IQueryResult<TValue, TError> queryResult,
+                Func<TValue, Task<TResult>> selector)
+            {
+                this.queryResult = queryResult;
+                this.selector = selector;
+            }
+
+            public async ITask<IQueryResultNode<TResult, TError>> GetNodes()
+            {
+                return new QueryResultNode(await this.queryResult.GetNodes().ConfigureAwait(false), this.selector);
+            }
+
+            private sealed class QueryResultNode : IQueryResultNode<TResult, TError>
+            {
+                private readonly IQueryResultNode<TValue, TError> queryResult;
+                private readonly Func<TValue, Task<TResult>> selector;
+
+                public QueryResultNode(
+                    IQueryResultNode<TValue, TError> queryResult,
+                    Func<TValue, Task<TResult>> selector)
+                {
+                    this.queryResult = queryResult;
+                    this.selector = selector;
+                }
+
+                public Realizable<TResult1> ApplyAsync<TResult1, TContext, TContinuable>(AsyncRefContextualizedContinuableMap<IElement<TResult, TError>, TContext, TContinuable, TResult1> leftMap, AsyncRefContextualizedContinuableMap<IEither<IError<TError>, IEmpty>, TContext, TContinuable, TResult1> rightMap, ref TContext context)
+                    where TResult1 : allows ref struct
+                    where TContext : allows ref struct
+                    where TContinuable : IContinuable<TResult1>, allows ref struct
+                {
+                    if (this.queryResult.Decompose(out var element, out var terminal)) //// TODO you shouldn't need to use decompose
+                    {
+                        return this.selector(element.Value)
+                            .ToTaskWrapper()
+                            .ContinueWith(
+                                selected => new Element(selected, element, this.selector),
+                                _ => throw _,
+                                _ => throw _)
+                            .ContinueWith(
+                                element =>
+                                {
+                                    var fakeContext = default(TContext)!;
+                                    ref TContext toPass = ref Unsafe.AsRef(ref fakeContext); //// TODO use the real context here...
+
+                                    return leftMap(element, ref toPass).ContinueWith(_ => _, _ => throw _, _ => throw _);
+                                },
+                                _ => throw _,
+                                _ => throw _)
+                            .Unwrap();
+                    }
+                    else
+                    {
+                        return rightMap(terminal, ref context).ContinueWith(_ => _, _ => throw _, _ => throw _);
+                    }
+                }
+
+                private sealed class Element : IElement<TResult, TError>
+                {
+                    private readonly IElement<TValue, TError> element;
+                    private readonly Func<TValue, Task<TResult>> selector;
+
+                    public Element(
+                        TResult value,
+                        IElement<TValue, TError> element,
+                        Func<TValue, Task<TResult>> selector)
+                    {
+                        Value = value;
+                        this.element = element;
+                        this.selector = selector;
+                    }
+
+                    public TResult Value { get; }
+
+                    public async ITask<IQueryResultNode<TResult, TError>> Next()
+                    {
+                        return new QueryResultNode(await this.element.Next().ConfigureAwait(false), this.selector);
+                    }
+                }
+            }
         }
     }
 }
