@@ -321,7 +321,22 @@ namespace Adapter
                             pagingError => new OddTrotter.PagingError());
                 }
 
-                private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstanceEvents()
+                private async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> GetInstanceEvents()
+                {
+                    return await this
+                        .GetGraphInstanceEvents()
+                        .Select(
+                            graphCalendarEventOrTranslationError => graphCalendarEventOrTranslationError
+                                .Select(
+                                    graphCalendarEvent => new OddTrotter.CalendarEvent(graphCalendarEvent.Id),
+                                    translationError => new OddTrotter.CalendarEventTranslationError() //// TODO
+                                    ))
+                        .SelectError(
+                            pagingError => new OddTrotter.PagingError())
+                        .ConfigureAwait(false);
+                }
+
+                private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetGraphInstanceEvents()
                 {
                     //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
 
@@ -371,95 +386,102 @@ namespace Adapter
                     return instanceEvents;
                 }
 
-                private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEvents()
+                private async Task<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> GetSeriesEvents()
                 {
                     var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
                     //// TODO you are here
                     var mastersWithInstances = seriesEventMasters
-                .SelectAsync(
-                    async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
-                        .SelectLeft(
-                            async seriesMaster =>
-                            {
-                                // this selector is trying to accomplish a lot; ultimately, the entire *method* is trying to get a series master and its first instance, so that we can see if the series has any instances in the time period that's been configured by the caller
-                                // by the time we get to this selector, we have the series masters, so we are now trying to get the first instance
-                                // once we "have" the instances (it is lazily evaluated), we are going to try to get the first one; *but* what if the first one has a translation error? well, we could just try to get the second one; *but*, what if there's a bug in our translation code? then *all* of the instances will have errors, and if its an unending series, we will loop forever trying to find the an instance that will never exist
-                                // so, we can't take the first non-error instance of *all* of the instances; we need to put a cap on it, so we use a `take`
-                                // then, we go ahead and get the first instance whether or not it has an error; we will use this in the case where *all* of the instances have an error
-                                // now that we have that in our back pocket just in case, we try to see if there are any *non-error* instances using a `where`; we get the first instance of *those*
-                                // if there are none, then we go back to the first error instance
-                                // and now we have the potential first instance, so we may return
-                                var instances = await this
-                                    .GetInstancesInSeries(seriesMaster.Id)
-                                    .Take(100) //// TODO configure this;
-                                    .ConfigureAwait(false);
-                                var potentialFirstInstance = await instances.FirstOrDefault(new Nothing()).ConfigureAwait(false);
+                        .SelectAsync(
+                            async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
+                                .SelectLeft(
+                                    async seriesMaster =>
+                                    {
+                                        // this selector is trying to accomplish a lot; ultimately, the entire *method* is trying to get a series master and its first instance, so that we can see if the series has any instances in the time period that's been configured by the caller
+                                        // by the time we get to this selector, we have the series masters, so we are now trying to get the first instance
+                                        // once we "have" the instances (it is lazily evaluated), we are going to try to get the first one; *but* what if the first one has a translation error? well, we could just try to get the second one; *but*, what if there's a bug in our translation code? then *all* of the instances will have errors, and if its an unending series, we will loop forever trying to find the an instance that will never exist
+                                        // so, we can't take the first non-error instance of *all* of the instances; we need to put a cap on it, so we use a `take`
+                                        // then, we go ahead and get the first instance whether or not it has an error; we will use this in the case where *all* of the instances have an error
+                                        // now that we have that in our back pocket just in case, we try to see if there are any *non-error* instances using a `where`; we get the first instance of *those*
+                                        // if there are none, then we go back to the first error instance
+                                        // and now we have the potential first instance, so we may return
+                                        var instances = await this
+                                            .GetInstancesInSeries(seriesMaster)
+                                            .Take(100) //// TODO configure this;
+                                            .ConfigureAwait(false);
+                                        var potentialFirstInstance = await instances.FirstOrDefault(new Nothing()).ConfigureAwait(false);
 
-                                //// TODO perf-wise, this is no different from enumerable, but maybe you could do better
-                                var nonErrorInstance = await instances
-                                    .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false))
-                                    .FirstOrDefault(new Nothing()).ConfigureAwait(false);
-                                if (!nonErrorInstance.TryGetRight(out _))
-                                {
-                                    potentialFirstInstance = nonErrorInstance;
-                                }
+                                        //// TODO perf-wise, this is no different from enumerable, but maybe you could do better
+                                        var nonErrorInstance = await instances
+                                            .Where(potentialInstance => potentialInstance.Apply(instance => true, error => false))
+                                            .FirstOrDefault(new Nothing()).ConfigureAwait(false);
+                                        if (!nonErrorInstance.TryGetRight(out _))
+                                        {
+                                            potentialFirstInstance = nonErrorInstance;
+                                        }
 
-                                return
-                                    (
-                                        SeriesMaster: seriesMaster,
-                                        PotentialFirstInstance: potentialFirstInstance
-                                    );
-                            })
-                        .ConfigureAwait(false))
-                .Select(
-                    seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
-                        // we want to filter out series masters that don't have future instances (we *don't* want to filter errors, since they *might* represent future instances); we will do this later with a `tryselect`, so we need to get the `nothing` instances to the "right" side of the either; we are also looking to get non-error cases to the left side of the either; so, we should end up with something like `ieither<ieither<...<ieither<(seriesmaster, firstinstance), error>, error>,...> nothing>`
-                        .LiftSequence() // pull the paging error out of the tuple
-                        .Associate() // move the tuple left
-                        .LiftSequence() // pull the nothing out of the tuple
-                        .Associate() // move the tuple left
-                        .LiftSequence() // pull the translation error out of the tuple
-                        .Associate() // move the tuple left
-                        .SelectRight(
-                            errorCases => errorCases
+                                        return
+                                            (
+                                                SeriesMaster: seriesMaster,
+                                                PotentialFirstInstance: potentialFirstInstance
+                                            );
+                                    })
+                                .ConfigureAwait(false))
+                        .Select(
+                            seriesMasterPlusPontentialFirstInstanceOrTranslationError => seriesMasterPlusPontentialFirstInstanceOrTranslationError
+                                // we want to filter out series masters that don't have future instances (we *don't* want to filter errors, since they *might* represent future instances); we will do this later with a `tryselect`, so we need to get the `nothing` instances to the "right" side of the either; we are also looking to get non-error cases to the left side of the either; so, we should end up with something like `ieither<ieither<...<ieither<(seriesmaster, firstinstance), error>, error>,...> nothing>`
+                                .LiftSequence() // pull the paging error out of the tuple
+                                .Associate() // move the tuple left
+                                .LiftSequence() // pull the nothing out of the tuple
+                                .Associate() // move the tuple left
+                                .LiftSequence() // pull the translation error out of the tuple
+                                .Associate() // move the tuple left
                                 .SelectRight(
-                                    nothingOrErrors => nothingOrErrors
-                                        .Swap() // move nothing to the right side
-                                    ))
-                        .Unassociate() // move nothing to the right
-                        .Unassociate() // move nothing to the right
-                        .SelectLeft( // get all of the eithers nested on the left
-                            seriesMasterPlusPontentialFirstInstanceOrErrorCases => seriesMasterPlusPontentialFirstInstanceOrErrorCases
-                                .Associate())
-                        )
-                .TrySelect()
-                .Select(
-                    seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
-                        .SelectLeft(
-                            seriesMasterPlusInstance =>
-                                // combine the series master and the first instance into a "canonical" calendar event; this allows the caller to see meaningful timestamps while preserving the "series" nature of the event (for things like canceling and accepting the event);
-                                // NOTE: there's an argument to be made that this class should actually return all future instances of the series event, and not preserve the data about the series, but i'm not clear what the design of the (non-graph) `calendarevent` class would look like in that case, for situations like canceling, declining, or accepting a series
-                                new Graph.CalendarEvent(
-                                    seriesMasterPlusInstance.Item1.Id,
-                                    seriesMasterPlusInstance.Item1.Subject,
-                                    seriesMasterPlusInstance.Item1.Body,
-                                    seriesMasterPlusInstance.Item2.Start,
-                                    seriesMasterPlusInstance.Item1.IsCancelled,
-                                    seriesMasterPlusInstance.Item1.Type,
-                                    seriesMasterPlusInstance.Item2.End))
-                        .SelectRight(
-                            // reorder the error cases so that you can combine the different translation errors
-                            errorCases => errorCases
+                                    errorCases => errorCases
+                                        .SelectRight(
+                                            nothingOrErrors => nothingOrErrors
+                                                .Swap() // move nothing to the right side
+                                            ))
+                                .Unassociate() // move nothing to the right
+                                .Unassociate() // move nothing to the right
+                                .SelectLeft( // get all of the eithers nested on the left
+                                    seriesMasterPlusPontentialFirstInstanceOrErrorCases => seriesMasterPlusPontentialFirstInstanceOrErrorCases
+                                        .Associate())
+                                )
+                        .TrySelect()
+                        .Select(
+                            seriesMasterPlusInstanceOrError => seriesMasterPlusInstanceOrError
+                                .SelectLeft(
+                                    seriesMasterPlusInstance =>
+                                        // combine the series master and the first instance into a "canonical" calendar event; this allows the caller to see meaningful timestamps while preserving the "series" nature of the event (for things like canceling and accepting the event);
+                                        // NOTE: there's an argument to be made that this class should actually return all future instances of the series event, and not preserve the data about the series, but i'm not clear what the design of the (non-graph) `calendarevent` class would look like in that case, for situations like canceling, declining, or accepting a series
+                                        new OddTrotter.CalendarEvent(
+                                            seriesMasterPlusInstance.Item1.Id/*,
+                                            seriesMasterPlusInstance.Item1.Subject,
+                                            seriesMasterPlusInstance.Item1.Body,
+                                            seriesMasterPlusInstance.Item2.Start,
+                                            seriesMasterPlusInstance.Item1.IsCancelled,
+                                            seriesMasterPlusInstance.Item1.Type,
+                                            seriesMasterPlusInstance.Item2.End*/
+                                            ))
                                 .SelectRight(
-                                    pagingOrTranslation => pagingOrTranslation
-                                        .Swap()))
-                        .SelectRight(
-                            errors => errors.SelectManyRight())
-                        .SelectRight(
-                            translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
+                                    // reorder the error cases so that you can combine the different translation errors
+                                    errorCases => errorCases
+                                        .SelectRight(
+                                            pagingOrTranslation => pagingOrTranslation
+                                                .Swap()))
                                 .SelectRight(
-                                    instancePagingError => new Graph.CalendarEventTranslationException("TODO include the paging error and include everything we know about the series master"))
-                                .Coalesce()));
+                                    errors => errors
+                                        .SelectManyRight())
+                                .SelectRight(
+                                    translationErrorOrInstancePagingError => translationErrorOrInstancePagingError
+                                        .Select(
+                                            translationError => new OddTrotter.CalendarEventTranslationError(), //// TODO
+                                            instancePagingError => new OddTrotter.CalendarEventTranslationError() //("TODO include the paging error and include everything we know about the series master")
+                                        )
+                                        .Coalesce()))
+                        .SelectError(
+                            seriesPagingError => new OddTrotter.PagingError() //// TODO
+                            );
 
                     return mastersWithInstances;
 
