@@ -11,6 +11,7 @@
     using System.Runtime.Serialization.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Threading.Tasks.Sources;
 
     public readonly ref struct TypeHolder<TSelf, T1>
         where TSelf : allows ref struct
@@ -862,12 +863,284 @@
         public byte Digit { get; }
     }
 
-    public ref struct FracReader<TNextReader>
+    public ref struct FracReader<TNextReader> : ITokenReader<FracReader<TNextReader>, FracToken<TNextReader>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<FracReader<TNextReader>, FracToken<TNextReader>, Nothing> AsTokenReader
+        {
+            get
+            {
+                return new TypeHolder<FracReader<TNextReader>, FracToken<TNextReader>, Nothing>(this);
+            }
+        }
+
+        public static FracReader<TNextReader> Create(Nothing context)
+        {
+            return new FracReader<TNextReader>();
+        }
+
+        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<FracToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '.')
+            {
+                token = FracToken<TNextReader>.Absent;
+                return true;
+            }
+            else
+            {
+                token = FracToken<TNextReader>.Present;
+                return true;
+            }
+        }
+    }
+
+    public ref struct FracToken<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+        private int type { get; init; }
+
+        public static FracToken<TNextReader> Absent()
+        {
+            return new FracToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static FracToken<TNextReader> Present()
+        {
+            return new FracToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryPresent(out DigitsReader<TNextReader> digitsReader)
+        {
+            digitsReader = default;
+            return this.type == 2;
+        }
+    }
+
+    public ref struct DigitsReader<TNextReader> : IValueReader<DigitsReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>>
+        where TNextReader : new(), allows ref struct
+    {
+        private List<DigitToken> digitTokens;
+
+        public DigitsReader()
+            : this(new List<DigitToken>())
+        {
+        }
+
+        private DigitsReader(List<DigitToken> digitTokens)
+        {
+            this.digitTokens = digitTokens;
+        }
+
+        public TypeHolder<DigitsReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<DigitsReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>>(this);
+            }
+        }
+
+        public TypeHolder<DigitsReader<TNextReader>, TNextReader, List<DigitToken>> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<DigitsReader<TNextReader>, TNextReader, List<DigitToken>>(this);
+            }
+        }
+
+        public static DigitsReader<TNextReader> Create(List<DigitToken> context)
+        {
+            return new DigitsReader<TNextReader>(context);
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        {
+            if (this.digitTokens == null)
+            {
+                this.digitTokens = new List<DigitToken>();
+            }
+
+            //// TODO there might be a bug that allows an "empty" fraction portion...
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    value = default;
+                    context = this.digitTokens;
+                    return false;
+                }
+
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                this.digitTokens.Add(digit);
+            }
+
+            value = this.digitTokens;
+            context = default;
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public ref struct ExpReader<TNextReader> : ITokenReader<ExpReader<TNextReader>, ExpToken<TNextReader>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<ExpReader<TNextReader>, ExpToken<TNextReader>, Nothing> AsTokenReader
+        {
+            get
+            {
+                return new TypeHolder<ExpReader<TNextReader>, ExpToken<TNextReader>, Nothing>(this);
+            }
+        }
+
+        public static ExpReader<TNextReader> Create(Nothing context)
+        {
+            return new ExpReader<TNextReader>();
+        }
+
+        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<ExpToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '-')
+            {
+                token = ExpToken<TNextReader>.Absent;
+            }
+            else
+            {
+                ++readerContext.CurrentByteIndex;
+                token = ExpToken<TNextReader>.Present;
+            }
+
+            return true;
+        }
+    }
+
+    public ref struct ExpToken<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+        private int type { get; init; }
+
+        public static ExpToken<TNextReader> Absent()
+        {
+            return new ExpToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static ExpToken<TNextReader> Present()
+        {
+            return new ExpToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryAbsent([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
+
+        public bool TryPresent(out EReader<ExpSignReader<DigitsReader<TNextReader>>> eReader)
+        {
+            eReader = default;
+            return this.type == 2;
+        }
+    }
+
+    public ref struct EReader<TNextReader> : IValueReader<EReader<TNextReader>, TNextReader, Nothing, EToken>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<EReader<TNextReader>, TNextReader, Nothing, EToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<EReader<TNextReader>, TNextReader, Nothing, EToken>(this);
+            }
+        }
+
+        public TypeHolder<EReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<EReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static EReader<TNextReader> Create(Nothing context)
+        {
+            return new EReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out EToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            value = new EToken((byte)'e');
+            return Helpers.TryReadChar(ref readerContext, 'e'); //// TODO should also allow 'E'
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public ref struct EToken
+    {
+        public EToken(byte e)
+        {
+            if (e != 'e' && e != 'E')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            E = e;
+        }
+
+        public byte E { get; }
+    }
+
+    public ref struct ExpSignReader<TNextReader> : IValueReader<ExpSignReader<TNextReader>, TNextReader, >
         where TNextReader : new(), allows ref struct
     {
     }
 
-    public ref struct ExpReader<TNextReader>
+    public ref struct ExpSignToken<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
