@@ -1763,8 +1763,6 @@
                 throw new Exception("TODO");
             }
 
-            //// TODO you are here
-            //// TODO you need to run the perf numbers for this, then implement numberreader
             Assert.AreEqual(60, stream.Position);
             Assert.AreEqual(17, context.CurrentByteIndex);
         }
@@ -1890,10 +1888,6 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(40, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
             //// TODO
             /*context.CurrentByteIndex = 15;
             if (!@false.TryGetValue3(ref context, out _, out _, out _))
@@ -1907,7 +1901,7 @@
             }
 
             var subsequentMembers2 = more1();*/
-            /*var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -1940,7 +1934,11 @@
                 throw new Exception("TODO");
             }
 
-            var sign = await number.MoveInternal1().ConfigureAwait(false);
+
+            Assert.AreEqual(60, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*var sign = await number.MoveInternal1().ConfigureAwait(false);
             var @int = await sign.MoveInternal1().ConfigureAwait(false);
             var frac = await @int.MoveInternal1().ConfigureAwait(false);
             var exp = await frac.MoveInternal1().ConfigureAwait(false);
