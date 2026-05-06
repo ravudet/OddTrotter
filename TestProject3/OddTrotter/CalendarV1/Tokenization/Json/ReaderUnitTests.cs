@@ -1763,6 +1763,7 @@
                 throw new Exception("TODO");
             }
 
+
             Assert.AreEqual(60, stream.Position);
             Assert.AreEqual(17, context.CurrentByteIndex);
         }
