@@ -388,8 +388,9 @@ namespace Adapter
 
                 private async Task<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> GetSeriesEvents()
                 {
+                    //// TODO the querycontext needs to call this with `.Filter(CalendarSource.EndTimeLessThan(this.endTime.Value))` for it to work right now
+
                     var seriesEventMasters = await this.GetSeriesEventMasters().ConfigureAwait(false);
-                    //// TODO you are here
                     var mastersWithInstances = seriesEventMasters
                         .SelectAsync(
                             async seriesMasterOrTranslationError => await seriesMasterOrTranslationError
@@ -493,7 +494,7 @@ namespace Adapter
 
 
 
-                    //// TODO the querycontext needs to call this with `.Filter(CalendarSource.EndTimeLessThan(this.endTime.Value))` for it to work right now
+                    
 
 
 
