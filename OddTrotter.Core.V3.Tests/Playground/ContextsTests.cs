@@ -705,7 +705,7 @@ namespace Adapter
                     Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
                     out Expression<Func<Graph.CalendarEvent, bool>> filterConsistentAcrossInstancesAndSupportedByGraph,
                     out Func<Graph.CalendarEvent, bool> filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                    out Expression<Func<OddTrotter.CalendarEvent, bool>>? filterNotConsistentAcrossInstances
+                    out Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances
                     )
                 {
                     //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
