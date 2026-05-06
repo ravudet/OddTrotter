@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
+    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Net.Mime;
     using System.Runtime.CompilerServices;
@@ -618,14 +619,258 @@
     {
     }
 
-    public ref struct NumberReader<TNextReader>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public ref struct NumberReader<TNextReader> : IMoveReader<NumberReader<TNextReader>, SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>, Nothing>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<NumberReader<TNextReader>, SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<NumberReader<TNextReader>, SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>, Nothing>(this);
+            }
+        }
+
+        public static NumberReader<TNextReader> Create(Nothing context)
+        {
+            return new NumberReader<TNextReader>();
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return true;
+        }
+    }
+
+    public ref struct SignReader<TNextReader> : IValueReader<SignReader<TNextReader>, TNextReader, Nothing, SignToken>
+        where TNextReader : new(), allows ref struct
+    {
+        public TypeHolder<SignReader<TNextReader>, TNextReader, Nothing, SignToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<SignReader<TNextReader>, TNextReader, Nothing, SignToken>(this);
+            }
+        }
+
+        public TypeHolder<SignReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<SignReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static SignReader<TNextReader> Create(Nothing context)
+        {
+            return new SignReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out SignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                value = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '-')
+            {
+                value = SignToken.Absent();
+            }
+            else
+            {
+                ++readerContext.CurrentByteIndex;
+                value = SignToken.Negative();
+            }
+
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public ref struct SignToken
+    {
+        private int type { get; init; }
+
+        public static SignToken Absent()
+        {
+            return new SignToken()
+            {
+                type = 1,
+            };
+        }
+
+        public static SignToken Negative()
+        {
+            return new SignToken()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryAbsent()
+        {
+            return this.type == 1;
+        }
+    }
+
+    public ref struct IntReader<TNextReader> : IValueReader<IntReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>>
+        where TNextReader : new(), allows ref struct
+    {
+        private List<DigitToken> digitTokens;
+
+        public IntReader()
+            : this(new List<DigitToken>())
+        {
+        }
+
+        private IntReader(List<DigitToken> digitTokens)
+        {
+            this.digitTokens = digitTokens;
+        }
+
+        public TypeHolder<IntReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<IntReader<TNextReader>, TNextReader, List<DigitToken>, IEnumerable<DigitToken>>(this);
+            }
+        }
+
+        public TypeHolder<IntReader<TNextReader>, TNextReader, List<DigitToken>> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<IntReader<TNextReader>, TNextReader, List<DigitToken>>(this);
+            }
+        }
+
+        public static IntReader<TNextReader> Create(List<DigitToken> context)
+        {
+            return new IntReader<TNextReader>(context);
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        {
+            if (this.digitTokens == null)
+            {
+                this.digitTokens = new List<DigitToken>();
+            }
+
+            if (this.digitTokens.Count == 0)
+            {
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(currentByte);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                this.digitTokens.Add(digit);
+                ++readerContext.CurrentByteIndex;
+                if (currentByte == '0')
+                {
+                    value = this.digitTokens;
+                    context = default;
+                    return true;
+                }
+            }
+
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    value = default;
+                    context = this.digitTokens;
+                    return false;
+                }
+
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                this.digitTokens.Add(digit);
+            }
+
+            value = this.digitTokens;
+            context = default;
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
+    }
+
+    public struct DigitToken
+    {
+        public DigitToken(byte digit)
+        {
+            if (digit < '0' || digit > '9')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            Digit = digit;
+        }
+
+        public byte Digit { get; }
+    }
+
+    public ref struct FracReader<TNextReader>
         where TNextReader : new(), allows ref struct
     {
     }
 
-
-
-
+    public ref struct ExpReader<TNextReader>
+        where TNextReader : new(), allows ref struct
+    {
+    }
 
 
 
