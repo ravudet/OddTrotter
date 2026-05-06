@@ -270,7 +270,7 @@ namespace Adapter
                 /// <summary>
                 /// a filter was applied that matches a property that does not have consistent values across all instances in a series (regardless of whether the filter is known to be supported by graph) (e.g. start) //// TODO you don't actually have anything that should reach here if the caller is just matching on a single property; this should only be reached right now when they are using a more complex expression (like using binary operators or comparing properties to other properties)
                 /// </summary>
-                private readonly Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances;
+                private readonly Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances;
 
                 public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
                     : this(
@@ -289,7 +289,7 @@ namespace Adapter
                     DateTime? endTime,
                     Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph,
                     Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                    Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances)
+                    Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances)
                 {
                     this.graphCalendarEventsContext = graphCalendarEventsContext;
 
@@ -323,7 +323,7 @@ namespace Adapter
 
                 private async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> GetInstanceEvents()
                 {
-                    return await this
+                    var instanceEvents = await this
                         .GetGraphInstanceEvents()
                         .Select(
                             graphCalendarEventOrTranslationError => graphCalendarEventOrTranslationError
@@ -334,6 +334,13 @@ namespace Adapter
                         .SelectError(
                             pagingError => new OddTrotter.PagingError())
                         .ConfigureAwait(false);
+
+                    if (this.filterNotConsistentAcrossInstances != null)
+                    {
+                        instanceEvents = instanceEvents.Where(this.filterNotConsistentAcrossInstances); //// TODO it would be best to break this filter into those things that are supported by graph and those that aren't so that you can use a `filter` instead; but it's also possible that there is nothing supported by grpah for those things not consistent across instances
+                    }
+
+                    return instanceEvents;
                 }
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetGraphInstanceEvents()
@@ -362,12 +369,6 @@ namespace Adapter
                     {
                         calendarEvents = calendarEvents
                             .Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
-                    }
-
-                    if (this.filterNotConsistentAcrossInstances != null)
-                    {
-                        calendarEvents = calendarEvents
-                            .Filter(this.filterNotConsistentAcrossInstances);
                     }
 
                     //// TODO make sure iscancelled can be called by the consumer
@@ -720,7 +721,7 @@ namespace Adapter
                     Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
                     out Expression<Func<Graph.CalendarEvent, bool>> filterConsistentAcrossInstancesAndSupportedByGraph,
                     out Func<Graph.CalendarEvent, bool> filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                    out Expression<Func<Graph.CalendarEvent, bool>>? filterNotConsistentAcrossInstances
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>>? filterNotConsistentAcrossInstances
                     )
                 {
                     //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
