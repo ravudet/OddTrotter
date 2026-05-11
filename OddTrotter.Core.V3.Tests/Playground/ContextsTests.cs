@@ -747,6 +747,33 @@ namespace Adapter
                     out DateTime? endTime, 
                     out Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter)
                 {
+                    if (currentFilter == null)
+                    {
+                        endTime = null;
+                        remainingFilter = null;
+                        return;
+                    }
+
+                    if (currentFilter.Parameters.Count == 1)
+                    {
+                        var parameterName = currentFilter.Parameters[0].Name;
+                        if (parameterName != null)
+                        {
+                            if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
+                            {
+                                if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
+                                {
+                                    endTime = new DateTime(startTimeTicks);
+                                    remainingFilter = null;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    endTime = null;
+                    remainingFilter = currentFilter;
+                    return;
                 }
 
                 private static void ExtractSeriesMasterFilter(
@@ -801,6 +828,15 @@ namespace Adapter
         {
             Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
             var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(StartTimeGreaterThan) + dateTime.Ticks.ToString());
+            foo.Update(foo.Body, new[] { ticks });
+
+            return foo;
+        }
+
+        internal static Expression<Func<CalendarEvent, bool>> EndTimeLessThan(DateTime dateTime)
+        {
+            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(EndTimeLessThan) + dateTime.Ticks.ToString());
             foo.Update(foo.Body, new[] { ticks });
 
             return foo;
