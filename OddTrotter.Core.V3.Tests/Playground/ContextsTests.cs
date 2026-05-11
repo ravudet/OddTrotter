@@ -737,6 +737,8 @@ namespace Adapter
                         }
                     }
 
+                    //// TODO you need to figure out how to do better (you might have a test case somewhere)
+                    
                     startTime = null;
                     remainingFilter = currentFilter;
                     return;
@@ -770,6 +772,8 @@ namespace Adapter
                             }
                         }
                     }
+
+                    //// TODO you need to figure out how to do better (you might have a test case somewhere)
 
                     endTime = null;
                     remainingFilter = currentFilter;
