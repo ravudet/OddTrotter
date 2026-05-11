@@ -1763,9 +1763,30 @@
                 throw new Exception("TODO");
             }
 
+            var sign = await number.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var @int = await sign.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var frac = await @int.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var fracToken = await frac.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!fracToken.TryAbsent(out var exp))
+            {
+                throw new Exception("TODO");
+            }
 
-            Assert.AreEqual(60, stream.Position);
-            Assert.AreEqual(17, context.CurrentByteIndex);
+            var expToken = await exp.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!expToken.TryAbsent(out var subsequentMembers3))
+            {
+                throw new Exception("TODO");
+            }
+
+            var subsequentMembersToken3 = await subsequentMembers3.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+            if (!subsequentMembersToken3.TryMore(out var subsequentMember3))
+            {
+                throw new Exception("TODO");
+            }
+
+
+            Assert.AreEqual(80, stream.Position);
+            Assert.AreEqual(1, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -1935,11 +1956,7 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(60, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*var sign = await number.MoveInternal1().ConfigureAwait(false);
+            var sign = await number.MoveInternal1().ConfigureAwait(false);
             var @int = await sign.MoveInternal1().ConfigureAwait(false);
             var frac = await @int.MoveInternal1().ConfigureAwait(false);
             var exp = await frac.MoveInternal1().ConfigureAwait(false);
@@ -1964,7 +1981,11 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            // asdf
+
+            Assert.AreEqual(80, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*// asdf
             var comma3 = await subsequentMember3.MoveInternal1().ConfigureAwait(false);
             var whitespace11 = await comma3.MoveInternal1().ConfigureAwait(false);
             //var member4 = await whitespace11.AsReader.MoveInternal3(whitespace11.Factory).ConfigureAwait(false);

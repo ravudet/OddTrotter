@@ -921,6 +921,12 @@
             };
         }
 
+        public bool TryAbsent(out TNextReader nextReader)
+        {
+            nextReader = new TNextReader();
+            return this.type == 1;
+        }
+
         public bool TryPresent(out DigitsReader<TNextReader> digitsReader)
         {
             digitsReader = default;
@@ -1226,30 +1232,6 @@
             };
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public ref struct StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>, Nothing>
         where TNextReader : new(), allows ref struct
