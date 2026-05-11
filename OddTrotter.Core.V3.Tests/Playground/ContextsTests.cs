@@ -248,12 +248,12 @@ namespace Adapter
 
             public OddTrotter.ICalendarEventsContext Get()
             {
-                return new CalendarEventsContext(this.graphCalendarEventsSource.Get());
+                return new CalendarEventsContext(this.graphCalendarEventsSource);
             }
 
             private sealed class CalendarEventsContext : OddTrotter.ICalendarEventsContext
             {
-                private readonly Graph.ICalendarEventsContext graphCalendarEventsContext;
+                private readonly Graph.ICalendarEventsSource graphCalendarEventsSource;
 
                 private readonly DateTime? startTime;
                 private readonly DateTime? endTime;
@@ -273,9 +273,9 @@ namespace Adapter
                 /// </summary>
                 private readonly Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances;
 
-                public CalendarEventsContext(Graph.ICalendarEventsContext graphCalendarEventsContext)
+                public CalendarEventsContext(Graph.ICalendarEventsSource graphCalendarEventsSource)
                     : this(
-                          graphCalendarEventsContext,
+                          graphCalendarEventsSource,
                           null,
                           null,
                           null,
@@ -285,14 +285,14 @@ namespace Adapter
                 }
 
                 public CalendarEventsContext(
-                    Graph.ICalendarEventsContext graphCalendarEventsContext,
+                    Graph.ICalendarEventsSource graphCalendarEventsSource,
                     DateTime? startTime,
                     DateTime? endTime,
                     Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph,
                     Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph,
                     Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances)
                 {
-                    this.graphCalendarEventsContext = graphCalendarEventsContext;
+                    this.graphCalendarEventsSource = graphCalendarEventsSource;
 
                     this.startTime = startTime;
                     this.endTime = endTime;
@@ -351,7 +351,8 @@ namespace Adapter
                     var pageSize = 100U; //// TODO configure this
 
                     var calendarEvents = this
-                        .graphCalendarEventsContext
+                        .graphCalendarEventsSource
+                        .Get()
                         .Filter(calendarEvent => calendarEvent.Type == "singleInstance");
 
                     if (this.startTime != null)
@@ -529,18 +530,41 @@ namespace Adapter
                             this.GetInstancesInSeries(seriesMasterId, sliceEndTime, endTime),
                             _ => _, //// TODO error conditions
                             _ => _,
-                            (first, second) => first);
+                            (first, second) => first)
+                        .ConfigureAwait(false);
                 }
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstancesInSeriesSlice(string seriesMasterId, DateTime startTime, DateTime endTime)
                 {
-                    //// TODO you are going to use the `filterConsistentAcrossInstancesAndNotSupportedByGraph` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering (actually, the subject filtering case will be more like "if the oddtrotter one understands it, we can do better performance, but if it doesn't, we will pass it through and graph won't understand it, so the call will fail", which isn't necessarily great, but the whole point is that we need to support *at least* what graph supports, and if you give stuff to us in a format that we understand, we do better)
+                    //// TODO you are going to use the `filterConsistentAcrossInstancesAndSupportedByGraph` when you get the instances of the series; there is a bit of magic here that, if you are given filters you don't understand, you are basically passing them to graph; so, let's say that the instance filter has something about start time, but it's nested or something, so you don't understand it in the `filter` method to pull out the `starttime` field; in that case, you will "simply" be slow, but still function, because you will get *all* the series mastsers, and then do the start time filtering on the instances themselves; the same will apply for anything else that could have been useful for performance (like endtime, or something that graph doesn't support, like subject filtering (actually, the subject filtering case will be more like "if the oddtrotter one understands it, we can do better performance, but if it doesn't, we will pass it through and graph won't understand it, so the call will fail", which isn't necessarily great, but the whole point is that we need to support *at least* what graph supports, and if you give stuff to us in a format that we understand, we do better)
+
+                    var calendarEvents = this
+                        .graphCalendarEventsSource
+                        .Key(seriesMasterId)
+                        .Instances(startTime, endTime)
+                        .Get();
+
+                    if (this.filterConsistentAcrossInstancesAndSupportedByGraph != null)
+                    {
+                        calendarEvents = calendarEvents.Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
+                    }
+
+                    var instanceEvents = await calendarEvents.Evaluate().ConfigureAwait(false);
+
+                    if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
+                    {
+                        //// TODO it's not clear to me that you actually need to apply this here
+                        instanceEvents = instanceEvents.Where(this.filterConsistentAcrossInstancesAndNotSupportedByGraph);
+                    }
+
+                    return instanceEvents;
                 }
 
                 private async Task<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetSeriesEventMasters()
                 {
                     var calendarEvents = this
-                        .graphCalendarEventsContext
+                        .graphCalendarEventsSource
+                        .Get()
                         .Filter(calendarEvent => calendarEvent.Type == "seriesMaster");
 
                     //// TODO make sure iscancelled can be called by the consumer
@@ -645,7 +669,7 @@ namespace Adapter
                     }
 
                     return new CalendarEventsContext(
-                        this.graphCalendarEventsContext,
+                        this.graphCalendarEventsSource,
                         startTime,
                         endTime,
                         filterConsistentAcrossInstancesAndSupportedByGraph,
