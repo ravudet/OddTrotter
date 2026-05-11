@@ -107,7 +107,7 @@
         TypeHolder<TSelf, TNextReader, TContext> AsMoveReader { get; }
 
         bool TryMove(
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             // [NotNullWhen(true)][MaybeNullWhen(false)] out TNextReader nextReader, //// TODO we don't need this because we have `tnextreader : new()`
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context); //// TODO is it faster to have a context-free move reader interface? currently, you return a `nothing` that is stored in a task sometimes and then passed to the `create(tcontext)` method, that's not "the best" probably
 
@@ -122,7 +122,7 @@
         TypeHolder<TSelf, TNextReader, TContext, TValue> AsValueReader { get; }
 
         bool TryGetValue(
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             [NotNullWhen(true)][MaybeNullWhen(false)] out TValue value,
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
     }
@@ -134,7 +134,7 @@
         TypeHolder<TSelf, TToken, TContext> AsTokenReader { get; } //// TODO you could have an interface implementation for this if you add a `TSelf Self { get; }` property, but it doesn't really matter because `ref struct`s can't take advantage of interface implementations anyway
 
         bool TryGetToken(
-            ref ReaderContext readerContext, //// TODO use `in` instead of `ref`?
+            ReaderContext readerContext, //// TODO use `in` instead of `ref`?
             [NotNullWhen(true)][MaybeNullWhen(false)] out Func<TToken> token, //// TODO these are tokens, call them something else; if they were tokens, you could use `ivaluereader`; they *might* actually be "readers" in a way, and so they would be `imovereader`s, but because there are multiple options for the next reader, you can't give back a concrete instance using `new()` //// TODO actually, maybe you can if the tokens themselves do the "reading"; so, for example, `valuereader` be a `imovereader` and it would return a `valuetoken`, which, when `apply` is called (which now needs to receive `readercontext`), would read the data from the payload to determine which of the delegates to call (which is done right now in `valuereader` and the `valuetoken` is initialized with the conclusion); something i don't like about this approach is that it can't be strongly typed in an interface (in a general way) because different readers will have different numbers of "possible" next readers, so you would need (like tuple) multiple interfaces to handle different numbers of type parameters; you *could* do something like `itoken<tnextreader, ttherest> where ttherest : itoken tresult apply<tresult>(func<tnextreader, tresult>, func<ttherest, tresult>)`, but i've only gotten that to work with abstract classes, not interfaces (not saying it is impossible with interfaces), and so that would prevent you from using ref struct; also, the performance on that is probably terrible
             [NotNullWhen(false)][MaybeNullWhen(true)] out TContext context);
 
@@ -157,7 +157,7 @@
         }
 
         public bool TryMove(
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             ////[MaybeNullWhen(false), NotNullWhen(true)] out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader,
             [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
@@ -199,7 +199,7 @@
         }
 
         public bool TryGetValue(
-            ref ReaderContext readerContext, 
+            ReaderContext readerContext, 
             [MaybeNullWhen(false), NotNullWhen(true)] out List<WhitespaceToken> value, 
             [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
@@ -243,11 +243,11 @@
         }
 
         public bool TryMove(
-            ref ReaderContext readerContext, 
+            ReaderContext readerContext, 
             ////[MaybeNullWhen(false), NotNullWhen(true)] out TNextReader nextReader,
             [MaybeNullWhen(true), NotNullWhen(false)] out List<WhitespaceToken> context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
 
         public static WhitespaceReader<TNextReader> Create(List<WhitespaceToken> context)
@@ -294,7 +294,7 @@
         }
 
         public bool TryGetToken(
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             [MaybeNullWhen(false), NotNullWhen(true)] out Func<ValueToken<TNextReader>> token,
             [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
@@ -497,11 +497,11 @@
             return new FalseReader<TNextReader>(context);
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out FalseToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out FalseToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
         {
             for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
             {
-                if (!Helpers.TryReadChar(ref readerContext, literal[this.currentCharacter]))
+                if (!Helpers.TryReadChar(readerContext, literal[this.currentCharacter]))
                 {
                     value = default;
                     context = this.currentCharacter;
@@ -514,9 +514,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -566,11 +566,11 @@
             return new TrueReader<TNextReader>(context);
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out TrueToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out TrueToken value, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
         {
             for (; this.currentCharacter < literal.Length; ++this.currentCharacter)
             {
-                if (!Helpers.TryReadChar(ref readerContext, literal[this.currentCharacter]))
+                if (!Helpers.TryReadChar(readerContext, literal[this.currentCharacter]))
                 {
                     value = default;
                     context = this.currentCharacter;
@@ -583,9 +583,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out int context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -609,7 +609,7 @@
             return new ObjectReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -659,7 +659,7 @@
             return new NumberReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -689,7 +689,7 @@
             return new SignReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out SignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out SignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -710,9 +710,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -778,7 +778,7 @@
             return new IntReader<TNextReader>(context);
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
         {
             if (this.digitTokens == null)
             {
@@ -842,9 +842,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -879,7 +879,7 @@
             return new FracReader<TNextReader>();
         }
 
-        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<FracToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetToken(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<FracToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -970,7 +970,7 @@
             return new DigitsReader<TNextReader>(context);
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<DigitToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
         {
             if (this.digitTokens == null)
             {
@@ -1012,9 +1012,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out List<DigitToken> context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1034,7 +1034,7 @@
             return new ExpReader<TNextReader>();
         }
 
-        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<ExpToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetToken(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<ExpToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -1114,15 +1114,15 @@
             return new EReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out EToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out EToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             value = new EToken((byte)'e');
-            return Helpers.TryReadChar(ref readerContext, 'e'); //// TODO should also allow 'E'
+            return Helpers.TryReadChar(readerContext, 'e'); //// TODO should also allow 'E'
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1165,7 +1165,7 @@
             return new ExpSignReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ExpSignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ExpSignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -1198,9 +1198,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1249,7 +1249,7 @@
             return new StringReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -1279,14 +1279,14 @@
             return new StringDelimiterReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out StringDelimiterToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out StringDelimiterToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return Helpers.TryReadChar(ref readerContext, '"');
+            return Helpers.TryReadChar(readerContext, '"');
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1337,7 +1337,7 @@
             return new CharsReader<TNextReader>(context.Item1, context.Item2);
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<CharToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out IEnumerable<CharToken> value, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
         {
             if (this.charTokens == null)
             {
@@ -1398,9 +1398,9 @@
             return true;
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out (List<CharToken>, bool) context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1482,14 +1482,14 @@
             return new ObjectStartReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ObjectStartToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ObjectStartToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return Helpers.TryReadChar(ref readerContext, '{');
+            return Helpers.TryReadChar(readerContext, '{');
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1514,7 +1514,7 @@
         }
 
         public bool TryGetToken(
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             [MaybeNullWhen(false), NotNullWhen(true)] out Func<MembersToken<TNextReader>> token, 
             [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
@@ -1593,7 +1593,7 @@
             return new FirstMemberReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -1615,7 +1615,7 @@
             return new SubsequentMembersReader<TNextReader>();
         }
 
-        public bool TryGetToken(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<SubsequentMembersToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetToken(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out Func<SubsequentMembersToken<TNextReader>> token, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             //// TODO is it actually faster to make a copy of the reader context here since you are dereferencing it a lot? this doesn't mean that the `ireader` contract needs to change, because sometimes you barely use the parameter at all, but sometimes maybe it makes more sense to make a local copy
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
@@ -1692,7 +1692,7 @@
             return new MemberReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -1722,14 +1722,14 @@
             return new ColonReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ColonToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ColonToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return Helpers.TryReadChar(ref readerContext, ':');
+            return Helpers.TryReadChar(readerContext, ':');
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1753,7 +1753,7 @@
             return new SubsequentMemberReader<TNextReader>();
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
             return true;
         }
@@ -1783,14 +1783,14 @@
             return new CommaReader<TNextReader>();
         }
 
-        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out CommaToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryGetValue(ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out CommaToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return Helpers.TryReadChar(ref readerContext, ',');
+            return Helpers.TryReadChar(readerContext, ',');
         }
 
-        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        public bool TryMove(ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
         {
-            return this.TryGetValue(ref readerContext, out _, out context);
+            return this.TryGetValue(readerContext, out _, out context);
         }
     }
 
@@ -1830,19 +1830,19 @@
     public static class Helpers
     {
 
-        public static bool TryReadChar(ref ReaderContext readerContext, char character)
+        public static bool TryReadChar(ReaderContext readerContext, char character)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 return false;
             }
 
-            ReadChar(ref readerContext, character);
+            ReadChar(readerContext, character);
             ++readerContext.CurrentByteIndex;
             return true;
         }
 
-        private static void ReadChar(ref ReaderContext readerContext, char character)
+        private static void ReadChar(ReaderContext readerContext, char character)
         {
             if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != character)
             {

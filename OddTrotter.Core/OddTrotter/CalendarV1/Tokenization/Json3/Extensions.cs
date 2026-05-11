@@ -10,16 +10,16 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
     {
         public static Move2Task<TCurrentReader, TToken, TContext> Move2<TCurrentReader, TToken, TContext>(
             this TypeHolder<TCurrentReader, TToken, TContext> currentReader,
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken, TContext>, allows ref struct
             where TToken : allows ref struct
         {
-            if (!currentReader.Self.TryGetToken(ref readerContext, out var factory, out var context))
+            if (!currentReader.Self.TryGetToken(readerContext, out var factory, out var context))
             {
                 return new Move2Task<TCurrentReader, TToken, TContext>(
                     new Move2ReadTask<TCurrentReader, TToken, TContext>(
                         readerContext.Read(),
-                        ref readerContext,
+                        readerContext,
                         context));
             }
 
@@ -32,16 +32,16 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             where TToken : allows ref struct
         {
             private readonly ValueTask task;
-            private readonly ref ReaderContext readerContext;
+            private readonly ReaderContext readerContext;
             private readonly TContext context;
 
             public Move2ReadTask(
                 ValueTask task,
-                ref ReaderContext readerContext,
+                ReaderContext readerContext,
                 TContext context)
             {
                 this.task = task;
-                this.readerContext = ref readerContext;
+                this.readerContext = readerContext;
                 this.context = context;
             }
 
@@ -50,7 +50,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                 return new ConfiguredAwaitable(
                     ValueTask.CompletedTask.ConfigureAwait(continueOnCapturedContext), //// TODO valuetask has more than 1 field and the awaitable has a reference to it; copy semantics make this bad, we should just pass the bool since we know the exact task instance we will use
                     continueOnCapturedContext,
-                    ref this.readerContext,
+                    this.readerContext,
                     this.context);
             }
 
@@ -58,18 +58,18 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             {
                 private ConfiguredValueTaskAwaitable taskAwaitable;
                 private readonly bool continueOnCapturedContext;
-                private readonly ref ReaderContext readerContext;
+                private readonly ReaderContext readerContext;
                 private TContext context;
 
                 public ConfiguredAwaitable(
                     ConfiguredValueTaskAwaitable taskAwaitable, //// TODO can you use `in`?
                     bool continueOnCapturedContext,
-                    ref ReaderContext readerContext,
+                    ReaderContext readerContext,
                     TContext context) 
                 {
                     this.taskAwaitable = taskAwaitable;
                     this.continueOnCapturedContext = continueOnCapturedContext;
-                    this.readerContext = ref readerContext;
+                    this.readerContext = readerContext;
                     this.context = context;
                 }
 
@@ -78,7 +78,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     return new TaskAwaiter(
                         this.taskAwaitable.GetAwaiter(),
                         this.continueOnCapturedContext,
-                        ref this.readerContext,
+                        this.readerContext,
                         this.context);
                 }
 
@@ -95,7 +95,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     public TaskAwaiter(
                         ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter taskAwaiter,
                         bool continueOnCapturedContext,
-                        ref ReaderContext readerContext,
+                        ReaderContext readerContext,
                         TContext context)
                     {
                         this.taskAwaiter = taskAwaiter;
@@ -117,7 +117,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 
                             var readerContext = Unsafe.AsRef<ReaderContext>(this.readerContext);
                             var currentReader = TCurrentReader.Create(this.context);
-                            if (!currentReader.TryGetToken(ref readerContext, out this.factory, out this.context!)) //// TODO !
+                            if (!currentReader.TryGetToken(readerContext, out this.factory, out this.context!)) //// TODO !
                             {
                                 this.taskAwaiter = readerContext.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
@@ -391,16 +391,16 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 
         public static Move1Task<TCurrentReader, TNextReader, TContext> Move1<TCurrentReader, TNextReader, TContext>(
             this TypeHolder<TCurrentReader, TNextReader, TContext> currentReader,
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader, TContext>, allows ref struct
             where TNextReader : new(), allows ref struct
         {
-            if (!currentReader.Self.TryMove(ref readerContext, out var context))
+            if (!currentReader.Self.TryMove(readerContext, out var context))
             {
                 return new Move1Task<TCurrentReader, TNextReader, TContext>(
                     new Move1ReadTask<TCurrentReader, TNextReader, TContext>(
                         readerContext.Read(),
-                        ref readerContext,
+                        readerContext,
                         context));
             }
 
@@ -413,16 +413,16 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             where TNextReader : new(), allows ref struct
         {
             private readonly ValueTask task;
-            private readonly ref ReaderContext readerContext;
+            private readonly ReaderContext readerContext;
             private readonly TContext context;
 
             public Move1ReadTask(
                 ValueTask task,
-                ref ReaderContext readerContext,
+                ReaderContext readerContext,
                 TContext context)
             {
                 this.task = task;
-                this.readerContext = ref readerContext;
+                this.readerContext = readerContext;
                 this.context = context;
             }
 
@@ -431,7 +431,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                 return new ConfiguredAwaitable(
                     this.task.ConfigureAwait(continueOnCapturedContext),
                     continueOnCapturedContext,
-                    ref this.readerContext,
+                    this.readerContext,
                     this.context);
             }
 
@@ -439,18 +439,18 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
             {
                 private readonly ConfiguredValueTaskAwaitable configuredAwaitable;
                 private readonly bool continueOnCapturedContext;
-                private readonly ref ReaderContext readerContext;
+                private readonly ReaderContext readerContext;
                 private readonly TContext context;
 
                 public ConfiguredAwaitable(
                     ConfiguredValueTaskAwaitable configuredAwaitable,
                     bool continueOnCapturedContext,
-                    ref ReaderContext readerContext,
+                    ReaderContext readerContext,
                     TContext context)
                 {
                     this.configuredAwaitable = configuredAwaitable;
                     this.continueOnCapturedContext = continueOnCapturedContext;
-                    this.readerContext = ref readerContext;
+                    this.readerContext = readerContext;
                     this.context = context;
                 }
 
@@ -459,7 +459,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     return new TaskAwaiter(
                         this.configuredAwaitable.GetAwaiter(),
                         this.continueOnCapturedContext,
-                        ref this.readerContext,
+                        this.readerContext,
                         this.context);
                 }
 
@@ -475,7 +475,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
                     public TaskAwaiter(
                         ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter taskAwaiter,
                         bool continueOnCapturedContext,
-                        ref ReaderContext readerContext,
+                        ReaderContext readerContext,
                         TContext context)
                     {
                         this.taskAwaiter = taskAwaiter;
@@ -497,7 +497,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json4 //// TODO should be json3
 
                             var readerContext = Unsafe.AsRef<ReaderContext>(this.readerContext);
                             var currentReader = TCurrentReader.Create(this.context);
-                            if (!currentReader.TryMove(ref readerContext, out this.context!)) //// TODO !
+                            if (!currentReader.TryMove(readerContext, out this.context!)) //// TODO !
                             {
                                 this.taskAwaiter = readerContext.Read().ConfigureAwait(this.continueOnCapturedContext).GetAwaiter();
                                 return this.IsCompleted;
