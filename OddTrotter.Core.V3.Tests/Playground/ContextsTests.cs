@@ -646,8 +646,14 @@ namespace Adapter
                     }
                     else if (this.filterConsistentAcrossInstancesAndSupportedByGraph != null)
                     {
-                        //// TODO
-                        /*filterConsistentAcrossInstancesAndSupportedByGraph = Expression.And(this.filterConsistentAcrossInstancesAndSupportedByGraph, filterConsistentAcrossInstancesAndSupportedByGraph);*/
+                        //// TODO you've not tested this at all
+                        var parameter = Expression.Parameter(
+                            typeof(Graph.CalendarEvent), 
+                            this.filterConsistentAcrossInstancesAndSupportedByGraph.Parameters[0].Name);
+                        var combined = Expression.AndAlso(
+                            this.filterConsistentAcrossInstancesAndSupportedByGraph,
+                            filterConsistentAcrossInstancesAndSupportedByGraph);
+                        filterConsistentAcrossInstancesAndSupportedByGraph = Expression.Lambda<Func<Graph.CalendarEvent, bool>>(combined, parameter);
                     }
 
                     if (filterConsistentAcrossInstancesAndNotSupportedByGraph == null)
