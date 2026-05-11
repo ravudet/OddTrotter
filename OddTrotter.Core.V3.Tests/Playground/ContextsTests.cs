@@ -516,14 +516,20 @@ namespace Adapter
                 {
                     if (startTime == endTime)
                     {
-                        return Enumerable.Empty<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>>().ToQueryResultAsync();
+                        return Enumerable
+                            .Empty<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>>()
+                            .ToQueryResultAsync()
+                            .SelectError<Graph.PagingError>();
                     }
 
                     var sliceEndTime = Min(endTime, startTime + TimeSpan.FromDays(7)); //// TODO make the slice size configurable
                     return await this
                         .GetInstancesInSeriesSlice(seriesMasterId, startTime, sliceEndTime)
                         .Concat(
-                            this.GetInstancesInSeries(seriesMasterId, sliceEndTime, endTime));
+                            this.GetInstancesInSeries(seriesMasterId, sliceEndTime, endTime),
+                            _ => _, //// TODO error conditions
+                            _ => _,
+                            (first, second) => first);
                 }
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetInstancesInSeriesSlice(string seriesMasterId, DateTime startTime, DateTime endTime)
