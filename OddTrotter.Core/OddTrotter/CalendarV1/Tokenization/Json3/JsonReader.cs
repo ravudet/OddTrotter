@@ -1135,14 +1135,96 @@
         public byte E { get; }
     }
 
-    public ref struct ExpSignReader<TNextReader> : IValueReader<ExpSignReader<TNextReader>, TNextReader, >
+    public ref struct ExpSignReader<TNextReader> : IValueReader<ExpSignReader<TNextReader>, TNextReader, Nothing, ExpSignToken>
         where TNextReader : new(), allows ref struct
     {
+        public TypeHolder<ExpSignReader<TNextReader>, TNextReader, Nothing, ExpSignToken> AsValueReader
+        {
+            get
+            {
+                return new TypeHolder<ExpSignReader<TNextReader>, TNextReader, Nothing, ExpSignToken>(this);
+            }
+        }
+
+        public TypeHolder<ExpSignReader<TNextReader>, TNextReader, Nothing> AsMoveReader
+        {
+            get
+            {
+                return new TypeHolder<ExpSignReader<TNextReader>, TNextReader, Nothing>(this);
+            }
+        }
+
+        public static ExpSignReader<TNextReader> Create(Nothing context)
+        {
+            return new ExpSignReader<TNextReader>();
+        }
+
+        public bool TryGetValue(ref ReaderContext readerContext, [MaybeNullWhen(false), NotNullWhen(true)] out ExpSignToken value, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                value = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                value = ExpSignToken.Absent();
+                return true;
+            }
+
+            var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+            if (currentByte == '+')
+            {
+                ++readerContext.CurrentByteIndex;
+                value = ExpSignToken.Positive();
+            }
+            else if (currentByte == '-')
+            {
+                ++readerContext.CurrentByteIndex;
+                value = ExpSignToken.Negative();
+            }
+            else
+            {
+                value = ExpSignToken.Absent();
+            }
+
+            return true;
+        }
+
+        public bool TryMove(ref ReaderContext readerContext, [MaybeNullWhen(true), NotNullWhen(false)] out Nothing context)
+        {
+            return this.TryGetValue(ref readerContext, out _, out context);
+        }
     }
 
-    public ref struct ExpSignToken<TNextReader>
-        where TNextReader : new(), allows ref struct
+    public ref struct ExpSignToken
     {
+        private int type { get; init; }
+
+        public static ExpSignToken Absent()
+        {
+            return new ExpSignToken()
+            {
+                type = 1,
+            };
+        }
+
+        public static ExpSignToken Positive()
+        {
+            return new ExpSignToken()
+            {
+                type = 2,
+            };
+        }
+
+        public static ExpSignToken Negative()
+        {
+            return new ExpSignToken()
+            {
+                type = 3,
+            };
+        }
     }
 
 
