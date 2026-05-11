@@ -671,7 +671,8 @@ namespace Adapter
                     }
                     else if (this.filterNotConsistentAcrossInstances != null)
                     {
-                        //// TODO
+                        //// TODO you've not tested this at all
+                        filterNotConsistentAcrossInstances = calendarEvent => this.filterNotConsistentAcrossInstances(calendarEvent) && filterNotConsistentAcrossInstances(calendarEvent);
                     }
 
                     return new CalendarEventsContext(
