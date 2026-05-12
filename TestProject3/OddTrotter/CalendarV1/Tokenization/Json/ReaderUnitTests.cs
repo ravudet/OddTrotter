@@ -1661,6 +1661,582 @@
         }*/
 
         [TestMethod]
+        public async Task RefStructs()
+        {
+            //// TODO do the static method thing
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await RefStructs(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task RefStructs(Stream stream)
+        {
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+                var context = await Json3.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+                var reader = new Json3.JsonReader();
+
+                var whitespaceReader = await reader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueReader = await whitespaceReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var valueToken = await valueReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!valueToken.TryObject(out var @object))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var objectStart = await @object.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var whitespacereader2 = await objectStart.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersReader = await whitespacereader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var membersToken = await membersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
+                if (!membersToken.TrySome(out var firstMemberReader))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+                var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        public async Task NoRefStructs()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await NoRefStructs(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task NoRefStructs(Stream stream)
+        {
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+
+            {
+                stream.Position = 0;
+
+                var context = new ReaderContext(stream, new byte[20], 0, 0);
+                await context.Read().ConfigureAwait(false);
+
+                var reader = new Json2.JsonReader(stream);
+                var whitespaceReaderFactory = await reader.AsReader.MoveInternal2(reader.Factory, ref context).ConfigureAwait(false);
+                var whitespaceReader = whitespaceReaderFactory();
+
+                var valueReaderFactory = await whitespaceReader.AsReader.MoveInternal3(ref context, whitespaceReaderFactory).ConfigureAwait(false);
+
+                var valueReader = valueReaderFactory();
+                var valueTokenFactory = await valueReader.AsReader.MoveInternal2(valueReaderFactory, ref context).ConfigureAwait(false);
+                var valueToken = valueTokenFactory();
+                if (!valueToken.TryObject(out var objectFactory))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var @object = objectFactory();
+                var objectstartfactory = await @object.AsReader.MoveInternal2(objectFactory, ref context).ConfigureAwait(false);
+                var objectstart = objectstartfactory();
+                var whitespaceReader2 = await objectstart.MoveInternal1().ConfigureAwait(false);
+                var membersReader = await whitespaceReader2.MoveInternal1().ConfigureAwait(false);
+                var membersToken = membersReader.TryMove(out var read);
+                if (!read)
+                {
+                    await membersReader.Read().ConfigureAwait(false);
+                    membersToken = membersReader.TryMove(out read);
+                }
+
+                var firstMemberReader = membersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    some => some);
+
+                // true
+                var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
+                var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
+            }
+        }
+         
+        [TestMethod]
         public async Task V3Broad()
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
