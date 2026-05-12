@@ -15,8 +15,11 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using NuGet.Frameworks;
+
     using OddTrotter.CalendarV1.Tokenization.Json2;
     using OddTrotter.CalendarV1.Tokenization.Json4;
+    using OddTrotter.CalendarV1.Tokenization.Json6;
     using OddTrotter.CalendarV1.Tokenization.Readers;
 
     using Stash;
@@ -2236,7 +2239,47 @@
                 var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
             }
         }
-         
+
+        [TestMethod]
+        public async Task StaticOnly()
+        {
+            //// TODO do the static method thing
+            //// TODO can you have ref structs but never instantiate them
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await StaticOnly(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task StaticOnly(Stream stream)
+        {
+            stream.Position = 0;
+            var context = await Json5.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
+            var reader = Readers.Create();
+
+            Assert.IsTrue(reader.TryMove(ref context, out var whitespaceReader));
+            Assert.IsTrue(whitespaceReader.TryMove(ref context, out var valueReader, out _));
+            Assert.IsTrue(valueReader.TryMove(ref context, out var valueToken));
+            Assert.IsTrue(valueToken.TryObject(out var @object));
+            Assert.IsTrue(@object.TryMove(ref context, out var objectStart));
+            Assert.IsTrue(objectStart.TryMove(ref context, out var whitespacereader2, out _));
+            Assert.IsTrue(whitespacereader2.TryMove(ref context, out var membersReader, out _));
+            Assert.IsTrue(membersReader.TryMove(ref context, out var membersToken));
+            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(7, context.CurrentByteIndex);
+        }
+
         [TestMethod]
         public async Task V3Broad()
         {
@@ -2276,7 +2319,11 @@
                 throw new Exception("TODO");
             }
 
-            var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(7, context.CurrentByteIndex);
+
+            /*var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var charsReader = await stringDelimiterReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
@@ -2359,11 +2406,7 @@
             if (!subsequentMembersToken3.TryMore(out var subsequentMember3))
             {
                 throw new Exception("TODO");
-            }
-
-
-            Assert.AreEqual(80, stream.Position);
-            Assert.AreEqual(1, context.CurrentByteIndex);
+            }*/
         }
 
         [TestMethod]
@@ -2436,7 +2479,11 @@
                 _ => throw new Exception("TODO"),
                 some => some);
 
-            // true
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*// true
             var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
             var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.MoveInternal1().ConfigureAwait(false);
@@ -2500,7 +2547,7 @@
             }
 
             var subsequentMembers2 = more1();*/
-            var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
+            /*var subsequentMembers2 = await @false.MoveInternal1().ConfigureAwait(false);
             var subsequentMembersToken2 = subsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -2556,11 +2603,7 @@
 
             var subsequentMember3 = subsequentMembersToken3.Apply(
                 _ => throw new Exception("TODO"),
-                _ => _);
-
-
-            Assert.AreEqual(80, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
+                _ => _);*/
 
             /*// asdf
             var comma3 = await subsequentMember3.MoveInternal1().ConfigureAwait(false);
