@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     public struct ReaderContext
@@ -55,9 +56,37 @@
 
 
 
-
-    public sealed class JsonReader
+    public interface IMoveReader<TCurrentReader, TNextReader>
+        where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
     {
+        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader);
+    }
+
+    public interface IValueReader<TNextReader, TValue>
+    {
+        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value);
+    }
+
+    public interface IContinuableValueReader<TNextReader, TValue, TContext>
+    {
+        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
+
+        static abstract bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, ref TContext context);
+    }
+
+    public interface ITokenReader<TToken>
+    {
+        static abstract bool TryMove(ref ReaderContext readerContext, out TToken token);
+    }
+
+
+    public sealed class JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    {
+        public static bool TryMove(ref ReaderContext readerContext, out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
     }
 
     public sealed class WhitespaceReader<TNextReader>
@@ -342,14 +371,30 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return null!; //// TODO !
         }
 
-        public static bool TryMove(
+        public static void DoWork<T1, T2>(
+            this T1 t1,
+            out T2 t2)
+        {
+            t2 = default!;
+        }
+
+        public static bool TryMove<TCurrentReader, TNextReader>(
+            this IMoveReader<TCurrentReader, TNextReader> moveReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader)
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+        {
+            return TCurrentReader.TryMove(ref readerContext, out nextReader);
+        }
+
+        /*public static bool TryMove(
             this JsonReader jsonReader,
             ref ReaderContext readerContext,
             out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
         {
             nextReader = null!; //// TODO !
             return true;
-        }
+        }*/
 
         public static bool TryMove<TNextReader>(
             this WhitespaceReader<TNextReader> whitespaceReader,
