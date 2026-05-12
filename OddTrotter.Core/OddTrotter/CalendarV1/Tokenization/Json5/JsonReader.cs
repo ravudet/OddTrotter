@@ -269,6 +269,59 @@
     {
     }
 
+    public sealed class MemberReader<TNextReader>
+    {
+    }
+
+    public sealed class ColonReader<TNextReader>
+    {
+    }
+
+    public sealed class SubsequentMemberReader<TNextReader>
+    {
+    }
+
+    public sealed class StringDelimiterReader<TNextReader>
+    {
+    }
+
+    public ref struct StringDelimiterToken
+    {
+    }
+
+    public sealed class CharsReader<TNextReader>
+    {
+    }
+
+    public struct CharToken //// TODO making this readonly preliminarily had good perf results...
+    {
+        private int type { get; init; }
+
+        public byte Char { get; private init; }
+
+        public static CharToken Unescaped(byte @char)
+        {
+            if (!IsValid(@char))
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            return new CharToken()
+            {
+                type = 1,
+                Char = @char,
+            };
+        }
+
+        private static bool IsValid(byte @char)
+        {
+            return
+                (@char >= 0x20 && @char <= 0x21) ||
+                (@char >= 0x23 && @char <= 0x5B) ||
+                (@char >= 0x5D); //// TODO the upper bound here in the standard is not actually a valid byte...
+        }
+    }
+
     public sealed class ObjectEndReader<TNextReader>
     {
     }
@@ -278,6 +331,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     using OddTrotter.CalendarV1.Tokenization.Json5;
 
@@ -443,6 +497,112 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
                 token = MembersToken<TNextReader>.None();
             }
 
+            return true;
+        }
+
+        public static bool TryMove<TNextReader>(
+            this FirstMemberReader<TNextReader> firstMemberReader,
+            ref ReaderContext readerContext,
+            out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+
+        public static bool TryMove<TNextReader>(
+            this MemberReader<TNextReader> memberReader,
+            ref ReaderContext readerContext,
+            out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+
+        public static bool TryMove<TNextReader>(
+            this StringReader<TNextReader> stringReader,
+            ref ReaderContext context,
+            out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+
+        public static bool TryMove<TNextReader>(
+            this StringDelimiterReader<TNextReader> stringDelimiterReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader,
+            out StringDelimiterToken value)
+        {
+            nextReader = default!; //// TODO !
+            return Helpers.TryReadChar(ref readerContext, '"');
+        }
+
+        public static bool TryMove<TNextReader>(
+            this CharsReader<TNextReader> charsReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader,
+            out (List<CharToken>, bool) value)
+        {
+            value = (new List<CharToken>(), false);
+            return charsReader.TryContinue(ref readerContext, out nextReader, ref value);
+        }
+
+        public static bool TryContinue<TNextReader>(
+            this CharsReader<TNextReader> charsReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader,
+            ref (List<CharToken>, bool) value)
+        {
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    // read more from the stream
+                    nextReader = default!; //// TODO !
+                    value = (value.Item1, false);
+                    return false;
+                }
+
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                if (currentByte == 0x5C)
+                {
+                    ++readerContext.CurrentByteIndex;
+                    if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                    {
+                        nextReader = default!; //// TODO !
+                        value = (value.Item1, true); //// TODO you need to leverage the context that we are in the middle of an escape
+                        return false;
+                    }
+
+                    if (readerContext.ValidBytes == 0)
+                    {
+                        throw new Exception("TODO invalid JSON");
+                    }
+
+                    throw new Exception("TODO escaped characters are not yet supported");
+                }
+
+                CharToken @char;
+                try
+                {
+                    @char = CharToken.Unescaped(currentByte);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                value.Item1.Add(@char);
+            }
+
+            nextReader = default!; //// TODO !
             return true;
         }
     }

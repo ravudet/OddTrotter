@@ -2274,10 +2274,17 @@
             Assert.IsTrue(whitespacereader2.TryMove(ref context, out var membersReader, out _));
             Assert.IsTrue(membersReader.TryMove(ref context, out var membersToken));
             Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+            Assert.IsTrue(firstMemberReader.TryMove(ref context, out var memberReader));
+            Assert.IsTrue(memberReader.TryMove(ref context, out var stringReader));
+            Assert.IsTrue(stringReader.TryMove(ref context, out var stringDelimiterReader));
+            Assert.IsTrue(stringDelimiterReader.TryMove(ref context, out var charsReader, out _));
+            Assert.IsTrue(charsReader.TryMove(ref context, out var stringDelimiterReader2, out _));
+            Assert.IsTrue(stringDelimiterReader2.TryMove(ref context, out var whitespaceReader3, out _));
+            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _));
 
 
             Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(7, context.CurrentByteIndex);
+            Assert.AreEqual(13, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -2319,18 +2326,18 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(7, context.CurrentByteIndex);
-
-            /*var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var memberReader = await firstMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringReader = await memberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var charsReader = await stringDelimiterReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringDelimiterReader2 = await charsReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var whitespaceReader3 = await stringDelimiterReader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var colonReader = await whitespaceReader3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
-            var whitespaceReader4 = await colonReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(13, context.CurrentByteIndex);
+            /*var whitespaceReader4 = await colonReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueToken2 = await valueReader2.AsTokenReader.Move2(ref context).ConfigureAwait(false);
             if (!valueToken2.TryTrue(out var @true))
@@ -2479,11 +2486,7 @@
                 _ => throw new Exception("TODO"),
                 some => some);
 
-
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*// true
+            // true
             var memberReader = await firstMemberReader.MoveInternal1().ConfigureAwait(false);
             var stringReader = await memberReader.MoveInternal1().ConfigureAwait(false);
             var stringDelimiterReader = await stringReader.MoveInternal1().ConfigureAwait(false);
@@ -2492,7 +2495,11 @@
             var whitespaceReader3 = await stringDelimiterReader2.MoveInternal1().ConfigureAwait(false);
             //var colonReader = await whitespaceReader3.AsReader.MoveInternal3(whitespaceReader3.Factory).ConfigureAwait(false);
             var colonReader = await whitespaceReader3.MoveInternal1().ConfigureAwait(false);
-            var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
+
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+            /*var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
