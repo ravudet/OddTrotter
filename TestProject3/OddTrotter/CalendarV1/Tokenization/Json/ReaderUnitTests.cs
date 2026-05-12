@@ -1664,6 +1664,7 @@
         public async Task RefStructs()
         {
             //// TODO do the static method thing
+            //// TODO can you have ref structs but never instantiate them
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
