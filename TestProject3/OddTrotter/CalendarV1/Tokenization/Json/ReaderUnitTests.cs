@@ -2280,7 +2280,7 @@
             Assert.IsTrue(stringDelimiterReader.TryMove(ref context, out var charsReader, out _));
             Assert.IsTrue(charsReader.TryMove(ref context, out var stringDelimiterReader2, out _));
             Assert.IsTrue(stringDelimiterReader2.TryMove(ref context, out var whitespaceReader3, out _));
-            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _));
+            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _)); //// TODO this isn't really a fair comparison because you're barely ever creating tasks; you really should have static interfaces and use those for the async extension methods to get a 1:1 comparison
 
 
             Assert.AreEqual(20, stream.Position);
