@@ -8,18 +8,129 @@
 
     public static partial class Extensions
     {
-        /*public static Move1Task<TNextReader> Move2<TCurrentReader, TNextReader>(
-            this IValueReader<TCurrentReader, TNextReader> currentReader,
+        public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ref ReaderContext readerContext)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader>
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            if (currentReader.TryMove(ref readerContext, out var nextReader, out _))
+            if (currentReader.TryMove2(ref readerContext, out _, out _, out var context))
             {
-                return new Move1Task<TNextReader>(ref readerContext);
+                return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(ref readerContext);
             }
 
-            return new Move1Task<TNextReader>(readerContext.Read());
-        }*/
+            return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext.Read(), context);
+        }
+
+        public ref struct Move2Task<TCurrentReader, TNextReader, TValue, TContext>
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            private readonly ValueTask<ReaderContext>? read;
+            private readonly TContext? context;
+            private readonly ref ReaderContext readerContext;
+
+            public Move2Task(ValueTask<ReaderContext> read, TContext context)
+            {
+                this.read = read;
+                this.context = context;
+            }
+
+            public Move2Task(ref ReaderContext readerContext)
+            {
+                this.readerContext = ref readerContext;
+            }
+
+            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.context, ref this.readerContext);
+            }
+
+            public ref struct ConfiguredAwaitable
+            {
+                private readonly ConfiguredValueTaskAwaitable<ReaderContext>? read;
+                private readonly TContext? context;
+                private readonly ref ReaderContext readerContext;
+
+                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable<ReaderContext>? read, TContext? context, ref ReaderContext readerContext)
+                {
+                    this.read = read;
+                    this.context = context;
+                    this.readerContext = ref readerContext;
+                }
+
+                public TaskAwaiter GetAwaiter()
+                {
+                    return new TaskAwaiter(this.read?.GetAwaiter(), this.context, ref this.readerContext);
+                }
+
+                public unsafe struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TNextReader)>
+                {
+                    private readonly ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read;
+                    private readonly TContext? context;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly ReaderContext* readerContext;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+
+                    public TaskAwaiter(ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read, TContext? context, ref ReaderContext readerContext)
+                    {
+                        this.read = read;
+                        this.context = context;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.readerContext = (ReaderContext*)Unsafe.AsPointer(ref readerContext);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return this.read?.IsCompleted ?? true;
+                        }
+                    }
+
+                    public (ReaderContext, TNextReader) GetResult()
+                    {
+                        var readerContext = this.read?.GetResult() ?? Unsafe.AsRef<ReaderContext>(this.readerContext);
+                        var context = this.context!; //// TODO !
+
+                        if (!TCurrentReader.TryContinue(ref readerContext, out _, out _, ref context))
+                        {
+                            throw new Exception("TODO assuming only 1 stream read is needed");
+                        }
+
+                        return (readerContext, default!);
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        if (this.read == null)
+                        {
+                            ValueTask.CompletedTask.GetAwaiter().OnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.read.Value.OnCompleted(continuation);
+                        }
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        if (this.read == null)
+                        {
+                            ValueTask.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.read.Value.UnsafeOnCompleted(continuation);
+                        }
+                    }
+                }
+            }
+
+            public ITaskAwaiter<(ReaderContext, TNextReader)> GetAwaiter()
+            {
+                throw new System.NotImplementedException();
+            }
+        }
 
         public static Move1Task<TNextReader> Move1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> currentReader, 

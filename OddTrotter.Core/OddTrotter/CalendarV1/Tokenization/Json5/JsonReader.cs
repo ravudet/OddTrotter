@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.Json5
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http.Headers;
@@ -68,7 +69,8 @@
         static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value);
     }
 
-    public interface IContinuableValueReader<TNextReader, TValue, TContext>
+    public interface IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
     {
         static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
 
@@ -90,8 +92,49 @@
         }
     }
 
-    public sealed class WhitespaceReader<TNextReader>
+    public sealed class WhitespaceReader<TNextReader> : IContinuableValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
     {
+        public static bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
+        {
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    nextReader = default!; //// TODO !
+                    value = default!; //// TODO !
+                    return false;
+                }
+
+                WhitespaceToken whitespace;
+                try
+                {
+                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                context.Add(whitespace);
+            }
+
+            nextReader = default!; //// TODO !
+            value = context;
+            return true;
+        }
+
+        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
+        {
+            context = new List<WhitespaceToken>();
+            return WhitespaceReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, ref context);
+        }
     }
 
     public struct WhitespaceToken
@@ -388,14 +431,26 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryMove(ref readerContext, out nextReader);
         }
 
-        public static bool TryMove2<TCurrentReader, TNextReader, TValue>(
-            this IValueReader<TCurrentReader, TNextReader, TValue> moveReader,
+        public static bool TryMove2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
             ref ReaderContext readerContext,
             out TNextReader nextReader,
-            out TValue value)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+            out TValue value,
+            out TContext context)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value);
+            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value, out context);
+        }
+
+        public static bool TryContinue2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader,
+            out TValue value,
+            ref TContext context)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            return TCurrentReader.TryContinue(ref  readerContext, out nextReader, out value, ref context);
         }
 
         /*public static bool TryMove(
@@ -407,7 +462,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return true;
         }*/
 
-        public static bool TryMove<TNextReader>(
+        /*public static bool TryMove<TNextReader>(
             this WhitespaceReader<TNextReader> whitespaceReader,
             ref ReaderContext readerContext,
             out TNextReader nextReader,
@@ -453,7 +508,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
             nextReader = default!; //// TODO !
             return true;
-        }
+        }*/
 
         public static bool TryMove<TNextReader>(
             this ValueReader<TNextReader> valueReader,
