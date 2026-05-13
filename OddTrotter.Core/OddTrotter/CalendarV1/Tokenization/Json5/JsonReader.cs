@@ -7,8 +7,6 @@
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    using OddTrotter.CalendarV1.Tokenization.Json3;
-
     public struct ReaderContext
     {
         private ReaderContext(
@@ -456,16 +454,84 @@
     {
     }
 
-    public sealed class StringDelimiterReader<TNextReader>
+    public sealed class StringDelimiterReader<TNextReader> : IValueReader<StringDelimiterReader<TNextReader>, TNextReader, StringDelimiterToken>
+    {
+        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
+        {
+            nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(ref readerContext, '"');
+        }
+    }
+
+    public struct StringDelimiterToken
     {
     }
 
-    public ref struct StringDelimiterToken
+    public sealed class CharsReader<TNextReader> : IContinuableValueReader<CharsReader<TNextReader>, TNextReader, List<CharToken>, (List<CharToken>, bool)>
     {
-    }
+        public static bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
+        {
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
 
-    public sealed class CharsReader<TNextReader>
-    {
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    // read more from the stream
+                    nextReader = default!; //// TODO !
+                    context = (context.Item1, false);
+                    value = context.Item1;
+                    return false;
+                }
+
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                if (currentByte == 0x5C)
+                {
+                    ++readerContext.CurrentByteIndex;
+                    if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                    {
+                        nextReader = default!; //// TODO !
+                        context = (context.Item1, true); //// TODO you need to leverage the context that we are in the middle of an escape
+                        value = context.Item1;
+                        return false;
+                    }
+
+                    if (readerContext.ValidBytes == 0)
+                    {
+                        throw new Exception("TODO invalid JSON");
+                    }
+
+                    throw new Exception("TODO escaped characters are not yet supported");
+                }
+
+                CharToken @char;
+                try
+                {
+                    @char = CharToken.Unescaped(currentByte);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                context.Item1.Add(@char);
+            }
+
+            nextReader = default!; //// TODO !
+            value = context.Item1;
+            return true;
+        }
+
+        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, out (List<CharToken>, bool) context)
+        {
+            context = (new List<CharToken>(), false);
+            return CharsReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, ref context);
+        }
     }
 
     public struct CharToken //// TODO making this readonly preliminarily had good perf results...
@@ -579,16 +645,6 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         
 
         
-        public static bool TryMove<TNextReader>(
-            this StringDelimiterReader<TNextReader> stringDelimiterReader,
-            ref ReaderContext readerContext,
-            out TNextReader nextReader,
-            out StringDelimiterToken value)
-        {
-            nextReader = default!; //// TODO !
-            return Helpers.TryReadChar(ref readerContext, '"');
-        }
-
         public static bool TryMove<TNextReader>(
             this CharsReader<TNextReader> charsReader,
             ref ReaderContext readerContext,
