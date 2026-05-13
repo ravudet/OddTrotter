@@ -79,7 +79,6 @@
 
     public interface ITokenReader<TCurrentReader, TToken>
         where TCurrentReader : ITokenReader<TCurrentReader, TToken>
-        where TToken : allows ref struct
     {
         static abstract bool TryMove(ref ReaderContext readerContext, out TToken token);
     }
@@ -214,7 +213,7 @@
         }
     }
 
-    public ref struct ValueToken<TNextReader>
+    public struct ValueToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -329,8 +328,13 @@
     {
     }
 
-    public sealed class ObjectReader<TNextReader>
+    public sealed class ObjectReader<TNextReader> : IMoveReader<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
     }
 
     public sealed class ArrayReader<TNextReader>
@@ -345,11 +349,16 @@
     {
     }
 
-    public sealed class ObjectStartReader<TNextReader>
+    public sealed class ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, ObjectStartToken>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
+        {
+            nextReader = default!;
+            return Json6.Helpers.TryReadChar(ref readerContext, '{');
+        }
     }
 
-    public ref struct ObjectStartToken
+    public struct ObjectStartToken
     {
     }
 
@@ -456,6 +465,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics;
 
     using OddTrotter.CalendarV1.Tokenization.Json5;
@@ -507,9 +517,14 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
         public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ref ReaderContext readerContext, out TToken token)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
-            where TToken : allows ref struct
         {
             return TCurrentReader.TryMove(ref readerContext, out token);
+        }
+
+        public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ref ReaderContext readerContext, out TNextReader nextReader, out TValue value)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value);
         }
 
         /*public static bool TryMove(
@@ -623,16 +638,16 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             }
         }*/
 
-        public static bool TryMove<TNextReader>(
+        /*public static bool TryMove<TNextReader>(
             this ObjectReader<TNextReader> objectReader,
             ref ReaderContext readerContext,
             out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
         {
             nextReader = null!; //// TODO !
             return true;
-        }
+        }*/
 
-        public static bool TryMove<TNextReader>(
+        /*public static bool TryMove<TNextReader>(
             this ObjectStartReader<TNextReader> objectStartReader,
             ref ReaderContext readerContext,
             out TNextReader nextReader,
@@ -640,7 +655,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         {
             nextReader = default!;
             return Helpers.TryReadChar(ref readerContext, '{');
-        }
+        }*/
 
         public static bool TryMove<TNextReader>(
             this MembersReader<TNextReader> membersReader,

@@ -2267,6 +2267,8 @@
 
             (context, var whitespaceReader) = await reader.Move1(ref context).ConfigureAwait(false);
             (context, var valueReader) = await whitespaceReader.Move2(ref context).ConfigureAwait(false);
+            (context, var valueToken) = await valueReader.Move3(ref context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken.TryObject(out var @object));
             /*Assert.IsTrue(reader.TryMove(ref context, out var whitespaceReader));
             Assert.IsTrue(whitespaceReader.TryMove(ref context, out var valueReader, out _));
             Assert.IsTrue(valueReader.TryMove(ref context, out var valueToken));
