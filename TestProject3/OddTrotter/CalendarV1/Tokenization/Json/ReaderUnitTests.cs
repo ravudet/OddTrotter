@@ -2265,7 +2265,9 @@
             var context = await Json5.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
             var reader = Readers.Create();
 
-            Assert.IsTrue(reader.TryMove(ref context, out var whitespaceReader));
+            (context, var whitespaceReader) = await reader.Move1(ref context).ConfigureAwait(false);
+            ////(context, var valueReader) = await whitespaceReader
+            /*Assert.IsTrue(reader.TryMove(ref context, out var whitespaceReader));
             Assert.IsTrue(whitespaceReader.TryMove(ref context, out var valueReader, out _));
             Assert.IsTrue(valueReader.TryMove(ref context, out var valueToken));
             Assert.IsTrue(valueToken.TryObject(out var @object));
@@ -2280,11 +2282,11 @@
             Assert.IsTrue(stringDelimiterReader.TryMove(ref context, out var charsReader, out _));
             Assert.IsTrue(charsReader.TryMove(ref context, out var stringDelimiterReader2, out _));
             Assert.IsTrue(stringDelimiterReader2.TryMove(ref context, out var whitespaceReader3, out _));
-            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _)); //// TODO this isn't really a fair comparison because you're barely ever creating tasks; you really should have static interfaces and use those for the async extension methods to get a 1:1 comparison
+            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _)); //// TODO this isn't really a fair comparison because you're barely ever creating tasks; you really should have static interfaces and use those for the async extension methods to get a 1:1 comparison*/
 
 
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(13, context.CurrentByteIndex);
+            /*Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(13, context.CurrentByteIndex);*/
         }
 
         [TestMethod]

@@ -62,7 +62,8 @@
         static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader);
     }
 
-    public interface IValueReader<TNextReader, TValue>
+    public interface IValueReader<TCurrentReader, TNextReader, TValue>
+        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
     {
         static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value);
     }
@@ -378,13 +379,23 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             t2 = default!;
         }
 
-        public static bool TryMove<TCurrentReader, TNextReader>(
+        public static bool TryMove1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ref ReaderContext readerContext,
             out TNextReader nextReader)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
         {
             return TCurrentReader.TryMove(ref readerContext, out nextReader);
+        }
+
+        public static bool TryMove2<TCurrentReader, TNextReader, TValue>(
+            this IValueReader<TCurrentReader, TNextReader, TValue> moveReader,
+            ref ReaderContext readerContext,
+            out TNextReader nextReader,
+            out TValue value)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value);
         }
 
         /*public static bool TryMove(
