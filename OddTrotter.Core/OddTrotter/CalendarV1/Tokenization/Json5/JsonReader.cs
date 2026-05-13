@@ -77,7 +77,9 @@
         static abstract bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, ref TContext context);
     }
 
-    public interface ITokenReader<TToken>
+    public interface ITokenReader<TCurrentReader, TToken>
+        where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+        where TToken : allows ref struct
     {
         static abstract bool TryMove(ref ReaderContext readerContext, out TToken token);
     }
@@ -158,8 +160,58 @@
         public byte Char { get; }
     }
 
-    public sealed class ValueReader<TNextReader>
+    public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out ValueToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default!; //// TODO !
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case 'f':
+                    token = ValueToken<TNextReader>.False();
+                    return true;
+                case 'n':
+                    token = ValueToken<TNextReader>.Null();
+                    return true;
+                case 't':
+                    token = ValueToken<TNextReader>.True();
+                    return true;
+                case '{':
+                    token = ValueToken<TNextReader>.Object();
+                    return true;
+                case '[':
+                    token = ValueToken<TNextReader>.Array();
+                    return true;
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    token = ValueToken<TNextReader>.Number();
+                    return true;
+                case '"':
+                    token = ValueToken<TNextReader>.String();
+                    return true;
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }
+        }
     }
 
     public ref struct ValueToken<TNextReader>
@@ -453,6 +505,13 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryContinue(ref  readerContext, out nextReader, out value, ref context);
         }
 
+        public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ref ReaderContext readerContext, out TToken token)
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+            where TToken : allows ref struct
+        {
+            return TCurrentReader.TryMove(ref readerContext, out token);
+        }
+
         /*public static bool TryMove(
             this JsonReader jsonReader,
             ref ReaderContext readerContext,
@@ -510,7 +569,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return true;
         }*/
 
-        public static bool TryMove<TNextReader>(
+        /*public static bool TryMove<TNextReader>(
             this ValueReader<TNextReader> valueReader,
             ref ReaderContext readerContext,
             out ValueToken<TNextReader> token)
@@ -562,7 +621,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
                 default:
                     throw new Exception("tODO invalid JSON");
             }
-        }
+        }*/
 
         public static bool TryMove<TNextReader>(
             this ObjectReader<TNextReader> objectReader,
