@@ -7,6 +7,8 @@
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
+    using OddTrotter.CalendarV1.Tokenization.Json3;
+
     public struct ReaderContext
     {
         private ReaderContext(
@@ -345,8 +347,13 @@
     {
     }
 
-    public sealed class StringReader<TNextReader>
+    public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
     }
 
     public sealed class ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, ObjectStartToken>
@@ -362,11 +369,35 @@
     {
     }
 
-    public sealed class MembersReader<TNextReader>
+    public sealed class MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out MembersToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] == '"')
+            {
+                token = MembersToken<TNextReader>.Some();
+            }
+            else
+            {
+                token = MembersToken<TNextReader>.None();
+            }
+
+            return true;
+        }
     }
 
-    public ref struct MembersToken<TNextReader>
+    public struct MembersToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -399,12 +430,22 @@
         }
     }
 
-    public sealed class FirstMemberReader<TNextReader>
+    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMemberReader<TNextReader>>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
     }
 
-    public sealed class MemberReader<TNextReader>
+    public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
+        public static bool TryMove(ref ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
     }
 
     public sealed class ColonReader<TNextReader>
@@ -527,191 +568,17 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryMove(ref readerContext, out nextReader, out value);
         }
 
-        /*public static bool TryMove(
-            this JsonReader jsonReader,
-            ref ReaderContext readerContext,
-            out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
-        {
-            nextReader = null!; //// TODO !
-            return true;
-        }*/
 
-        /*public static bool TryMove<TNextReader>(
-            this WhitespaceReader<TNextReader> whitespaceReader,
-            ref ReaderContext readerContext,
-            out TNextReader nextReader,
-            out List<WhitespaceToken> value)
-        {
-            value = new List<WhitespaceToken>();
-            return whitespaceReader.TryContinue(ref readerContext, value, out nextReader);
-        }
 
-        public static bool TryContinue<TNextReader>(
-            this WhitespaceReader<TNextReader> whitespaceReader,
-            ref ReaderContext readerContext,
-            List<WhitespaceToken> value,
-            out TNextReader nextReader)
-        {
-            while (true)
-            {
-                if (readerContext.ValidBytes == 0)
-                {
-                    // no more bytes to read
-                    break;
-                }
 
-                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-                {
-                    nextReader = default!; //// TODO !
-                    return false;
-                }
 
-                WhitespaceToken whitespace;
-                try
-                {
-                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                }
-                catch (Exception)
-                {
-                    break;
-                }
 
-                ++readerContext.CurrentByteIndex;
-                value.Add(whitespace);
-            }
 
-            nextReader = default!; //// TODO !
-            return true;
-        }*/
 
-        /*public static bool TryMove<TNextReader>(
-            this ValueReader<TNextReader> valueReader,
-            ref ReaderContext readerContext,
-            out ValueToken<TNextReader> token)
-        {
-            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                token = default!; //// TODO !
-                return false;
-            }
 
-            if (readerContext.ValidBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
+        
 
-            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
-            {
-                case 'f':
-                    token = ValueToken<TNextReader>.False();
-                    return true;
-                case 'n':
-                    token = ValueToken<TNextReader>.Null();
-                    return true;
-                case 't':
-                    token = ValueToken<TNextReader>.True();
-                    return true;
-                case '{':
-                    token = ValueToken<TNextReader>.Object();
-                    return true;
-                case '[':
-                    token = ValueToken<TNextReader>.Array();
-                    return true;
-                case '-':
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    token = ValueToken<TNextReader>.Number();
-                    return true;
-                case '"':
-                    token = ValueToken<TNextReader>.String();
-                    return true;
-                default:
-                    throw new Exception("tODO invalid JSON");
-            }
-        }*/
-
-        /*public static bool TryMove<TNextReader>(
-            this ObjectReader<TNextReader> objectReader,
-            ref ReaderContext readerContext,
-            out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
-        {
-            nextReader = null!; //// TODO !
-            return true;
-        }*/
-
-        /*public static bool TryMove<TNextReader>(
-            this ObjectStartReader<TNextReader> objectStartReader,
-            ref ReaderContext readerContext,
-            out TNextReader nextReader,
-            out ObjectStartToken value)
-        {
-            nextReader = default!;
-            return Helpers.TryReadChar(ref readerContext, '{');
-        }*/
-
-        public static bool TryMove<TNextReader>(
-            this MembersReader<TNextReader> membersReader,
-            ref ReaderContext readerContext,
-            out MembersToken<TNextReader> token)
-        {
-            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                token = default;
-                return false;
-            }
-
-            if (readerContext.ValidBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            if (readerContext.Buffer[readerContext.CurrentByteIndex] == '"')
-            {
-                token = MembersToken<TNextReader>.Some();
-            }
-            else
-            {
-                token = MembersToken<TNextReader>.None();
-            }
-
-            return true;
-        }
-
-        public static bool TryMove<TNextReader>(
-            this FirstMemberReader<TNextReader> firstMemberReader,
-            ref ReaderContext readerContext,
-            out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
-        {
-            nextReader = default!; //// TODO !
-            return true;
-        }
-
-        public static bool TryMove<TNextReader>(
-            this MemberReader<TNextReader> memberReader,
-            ref ReaderContext readerContext,
-            out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
-        {
-            nextReader = default!; //// TODO !
-            return true;
-        }
-
-        public static bool TryMove<TNextReader>(
-            this StringReader<TNextReader> stringReader,
-            ref ReaderContext context,
-            out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
-        {
-            nextReader = default!; //// TODO !
-            return true;
-        }
-
+        
         public static bool TryMove<TNextReader>(
             this StringDelimiterReader<TNextReader> stringDelimiterReader,
             ref ReaderContext readerContext,
