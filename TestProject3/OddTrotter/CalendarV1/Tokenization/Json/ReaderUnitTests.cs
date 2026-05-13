@@ -2281,22 +2281,6 @@
             (context, var stringDelimiterReader2) = await charsReader.Move2(ref context).ConfigureAwait(false);
             (context, var whitespaceReader3) = await stringDelimiterReader2.Move4(ref context).ConfigureAwait(false);
             (context, var colonReader) = await whitespaceReader3.Move2(ref context).ConfigureAwait(false);
-            /*Assert.IsTrue(reader.TryMove(ref context, out var whitespaceReader));
-            Assert.IsTrue(whitespaceReader.TryMove(ref context, out var valueReader, out _));
-            Assert.IsTrue(valueReader.TryMove(ref context, out var valueToken));
-            Assert.IsTrue(valueToken.TryObject(out var @object));
-            Assert.IsTrue(@object.TryMove(ref context, out var objectStart));
-            Assert.IsTrue(objectStart.TryMove(ref context, out var whitespacereader2, out _));
-            Assert.IsTrue(whitespacereader2.TryMove(ref context, out var membersReader, out _));
-            Assert.IsTrue(membersReader.TryMove(ref context, out var membersToken));
-            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
-            Assert.IsTrue(firstMemberReader.TryMove(ref context, out var memberReader));
-            Assert.IsTrue(memberReader.TryMove(ref context, out var stringReader));
-            Assert.IsTrue(stringReader.TryMove(ref context, out var stringDelimiterReader));
-            Assert.IsTrue(stringDelimiterReader.TryMove(ref context, out var charsReader, out _));
-            Assert.IsTrue(charsReader.TryMove(ref context, out var stringDelimiterReader2, out _));
-            Assert.IsTrue(stringDelimiterReader2.TryMove(ref context, out var whitespaceReader3, out _));
-            Assert.IsTrue(whitespaceReader3.TryMove(ref context, out var colonReader, out _)); //// TODO this isn't really a fair comparison because you're barely ever creating tasks; you really should have static interfaces and use those for the async extension methods to get a 1:1 comparison*/
 
 
             Assert.AreEqual(20, stream.Position);
