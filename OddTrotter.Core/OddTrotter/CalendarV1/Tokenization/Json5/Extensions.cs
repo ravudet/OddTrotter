@@ -158,28 +158,27 @@
             }
         }
 
-        /*public static async ValueTask<TNextReader> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+        public static async ValueTask<TNextReader> Move21<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
             if (!currentReader.TryMove2(readerContext, out _, out _, out var context))
             {
-                do
-                {
-                    await readerContext.Read();
-                }
-                while (!currentReader.TryContinue2(readerContext, out _, out _, ref context));
+                await readerContext.Read().ConfigureAwait(false);
+                currentReader.TryContinue2(readerContext, out _, out _, ref context);
             }
 
             return default!;
-        }*/
+        }
 
         public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
+            //// TODO i don't really know why this is faster that move21; the other methods got faster when i removed the custom awaitable implementation; it's *possible* because of the closure `context`, but `move3` has a closure on `token`...
+
             if (currentReader.TryMove2(readerContext, out _, out _, out var context))
             {
                 return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext);
