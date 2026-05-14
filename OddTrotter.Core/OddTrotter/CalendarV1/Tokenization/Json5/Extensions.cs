@@ -15,7 +15,7 @@
         {
             if (!currentReader.TryMove4(readerContext, out _, out _))
             {
-                await readerContext.Read();
+                await readerContext.Read().ConfigureAwait(false);
             }
 
             return default!;
@@ -42,7 +42,7 @@
             TToken token;
             while (!currentReader.TryMove3(readerContext, out token))
             {
-                await readerContext.Read();
+                await readerContext.Read().ConfigureAwait(false);
             }
 
             return token;
@@ -308,7 +308,7 @@
         {
             while (!currentReader.TryMove1(readerContext, out _))
             {
-                await readerContext.Read2();
+                await readerContext.Read2().ConfigureAwait(false);
             }
 
             return default!;

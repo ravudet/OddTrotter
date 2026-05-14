@@ -2262,9 +2262,6 @@
             var context = await Json5.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
             var reader = Readers.Create();
 
-
-            //// TODO add configureawait
-
             var whitespaceReader = await reader.Move1(context).ConfigureAwait(false);
             (context, var valueReader) = await whitespaceReader.Move2(context).ConfigureAwait(false);
             var valueToken = await valueReader.Move3(context).ConfigureAwait(false);
