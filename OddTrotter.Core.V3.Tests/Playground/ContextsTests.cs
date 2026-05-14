@@ -271,7 +271,7 @@ namespace Adapter
                 /// <summary>
                 /// a filter was applied that matches a property that does not have consistent values across all instances in a series (regardless of whether the filter is known to be supported by graph) (e.g. start) //// TODO you don't actually have anything that should reach here if the caller is just matching on a single property; this should only be reached right now when they are using a more complex expression (like using binary operators or comparing properties to other properties)
                 /// </summary>
-                private readonly Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances;
+                private readonly Expression<Func<Graph.CalendarEvent, bool>>? unknownFilter;
 
                 public CalendarEventsContext(Graph.ICalendarEventsSource graphCalendarEventsSource)
                     : this(
@@ -290,7 +290,7 @@ namespace Adapter
                     DateTime? endTime,
                     Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph,
                     Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                    Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances)
+                    Expression<Func<Graph.CalendarEvent, bool>>? unknownFilter)
                 {
                     this.graphCalendarEventsSource = graphCalendarEventsSource;
 
@@ -298,7 +298,7 @@ namespace Adapter
                     this.endTime = endTime;
                     this.filterConsistentAcrossInstancesAndSupportedByGraph = filterConsistentAcrossInstancesAndSupportedByGraph;
                     this.filterConsistentAcrossInstancesAndNotSupportedByGraph = filterConsistentAcrossInstancesAndNotSupportedByGraph;
-                    this.filterNotConsistentAcrossInstances = filterNotConsistentAcrossInstances;
+                    this.unknownFilter = unknownFilter;
                 }
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
@@ -335,11 +335,6 @@ namespace Adapter
                             pagingError => new OddTrotter.PagingError())
                         .ConfigureAwait(false);
 
-                    if (this.filterNotConsistentAcrossInstances != null)
-                    {
-                        instanceEvents = instanceEvents.Where(this.filterNotConsistentAcrossInstances); //// TODO it would be best to break this filter into those things that are supported by graph and those that aren't so that you can use a `filter` instead; but it's also possible that there is nothing supported by grpah for those things not consistent across instances //// TODO however, this could lead to behavior where a filter (that isn't supported by graph) is applied to series events (because it's applied in-memory), but the instance events are all errors; that'd be pretty weird
-                    }
-
                     return instanceEvents;
                 }
 
@@ -370,6 +365,13 @@ namespace Adapter
                     {
                         calendarEvents = calendarEvents
                             .Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
+                    }
+
+                    if (this.unknownFilter != null)
+                    {
+                        //// TODO when you were still doing this in memory, you had this comment (not sure if it's still relevent):
+                        //// TODO it would be best to break this filter into those things that are supported by graph and those that aren't so that you can use a `filter` instead; but it's also possible that there is nothing supported by grpah for those things not consistent across instances //// TODO however, this could lead to behavior where a filter (that isn't supported by graph) is applied to series events (because it's applied in-memory), but the instance events are all errors; that'd be pretty weird
+                        calendarEvents = calendarEvents.Filter(this.unknownFilter);
                     }
 
                     //// TODO make sure iscancelled can be called by the consumer
@@ -486,11 +488,6 @@ namespace Adapter
                             seriesPagingError => new OddTrotter.PagingError() //// TODO
                             );
 
-                    if (this.filterNotConsistentAcrossInstances != null)
-                    {
-                        mastersWithInstances = mastersWithInstances.Where(this.filterNotConsistentAcrossInstances);
-                    }
-
                     return mastersWithInstances;
                 }
 
@@ -548,6 +545,11 @@ namespace Adapter
                         calendarEvents = calendarEvents.Filter(this.filterConsistentAcrossInstancesAndSupportedByGraph);
                     }
 
+                    if (this.unknownFilter != null)
+                    {
+                        calendarEvents = calendarEvents.Filter(this.unknownFilter);
+                    }
+
                     var instanceEvents = await calendarEvents.Evaluate().ConfigureAwait(false);
 
                     if (this.filterConsistentAcrossInstancesAndNotSupportedByGraph != null)
@@ -599,7 +601,10 @@ namespace Adapter
                         remainingFilter, 
                         out var filterConsistentAcrossInstancesAndSupportedByGraph, 
                         out var filterConsistentAcrossInstancesAndNotSupportedByGraph, 
-                        out var filterNotConsistentAcrossInstances);
+                        out var unknownFilter);
+                    TranslateFilter(
+                        unknownFilter,
+                        out var translatedUnknownFilter);
 
                     if (startTime == null)
                     {
@@ -664,14 +669,20 @@ namespace Adapter
                         filterConsistentAcrossInstancesAndNotSupportedByGraph = calendarEvent => this.filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent) && filterConsistentAcrossInstancesAndNotSupportedByGraph(calendarEvent);
                     }
 
-                    if (filterNotConsistentAcrossInstances == null)
+                    if (translatedUnknownFilter == null)
                     {
-                        filterNotConsistentAcrossInstances = this.filterNotConsistentAcrossInstances;
+                        translatedUnknownFilter = this.unknownFilter;
                     }
-                    else if (this.filterNotConsistentAcrossInstances != null)
+                    else if (this.unknownFilter != null)
                     {
                         //// TODO you've not tested this at all
-                        filterNotConsistentAcrossInstances = calendarEvent => this.filterNotConsistentAcrossInstances(calendarEvent) && filterNotConsistentAcrossInstances(calendarEvent);
+                        var parameter = Expression.Parameter(
+                            typeof(Graph.CalendarEvent),
+                            this.unknownFilter.Parameters[0].Name);
+                        var combined = Expression.AndAlso(
+                            this.unknownFilter,
+                            translatedUnknownFilter);
+                        translatedUnknownFilter = Expression.Lambda<Func<Graph.CalendarEvent, bool>>(combined, parameter);
                     }
 
                     return new CalendarEventsContext(
@@ -680,7 +691,7 @@ namespace Adapter
                         endTime,
                         filterConsistentAcrossInstancesAndSupportedByGraph,
                         filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                        filterNotConsistentAcrossInstances);
+                        translatedUnknownFilter);
                 }
 
                 private static DateTime Max(DateTime first, DateTime second)
@@ -781,11 +792,19 @@ namespace Adapter
 
                 private static void ExtractSeriesMasterFilter(
                     Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
-                    out Expression<Func<Graph.CalendarEvent, bool>> filterConsistentAcrossInstancesAndSupportedByGraph,
-                    out Func<Graph.CalendarEvent, bool> filterConsistentAcrossInstancesAndNotSupportedByGraph,
-                    out Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances
+                    out Expression<Func<Graph.CalendarEvent, bool>>? filterConsistentAcrossInstancesAndSupportedByGraph,
+                    out Func<Graph.CalendarEvent, bool>? filterConsistentAcrossInstancesAndNotSupportedByGraph,
+                    out Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter
                     )
                 {
+                    if (currentFilter == null)
+                    {
+                        filterConsistentAcrossInstancesAndSupportedByGraph = null;
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph = null;
+                        remainingFilter = null;
+                        return;
+                    }
+
                     //// TODO you are here
                     //// TODO i think `filterNotConsistentAcrossInstances` should be an expression, and should be named "remainingFilter"; then you should have something in the caller to convert it to a graph.calendarevent expression (look in test cases); that expression should be used to call graph; in this method, we are only trying to find those things which are applicable to series masters
 
@@ -794,6 +813,17 @@ namespace Adapter
 
                     //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
                     //// TODO if subject is tested and in a format that you can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
+                }
+
+                private static void TranslateFilter(
+                    Expression<Func<OddTrotter.CalendarEvent, bool>>? currentFilter,
+                    out Expression<Func<Graph.CalendarEvent, bool>>? translatedFilter)
+                {
+                    if (currentFilter == null)
+                    {
+                        translatedFilter = null;
+                        return;
+                    }
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
