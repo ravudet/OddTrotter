@@ -8,7 +8,20 @@
 
     public static partial class Extensions
     {
-        public static Move1Task<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
+        public static async ValueTask<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
+            this IValueReader<TCurrentReader, TNextReader, TValue> currentReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            if (!currentReader.TryMove4(readerContext, out _, out _))
+            {
+                await readerContext.Read();
+            }
+
+            return default!;
+        }
+
+        /*public static Move1Task<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
             this IValueReader<TCurrentReader, TNextReader, TValue> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
@@ -19,7 +32,7 @@
             }
 
             return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
-        }
+        }*/
 
         public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
@@ -257,7 +270,20 @@
             }
         }
 
-        public static Move1Task<TNextReader> Move1<TCurrentReader, TNextReader>(
+        public static async ValueTask<TNextReader> Move1<TCurrentReader, TNextReader>(
+            this IMoveReader<TCurrentReader, TNextReader> currentReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+        {
+            while (!currentReader.TryMove1(readerContext, out _))
+            {
+                await readerContext.Read2();
+            }
+
+            return default!;
+        }
+
+        /*public static Move1Task<TNextReader> Move1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> currentReader, 
             ReaderContext readerContext)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
@@ -268,7 +294,7 @@
             }
 
             return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
-        }
+        }*/
 
         public ref struct Move1Task<TNextReader>
         {
