@@ -308,7 +308,7 @@
         {
             while (!currentReader.TryMove1(readerContext, out _))
             {
-                await readerContext.Read2().ConfigureAwait(false);
+                await readerContext.Read().ConfigureAwait(false);
             }
 
             return default!;
