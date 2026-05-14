@@ -210,6 +210,7 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 namespace Adapter
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
@@ -842,9 +843,93 @@ namespace Adapter
                         return;
                     }
 
+                    var calendarEventParameter = currentFilter.Parameters[0];
 
-                    //// TODO you are here
+                    var translatedcalendarEventParameter = Expression.Parameter(typeof(Graph.CalendarEvent), calendarEventParameter.Name);
+                    var visitor = new ExpressionVisitor(calendarEventParameter, translatedcalendarEventParameter);
+                    var translatedBody = visitor.Visit(currentFilter.Body);
 
+                    translatedFilter = calendarEvent => true;
+                    translatedFilter = translatedFilter.Update(translatedBody, new[] { translatedFilter.Parameters[0] }); //// new[] { translatedcalendarEventParameter });
+
+                    var lambda = Expression.Lambda<Func<Graph.CalendarEvent, bool>>(translatedBody, translatedcalendarEventParameter);
+                    translatedFilter = lambda;
+
+                    translatedFilter.Compile(); // you return the non-compiled version, but you compile it anyway so that you get error handling
+                }
+
+                private sealed class ExpressionVisitor : System.Linq.Expressions.ExpressionVisitor
+                {
+                    private readonly ParameterExpression originalCalendarEventParamter;
+                    private readonly ParameterExpression translatedCalendarEventExpression;
+
+                    public ExpressionVisitor(ParameterExpression originalCalendarEventParamter, ParameterExpression translatedCalendarEventExpression)
+                    {
+                        this.originalCalendarEventParamter = originalCalendarEventParamter;
+                        this.translatedCalendarEventExpression = translatedCalendarEventExpression;
+                        ApplicableToSeriesMaster = false;
+                    }
+
+                    public bool ApplicableToSeriesMaster { get; private set; } //// TODO you're not actually using this anywhere at the moment; doesn't mean that you should be, but it might help make some things more general (so you don't have to use the static expressions in the caller)
+
+                    protected override Expression VisitParameter(ParameterExpression node)
+                    {
+                        return translatedCalendarEventExpression;
+
+                        /*if (object.ReferenceEquals(node, this.originalCalendarEventParamter))
+                        {
+                            return this.translatedCalendarEventExpression;
+                        }
+
+                        return base.VisitParameter(node);*/
+                    }
+
+                    protected override Expression VisitMember(MemberExpression node)
+                    {
+                        if (ReferenceEquals(node.Expression, originalCalendarEventParamter))
+                        {
+                            if (SeriesMasterAdapters.TryGetValue(node.Member.Name, out var seriesMasterExpression))
+                            {
+                                seriesMasterExpression = Visit(seriesMasterExpression);
+
+                                ApplicableToSeriesMaster = true;
+                                return seriesMasterExpression;
+                            }
+
+                            if (CalendarEventAdapters.TryGetValue(node.Member.Name, out var calendarEventExpression))
+                            {
+                                calendarEventExpression = Visit(calendarEventExpression);
+
+                                return calendarEventExpression;
+                            }
+                        }
+
+                        return base.VisitMember(node);
+                    }
+
+                    private static Expression<Func<Graph.CalendarEvent, string>> SubjectExpression { get; } = calendarEvent => calendarEvent.Subject;
+                    private static Expression<Func<Graph.CalendarEvent, string>> IdExpression { get; } = calendarEvent => calendarEvent.Id;
+                    private static Expression<Func<Graph.CalendarEvent, string>> BodyExpression { get; } = calendarEvent => calendarEvent.Body.Content;
+                    private static Expression<Func<Graph.CalendarEvent, bool>> IsCancelledExpression { get; } = calendarEvent => calendarEvent.IsCancelled;
+                    private static Expression<Func<Graph.CalendarEvent, string>> TypeExpression { get; } = calendarEvent => calendarEvent.Type;
+
+                    private static IReadOnlyDictionary<string, Expression> SeriesMasterAdapters { get; } = new Dictionary<string, Expression>()
+                    {
+                        { "Subject", SubjectExpression.Body },
+                        { "Id", IdExpression.Body },
+                        { "Body", BodyExpression.Body },
+                        { "IsCancelled", IsCancelledExpression.Body },
+                        { "Type", TypeExpression.Body },
+                    };
+
+                    private static Expression<Func<Graph.CalendarEvent, DateTime>> StartExpression { get; } = calendarEvent => calendarEvent.Start.DateTime;
+                    private static Expression<Func<Graph.CalendarEvent, DateTime>> EndExpression { get; } = calendarEvent => calendarEvent.End.DateTime;
+
+                    private static IReadOnlyDictionary<string, Expression> CalendarEventAdapters { get; } = new Dictionary<string, Expression>()
+                    {
+                        { "Start", StartExpression.Body },
+                        { "End", EndExpression.Body },
+                    };
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
