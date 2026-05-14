@@ -144,7 +144,24 @@
             }
         }
 
-        public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+        public static async ValueTask<TNextReader> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            if (!currentReader.TryMove2(readerContext, out _, out _, out var context))
+            {
+                do
+                {
+                    await readerContext.Read();
+                }
+                while (!currentReader.TryContinue2(readerContext, out _, out _, ref context));
+            }
+
+            return default!;
+        }
+
+        /*public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
@@ -155,7 +172,7 @@
             }
 
             return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext.Read(), readerContext, context);
-        }
+        }*/
 
         public ref struct Move2Task<TCurrentReader, TNextReader, TValue, TContext>
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
