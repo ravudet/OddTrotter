@@ -313,6 +313,39 @@ namespace Playground
 
             IEitherWithFactory<TLeft, TRight> Create<TLeft, TRight>(TRight value);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public interface IDeconstructable<TLeft, TRight>
+        {
+            bool Deconstruct([MaybeNullWhen(false)] out TLeft left, [MaybeNullWhen(true)] out TRight right);
+        }
+
+        
+
+        static void DoDeconstruct(IDeconstructable<string, int> deconstructable)
+        {
+            var (isLeft, left, right) = deconstructable;
+        }
+    }
+
+    public static class DeconstructExtensions
+    {
+        public static void Deconstruct<TLeft, TRight>(this PlaygroundTests.IDeconstructable<TLeft, TRight> deconstructable, out bool isLeft, out TLeft? left, out TRight? right)
+        {
+            isLeft = deconstructable.Deconstruct(out left, out right);
+        }
     }
 
     public static class FactoryExtensions
