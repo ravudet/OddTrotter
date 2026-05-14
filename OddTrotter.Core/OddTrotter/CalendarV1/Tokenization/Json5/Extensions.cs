@@ -34,7 +34,21 @@
             return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
         }*/
 
-        public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
+        public static async ValueTask<TToken> Move3<TCurrentReader, TToken>(
+            this ITokenReader<TCurrentReader, TToken> currentReader,
+            ReaderContext readerContext)
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+        {
+            TToken token;
+            while (!currentReader.TryMove3(readerContext, out token))
+            {
+                await readerContext.Read();
+            }
+
+            return token;
+        }
+
+        /*public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
@@ -45,7 +59,7 @@
             }
 
             return new Move3Task<TCurrentReader, TToken>(readerContext.Read(), readerContext);
-        }
+        }*/
 
         public ref struct Move3Task<TCurrentReader, TToken>
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
@@ -144,7 +158,7 @@
             }
         }
 
-        public static async ValueTask<TNextReader> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+        /*public static async ValueTask<TNextReader> Move2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
@@ -159,9 +173,9 @@
             }
 
             return default!;
-        }
+        }*/
 
-        /*public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+        public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
@@ -172,7 +186,7 @@
             }
 
             return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext.Read(), readerContext, context);
-        }*/
+        }
 
         public ref struct Move2Task<TCurrentReader, TNextReader, TValue, TContext>
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
