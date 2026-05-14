@@ -304,8 +304,7 @@ namespace Adapter
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
                     //// TODO you are here potentially
-                    //// TODO i don't remember if there's something in this method you still need to do, but you are actually in the seriesevent masters stuff, and you're thinking about what it should look like to filter (look at the todos there)
-
+                    
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
                     var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
