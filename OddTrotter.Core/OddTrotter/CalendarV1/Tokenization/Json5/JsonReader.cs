@@ -7,7 +7,7 @@
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    public struct ReaderContext
+    public sealed class ReaderContext
     {
         private ReaderContext(
             Stream stream,
@@ -60,33 +60,33 @@
     public interface IMoveReader<TCurrentReader, TNextReader>
         where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
     {
-        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader);
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader);
     }
 
     public interface IValueReader<TCurrentReader, TNextReader, TValue>
         where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
     {
-        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value);
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value);
     }
 
     public interface IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
     {
-        static abstract bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
 
-        static abstract bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out TValue value, ref TContext context);
+        static abstract bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out TValue value, ref TContext context);
     }
 
     public interface ITokenReader<TCurrentReader, TToken>
         where TCurrentReader : ITokenReader<TCurrentReader, TToken>
     {
-        static abstract bool TryMove(ref ReaderContext readerContext, out TToken token);
+        static abstract bool TryMove(ReaderContext readerContext, out TToken token);
     }
 
 
     public sealed class JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -95,7 +95,7 @@
 
     public sealed class WhitespaceReader<TNextReader> : IContinuableValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
     {
-        public static bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
         {
             while (true)
             {
@@ -131,10 +131,10 @@
             return true;
         }
 
-        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
         {
             context = new List<WhitespaceToken>();
-            return WhitespaceReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, ref context);
+            return WhitespaceReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, context);
         }
     }
 
@@ -161,7 +161,7 @@
 
     public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out ValueToken<TNextReader> token)
+        public static bool TryMove(ReaderContext readerContext, out ValueToken<TNextReader> token)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -330,7 +330,7 @@
 
     public sealed class ObjectReader<TNextReader> : IMoveReader<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -347,7 +347,7 @@
 
     public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -356,10 +356,10 @@
 
     public sealed class ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, ObjectStartToken>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
         {
             nextReader = default!;
-            return Json6.Helpers.TryReadChar(ref readerContext, '{');
+            return Json6.Helpers.TryReadChar(readerContext, '{');
         }
     }
 
@@ -369,7 +369,7 @@
 
     public sealed class MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out MembersToken<TNextReader> token)
+        public static bool TryMove(ReaderContext readerContext, out MembersToken<TNextReader> token)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
@@ -430,7 +430,7 @@
 
     public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMemberReader<TNextReader>>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -439,7 +439,7 @@
 
     public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -456,10 +456,10 @@
 
     public sealed class StringDelimiterReader<TNextReader> : IValueReader<StringDelimiterReader<TNextReader>, TNextReader, StringDelimiterToken>
     {
-        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
         {
             nextReader = default!; //// TODO !
-            return Json6.Helpers.TryReadChar(ref readerContext, '"');
+            return Json6.Helpers.TryReadChar(readerContext, '"');
         }
     }
 
@@ -469,7 +469,7 @@
 
     public sealed class CharsReader<TNextReader> : IContinuableValueReader<CharsReader<TNextReader>, TNextReader, List<CharToken>, (List<CharToken>, bool)>
     {
-        public static bool TryContinue(ref ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, (List<CharToken>, bool) context)
         {
             while (true)
             {
@@ -527,10 +527,10 @@
             return true;
         }
 
-        public static bool TryMove(ref ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, out (List<CharToken>, bool) context)
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, out (List<CharToken>, bool) context)
         {
             context = (new List<CharToken>(), false);
-            return CharsReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, ref context);
+            return CharsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
         }
     }
 
@@ -593,64 +593,64 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
         public static bool TryMove1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             out TNextReader nextReader)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
         {
-            return TCurrentReader.TryMove(ref readerContext, out nextReader);
+            return TCurrentReader.TryMove(readerContext, out nextReader);
         }
 
         public static bool TryMove2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             out TNextReader nextReader,
             out TValue value,
             out TContext context)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value, out context);
+            return TCurrentReader.TryMove(readerContext, out nextReader, out value, out context);
         }
 
         public static bool TryContinue2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
-            ref ReaderContext readerContext,
+            ReaderContext readerContext,
             out TNextReader nextReader,
             out TValue value,
             ref TContext context)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            return TCurrentReader.TryContinue(ref  readerContext, out nextReader, out value, ref context);
+            return TCurrentReader.TryContinue( readerContext, out nextReader, out value, ref context);
         }
 
-        public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ref ReaderContext readerContext, out TToken token)
+        public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
-            return TCurrentReader.TryMove(ref readerContext, out token);
+            return TCurrentReader.TryMove(readerContext, out token);
         }
 
-        public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ref ReaderContext readerContext, out TNextReader nextReader, out TValue value)
+        public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
         {
-            return TCurrentReader.TryMove(ref readerContext, out nextReader, out value);
+            return TCurrentReader.TryMove(readerContext, out nextReader, out value);
         }
     }
 
     public static class Helpers
     {
 
-        public static bool TryReadChar(ref ReaderContext readerContext, char character)
+        public static bool TryReadChar(ReaderContext readerContext, char character)
         {
             if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 return false;
             }
 
-            ReadChar(ref readerContext, character);
+            ReadChar(readerContext, character);
             ++readerContext.CurrentByteIndex;
             return true;
         }
 
-        private static void ReadChar(ref ReaderContext readerContext, char character)
+        private static void ReadChar(ReaderContext readerContext, char character)
         {
             if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != character)
             {
