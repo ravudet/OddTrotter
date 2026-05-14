@@ -85,6 +85,8 @@
 
         public bool IsCancelled { get; }
 
+        public string Subject { get; }
+
         //// public IEnumerable<CalendarEvent> Instances { get; }
 
         public PatternedRecurrence Recurrence { get; }
@@ -797,6 +799,9 @@ namespace Adapter
                     out Expression<Func<OddTrotter.CalendarEvent, bool>>? remainingFilter
                     )
                 {
+                    //// TODO if subject is tested and in a format that you can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
+
+
                     if (currentFilter == null)
                     {
                         filterConsistentAcrossInstancesAndSupportedByGraph = null;
@@ -805,14 +810,26 @@ namespace Adapter
                         return;
                     }
 
-                    //// TODO you are here
-                    //// TODO i think `filterNotConsistentAcrossInstances` should be an expression, and should be named "remainingFilter"; then you should have something in the caller to convert it to a graph.calendarevent expression (look in test cases); that expression should be used to call graph; in this method, we are only trying to find those things which are applicable to series masters
+                    if (object.ReferenceEquals(currentFilter, SubjectIsTodoList))
+                    {
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph = calendarEvent => calendarEvent.Subject == "todo list";
+                        filterConsistentAcrossInstancesAndSupportedByGraph = null;
+                        remainingFilter = null;
+                        return;
+                    }
 
+                    if (object.ReferenceEquals(currentFilter, IsNotCancelled))
+                    {
+                        filterConsistentAcrossInstancesAndSupportedByGraph = calendarEvent => calendarEvent.IsCancelled == false;
+                        filterConsistentAcrossInstancesAndNotSupportedByGraph = null;
+                        remainingFilter = null;
+                        return;
+                    }
 
-
-
-                    //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
-                    //// TODO if subject is tested and in a format that you can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
+                    filterConsistentAcrossInstancesAndSupportedByGraph = null;
+                    filterConsistentAcrossInstancesAndNotSupportedByGraph = null;
+                    remainingFilter = currentFilter;
+                    return;
                 }
 
                 private static void TranslateFilter(
@@ -824,6 +841,10 @@ namespace Adapter
                         translatedFilter = null;
                         return;
                     }
+
+
+                    //// TODO you are here
+
                 }
 
                 public OddTrotter.ICalendarEventsContext OrderBy<TOrder>(Expression<Func<OddTrotter.CalendarEvent, TOrder>> orderBy)
@@ -880,6 +901,10 @@ namespace Adapter
 
             return foo;
         }
+
+        internal static Expression<Func<CalendarEvent, bool>> SubjectIsTodoList { get; } = calendarEvent => calendarEvent.Subject == "todo list";
+
+        internal static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == false;
     }
 
     internal static partial class Extensions
