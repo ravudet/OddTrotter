@@ -10,80 +10,77 @@
     {
         public static Move1Task<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
             this IValueReader<TCurrentReader, TNextReader, TValue> currentReader,
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
         {
-            if (currentReader.TryMove4(ref readerContext, out _, out _))
+            if (currentReader.TryMove4(readerContext, out _, out _))
             {
-                return new Move1Task<TNextReader>(ref readerContext);
+                return new Move1Task<TNextReader>(readerContext);
             }
 
-            return new Move1Task<TNextReader>(readerContext.Read());
+            return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
         }
 
         public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
-            if (currentReader.TryMove3(ref readerContext, out var token))
+            if (currentReader.TryMove3(readerContext, out var token))
             {
-                return new Move3Task<TCurrentReader, TToken>(ref readerContext);
+                return new Move3Task<TCurrentReader, TToken>(readerContext);
             }
 
-            return new Move3Task<TCurrentReader, TToken>(readerContext.Read());
+            return new Move3Task<TCurrentReader, TToken>(readerContext.Read(), readerContext);
         }
 
         public ref struct Move3Task<TCurrentReader, TToken>
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
-            private readonly ValueTask<ReaderContext>? read;
-            private readonly ref ReaderContext readerContext;
+            private readonly ValueTask? read;
+            private readonly ReaderContext readerContext;
 
-            public Move3Task(ValueTask<ReaderContext> read)
+            public Move3Task(ValueTask read, ReaderContext readerContext)
             {
                 this.read = read;
+                this.readerContext = readerContext;
             }
 
-            public Move3Task(ref ReaderContext readerContext)
+            public Move3Task(ReaderContext readerContext)
             {
-                this.readerContext = ref readerContext;
+                this.readerContext = readerContext;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
-                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), ref this.readerContext);
+                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.readerContext);
             }
 
             public ref struct ConfiguredAwaitable
             {
-                private readonly ConfiguredValueTaskAwaitable<ReaderContext>? read;
-                private readonly ref ReaderContext readerContext;
+                private readonly ConfiguredValueTaskAwaitable? read;
+                private readonly ReaderContext readerContext;
 
-                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable<ReaderContext>? read, ref ReaderContext readerContext)
+                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable? read, ReaderContext readerContext)
                 {
                     this.read = read;
-                    this.readerContext = ref readerContext;
+                    this.readerContext = readerContext;
                 }
 
                 public TaskAwaiter GetAwaiter()
                 {
-                    return new TaskAwaiter(this.read?.GetAwaiter(), ref this.readerContext);
+                    return new TaskAwaiter(this.read?.GetAwaiter(), this.readerContext);
                 }
 
-                public unsafe struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TToken)>
+                public struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TToken)>
                 {
-                    private readonly ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private readonly ReaderContext* readerContext;
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
+                    private readonly ReaderContext readerContext;
 
-                    public TaskAwaiter(ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read, ref ReaderContext readerContext)
+                    public TaskAwaiter(ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read, ReaderContext readerContext)
                     {
                         this.read = read;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                        this.readerContext = (ReaderContext*)Unsafe.AsPointer(ref readerContext);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.readerContext = readerContext;
                     }
 
                     public bool IsCompleted
@@ -96,9 +93,8 @@
 
                     public (ReaderContext, TToken) GetResult()
                     {
-                        var readerContext = this.read?.GetResult() ?? Unsafe.AsRef<ReaderContext>(this.readerContext);
-
-                        TCurrentReader.TryMove(ref readerContext, out var token);
+                        this.read?.GetResult(); //// TODO this basically will just throw if needed... //// TODO you do this in other types too
+                        TCurrentReader.TryMove(this.readerContext, out var token);
 
                         return (readerContext, token);
                     }
@@ -137,73 +133,70 @@
 
         public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            if (currentReader.TryMove2(ref readerContext, out _, out _, out var context))
+            if (currentReader.TryMove2(readerContext, out _, out _, out var context))
             {
-                return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(ref readerContext);
+                return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext);
             }
 
-            return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext.Read(), context);
+            return new Move2Task<TCurrentReader, TNextReader, TValue, TContext>(readerContext.Read(), readerContext, context);
         }
 
         public ref struct Move2Task<TCurrentReader, TNextReader, TValue, TContext>
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
-            private readonly ValueTask<ReaderContext>? read;
+            private readonly ValueTask? read;
             private readonly TContext? context;
-            private readonly ref ReaderContext readerContext;
+            private readonly ReaderContext readerContext;
 
-            public Move2Task(ValueTask<ReaderContext> read, TContext context)
+            public Move2Task(ValueTask read, ReaderContext readerContext, TContext context)
             {
                 this.read = read;
+                this.readerContext = readerContext;
                 this.context = context;
             }
 
-            public Move2Task(ref ReaderContext readerContext)
+            public Move2Task(ReaderContext readerContext)
             {
-                this.readerContext = ref readerContext;
+                this.readerContext = readerContext;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
-                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.context, ref this.readerContext);
+                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.context, this.readerContext);
             }
 
             public ref struct ConfiguredAwaitable
             {
-                private readonly ConfiguredValueTaskAwaitable<ReaderContext>? read;
+                private readonly ConfiguredValueTaskAwaitable? read;
                 private readonly TContext? context;
-                private readonly ref ReaderContext readerContext;
+                private readonly ReaderContext readerContext;
 
-                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable<ReaderContext>? read, TContext? context, ref ReaderContext readerContext)
+                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable? read, TContext? context, ReaderContext readerContext)
                 {
                     this.read = read;
                     this.context = context;
-                    this.readerContext = ref readerContext;
+                    this.readerContext = readerContext;
                 }
 
                 public TaskAwaiter GetAwaiter()
                 {
-                    return new TaskAwaiter(this.read?.GetAwaiter(), this.context, ref this.readerContext);
+                    return new TaskAwaiter(this.read?.GetAwaiter(), this.context, this.readerContext);
                 }
 
                 public unsafe struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TNextReader)>
                 {
-                    private readonly ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read;
+                    private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
                     private readonly TContext? context;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private readonly ReaderContext* readerContext;
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly ReaderContext readerContext;
 
-                    public TaskAwaiter(ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read, TContext? context, ref ReaderContext readerContext)
+                    public TaskAwaiter(ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read, TContext? context, ReaderContext readerContext)
                     {
                         this.read = read;
                         this.context = context;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                        this.readerContext = (ReaderContext*)Unsafe.AsPointer(ref readerContext);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.readerContext = readerContext;
                     }
 
                     public bool IsCompleted
@@ -216,12 +209,17 @@
 
                     public (ReaderContext, TNextReader) GetResult()
                     {
-                        var readerContext = this.read?.GetResult() ?? Unsafe.AsRef<ReaderContext>(this.readerContext);
+                        if (this.read == null)
+                        {
+                            return (readerContext, default!);
+                        }
+
+                        this.read?.GetResult();
                         var context = this.context!; //// TODO !
 
-                        if (!TCurrentReader.TryContinue(ref readerContext, out _, out _, ref context))
+                        if (!TCurrentReader.TryContinue(readerContext, out _, out _, ref context))
                         {
-                            throw new Exception("TODO assuming only 1 stream read is needed");
+                            throw new Exception("TODO assuming only 1 stream read is needed"); //// TODO you do this in other types too
                         }
 
                         return (readerContext, default!);
@@ -261,66 +259,63 @@
 
         public static Move1Task<TNextReader> Move1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> currentReader, 
-            ref ReaderContext readerContext)
+            ReaderContext readerContext)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
         {
-            if (currentReader.TryMove1(ref readerContext, out var nextReader))
+            if (currentReader.TryMove1(readerContext, out var nextReader))
             {
-                return new Move1Task<TNextReader>(ref readerContext);
+                return new Move1Task<TNextReader>(readerContext);
             }
 
-            return new Move1Task<TNextReader>(readerContext.Read());
+            return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
         }
 
         public ref struct Move1Task<TNextReader>
         {
-            private readonly ValueTask<ReaderContext>? read;
-            private readonly ref ReaderContext readerContext;
+            private readonly ValueTask? read;
+            private readonly ReaderContext readerContext;
 
-            public Move1Task(ValueTask<ReaderContext> read)
+            public Move1Task(ValueTask read, ReaderContext readerContext)
             {
                 this.read = read;
+                this.readerContext = readerContext;
             }
 
-            public Move1Task(ref ReaderContext readerContext)
+            public Move1Task(ReaderContext readerContext)
             {
-                this.readerContext = ref readerContext;
+                this.readerContext = readerContext;
             }
 
             public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
             {
-                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), ref this.readerContext);
+                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.readerContext);
             }
 
             public ref struct ConfiguredAwaitable
             {
-                private readonly ConfiguredValueTaskAwaitable<ReaderContext>? read;
-                private readonly ref ReaderContext readerContext;
+                private readonly ConfiguredValueTaskAwaitable? read;
+                private readonly ReaderContext readerContext;
 
-                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable<ReaderContext>? read, ref ReaderContext readerContext)
+                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable? read, ReaderContext readerContext)
                 {
                     this.read = read;
-                    this.readerContext = ref readerContext;
+                    this.readerContext = readerContext;
                 }
 
                 public TaskAwaiter GetAwaiter()
                 {
-                    return new TaskAwaiter(this.read?.GetAwaiter(), ref this.readerContext);
+                    return new TaskAwaiter(this.read?.GetAwaiter(), this.readerContext);
                 }
 
                 public unsafe struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TNextReader)>
                 {
-                    private readonly ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                    private readonly ReaderContext* readerContext;
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
+                    private readonly ReaderContext readerContext;
 
-                    public TaskAwaiter(ConfiguredValueTaskAwaitable<ReaderContext>.ConfiguredValueTaskAwaiter? read, ref ReaderContext readerContext)
+                    public TaskAwaiter(ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read, ReaderContext readerContext)
                     {
                         this.read = read;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                        this.readerContext = (ReaderContext*)Unsafe.AsPointer(ref readerContext);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.readerContext = readerContext;
                     }
 
                     public bool IsCompleted
@@ -333,7 +328,7 @@
 
                     public (ReaderContext, TNextReader) GetResult()
                     {
-                        var readerContext = this.read?.GetResult() ?? Unsafe.AsRef<ReaderContext>(this.readerContext);
+                        this.read?.GetResult();
 
                         return (readerContext, default!);
                     }

@@ -29,18 +29,17 @@
         public static async ValueTask<ReaderContext> FromStream(Stream stream, byte[] buffer)
         {
             var readerContext = new ReaderContext(stream, buffer, 0, 0);
-            readerContext = await readerContext.Read().ConfigureAwait(false);
+            await readerContext.Read().ConfigureAwait(false);
             return readerContext;
         }
     }
 
     public static class ReaderContextExtensions
     {
-        public static async ValueTask<ReaderContext> Read(this ReaderContext readerContext)
+        public static async ValueTask Read(this ReaderContext readerContext)
         {
             readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer.AsMemory()).ConfigureAwait(false);
             readerContext.CurrentByteIndex = 0;
-            return readerContext;
         }
 
         public static Task Read2(this ReaderContext readerContext)
@@ -134,7 +133,7 @@
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
         {
             context = new List<WhitespaceToken>();
-            return WhitespaceReader<TNextReader>.TryContinue(ref readerContext, out nextReader, out value, context);
+            return WhitespaceReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
         }
     }
 
@@ -469,7 +468,7 @@
 
     public sealed class CharsReader<TNextReader> : IContinuableValueReader<CharsReader<TNextReader>, TNextReader, List<CharToken>, (List<CharToken>, bool)>
     {
-        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, (List<CharToken>, bool) context)
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
         {
             while (true)
             {

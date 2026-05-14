@@ -2265,22 +2265,22 @@
             var context = await Json5.ReaderContext.FromStream(stream, new byte[20]).ConfigureAwait(false);
             var reader = Readers.Create();
 
-            (context, var whitespaceReader) = await reader.Move1(ref context).ConfigureAwait(false);
-            (context, var valueReader) = await whitespaceReader.Move2(ref context).ConfigureAwait(false);
-            (context, var valueToken) = await valueReader.Move3(ref context).ConfigureAwait(false);
+            (context, var whitespaceReader) = await reader.Move1(context).ConfigureAwait(false);
+            (context, var valueReader) = await whitespaceReader.Move2(context).ConfigureAwait(false);
+            (context, var valueToken) = await valueReader.Move3(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken.TryObject(out var @object));
-            (context, var objectStart) = await @object.Move1(ref context).ConfigureAwait(false);
-            (context, var whitespacereader2) = await objectStart.Move4(ref context).ConfigureAwait(false);
-            (context, var membersReader) = await whitespacereader2.Move2(ref context).ConfigureAwait(false);
-            (context, var membersToken) = await membersReader.Move3(ref context).ConfigureAwait(false);
+            (context, var objectStart) = await @object.Move1(context).ConfigureAwait(false);
+            (context, var whitespacereader2) = await objectStart.Move4(context).ConfigureAwait(false);
+            (context, var membersReader) = await whitespacereader2.Move2(context).ConfigureAwait(false);
+            (context, var membersToken) = await membersReader.Move3(context).ConfigureAwait(false);
             Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
-            (context, var memberReader) = await firstMemberReader.Move1(ref context).ConfigureAwait(false);
-            (context, var stringReader) = await memberReader.Move1(ref context).ConfigureAwait(false);
-            (context, var stringDelimiterReader) = await stringReader.Move1(ref context).ConfigureAwait(false);
-            (context, var charsReader) = await stringDelimiterReader.Move4(ref context).ConfigureAwait(false);
-            (context, var stringDelimiterReader2) = await charsReader.Move2(ref context).ConfigureAwait(false);
-            (context, var whitespaceReader3) = await stringDelimiterReader2.Move4(ref context).ConfigureAwait(false);
-            (context, var colonReader) = await whitespaceReader3.Move2(ref context).ConfigureAwait(false);
+            (context, var memberReader) = await firstMemberReader.Move1(context).ConfigureAwait(false);
+            (context, var stringReader) = await memberReader.Move1(context).ConfigureAwait(false);
+            (context, var stringDelimiterReader) = await stringReader.Move1(context).ConfigureAwait(false);
+            (context, var charsReader) = await stringDelimiterReader.Move4(context).ConfigureAwait(false);
+            (context, var stringDelimiterReader2) = await charsReader.Move2(context).ConfigureAwait(false);
+            (context, var whitespaceReader3) = await stringDelimiterReader2.Move4(context).ConfigureAwait(false);
+            (context, var colonReader) = await whitespaceReader3.Move2(context).ConfigureAwait(false);
 
 
             Assert.AreEqual(20, stream.Position);
