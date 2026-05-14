@@ -786,6 +786,11 @@ namespace Adapter
                     out Func<OddTrotter.CalendarEvent, bool>? filterNotConsistentAcrossInstances
                     )
                 {
+                    //// TODO i think `filterNotConsistentAcrossInstances` should be an expression, and should be named "remainingFilter"; then you should have something in the caller to convert it to a graph.calendarevent expression (look in test cases); that expression should be used to call graph; in this method, we are only trying to find those things which are applicable to series masters
+
+
+
+
                     //// TODO as a result of the below, you should really rename the parameters to describe what they are instead of how they are used (i.e. supportedandconsistent isntead of seriesmasterfilter) because seriesmasterpredicate will need to be applied to instances as well
                     //// TODO if subject is tested and in a format that you can extract, you need to also apply it to the instances even though graph doesn't understand it; this is true for anything that you will filter series masters by, but that graph doesn't understand
                 }
