@@ -178,6 +178,7 @@
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
         {
             //// TODO i don't really know why this is faster that move21; the other methods got faster when i removed the custom awaitable implementation; it's *possible* because of the closure `context`, but `move3` has a closure on `token`...
+            //// TODO maybe it's the `ref context`?
 
             if (currentReader.TryMove2(readerContext, out _, out _, out var context))
             {
