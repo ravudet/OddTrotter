@@ -909,15 +909,15 @@ namespace Adapter
 
                     private static Expression<Func<Graph.CalendarEvent, string>> SubjectExpression { get; } = calendarEvent => calendarEvent.Subject;
                     private static Expression<Func<Graph.CalendarEvent, string>> IdExpression { get; } = calendarEvent => calendarEvent.Id;
-                    private static Expression<Func<Graph.CalendarEvent, string>> BodyExpression { get; } = calendarEvent => calendarEvent.Body.Content;
                     private static Expression<Func<Graph.CalendarEvent, bool>> IsCancelledExpression { get; } = calendarEvent => calendarEvent.IsCancelled;
                     private static Expression<Func<Graph.CalendarEvent, string>> TypeExpression { get; } = calendarEvent => calendarEvent.Type;
+
+                    //// TODO you have to add all of the properties here; you also need to do something to ensure that this visitor is always consistent when changes are made to `graph.calendarevent`
 
                     private static IReadOnlyDictionary<string, Expression> SeriesMasterAdapters { get; } = new Dictionary<string, Expression>()
                     {
                         { "Subject", SubjectExpression.Body },
                         { "Id", IdExpression.Body },
-                        { "Body", BodyExpression.Body },
                         { "IsCancelled", IsCancelledExpression.Body },
                         { "Type", TypeExpression.Body },
                     };
