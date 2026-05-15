@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http.Headers;
@@ -557,7 +558,16 @@
         }
     }
 
-    public sealed class CommaReader<TNextReader>
+    public sealed class CommaReader<TNextReader> : IValueReader<CommaReader<TNextReader>, TNextReader, CommaToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out CommaToken value)
+        {
+            nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, ',');
+        }
+    }
+
+    public struct CommaToken
     {
     }
 
