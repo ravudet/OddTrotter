@@ -2290,7 +2290,7 @@
             var valueToken2 = await valueReader2.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken2.TryTrue(out var @true));
 
-            //// TODO update move2 to not return the context
+
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(15, context.CurrentByteIndex);
         }
