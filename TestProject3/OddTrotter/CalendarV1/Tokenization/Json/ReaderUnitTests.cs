@@ -2284,10 +2284,14 @@
             var whitespaceReader3 = await stringDelimiterReader2.Move4(context).ConfigureAwait(false);
             (context, var colonReader) = await whitespaceReader3.Move2(context).ConfigureAwait(false);
             //var colonReader = await whitespaceReader3.Move21(context).ConfigureAwait(false);
+            var whitespaceReader4 = await colonReader.Move4(context).ConfigureAwait(false);
+            (context, var valueReader2) = await whitespaceReader4.Move2(context).ConfigureAwait(false);
+            var valueToken2 = await valueReader2.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken2.TryTrue(out var @true));
 
-
+            //// TODO update move2 to not return the context
             Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(13, context.CurrentByteIndex);
+            Assert.AreEqual(15, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -2336,11 +2340,7 @@
             var stringDelimiterReader2 = await charsReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var whitespaceReader3 = await stringDelimiterReader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var colonReader = await whitespaceReader3.AsMoveReader.Move1(ref context).ConfigureAwait(false);
-
-
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(13, context.CurrentByteIndex);
-            /*var whitespaceReader4 = await colonReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var whitespaceReader4 = await colonReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var valueToken2 = await valueReader2.AsTokenReader.Move2(ref context).ConfigureAwait(false);
             if (!valueToken2.TryTrue(out var @true))
@@ -2348,7 +2348,11 @@
                 throw new Exception("TODO");
             }
 
-            var subsequentMembersReader = await @true.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(15, context.CurrentByteIndex);
+
+            /*var subsequentMembersReader = await @true.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var subsequentMembersToken = await subsequentMembersReader.AsTokenReader.Move2(ref context).ConfigureAwait(false);
             if (!subsequentMembersToken.TryMore(out var subsequentMemberReader))
             {

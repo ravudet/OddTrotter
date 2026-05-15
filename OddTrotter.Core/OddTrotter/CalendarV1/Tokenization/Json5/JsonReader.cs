@@ -445,7 +445,16 @@
         }
     }
 
-    public sealed class ColonReader<TNextReader>
+    public sealed class ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, ColonToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ColonToken value)
+        {
+            nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(readerContext, ':');
+        }
+    }
+
+    public struct ColonToken
     {
     }
 
