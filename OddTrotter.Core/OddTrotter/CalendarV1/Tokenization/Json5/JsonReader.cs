@@ -456,9 +456,9 @@
         }
     }
 
-    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMemberReader<TNextReader>>>
+    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>>
     {
-        public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMemberReader<TNextReader>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMembersReader<TNextReader>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
@@ -485,6 +485,67 @@
 
     public struct ColonToken
     {
+    }
+
+    public sealed class SubsequentMembersReader<TNextReader> : ITokenReader<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out SubsequentMembersToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO");
+            }
+
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] == ',')
+            {
+                token = SubsequentMembersToken<TNextReader>.More();
+            }
+            else
+            {
+                token = SubsequentMembersToken<TNextReader>.None();
+            }
+
+            return true;
+        }
+    }
+
+    public struct SubsequentMembersToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static SubsequentMembersToken<TNextReader> None()
+        {
+            return new SubsequentMembersToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static SubsequentMembersToken<TNextReader> More()
+        {
+            return new SubsequentMembersToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryNone([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
+
+        public bool TryMore(out SubsequentMemberReader<SubsequentMembersReader<TNextReader>> subsequentMemberReader)
+        {
+            subsequentMemberReader = default!; //// TODO !
+            return this.type == 2;
+        }
     }
 
     public sealed class SubsequentMemberReader<TNextReader>
