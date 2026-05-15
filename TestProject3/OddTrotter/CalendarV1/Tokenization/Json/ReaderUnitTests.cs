@@ -2285,7 +2285,8 @@
             (context, var colonReader) = await whitespaceReader3.Move2(context).ConfigureAwait(false);
             //var colonReader = await whitespaceReader3.Move21(context).ConfigureAwait(false);
             var whitespaceReader4 = await colonReader.Move4(context).ConfigureAwait(false);
-            (context, var valueReader2) = await whitespaceReader4.Move2(context).ConfigureAwait(false);
+            ////(context, var valueReader2) = await whitespaceReader4.Move2(context).ConfigureAwait(false);
+            var valueReader2 = await whitespaceReader4.Move21(context).ConfigureAwait(false);
             var valueToken2 = await valueReader2.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken2.TryTrue(out var @true));
 
@@ -2502,11 +2503,7 @@
             var whitespaceReader3 = await stringDelimiterReader2.MoveInternal1().ConfigureAwait(false);
             //var colonReader = await whitespaceReader3.AsReader.MoveInternal3(whitespaceReader3.Factory).ConfigureAwait(false);
             var colonReader = await whitespaceReader3.MoveInternal1().ConfigureAwait(false);
-
-
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-            /*var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
+            var whitespaceReader4 = await colonReader.MoveInternal1().ConfigureAwait(false);
             //var valueReader2 = await whitespaceReader4.AsReader.MoveInternal3(whitespaceReader4.Factory).ConfigureAwait(false);
             var valueReader2 = await whitespaceReader4.MoveInternal1().ConfigureAwait(false);
             var valueToken2 = await valueReader2.MoveInternal1().ConfigureAwait(false);
@@ -2514,8 +2511,12 @@
             {
                 throw new Exception("TODO");
             }
-            
-            var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
+
+
+            Assert.AreEqual(20, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*var subsequentMembersReader = await @true.MoveInternal1().ConfigureAwait(false);
 
             var subsequentMembersToken = subsequentMembersReader.TryMove(out read);
             if (!read)
