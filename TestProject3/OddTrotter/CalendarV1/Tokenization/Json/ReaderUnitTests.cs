@@ -2265,13 +2265,15 @@
             var whitespaceReader = await reader.Move1(context).ConfigureAwait(false);
             (context, var valueReader) = await whitespaceReader.Move2(context).ConfigureAwait(false);
             //var valueReader = await whitespaceReader.Move21(context).ConfigureAwait(false);
-            var valueToken = await valueReader.Move3(context).ConfigureAwait(false);
+            //(context, var valueToken) = await valueReader.Move3(context).ConfigureAwait(false);
+            var valueToken = await valueReader.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken.TryObject(out var @object));
             var objectStart = await @object.Move1(context).ConfigureAwait(false);
             var whitespacereader2 = await objectStart.Move4(context).ConfigureAwait(false);
             (context, var membersReader) = await whitespacereader2.Move2(context).ConfigureAwait(false);
             //var membersReader = await whitespacereader2.Move21(context).ConfigureAwait(false);
-            var membersToken = await membersReader.Move3(context).ConfigureAwait(false);
+            //(context, var membersToken) = await membersReader.Move3(context).ConfigureAwait(false);
+            var membersToken = await membersReader.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
             var memberReader = await firstMemberReader.Move1(context).ConfigureAwait(false);
             var stringReader = await memberReader.Move1(context).ConfigureAwait(false);

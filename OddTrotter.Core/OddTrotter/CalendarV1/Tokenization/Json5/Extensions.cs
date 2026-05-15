@@ -34,7 +34,7 @@
             return new Move1Task<TNextReader>(readerContext.Read(), readerContext);
         }*/
 
-        public static async ValueTask<TToken> Move3<TCurrentReader, TToken>(
+        public static async ValueTask<TToken> Move31<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
@@ -48,18 +48,20 @@
             return token;
         }
 
-        /*public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
+        public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
-            if (currentReader.TryMove3(readerContext, out var token))
+            //// TODO i don't really know why this is faster that move21; the other methods got faster when i removed the custom awaitable implementation; it's *possible* because of the closure `token`, but `move3` has a closure on `token`...
+            //// TODO also worth noting though that this has a bug; the `_` should actually be returned, because otherwise you are reading the value twice
+            if (currentReader.TryMove3(readerContext, out _))
             {
                 return new Move3Task<TCurrentReader, TToken>(readerContext);
             }
 
             return new Move3Task<TCurrentReader, TToken>(readerContext.Read(), readerContext);
-        }*/
+        }
 
         public ref struct Move3Task<TCurrentReader, TToken>
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
