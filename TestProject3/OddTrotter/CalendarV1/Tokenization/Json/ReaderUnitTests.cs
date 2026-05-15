@@ -2292,6 +2292,7 @@
             (context, var subsequentMembersReader) = await @true.Move2(context).ConfigureAwait(false);
             var subsequentMembersToken = await subsequentMembersReader.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken.TryMore(out var subsequentMemberReader));
+            var commaReader = await subsequentMemberReader.Move1(context).ConfigureAwait(false);
 
 
             Assert.AreEqual(20, stream.Position);
@@ -2359,12 +2360,12 @@
                 throw new Exception("TODO");
             }
 
+            var commaReader = await subsequentMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(19, context.CurrentByteIndex);
-
-            /*var commaReader = await subsequentMemberReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
-            var whitespaceReader5 = await commaReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            /*var whitespaceReader5 = await commaReader.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var memberReader2 = await whitespaceReader5.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringReader2 = await memberReader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var stringDelimiterReader3 = await stringReader2.AsMoveReader.Move1(ref context).ConfigureAwait(false);
@@ -2527,13 +2528,13 @@
             var subsequentMemberReader = subsequentMembersToken.Apply(
                 _ => throw new Exception("TODO"),
                 more => more);
+            // false
+            var commaReader = await subsequentMemberReader.MoveInternal1().ConfigureAwait(false);
 
 
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
-            /*// false
-            var commaReader = await subsequentMemberReader.MoveInternal1().ConfigureAwait(false);
-            var whitespaceReader5 = await commaReader.MoveInternal1().ConfigureAwait(false);
+            /*var whitespaceReader5 = await commaReader.MoveInternal1().ConfigureAwait(false);
             //var memberReader2 = await whitespaceReader5.AsReader.MoveInternal3(whitespaceReader5.Factory).ConfigureAwait(false);
             var memberReader2 = await whitespaceReader5.MoveInternal1().ConfigureAwait(false);
             var stringReader2 = await memberReader2.MoveInternal1().ConfigureAwait(false);

@@ -548,7 +548,16 @@
         }
     }
 
-    public sealed class SubsequentMemberReader<TNextReader>
+    public sealed class SubsequentMemberReader<TNextReader> : IMoveReader<SubsequentMemberReader<TNextReader>, CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out CommaReader<WhitespaceReader<MemberReader<TNextReader>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class CommaReader<TNextReader>
     {
     }
 
