@@ -5,6 +5,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http.Headers;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     public sealed class ReaderContext
@@ -323,7 +324,35 @@
     {
     }
 
-    public sealed class TrueReader<TNextReader>
+    public sealed class TrueReader<TNextReader> : IContinuableValueReader<TrueReader<TNextReader>, TNextReader, TrueToken, int>
+    {
+        private static readonly string literal = "true"; //// TODO const?
+
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out TrueToken value, ref int context)
+        {
+            for (; context < literal.Length; ++context)
+            {
+                if (!Json6.Helpers.TryReadChar(readerContext, literal[context]))
+                {
+                    nextReader = default!; //// TODO !
+                    value = default;
+                    return false;
+                }
+            }
+
+            nextReader = default!; //// TODO !
+            value = new TrueToken();
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TrueToken value, out int context)
+        {
+            context = 0;
+            return TrueReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
+    }
+
+    public struct TrueToken
     {
     }
 
