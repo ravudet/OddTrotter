@@ -2307,6 +2307,7 @@
             Assert.IsTrue(valueToken.TryFalse(out var @false));
 
 
+            //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
             Assert.AreEqual(20, stream.Position);
             Assert.AreEqual(19, context.CurrentByteIndex);
         }
