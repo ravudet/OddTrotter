@@ -2327,11 +2327,20 @@
             (context, var value4) = await whitespace10.Move2(context).ConfigureAwait(false);
             var valueToken4 = await value4.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken4.TryNumber(out var number));
+            var sign = await number.Move1(context).ConfigureAwait(false);
+            var @int = await sign.Move4(context).ConfigureAwait(false);
+            (context, var frac) = await @int.Move2(context).ConfigureAwait(false);
+            var fracToken = await frac.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(fracToken.TryAbsent(out var exp));
+            var expToken = await exp.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(expToken.TryAbsent(out var subsequentMembers3));
+            var subsequentMembersToken3 = await subsequentMembers3.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken3.TryMore(out var subsequentMember3));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual(60, stream.Position);
-            Assert.AreEqual(17, context.CurrentByteIndex);
+            Assert.AreEqual(80, stream.Position);
+            Assert.AreEqual(1, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -2437,11 +2446,7 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(60, stream.Position);
-            Assert.AreEqual(17, context.CurrentByteIndex);
-
-            /*var sign = await number.AsMoveReader.Move1(ref context).ConfigureAwait(false);
+            var sign = await number.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var @int = await sign.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var frac = await @int.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var fracToken = await frac.AsTokenReader.Move2(ref context).ConfigureAwait(false);
@@ -2460,7 +2465,11 @@
             if (!subsequentMembersToken3.TryMore(out var subsequentMember3))
             {
                 throw new Exception("TODO");
-            }*/
+            }
+
+
+            Assert.AreEqual(80, stream.Position);
+            Assert.AreEqual(1, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -2630,11 +2639,7 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(60, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*var sign = await number.MoveInternal1().ConfigureAwait(false);
+            var sign = await number.MoveInternal1().ConfigureAwait(false);
             var @int = await sign.MoveInternal1().ConfigureAwait(false);
             var frac = await @int.MoveInternal1().ConfigureAwait(false);
             var exp = await frac.MoveInternal1().ConfigureAwait(false);
@@ -2657,7 +2662,11 @@
 
             var subsequentMember3 = subsequentMembersToken3.Apply(
                 _ => throw new Exception("TODO"),
-                _ => _);*/
+                _ => _);
+
+
+            Assert.AreEqual(80, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*// asdf
             var comma3 = await subsequentMember3.MoveInternal1().ConfigureAwait(false);
