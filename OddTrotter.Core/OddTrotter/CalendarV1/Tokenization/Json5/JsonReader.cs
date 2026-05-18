@@ -9,7 +9,6 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    using OddTrotter.CalendarV1.Tokenization.Json6;
 
     public sealed class ReaderContext
     {
@@ -509,11 +508,11 @@
                 }
 
                 ++readerContext.CurrentByteIndex;
-                this.digitTokens.Add(digit);
+                context.Add(digit);
             }
 
-            value = this.digitTokens;
-            context = default;
+            nextReader = default!; //// TODO !
+            value = context;
             return true;
         }
 
@@ -539,8 +538,106 @@
         public byte Digit { get; }
     }
 
-    public sealed class FracReader<TNextReader>
+    public sealed class FracReader<TNextReader> : ITokenReader<FracReader<TNextReader>, FracToken<TNextReader>>
     {
+        public static bool TryMove(ReaderContext readerContext, out FracToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '.')
+            {
+                token = FracToken<TNextReader>.Absent();
+                return true;
+            }
+            else
+            {
+                token = FracToken<TNextReader>.Present();
+                return true;
+            }
+        }
+    }
+
+    public struct FracToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static FracToken<TNextReader> Absent()
+        {
+            return new FracToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static FracToken<TNextReader> Present()
+        {
+            return new FracToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryAbsent(out TNextReader nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return this.type == 1;
+        }
+
+        public bool TryPresent(out DigitsReader<TNextReader> digitsReader)
+        {
+            digitsReader = default!; //// TODO !
+            return this.type == 2;
+        }
+    }
+
+    public sealed class DigitsReader<TNextReader> : IContinuableValueReader<DigitsReader<TNextReader>, TNextReader, List<DigitToken>, List<DigitToken>>
+    {
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, ref List<DigitToken> context)
+        {
+            //// TODO there might be a bug that allows an "empty" fraction portion...
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    nextReader = default!; //// TODO !
+                    value = default!; //// TODO !
+                    return false;
+                }
+
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                context.Add(digit);
+            }
+
+            nextReader = default!; //// TODO !
+            value = context;
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, out List<DigitToken> context)
+        {
+            context = new List<DigitToken>();
+            return DigitsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
     }
 
     public sealed class ExpReader<TNextReader>
