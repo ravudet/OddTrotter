@@ -2487,6 +2487,16 @@
             var subsequentMembersToken4 = await subsequentMembers4.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken4.TryMore(out var subsequentMember4));
 
+            // null
+            var comma4 = await subsequentMember4.Move1(context).ConfigureAwait(false);
+            var whitespace14 = await comma4.Move4(context).ConfigureAwait(false);
+            (context, var member5) = await whitespace14.Move2(context).ConfigureAwait(false);
+            var string6 = await member5.Move1(context).ConfigureAwait(false);
+            var stringDelimiter11 = await string6.Move1(context).ConfigureAwait(false);
+            var chars6 = await stringDelimiter11.Move4(context).ConfigureAwait(false);
+            (context, var stringDelimiter12) = await chars6.Move2(context).ConfigureAwait(false);
+            var whitespace15 = await stringDelimiter12
+
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
             Assert.AreEqual("100:4", $"{stream.Position}:{context.CurrentByteIndex}");
