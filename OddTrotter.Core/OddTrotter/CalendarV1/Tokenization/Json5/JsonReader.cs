@@ -9,6 +9,8 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using OddTrotter.CalendarV1.Tokenization.Json6;
+
     public sealed class ReaderContext
     {
         private ReaderContext(
@@ -317,7 +319,35 @@
         }
     }
 
-    public sealed class FalseReader<TNextReader>
+    public sealed class FalseReader<TNextReader> : IContinuableValueReader<FalseReader<TNextReader>, TNextReader, FalseToken, int>
+    {
+        private static readonly string literal = "false"; //// TODO const?
+
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out FalseToken value, ref int context)
+        {
+            for (; context < literal.Length; ++context)
+            {
+                if (!Json6.Helpers.TryReadChar(readerContext, literal[context]))
+                {
+                    nextReader = default!; //// TODO !
+                    value = default;
+                    return false;
+                }
+            }
+
+            nextReader = default!; //// TODO !
+            value = new FalseToken();
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out FalseToken value, out int context)
+        {
+            context = 0;
+            return FalseReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
+    }
+
+    public struct FalseToken
     {
     }
 
