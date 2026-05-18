@@ -722,8 +722,72 @@
         public byte E { get; }
     }
 
-    public sealed class ExpSignReader<TNextReader>
+    public sealed class ExpSignReader<TNextReader> : IValueReader<ExpSignReader<TNextReader>, TNextReader, ExpSignToken>
     {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ExpSignToken value)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                nextReader = default!; //// TODO !
+                value = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                nextReader = default!; //// TODO !
+                value = ExpSignToken.Absent();
+                return true;
+            }
+
+            var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+            if (currentByte == '+')
+            {
+                ++readerContext.CurrentByteIndex;
+                value = ExpSignToken.Positive();
+            }
+            else if (currentByte == '-')
+            {
+                ++readerContext.CurrentByteIndex;
+                value = ExpSignToken.Negative();
+            }
+            else
+            {
+                value = ExpSignToken.Absent();
+            }
+
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public struct ExpSignToken
+    {
+        private int type { get; init; }
+
+        public static ExpSignToken Absent()
+        {
+            return new ExpSignToken()
+            {
+                type = 1,
+            };
+        }
+
+        public static ExpSignToken Positive()
+        {
+            return new ExpSignToken()
+            {
+                type = 2,
+            };
+        }
+
+        public static ExpSignToken Negative()
+        {
+            return new ExpSignToken()
+            {
+                type = 3,
+            };
+        }
     }
 
     public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
