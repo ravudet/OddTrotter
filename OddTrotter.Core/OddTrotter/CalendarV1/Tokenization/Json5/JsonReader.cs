@@ -640,7 +640,68 @@
         }
     }
 
-    public sealed class ExpReader<TNextReader>
+    public sealed class ExpReader<TNextReader> : ITokenReader<ExpReader<TNextReader>, ExpToken<TNextReader>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out ExpToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '-')
+            {
+                token = ExpToken<TNextReader>.Absent();
+            }
+            else
+            {
+                ++readerContext.CurrentByteIndex;
+                token = ExpToken<TNextReader>.Present();
+            }
+
+            return true;
+        }
+    }
+
+    public struct ExpToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static ExpToken<TNextReader> Absent()
+        {
+            return new ExpToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static ExpToken<TNextReader> Present()
+        {
+            return new ExpToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryAbsent([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
+
+        public bool TryPresent(out EReader<ExpSignReader<DigitsReader<TNextReader>>> eReader)
+        {
+            eReader = default!; //// TODO !
+            return this.type == 2;
+        }
+    }
+
+    public sealed class EReader<TNextReader>
+    {
+    }
+
+    public sealed class ExpSignReader<TNextReader>
     {
     }
 
