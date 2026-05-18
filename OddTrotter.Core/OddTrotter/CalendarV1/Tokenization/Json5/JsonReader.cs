@@ -400,7 +400,150 @@
     {
     }
 
-    public sealed class NumberReader<TNextReader>
+    public sealed class NumberReader<TNextReader> : IMoveReader<NumberReader<TNextReader>, SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out SignReader<IntReader<FracReader<ExpReader<TNextReader>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class SignReader<TNextReader> : IValueReader<SignReader<TNextReader>, TNextReader, SignToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out SignToken value)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                nextReader = default!; //// TODO !
+                value = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != '-')
+            {
+                value = SignToken.Absent();
+            }
+            else
+            {
+                ++readerContext.CurrentByteIndex;
+                value = SignToken.Negative();
+            }
+
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public struct SignToken
+    {
+        private int type { get; init; }
+
+        public static SignToken Absent()
+        {
+            return new SignToken()
+            {
+                type = 1,
+            };
+        }
+
+        public static SignToken Negative()
+        {
+            return new SignToken()
+            {
+                type = 2,
+            };
+        }
+    }
+
+    public sealed class IntReader<TNextReader> : IContinuableValueReader<IntReader<TNextReader>, TNextReader, List<DigitToken>, List<DigitToken>>
+    {
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, ref List<DigitToken> context)
+        {
+            if (context.Count == 0)
+            {
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(currentByte);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("TODO invalid JSON");
+                }
+
+                context.Add(digit);
+                ++readerContext.CurrentByteIndex;
+                if (currentByte == '0')
+                {
+                    nextReader = default!; //// TODO !
+                    value = context;
+                    return true;
+                }
+            }
+
+            while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    nextReader = default!; //// TODO !
+                    value = default!; //// TODO !
+                    return false;
+                }
+
+                DigitToken digit;
+                try
+                {
+                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                this.digitTokens.Add(digit);
+            }
+
+            value = this.digitTokens;
+            context = default;
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, out List<DigitToken> context)
+        {
+            context = new List<DigitToken>();
+            return IntReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
+    }
+
+    public struct DigitToken
+    {
+        public DigitToken(byte digit)
+        {
+            if (digit < '0' || digit > '9')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            Digit = digit;
+        }
+
+        public byte Digit { get; }
+    }
+
+    public sealed class FracReader<TNextReader>
+    {
+    }
+
+    public sealed class ExpReader<TNextReader>
     {
     }
 
