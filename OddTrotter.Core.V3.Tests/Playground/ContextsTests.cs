@@ -154,12 +154,22 @@ namespace OddTrotter.NonGraph.CalendarEventsSource
 
     internal sealed class CalendarEvent
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public CalendarEvent(string id)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
             Id = id;
         }
 
         public string Id { get; }
+
+        public DateTime StartTime { get; }
+
+        public bool IsCanceled { get; }
+
+        public string Subject { get; }
+
+        public string Body { get; }
     }
 
     internal interface ICalendarSource
@@ -774,9 +784,9 @@ namespace Adapter
                         var parameterName = currentFilter.Parameters[0].Name;
                         if (parameterName != null)
                         {
-                            if (parameterName.StartsWith(nameof(StartTimeGreaterThan)))
+                            if (parameterName.StartsWith(nameof(StartTimeLessThan)))
                             {
-                                if (long.TryParse(parameterName.Substring(nameof(StartTimeGreaterThan).Length), out var startTimeTicks))
+                                if (long.TryParse(parameterName.Substring(nameof(StartTimeLessThan).Length), out var startTimeTicks))
                                 {
                                     endTime = new DateTime(startTimeTicks);
                                     remainingFilter = null;
@@ -969,27 +979,27 @@ namespace Adapter
             }
         }
 
-        internal static Expression<Func<CalendarEvent, bool>> StartTimeGreaterThan(DateTime dateTime)
+        internal static Expression<Func<OddTrotter.CalendarEvent, bool>> StartTimeGreaterThan(DateTime dateTime)
         {
-            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
-            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(StartTimeGreaterThan) + dateTime.Ticks.ToString());
+            Expression<Func<OddTrotter.CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(OddTrotter.CalendarEvent), nameof(StartTimeGreaterThan) + dateTime.Ticks.ToString());
             foo.Update(foo.Body, new[] { ticks });
 
             return foo;
         }
 
-        internal static Expression<Func<CalendarEvent, bool>> EndTimeLessThan(DateTime dateTime)
+        internal static Expression<Func<OddTrotter.CalendarEvent, bool>> StartTimeLessThan(DateTime dateTime)
         {
-            Expression<Func<CalendarEvent, bool>> foo = calendarEvent => true;
-            var ticks = Expression.Parameter(typeof(CalendarEvent), nameof(EndTimeLessThan) + dateTime.Ticks.ToString());
+            Expression<Func<OddTrotter.CalendarEvent, bool>> foo = calendarEvent => true;
+            var ticks = Expression.Parameter(typeof(OddTrotter.CalendarEvent), nameof(StartTimeLessThan) + dateTime.Ticks.ToString());
             foo.Update(foo.Body, new[] { ticks });
 
             return foo;
         }
 
-        internal static Expression<Func<CalendarEvent, bool>> SubjectIsTodoList { get; } = calendarEvent => calendarEvent.Subject == "todo list";
+        internal static Expression<Func<OddTrotter.CalendarEvent, bool>> SubjectIsTodoList { get; } = calendarEvent => calendarEvent.Subject == "todo list";
 
-        internal static Expression<Func<CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => calendarEvent.IsCancelled == false;
+        internal static Expression<Func<OddTrotter.CalendarEvent, bool>> IsNotCancelled { get; } = calendarEvent => calendarEvent.IsCanceled == false;
     }
 
     internal static partial class Extensions
@@ -1191,6 +1201,265 @@ namespace Adapter
                     }
                 }
             }
+        }
+    }
+}
+
+namespace TodoList
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Xml.Linq;
+
+    using Fx.Either;
+    using Fx.QueryContext;
+
+    using OddTrotter.NonGraph.CalendarEventsSource;
+
+    public sealed class TodoList
+    {
+        public TodoList(
+            string value,
+            DateTime startTimestamp,
+            DateTime endTimestamp)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            this.Value = value;
+            this.StartTimestamp = startTimestamp;
+            this.EndTimestamp = endTimestamp;
+        }
+
+        public string Value { get; }
+
+        public DateTime StartTimestamp { get; }
+
+        public DateTime EndTimestamp { get; }
+    }
+
+    internal sealed class TodoListResult<T>
+    {
+        internal TodoListResult(TodoList todoList, T errors)
+        {
+            TodoList = todoList;
+            Errors = errors;
+        }
+
+        public TodoList TodoList { get; }
+        public T Errors { get; }
+    }
+
+    internal class CalendarTodoListErrors
+    {
+        public CalendarTodoListErrors( //// TODO this whole type is wrong, look at the todo list service to find what the *types* are that you can service; you shouldn't lose overall fidelity (i.e. the UI should still have text that has useful and readable messages), but still not leak abstractions //// TODO this might mean that `todolistservice` is *not* "abstract" and just directly takes an instance of (the non-graph) `calendareventscontext` so that it knows directly what to do for each error
+            PagingError? brokenNextLink,
+            IEnumerable<CalendarEvent> eventsWithoutStarts,
+            IEnumerable<(CalendarEvent, Exception)> eventsWithStartParseFailures,
+            IEnumerable<CalendarEvent> eventsWithoutBodies,
+            IEnumerable<(CalendarEvent, Exception)> eventsWithBodyParseFailures)
+        {
+            if (eventsWithoutStarts == null)
+            {
+                throw new ArgumentNullException(nameof(eventsWithoutStarts));
+            }
+
+            if (eventsWithStartParseFailures == null)
+            {
+                throw new ArgumentNullException(nameof(eventsWithStartParseFailures));
+            }
+
+            if (eventsWithoutBodies == null)
+            {
+                throw new ArgumentNullException(nameof(eventsWithoutBodies));
+            }
+
+            if (eventsWithBodyParseFailures == null)
+            {
+                throw new ArgumentNullException(nameof(eventsWithBodyParseFailures));
+            }
+
+            this.BrokenNextLink = brokenNextLink;
+            EventsWithoutStarts = eventsWithoutStarts;
+            EventsWithStartParseFailures = eventsWithStartParseFailures;
+            EventsWithoutBodies = eventsWithoutBodies;
+            EventsWithBodyParseFailures = eventsWithBodyParseFailures;
+        }
+
+        public PagingError? BrokenNextLink { get; }
+
+        public IEnumerable<CalendarEvent> EventsWithoutStarts { get; }
+
+        public IEnumerable<(CalendarEvent, Exception)> EventsWithStartParseFailures { get; }
+
+        public IEnumerable<CalendarEvent> EventsWithoutBodies { get; }
+
+        public IEnumerable<(CalendarEvent, Exception)> EventsWithBodyParseFailures { get; }
+    }
+
+    internal sealed class TodoListService
+    {
+        private readonly ICalendarSource calendarSource;
+
+        public TodoListService(
+            ICalendarSource calendarSource)
+        {
+            this.calendarSource = calendarSource;
+        }
+
+        public async Task<TodoListResult<CalendarTodoListErrors>> Retrieve()
+        {
+            var lastRecordedEventTimeStamp = DateTime.UtcNow; //// TODO retrieve the correct timestamp
+
+            var todoListEvents = await this
+                .calendarSource
+                .Events()
+                .Get()
+                .Filter(Adapter.CalendarSource.StartTimeGreaterThan(lastRecordedEventTimeStamp))
+                ////.Filter(calendarEvent => calendarEvent.StartTime > lastRecordedEventTimeStamp)
+                .Filter(Adapter.CalendarSource.StartTimeLessThan(DateTime.UtcNow))
+                ////.Filter(calendarEvent => calendarEvent.StartTime < DateTime.UtcNow)
+                .Filter(Adapter.CalendarSource.IsNotCancelled)
+                ////.Filter(calendarEvent => calendarEvent.IsCanceled == false)
+                .Filter(Adapter.CalendarSource.SubjectIsTodoList)
+                ////.Filter(calendarEvent => calendarEvent.Subject == "todo list")
+                .Evaluate()
+                .ConfigureAwait(false);
+
+
+
+
+            var builder = await Convert(todoListEvents, lastRecordedEventTimeStamp).ConfigureAwait(false);
+
+            var todoList = new TodoList(
+                builder.TodoList.ToString(),
+                lastRecordedEventTimeStamp,
+                builder.EndTimestamp);
+            var errors = new CalendarTodoListErrors(
+                builder.PagingError,
+                Enumerable.Empty<CalendarEvent>(), //// TODO you need to update `CalendarTodoListErrors` to not contain redundant properties; you should base it off of what errors are actually occurring and differentiated; you also need to rewrite the razor page to use this newly formed type
+                Enumerable.Empty<(CalendarEvent, Exception)>(), //// TODO
+                Enumerable.Empty<CalendarEvent>(), //// TODO
+                Enumerable.Empty<(CalendarEvent, Exception)>() //// TODO
+                );
+            var result = new TodoListResult<CalendarTodoListErrors>(
+                todoList,
+                errors);
+
+            return result;
+        }
+
+        private static async Task<TodoListResultBuilder> Convert(IQueryResult<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError> queryResult, DateTime lastRecordedEventTimeStamp)
+        {
+            var builder = new TodoListResultBuilder(lastRecordedEventTimeStamp);
+
+            await ConvertIterator(await queryResult.GetNodes().ConfigureAwait(false), builder).ConfigureAwait(false);
+
+            return builder;
+        }
+
+        private static async Task ConvertIterator(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError> queryResultNode, TodoListResultBuilder builder)
+        {
+            bool @continue;
+            while (((queryResultNode, @continue) = await ConvertApply(queryResultNode, builder).ConfigureAwait(false)).@continue)
+            {
+            }
+        }
+
+        private static async Task<(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError>, bool)> ConvertApply(IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError> queryResultNode, TodoListResultBuilder builder)
+        {
+            return await queryResultNode.Apply(
+                async element =>
+                {
+                    element.Value.Apply(
+                        (left, ref context) =>
+                        {
+                            if (left.StartTime < context.EndTimestamp)
+                            {
+                                context.EndTimestamp = left.StartTime; //.DateTime; //// TODO why did you choose datetimeoffset some places and datetime others?
+                            }
+
+                            IEnumerable<string> parsedBody;
+                            try
+                            {
+                                parsedBody = ParseEventBody(left.Body);
+                            }
+                            catch (Exception exception)
+                            {
+                                context.BodyParseErrors.Add(exception);
+                                return new Nothing();
+                            }
+
+                            context.TodoList.AppendJoin(Environment.NewLine, parsedBody).AppendLine();
+                            return new Nothing();
+                        },
+                        (right, ref context) =>
+                        {
+                            //// TODO do you want to stop recording the endtimestamp if a translation error occurred, or should the user be expected to handle it at that point? if the user is expected to handle it, it'd probably be good to put the errors in a more permanent storage so that a browser window mishap doesn't cause data loss
+                            //// TODO i think you should let the user handle it because otherwise a calendar error will get them permanently stuck at a certain timestamp and they will need to actually go to the calendar event and fix it, instead of just checking that the error can be skipped and ignoring it, letting the next refresh remove it; you *will* want a way to persist the errors though for the browser mishap reason
+                            context.TranslationErrors.Add(right);
+                            return new Nothing();
+                        },
+                        ref builder);
+
+                    return (await element.Next().ConfigureAwait(false), true);
+                },
+                async terminal =>
+                {
+                    if (terminal.TryGetLeft(out var error))
+                    {
+                        builder.PagingError = error.Value;
+                    }
+
+                    return await Task.FromResult(((IQueryResultNode<IEither<CalendarEvent, CalendarEventTranslationError>, PagingError>)null!, false)).ConfigureAwait(false);
+                })
+                .ConfigureAwait(false);
+        }
+
+        private static IEnumerable<string> ParseEventBody(string body)
+        {
+            //// TODO do you need to document anything here?
+            body = body.Replace("&nbsp;", string.Empty);
+
+            // the calendar api returns html bodies that are malformed xml; the head element contains a meta element that doesn't close
+            var bodyElement = "<body>";
+            var bodyCloseElement = "</body>";
+            body = $"<html>{body.Substring(0, body.IndexOf(bodyCloseElement)).Substring(body.IndexOf(bodyElement) + bodyElement.Length)}</html>";
+
+            var document = XDocument.Parse(body);
+            var links = document.Descendants("a").Reverse();
+            foreach (var link in links)
+            {
+                link.ReplaceWith(link.Value);
+            }
+
+            return document.Descendants("p").Select(element => element.Value);
+        }
+
+        private sealed class TodoListResultBuilder
+        {
+            public TodoListResultBuilder(DateTime lastRecordedEventTimeStamp)
+            {
+                this.TodoList = new StringBuilder();
+                this.TranslationErrors = new List<CalendarEventTranslationError>();
+                this.BodyParseErrors = new List<Exception>();
+                this.EndTimestamp = lastRecordedEventTimeStamp;
+            }
+
+            public StringBuilder TodoList { get; set; }
+
+            public DateTime EndTimestamp { get; set; }
+
+            public List<CalendarEventTranslationError> TranslationErrors { get; set; }
+
+            public List<Exception> BodyParseErrors { get; set; } //// TODO use the right tpye of elements
+
+            public PagingError? PagingError { get; set; }
         }
     }
 }
