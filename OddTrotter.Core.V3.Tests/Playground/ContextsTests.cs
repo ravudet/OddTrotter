@@ -316,6 +316,12 @@ namespace Adapter
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
+                    //// TODO you are here
+                    //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
+                    //// TODO i think you need to have this return a single page (which actually i don't think changes the method signature, because you need to be able to return partial payloads in the event of an error), and then skiptoken is just another query option method; you could have an extension which concatenates all of the pages, though for the caller
+                    //// TODO i don't like about the above because these files no longer follow the "the code looks like the csdl" principle because the csdl just says its a collection, its the standard that says "oh, and by the way, collections are called in some specific way"
+                    //// TODO something else to consider is that odata *allows* the next link to be anything at all; how is the infrastructure going to know that such a url is supported when, based on the incoming request, there is nothing to indicate that it's part of the paging process?
+
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
                     var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
@@ -351,9 +357,6 @@ namespace Adapter
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetGraphInstanceEvents()
                 {
-                    //// TODO you are here
-                    //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
-
                     var pageSize = 100U; //// TODO configure this
 
                     var calendarEvents = this
