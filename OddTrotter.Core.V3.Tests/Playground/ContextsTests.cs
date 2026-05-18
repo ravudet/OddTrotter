@@ -316,8 +316,6 @@ namespace Adapter
 
                 public async ITask<IQueryResult<IEither<OddTrotter.CalendarEvent, OddTrotter.CalendarEventTranslationError>, OddTrotter.PagingError>> Evaluate()
                 {
-                    //// TODO you are here potentially
-                    
                     var instanceEvents = await this.GetInstanceEvents().ConfigureAwait(false);
                     var seriesEvents = await this.GetSeriesEvents().ConfigureAwait(false);
 
@@ -353,6 +351,7 @@ namespace Adapter
 
                 private async ITask<IQueryResult<IEither<Graph.CalendarEvent, Graph.CalendarEventTranslationError>, Graph.PagingError>> GetGraphInstanceEvents()
                 {
+                    //// TODO you are here
                     //// TODO consider what it means to have infrastructure which has this interface injected so that a service is implemented; particularly, how do skiptokens work?
 
                     var pageSize = 100U; //// TODO configure this
