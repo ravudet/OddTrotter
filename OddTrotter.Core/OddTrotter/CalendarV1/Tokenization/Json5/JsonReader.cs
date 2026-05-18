@@ -697,8 +697,29 @@
         }
     }
 
-    public sealed class EReader<TNextReader>
+    public sealed class EReader<TNextReader> : IValueReader<EReader<TNextReader>, TNextReader, EToken>
     {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out EToken value)
+        {
+            nextReader = default!; //// TODO !
+            value = new EToken((byte)'e');
+            return Json6.Helpers.TryReadChar(readerContext, 'e'); //// TODO should also allow 'E'
+        }
+    }
+
+    public struct EToken
+    {
+        public EToken(byte e)
+        {
+            if (e != 'e' && e != 'E')
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            E = e;
+        }
+
+        public byte E { get; }
     }
 
     public sealed class ExpSignReader<TNextReader>
