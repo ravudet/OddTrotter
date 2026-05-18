@@ -2304,12 +2304,12 @@
             var whitespace7 = await colon2.Move4(context).ConfigureAwait(false);
             (context, var value3) = await whitespace7.Move2(context).ConfigureAwait(false);
             var valueToken3 = await value3.Move31(context).ConfigureAwait(false);
-            Assert.IsTrue(valueToken.TryFalse(out var @false));
+            Assert.IsTrue(valueToken3.TryFalse(out var @false));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual(20, stream.Position);
-            Assert.AreEqual(19, context.CurrentByteIndex);
+            Assert.AreEqual(40, stream.Position);
+            Assert.AreEqual(15, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -2392,7 +2392,7 @@
 
 
             Assert.AreEqual(40, stream.Position);
-            Assert.AreEqual(19, context.CurrentByteIndex);
+            Assert.AreEqual(15, context.CurrentByteIndex);
 
             /*var subsequentMembers2 = await @false.AsMoveReader.Move1(ref context).ConfigureAwait(false);
             var subsequentMembersToken2 = await subsequentMembers2.AsTokenReader.Move2(ref context).ConfigureAwait(false);
