@@ -234,6 +234,7 @@
                     return false;
                 }
 
+                //// TODO use control flow logic for other values, like chars
                 if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
                 {
                     break;
