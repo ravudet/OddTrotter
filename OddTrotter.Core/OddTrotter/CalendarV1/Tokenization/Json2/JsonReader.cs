@@ -299,12 +299,7 @@
                     return false;
                 }
 
-                WhitespaceToken whitespace;
-                try
-                {
-                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                }
-                catch (Exception)
+                if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
                 {
                     break;
                 }
@@ -398,12 +393,7 @@
                     return false;
                 }
 
-                WhitespaceToken whitespace;
-                try
-                {
-                    whitespace = new WhitespaceToken(this.buffer[this.currentByteIndex]);
-                }
-                catch (Exception)
+                if (!WhitespaceToken.TryCreate(this.buffer[this.currentByteIndex], out var whitespace))
                 {
                     break;
                 }
@@ -435,7 +425,7 @@
 
     public struct WhitespaceToken
     {
-        public WhitespaceToken(byte @char)
+        public static bool TryCreate(byte @char, out WhitespaceToken whitespaceToken)
         {
             switch (@char)
             {
@@ -443,12 +433,17 @@
                 case 0x09:
                 case 0x0A:
                 case 0x0D:
-                    this.Char = @char;
-                    break;
+                    whitespaceToken = new WhitespaceToken(@char);
+                    return true;
                 default:
-                    throw new Exception("TODO invalid JSON");
+                    whitespaceToken = default;
+                    return false;
             }
+        }
 
+        private WhitespaceToken(byte @char)
+        {
+            this.Char = @char;
         }
 
         public byte Char { get; }

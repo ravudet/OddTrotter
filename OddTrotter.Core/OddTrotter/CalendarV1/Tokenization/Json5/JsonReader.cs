@@ -6,9 +6,13 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http.Headers;
+    using System.Runtime;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using OddTrotter.CalendarV1.Tokenization.Json6;
+
+    using static OddTrotter.Calendar.OdataCollectionResponse;
 
     public sealed class ReaderContext
     {
@@ -95,6 +99,122 @@
         }
     }
 
+    /*public sealed class WhitespaceReader<TNextReader> : ITokenReader<WhitespaceReader<TNextReader>, WhitespaceToken2<TNextReader>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out WhitespaceToken2<TNextReader> token)
+        {
+            if (readerContext.ValidBytes == 0)
+            {
+                token = default!;
+                return false;
+            }
+
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default!;
+                return false;
+            }
+
+            try
+            {
+                new WhitespaceCharToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
+                token = WhitespaceToken2<TNextReader>.More();
+            }
+            catch //// TODO use control flow logic
+            {
+                token = WhitespaceToken2<TNextReader>.None();
+            }
+
+            return true;
+        }
+    }
+
+    public struct WhitespaceToken2<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static WhitespaceToken2<TNextReader> More()
+        {
+            return new WhitespaceToken2<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static WhitespaceToken2<TNextReader> None()
+        {
+            return new WhitespaceToken2<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryMore(out WhitespaceCharReader<WhitespaceReader<TNextReader>> more)
+        {
+            more = default!; //// TODO !
+            return this.type == 1;
+        }
+
+        public bool TryNone(out TNextReader none)
+        {
+            none = default!; //// TODO !
+            return this.type == 2;
+        }
+    }
+
+    public sealed class WhitespaceCharReader<TNextReader> : IValueReader<WhitespaceCharReader<TNextReader>, TNextReader, WhitespaceCharToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out WhitespaceCharToken value)
+        {
+            if (readerContext.ValidBytes == 0)
+            {
+                nextReader = default!;
+                value = default!;
+                return false;
+            }
+
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                nextReader = default!;
+                value = default!;
+                return false;
+            }
+
+            nextReader = default!;
+            value = new WhitespaceCharToken(readerContext.Buffer[readerContext.CurrentByteIndex]); //// TODO handle exception
+            ++readerContext.CurrentByteIndex;
+            return true;
+        }
+    }
+
+    public struct WhitespaceCharToken
+    {
+        public WhitespaceCharToken(byte @char)
+        {
+            switch (@char)
+            {
+                case 0x20:
+                case 0x09:
+                case 0x0A:
+                case 0x0D:
+                    this.Char = @char;
+                    break;
+                default:
+                    throw new Exception("TODO invalid JSON");
+            }
+
+        }
+
+        public byte Char { get; }
+    }*/
+
+
+
+
+
+
+
+
     public sealed class WhitespaceReader<TNextReader> : IContinuableValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
@@ -114,12 +234,7 @@
                     return false;
                 }
 
-                WhitespaceToken whitespace;
-                try
-                {
-                    whitespace = new WhitespaceToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                }
-                catch (Exception)
+                if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
                 {
                     break;
                 }
@@ -142,7 +257,7 @@
 
     public struct WhitespaceToken
     {
-        public WhitespaceToken(byte @char)
+        public static bool TryCreate(byte @char, out WhitespaceToken whitespaceToken)
         {
             switch (@char)
             {
@@ -150,12 +265,17 @@
                 case 0x09:
                 case 0x0A:
                 case 0x0D:
-                    this.Char = @char;
-                    break;
+                    whitespaceToken = new WhitespaceToken(@char);
+                    return true;
                 default:
-                    throw new Exception("TODO invalid JSON");
+                    whitespaceToken = default;
+                    return false;
             }
+        }
 
+        private WhitespaceToken(byte @char)
+        {
+            this.Char = @char;
         }
 
         public byte Char { get; }
@@ -350,7 +470,35 @@
     {
     }
 
-    public sealed class NullReader<TNextReader>
+    public sealed class NullReader<TNextReader> : IContinuableValueReader<NullReader<TNextReader>, TNextReader, NullToken, int>
+    {
+        private static readonly string literal = "null"; //// TODO const?
+
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out NullToken value, ref int context)
+        {
+            for (; context < literal.Length; ++context)
+            {
+                if (!Json6.Helpers.TryReadChar(readerContext, literal[context]))
+                {
+                    nextReader = default!; //// TODO !
+                    value = default;
+                    return false;
+                }
+            }
+
+            nextReader = default!; //// TODO !
+            value = new NullToken();
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out NullToken value, out int context)
+        {
+            context = 0;
+            return NullReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
+    }
+
+    public struct NullToken
     {
     }
 
@@ -1107,6 +1255,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
+    using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Json5;
 
@@ -1166,6 +1315,24 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         {
             return TCurrentReader.TryMove(readerContext, out nextReader, out value);
         }
+
+        
+        /*public static async Task<(ReaderContext, TNextReader)> Move2<TNextReader>(this WhitespaceReader<TNextReader> whitespaceReader, ReaderContext readerContext)
+        {
+            while (true)
+            {
+                var whitespaceToken = await whitespaceReader.Move31(readerContext).ConfigureAwait(false);
+                if (whitespaceToken.TryMore(out var whitespaceCharReader))
+                {
+                    whitespaceReader = await whitespaceCharReader.Move4(readerContext).ConfigureAwait(false);
+                }
+                else if (whitespaceToken.TryNone(out var nextReader))
+                {
+                    return (readerContext, nextReader);
+                }
+            }
+        }*/
+
     }
 
     public static class Helpers

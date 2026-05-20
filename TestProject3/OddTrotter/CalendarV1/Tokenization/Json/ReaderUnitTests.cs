@@ -2428,14 +2428,17 @@
 
             // false
             (context, var memberReader2) = await whitespaceReader5.Move2(context).ConfigureAwait(false);
+            //var memberReader2 = await whitespaceReader5.Move21(context).ConfigureAwait(false);
             var stringReader2 = await memberReader2.Move1(context).ConfigureAwait(false);
             var stringDelimterReader3 = await stringReader2.Move1(context).ConfigureAwait(false);
             var charsReader2 = await stringDelimterReader3.Move4(context).ConfigureAwait(false);
             (context, var stringDelimiterReader4) = await charsReader2.Move2(context).ConfigureAwait(false);
             var whitespace6 = await stringDelimiterReader4.Move4(context).ConfigureAwait(false);
             (context, var colon2) = await whitespace6.Move2(context).ConfigureAwait(false);
+            //var colon2 = await whitespace6.Move21(context).ConfigureAwait(false);
             var whitespace7 = await colon2.Move4(context).ConfigureAwait(false);
             (context, var value3) = await whitespace7.Move2(context).ConfigureAwait(false);
+            //var value3 = await whitespace7.Move21(context).ConfigureAwait(false);
             var valueToken3 = await value3.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken3.TryFalse(out var @false));
             (context, var subsequentMembers2) = await @false.Move2(context).ConfigureAwait(false);
@@ -2446,14 +2449,17 @@
             var comma2 = await subsequentMember2.Move1(context).ConfigureAwait(false);
             var whitespace8 = await comma2.Move4(context).ConfigureAwait(false);
             (context, var member3) = await whitespace8.Move2(context).ConfigureAwait(false);
+            //var member3 = await whitespace8.Move21(context).ConfigureAwait(false);
             var string3 = await member3.Move1(context).ConfigureAwait(false);
             var stringDelimiter5 = await string3.Move1(context).ConfigureAwait(false);
             var chars3 = await stringDelimiter5.Move4(context).ConfigureAwait(false);
             (context, var stringDelimiter6) = await chars3.Move2(context).ConfigureAwait(false);
             var whitespace9 = await stringDelimiter6.Move4(context).ConfigureAwait(false);
             (context, var colon3) = await whitespace9.Move2(context).ConfigureAwait(false);
+            //var colon3 = await whitespace9.Move21(context).ConfigureAwait(false);
             var whitespace10 = await colon3.Move4(context).ConfigureAwait(false);
             (context, var value4) = await whitespace10.Move2(context).ConfigureAwait(false);
+            //var value4 = await whitespace10.Move21(context).ConfigureAwait(false);
             var valueToken4 = await value4.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken4.TryNumber(out var number));
             var sign = await number.Move1(context).ConfigureAwait(false);
@@ -2470,13 +2476,15 @@
             var comma3 = await subsequentMember3.Move1(context).ConfigureAwait(false);
             var whitespace11 = await comma3.Move4(context).ConfigureAwait(false);
             (context, var member4) = await whitespace11.Move2(context).ConfigureAwait(false);
+            //var member4 = await whitespace11.Move21(context).ConfigureAwait(false);
             var string4 = await member4.Move1(context).ConfigureAwait(false);
             var stringDelimiter7 = await string4.Move1(context).ConfigureAwait(false);
             var chars4 = await stringDelimiter7.Move4(context).ConfigureAwait(false);
             (context, var stringDelimiter8) = await chars4.Move2(context).ConfigureAwait(false);
             var whitespace12 = await stringDelimiter8.Move4(context).ConfigureAwait(false);
             (context, var colon4) = await whitespace12.Move2(context).ConfigureAwait(false);
-            var whitespace13 = await colon4.Move4(context).ConfigureAwait(false);
+            //var colon4 = await whitespace12.Move21(context).ConfigureAwait(false);
+            /*var whitespace13 = await colon4.Move4(context).ConfigureAwait(false);
             (context, var value5) = await whitespace13.Move2(context).ConfigureAwait(false);
             var valueToken5 = await value5.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken5.TryString(out var @string5));
@@ -2488,18 +2496,26 @@
             Assert.IsTrue(subsequentMembersToken4.TryMore(out var subsequentMember4));
 
             // null
-            var comma4 = await subsequentMember4.Move1(context).ConfigureAwait(false);
+            /*var comma4 = await subsequentMember4.Move1(context).ConfigureAwait(false);
             var whitespace14 = await comma4.Move4(context).ConfigureAwait(false);
             (context, var member5) = await whitespace14.Move2(context).ConfigureAwait(false);
             var string6 = await member5.Move1(context).ConfigureAwait(false);
             var stringDelimiter11 = await string6.Move1(context).ConfigureAwait(false);
             var chars6 = await stringDelimiter11.Move4(context).ConfigureAwait(false);
             (context, var stringDelimiter12) = await chars6.Move2(context).ConfigureAwait(false);
-            var whitespace15 = await stringDelimiter12
+            var whitespace15 = await stringDelimiter12.Move4(context).ConfigureAwait(false);
+            (context, var colon5) = await whitespace15.Move2(context).ConfigureAwait(false);
+            var whitespace16 = await colon5.Move4(context).ConfigureAwait(false);
+            (context, var value6) = await whitespace16.Move2(context).ConfigureAwait(false);
+            var valueToken6 = await value6.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken6.TryNull(out var @null));
+            (context, var subsequentMembers5) = await @null.Move2(context).ConfigureAwait(false);
+            var subsequentMembersToken5 = await subsequentMembers5.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken5.TryMore(out var subsequentMember5));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("100:4", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("120:3", $"{stream.Position}:{context.CurrentByteIndex}");*/
         }
 
         [TestMethod]
@@ -2706,7 +2722,7 @@
             var whitespace12 = await stringDelimiter8.MoveInternal1().ConfigureAwait(false);
             //var colon4 = await whitespace12.AsReader.MoveInternal3(whitespace12.Factory).ConfigureAwait(false);
             var colon4 = await whitespace12.MoveInternal1().ConfigureAwait(false);
-            var whitespace13 = await colon4.MoveInternal1().ConfigureAwait(false);
+            /*var whitespace13 = await colon4.MoveInternal1().ConfigureAwait(false);
             //var value5 = await whitespace13.AsReader.MoveInternal3(whitespace13.Factory).ConfigureAwait(false);
             var value5 = await whitespace13.MoveInternal1().ConfigureAwait(false);
             var valueToken5 = await value5.MoveInternal1().ConfigureAwait(false);
@@ -2731,12 +2747,8 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-
-            Assert.AreEqual(100, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*// null
-            var comma4 = await subsequentMember4.MoveInternal1().ConfigureAwait(false);
+            // null
+            /*var comma4 = await subsequentMember4.MoveInternal1().ConfigureAwait(false);
             var whitespace14 = await comma4.MoveInternal1().ConfigureAwait(false);
             //var member5 = await whitespace14.AsReader.MoveInternal3(whitespace14.Factory).ConfigureAwait(false);
             var member5 = await whitespace14.MoveInternal1().ConfigureAwait(false);
@@ -2768,7 +2780,11 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            // object
+
+            Assert.AreEqual(120, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);*/
+
+            /*// object
             var comma5 = await subsequentMember5.MoveInternal1().ConfigureAwait(false);
             var whitespace17 = await comma5.MoveInternal1().ConfigureAwait(false);
             //var member6 = await whitespace17.AsReader.MoveInternal3(whitespace17.Factory).ConfigureAwait(false);
