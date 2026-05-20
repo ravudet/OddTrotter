@@ -2496,7 +2496,7 @@
             Assert.IsTrue(subsequentMembersToken4.TryMore(out var subsequentMember4));
 
             // null
-            /*var comma4 = await subsequentMember4.Move1(context).ConfigureAwait(false);
+            var comma4 = await subsequentMember4.Move1(context).ConfigureAwait(false);
             var whitespace14 = await comma4.Move4(context).ConfigureAwait(false);
             (context, var member5) = await whitespace14.Move2(context).ConfigureAwait(false);
             var string6 = await member5.Move1(context).ConfigureAwait(false);
@@ -2515,7 +2515,7 @@
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("120:3", $"{stream.Position}:{context.CurrentByteIndex}");*/
+            Assert.AreEqual("120:3", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -2748,7 +2748,7 @@
                 _ => _);
 
             // null
-            /*var comma4 = await subsequentMember4.MoveInternal1().ConfigureAwait(false);
+            var comma4 = await subsequentMember4.MoveInternal1().ConfigureAwait(false);
             var whitespace14 = await comma4.MoveInternal1().ConfigureAwait(false);
             //var member5 = await whitespace14.AsReader.MoveInternal3(whitespace14.Factory).ConfigureAwait(false);
             var member5 = await whitespace14.MoveInternal1().ConfigureAwait(false);
@@ -2782,7 +2782,7 @@
 
 
             Assert.AreEqual(120, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);*/
+            Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*// object
             var comma5 = await subsequentMember5.MoveInternal1().ConfigureAwait(false);
