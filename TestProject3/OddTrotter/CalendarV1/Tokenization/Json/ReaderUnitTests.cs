@@ -7,6 +7,7 @@
     using System.IO;
     using System.Linq.V2;
     using System.Reflection.Metadata;
+    using System.Runtime;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Runtime.Serialization;
@@ -2531,7 +2532,182 @@
             (context, var value7) = await whitespace19.Move2(context).ConfigureAwait(false);
             var valueToken7 = await value7.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken7.TryObject(out var object2));
-            
+            var objectStart2 = await object2.Move1(context).ConfigureAwait(false);
+            var whitespace20 = await objectStart2.Move4(context).ConfigureAwait(false);
+            //var nestedMembers = await whitespace20.AsReader.MoveInternal3(whitespace20.Factory).ConfigureAwait(false);
+            (context, var nestedMembers) = await whitespace20.Move2(context).ConfigureAwait(false);
+            var nestedMembersToken = await nestedMembers.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(nestedMembersToken.TrySome(out var nestedFirstMember));
+
+            SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>> subsequentMembers6;
+            {
+                // true
+                var nestedMember = await nestedFirstMember.Move1(context).ConfigureAwait(false);
+                var nestedString = await nestedMember.Move1(context).ConfigureAwait(false);
+                var nestedStringDelimiter = await nestedString.Move1(context).ConfigureAwait(false);
+                var nestedChars = await nestedStringDelimiter.Move4(context).ConfigureAwait(false);
+                (context, var nestedStringDeliminter2) = await nestedChars.Move2(context).ConfigureAwait(false);
+                var nestedWhitespace = await nestedStringDeliminter2.Move4(context).ConfigureAwait(false);
+                //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
+                (context, var nestedColon) = await nestedWhitespace.Move2(context).ConfigureAwait(false);
+                var nestedWhispace2 = await nestedColon.Move4(context).ConfigureAwait(false);
+                //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                (context, var nestedValue) = await nestedWhispace2.Move2(context).ConfigureAwait(false);
+                var nestedValueToken = await nestedValue.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedValueToken.TryTrue(out var nestedTrue));
+                (context, var nestedSubsequentMembersReader) = await nestedTrue.Move2(context).ConfigureAwait(false);
+                var nestedSubsequentMembersToken = await nestedSubsequentMembersReader.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
+
+                // false
+                var nestedcommaReader = await nestedsubsequentMemberReader.Move1(context).ConfigureAwait(false);
+                var nestedwhitespaceReader5 = await nestedcommaReader.Move4(context).ConfigureAwait(false);
+                //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
+                (context, var nestedmemberReader2) = await nestedwhitespaceReader5.Move2(context).ConfigureAwait(false);
+                var nestedstringReader2 = await nestedmemberReader2.Move1(context).ConfigureAwait(false);
+                var nestedstringDelimiterReader3 = await nestedstringReader2.Move1(context).ConfigureAwait(false);
+                var nestedcharsReader2 = await nestedstringDelimiterReader3.Move4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiterReader4) = await nestedcharsReader2.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace6 = await nestedstringDelimiterReader4.Move4(context).ConfigureAwait(false);
+                //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
+                (context, var nestedcolon2) = await nestedwhitespace6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace7 = await nestedcolon2.Move4(context).ConfigureAwait(false);
+                //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                (context, var nestedvalue3) = await nestedwhitespace7.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken3 = await nestedvalue3.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
+
+                //// TODO
+                /*context.CurrentByteIndex = 3;
+                if (!nestedfalse.TryGetValue3(ref context, out _, out _, out _))
+                {
+                    throw new Exception("tODO");
+                }
+
+                if (!nestedfalse.TryMove3(ref context, out var _more1))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var nestedsubsequentMembers2 = _more1();*/
+                (context, var nestedsubsequentMembers2) = await nestedfalse.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken2 = await nestedsubsequentMembers2.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
+
+                // 1234
+                var nestedcomma2 = await nestedsubsequentMember2.Move1(context).ConfigureAwait(false);
+                var nestedwhitespace8 = await nestedcomma2.Move4(context).ConfigureAwait(false);
+                //var nestedmember3 = await nestedwhitespace8.AsReader.MoveInternal3(nestedwhitespace8.Factory).ConfigureAwait(false);
+                (context, var nestedmember3) = await nestedwhitespace8.Move2(context).ConfigureAwait(false);
+                var nestedstring3 = await nestedmember3.Move1(context).ConfigureAwait(false);
+                var nestedstringDelimiter5 = await nestedstring3.Move1(context).ConfigureAwait(false);
+                var nestedchars3 = await nestedstringDelimiter5.Move4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter6) = await nestedchars3.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace9 = await nestedstringDelimiter6.Move4(context).ConfigureAwait(false);
+                //var nestedcolon3 = await nestedwhitespace9.AsReader.MoveInternal3(nestedwhitespace9.Factory).ConfigureAwait(false);
+                (context, var nestedcolon3) = await nestedwhitespace9.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace10 = await nestedcolon3.Move4(context).ConfigureAwait(false);
+                //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                (context, var nestedvalue4) = await nestedwhitespace10.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken4 = await nestedvalue4.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken4.TryNumber(out var nestednumber));
+                var nestedsign = await nestednumber.Move1(context).ConfigureAwait(false);
+                var nestedint = await nestedsign.Move4(context).ConfigureAwait(false);
+                (context, var nestedfrac) = await nestedint.Move2(context).ConfigureAwait(false);
+                var nestedexp = await nestedfrac.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedexp.TryAbsent(out var expReader)); //// TODO you are here; look at what you did above
+
+
+                Assert.IsTrue(nestedexp.TryAbsent(out var nestedsubsequentMembers3));
+                var nestedsubsequentMembersToken3 = await nestedsubsequentMembers3.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken3.TryAbsent(out var nestedsubsequentMember3));
+
+                // asdf
+                var nestedcomma3 = await nestedsubsequentMember3.Move31(context).ConfigureAwait(false);
+                var nestedwhitespace11 = await nestedcomma3.move(context).ConfigureAwait(false);
+                //var nestedmember4 = await nestedwhitespace11.AsReader.MoveInternal3(nestedwhitespace11.Factory).ConfigureAwait(false);
+                (context, var nestedmember4) = await nestedwhitespace11.Move2(context).ConfigureAwait(false);
+                var nestedstring4 = await nestedmember4.Move31(context).ConfigureAwait(false);
+                var nestedstringDelimiter7 = await nestedstring4.mo(context).ConfigureAwait(false);
+                var nestedchars4 = await nestedstringDelimiter7.MoveInternal1(context).ConfigureAwait(false);
+                var nestedstringDelimiter8 = await nestedchars4.MoveInternal1(context).ConfigureAwait(false);
+                var nestedwhitespace12 = await nestedstringDelimiter8.MoveInternal1(context).ConfigureAwait(false);
+                //var nestedcolon4 = await nestedwhitespace12.AsReader.MoveInternal3(nestedwhitespace12.Factory).ConfigureAwait(false);
+                var nestedcolon4 = await nestedwhitespace12.MoveInternal1(context).ConfigureAwait(false);
+                var nestedwhitespace13 = await nestedcolon4.MoveInternal1(context).ConfigureAwait(false);
+                //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                var nestedvalue5 = await nestedwhitespace13.MoveInternal1(context).ConfigureAwait(false);
+                var nestedvalueToken5 = await nestedvalue5.MoveInternal1(context).ConfigureAwait(false);
+                if (!nestedvalueToken5.TryString().TryGetValue(out var nestedstring5))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var nestedstringDelimiter9 = await @nestedstring5.MoveInternal1().ConfigureAwait(false);
+                var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiter10 = await nestedchars5.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1().ConfigureAwait(false);
+
+                var nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
+                if (!read)
+                {
+                    await nestedsubsequentMembers4.Read().ConfigureAwait(false);
+                    nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
+                }
+
+                var nestedsubsequentMember4 = nestedsubsequentMembersToken4.Apply(
+                    _ => throw new Exception("TODO"),
+                    _ => _);
+
+                // null
+                var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespace14 = await nestedcomma4.MoveInternal1().ConfigureAwait(false);
+                //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
+                var nestedmember5 = await nestedwhitespace14.MoveInternal1().ConfigureAwait(false);
+                var nestedstring6 = await nestedmember5.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiter11 = await nestedstring6.MoveInternal1().ConfigureAwait(false);
+                var nestedchars6 = await nestedstringDelimiter11.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiter12 = await nestedchars6.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespace15 = await nestedstringDelimiter12.MoveInternal1().ConfigureAwait(false);
+                //var nestedcolon5 = await nestedwhitespace15.AsReader.MoveInternal3(nestedwhitespace15.Factory).ConfigureAwait(false);
+                var nestedcolon5 = await nestedwhitespace15.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespace16 = await nestedcolon5.MoveInternal1().ConfigureAwait(false);
+                //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
+                var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
+                if (!nestedvalueToken6.TryNull().TryGetValue(out var nestednull))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var nestedsubsequentMembers5 = await @nestednull.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembersToken5 = nestedsubsequentMembers5.TryMove(out read);
+                if (!read)
+                {
+                    await nestedsubsequentMembers5.Read().ConfigureAwait(false);
+                    nestedsubsequentMembersToken5 = nestedsubsequentMembers5.TryMove(out read);
+                }
+
+                var nestedsubsequentMember5 = nestedsubsequentMembersToken5.Apply(
+                    _ => _,
+                    _ => throw new Exception("TODO"));
+
+                //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
+                var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
+                subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
+            }
+
+            var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
+            if (!read)
+            {
+                await subsequentMembers6.Read().ConfigureAwait(false);
+                subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
+            }
+
+            var subsequentMember6 = subsequentMembersToken6.Apply(
+                _ => throw new Exception("TODO"),
+                _ => _);
+
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
             Assert.AreEqual("140:0", $"{stream.Position}:{context.CurrentByteIndex}");
@@ -2820,11 +2996,7 @@
                 throw new Exception("TODO");
             }
 
-
-            Assert.AreEqual(140, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*var objectStart2 = await object2.MoveInternal1().ConfigureAwait(false);
+            var objectStart2 = await object2.MoveInternal1().ConfigureAwait(false);
             var whitespace20 = await objectStart2.MoveInternal1().ConfigureAwait(false);
             //var nestedMembers = await whitespace20.AsReader.MoveInternal3(whitespace20.Factory).ConfigureAwait(false);
             var nestedMembers = await whitespace20.MoveInternal1().ConfigureAwait(false);
@@ -2905,7 +3077,7 @@
                 }
 
                 var nestedsubsequentMembers2 = _more1();*/
-            /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+            var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
             var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
             if (!read)
             {
@@ -3049,223 +3221,227 @@
             _ => throw new Exception("TODO"),
             _ => _);
 
-        // emptyobject
-        var comma6 = await subsequentMember6.MoveInternal1().ConfigureAwait(false);
-        var whitespace21 = await comma6.MoveInternal1().ConfigureAwait(false);
-        //var member7 = await whitespace21.AsReader.MoveInternal3(whitespace21.Factory).ConfigureAwait(false);
-        var member7 = await whitespace21.MoveInternal1().ConfigureAwait(false);
-        var string8 = await member7.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter15 = await string8.MoveInternal1().ConfigureAwait(false);
-        var chars8 = await stringDelimiter15.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter16 = await chars8.MoveInternal1().ConfigureAwait(false);
-        var whitespace22 = await stringDelimiter16.MoveInternal1().ConfigureAwait(false);
-        //var colon7 = await whitespace22.AsReader.MoveInternal3(whitespace22.Factory).ConfigureAwait(false);
-        var colon7 = await whitespace22.MoveInternal1().ConfigureAwait(false);
-        var whitespace23 = await colon7.MoveInternal1().ConfigureAwait(false);
-        //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
-        var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
-        var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
-        if (!valueToken8.TryObject().TryGetValue(out var object3))
-        {
-            throw new Exception("TODO");
-        }
 
-        var objectStart3 = await object3.MoveInternal1().ConfigureAwait(false);
-        var whitespace24 = await objectStart3.MoveInternal1().ConfigureAwait(false);
-        //var members3 = await whitespace24.AsReader.MoveInternal3(whitespace24.Factory).ConfigureAwait(false);
-        var members3 = await whitespace24.MoveInternal1().ConfigureAwait(false);
-        var membersToken3 = members3.TryMove(out read);
-        if (!read)
-        {
-            await members3.Read().ConfigureAwait(false);
-            membersToken3 = members3.TryMove(out read);
-        }
+            Assert.AreEqual(140, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
 
-        var whitespace25 = membersToken3.Apply(_ => _, _ => throw new Exception("TODO"));
-        //var objectEnd = await whitespace25.AsReader.MoveInternal3(whitespace25.Factory).ConfigureAwait(false);
-        var objectEnd = await whitespace25.MoveInternal1().ConfigureAwait(false);
-        var subsequentMembers7 = await objectEnd.MoveInternal1().ConfigureAwait(false);
-        var subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
-        if (!read)
-        {
-            await subsequentMembers7.Read().ConfigureAwait(false);
-            subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
-        }
-
-        var subsequentMember8 = subsequentMembersToken7.Apply(
-            _ => throw new Exception("TODO"),
-            _ => _);
-
-        // emptyarray
-        var comma7 = await subsequentMember8.MoveInternal1().ConfigureAwait(false);
-        var whitespace26 = await comma7.MoveInternal1().ConfigureAwait(false);
-        //var member8 = await whitespace26.AsReader.MoveInternal3(whitespace26.Factory).ConfigureAwait(false);
-        var member8 = await whitespace26.MoveInternal1().ConfigureAwait(false);
-        var string9 = await member8.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter17 = await string9.MoveInternal1().ConfigureAwait(false);
-        var chars9 = await stringDelimiter17.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter18 = await chars9.MoveInternal1().ConfigureAwait(false);
-        var whitespace27 = await stringDelimiter18.MoveInternal1().ConfigureAwait(false);
-        //var colon8 = await whitespace27.AsReader.MoveInternal3(whitespace27.Factory).ConfigureAwait(false);
-        var colon8 = await whitespace27.MoveInternal1().ConfigureAwait(false);
-        var whitespace28 = await colon8.MoveInternal1().ConfigureAwait(false);
-        //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
-        var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
-        var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
-        if (!valueToken9.TryArray().TryGetValue(out var array))
-        {
-            throw new Exception("TODO");
-        }
-
-        var arrayStart = await array.MoveInternal1().ConfigureAwait(false);
-        var whitespace29 = await arrayStart.MoveInternal1().ConfigureAwait(false);
-        //var arrayElements = await whitespace29.AsReader.MoveInternal3(whitespace29.Factory).ConfigureAwait(false);
-        var arrayElements = await whitespace29.MoveInternal1().ConfigureAwait(false);
-        var arrayElementsToken = arrayElements.TryMove(out read);
-        if (!read)
-        {
-            await arrayElements.Read().ConfigureAwait(false);
-            arrayElementsToken = arrayElements.TryMove(out read);
-        }
-
-        var whitespace30 = arrayElementsToken.Apply(_ => _, _ => throw new Exception("TODO"));
-        //var arrayEnd = await whitespace30.AsReader.MoveInternal3(whitespace30.Factory).ConfigureAwait(false);
-        var arrayEnd = await whitespace30.MoveInternal1().ConfigureAwait(false);
-        var subsequentMembers9 = await arrayEnd.MoveInternal1().ConfigureAwait(false);
-        var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-        if (!read)
-        {
-            await subsequentMembers9.Read().ConfigureAwait(false);
-            subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-        }
-
-        var subsequentMember10 = subsequentMembersToken9.Apply(
-            _ => throw new Exception("TODO"),
-            _ => _);
-
-
-        // array
-        var comma8 = await subsequentMember10.MoveInternal1().ConfigureAwait(false);
-        var whitespace31 = await comma8.MoveInternal1().ConfigureAwait(false);
-        //var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);
-        var member9 = await whitespace31.MoveInternal1().ConfigureAwait(false);
-        var string10 = await member9.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter19 = await string10.MoveInternal1().ConfigureAwait(false);
-        var chars10 = await stringDelimiter19.MoveInternal1().ConfigureAwait(false);
-        var stringDelimiter20 = await chars10.MoveInternal1().ConfigureAwait(false);
-        var whitespace32 = await stringDelimiter20.MoveInternal1().ConfigureAwait(false);
-        //var colon9 = await whitespace32.AsReader.MoveInternal3(whitespace32.Factory).ConfigureAwait(false);
-        var colon9 = await whitespace32.MoveInternal1().ConfigureAwait(false);
-        var whitespace33 = await colon9.MoveInternal1().ConfigureAwait(false);
-        //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
-        var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
-        var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
-        if (!valueToken10.TryArray().TryGetValue(out var array2))
-        {
-            throw new Exception("TODO");
-        }
-
-        var arrayStart2 = await array2.MoveInternal1().ConfigureAwait(false);
-        var whitespace34 = await arrayStart2.MoveInternal1().ConfigureAwait(false);
-        //var arrayElements2 = await whitespace34.AsReader.MoveInternal3(whitespace34.Factory).ConfigureAwait(false);
-        var arrayElements2 = await whitespace34.MoveInternal1().ConfigureAwait(false);
-        var arrayElementsToken2 = arrayElements2.TryMove(out read);
-        if (!read)
-        {
-            await arrayElements2.Read().ConfigureAwait(false);
-            arrayElementsToken2 = arrayElements2.TryMove(out read);
-        }
-
-        var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
-        var value11 = await arrayElement.MoveInternal1().ConfigureAwait(false);
-        var valueToken11 = await value11.MoveInternal1().ConfigureAwait(false);
-        if (!valueToken11.TryObject().TryGetValue(out var object4))
-        {
-            throw new Exception("TODO");
-        }
-
-        var objectStart4 = await object4.MoveInternal1().ConfigureAwait(false);
-        var whitespace35 = await objectStart4.MoveInternal1().ConfigureAwait(false);
-        //var members4 = await whitespace35.AsReader.MoveInternal3(whitespace35.Factory).ConfigureAwait(false);
-        var members4 = await whitespace35.MoveInternal1().ConfigureAwait(false);
-        var membersToken4 = members4.TryMove(out read);
-        if (!read)
-        {
-            await members4.Read().ConfigureAwait(false);
-            membersToken4 = members4.TryMove(out read);
-        }
-
-        var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
-        SubsequentArrayElementsReader
-            <
-                WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
-            >
-            subsequentArrayElements;
-        {
-            // true
-            var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
-            var nestedString = await nestedMember.MoveInternal1().ConfigureAwait(false);
-            var nestedStringDelimiter = await nestedString.MoveInternal1().ConfigureAwait(false);
-            var nestedChars = await nestedStringDelimiter.MoveInternal1().ConfigureAwait(false);
-            var nestedStringDeliminter2 = await nestedChars.MoveInternal1().ConfigureAwait(false);
-            var nestedWhitespace = await nestedStringDeliminter2.MoveInternal1().ConfigureAwait(false);
-            //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
-            var nestedColon = await nestedWhitespace.MoveInternal1().ConfigureAwait(false);
-            var nestedWhispace2 = await nestedColon.MoveInternal1().ConfigureAwait(false);
-            //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
-            var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
-            var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
-            if (!nestedValueToken.TryTrue().TryGetValue(out var nestedTrue))
+            /*// emptyobject
+            var comma6 = await subsequentMember6.MoveInternal1().ConfigureAwait(false);
+            var whitespace21 = await comma6.MoveInternal1().ConfigureAwait(false);
+            //var member7 = await whitespace21.AsReader.MoveInternal3(whitespace21.Factory).ConfigureAwait(false);
+            var member7 = await whitespace21.MoveInternal1().ConfigureAwait(false);
+            var string8 = await member7.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter15 = await string8.MoveInternal1().ConfigureAwait(false);
+            var chars8 = await stringDelimiter15.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter16 = await chars8.MoveInternal1().ConfigureAwait(false);
+            var whitespace22 = await stringDelimiter16.MoveInternal1().ConfigureAwait(false);
+            //var colon7 = await whitespace22.AsReader.MoveInternal3(whitespace22.Factory).ConfigureAwait(false);
+            var colon7 = await whitespace22.MoveInternal1().ConfigureAwait(false);
+            var whitespace23 = await colon7.MoveInternal1().ConfigureAwait(false);
+            //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
+            var value8 = await whitespace23.MoveInternal1().ConfigureAwait(false);
+            var valueToken8 = await value8.MoveInternal1().ConfigureAwait(false);
+            if (!valueToken8.TryObject().TryGetValue(out var object3))
             {
                 throw new Exception("TODO");
             }
 
-            var nestedSubsequentMembersReader = await nestedTrue.MoveInternal1().ConfigureAwait(false);
-            var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
+            var objectStart3 = await object3.MoveInternal1().ConfigureAwait(false);
+            var whitespace24 = await objectStart3.MoveInternal1().ConfigureAwait(false);
+            //var members3 = await whitespace24.AsReader.MoveInternal3(whitespace24.Factory).ConfigureAwait(false);
+            var members3 = await whitespace24.MoveInternal1().ConfigureAwait(false);
+            var membersToken3 = members3.TryMove(out read);
             if (!read)
             {
-                await nestedSubsequentMembersReader.Read().ConfigureAwait(false);
-                nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
+                await members3.Read().ConfigureAwait(false);
+                membersToken3 = members3.TryMove(out read);
             }
 
-            var nestedsubsequentMemberReader = nestedSubsequentMembersToken.Apply(
-                _ => throw new Exception("TODO"),
-                more => more);
+            var whitespace25 = membersToken3.Apply(_ => _, _ => throw new Exception("TODO"));
+            //var objectEnd = await whitespace25.AsReader.MoveInternal3(whitespace25.Factory).ConfigureAwait(false);
+            var objectEnd = await whitespace25.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembers7 = await objectEnd.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
+            if (!read)
+            {
+                await subsequentMembers7.Read().ConfigureAwait(false);
+                subsequentMembersToken7 = subsequentMembers7.TryMove(out read);
+            }
 
-            // false
-            var nestedcommaReader = await nestedsubsequentMemberReader.MoveInternal1().ConfigureAwait(false);
-            var nestedwhitespaceReader5 = await nestedcommaReader.MoveInternal1().ConfigureAwait(false);
-            //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
-            var nestedmemberReader2 = await nestedwhitespaceReader5.MoveInternal1().ConfigureAwait(false);
-            var nestedstringReader2 = await nestedmemberReader2.MoveInternal1().ConfigureAwait(false);
-            var nestedstringDelimiterReader3 = await nestedstringReader2.MoveInternal1().ConfigureAwait(false);
-            var nestedcharsReader2 = await nestedstringDelimiterReader3.MoveInternal1().ConfigureAwait(false);
-            var nestedstringDelimiterReader4 = await nestedcharsReader2.MoveInternal1().ConfigureAwait(false);
-            var nestedwhitespace6 = await nestedstringDelimiterReader4.MoveInternal1().ConfigureAwait(false);
-            //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
-            var nestedcolon2 = await nestedwhitespace6.MoveInternal1().ConfigureAwait(false);
-            var nestedwhitespace7 = await nestedcolon2.MoveInternal1().ConfigureAwait(false);
-            //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
-            var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
-            var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
-            if (!nestedvalueToken3.TryFalse().TryGetValue(out var nestedfalse))
+            var subsequentMember8 = subsequentMembersToken7.Apply(
+                _ => throw new Exception("TODO"),
+                _ => _);
+
+            // emptyarray
+            var comma7 = await subsequentMember8.MoveInternal1().ConfigureAwait(false);
+            var whitespace26 = await comma7.MoveInternal1().ConfigureAwait(false);
+            //var member8 = await whitespace26.AsReader.MoveInternal3(whitespace26.Factory).ConfigureAwait(false);
+            var member8 = await whitespace26.MoveInternal1().ConfigureAwait(false);
+            var string9 = await member8.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter17 = await string9.MoveInternal1().ConfigureAwait(false);
+            var chars9 = await stringDelimiter17.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter18 = await chars9.MoveInternal1().ConfigureAwait(false);
+            var whitespace27 = await stringDelimiter18.MoveInternal1().ConfigureAwait(false);
+            //var colon8 = await whitespace27.AsReader.MoveInternal3(whitespace27.Factory).ConfigureAwait(false);
+            var colon8 = await whitespace27.MoveInternal1().ConfigureAwait(false);
+            var whitespace28 = await colon8.MoveInternal1().ConfigureAwait(false);
+            //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
+            var value9 = await whitespace28.MoveInternal1().ConfigureAwait(false);
+            var valueToken9 = await value9.MoveInternal1().ConfigureAwait(false);
+            if (!valueToken9.TryArray().TryGetValue(out var array))
             {
                 throw new Exception("TODO");
             }
 
-            //// TODO
-            /*context.CurrentByteIndex = 15;
-            if (!nestedfalse.TryGetValue3(ref context, out _, out _, out _))
+            var arrayStart = await array.MoveInternal1().ConfigureAwait(false);
+            var whitespace29 = await arrayStart.MoveInternal1().ConfigureAwait(false);
+            //var arrayElements = await whitespace29.AsReader.MoveInternal3(whitespace29.Factory).ConfigureAwait(false);
+            var arrayElements = await whitespace29.MoveInternal1().ConfigureAwait(false);
+            var arrayElementsToken = arrayElements.TryMove(out read);
+            if (!read)
             {
-                throw new Exception("tODO");
+                await arrayElements.Read().ConfigureAwait(false);
+                arrayElementsToken = arrayElements.TryMove(out read);
             }
 
-            if (!nestedfalse.TryMove3(ref context, out var _more1))
+            var whitespace30 = arrayElementsToken.Apply(_ => _, _ => throw new Exception("TODO"));
+            //var arrayEnd = await whitespace30.AsReader.MoveInternal3(whitespace30.Factory).ConfigureAwait(false);
+            var arrayEnd = await whitespace30.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembers9 = await arrayEnd.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
+            if (!read)
             {
-                throw new Exception("tODO");
+                await subsequentMembers9.Read().ConfigureAwait(false);
+                subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
             }
 
-            var nestedsubsequentMembers2 = _more1();*/
+            var subsequentMember10 = subsequentMembersToken9.Apply(
+                _ => throw new Exception("TODO"),
+                _ => _);
+
+
+            // array
+            var comma8 = await subsequentMember10.MoveInternal1().ConfigureAwait(false);
+            var whitespace31 = await comma8.MoveInternal1().ConfigureAwait(false);
+            //var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);
+            var member9 = await whitespace31.MoveInternal1().ConfigureAwait(false);
+            var string10 = await member9.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter19 = await string10.MoveInternal1().ConfigureAwait(false);
+            var chars10 = await stringDelimiter19.MoveInternal1().ConfigureAwait(false);
+            var stringDelimiter20 = await chars10.MoveInternal1().ConfigureAwait(false);
+            var whitespace32 = await stringDelimiter20.MoveInternal1().ConfigureAwait(false);
+            //var colon9 = await whitespace32.AsReader.MoveInternal3(whitespace32.Factory).ConfigureAwait(false);
+            var colon9 = await whitespace32.MoveInternal1().ConfigureAwait(false);
+            var whitespace33 = await colon9.MoveInternal1().ConfigureAwait(false);
+            //var value10 = await whitespace33.AsReader.MoveInternal3(whitespace33.Factory).ConfigureAwait(false);
+            var value10 = await whitespace33.MoveInternal1().ConfigureAwait(false);
+            var valueToken10 = await value10.MoveInternal1().ConfigureAwait(false);
+            if (!valueToken10.TryArray().TryGetValue(out var array2))
+            {
+                throw new Exception("TODO");
+            }
+
+            var arrayStart2 = await array2.MoveInternal1().ConfigureAwait(false);
+            var whitespace34 = await arrayStart2.MoveInternal1().ConfigureAwait(false);
+            //var arrayElements2 = await whitespace34.AsReader.MoveInternal3(whitespace34.Factory).ConfigureAwait(false);
+            var arrayElements2 = await whitespace34.MoveInternal1().ConfigureAwait(false);
+            var arrayElementsToken2 = arrayElements2.TryMove(out read);
+            if (!read)
+            {
+                await arrayElements2.Read().ConfigureAwait(false);
+                arrayElementsToken2 = arrayElements2.TryMove(out read);
+            }
+
+            var arrayElement = arrayElementsToken2.Apply(_ => throw new Exception("TODO"), _ => _);
+            var value11 = await arrayElement.MoveInternal1().ConfigureAwait(false);
+            var valueToken11 = await value11.MoveInternal1().ConfigureAwait(false);
+            if (!valueToken11.TryObject().TryGetValue(out var object4))
+            {
+                throw new Exception("TODO");
+            }
+
+            var objectStart4 = await object4.MoveInternal1().ConfigureAwait(false);
+            var whitespace35 = await objectStart4.MoveInternal1().ConfigureAwait(false);
+            //var members4 = await whitespace35.AsReader.MoveInternal3(whitespace35.Factory).ConfigureAwait(false);
+            var members4 = await whitespace35.MoveInternal1().ConfigureAwait(false);
+            var membersToken4 = members4.TryMove(out read);
+            if (!read)
+            {
+                await members4.Read().ConfigureAwait(false);
+                membersToken4 = members4.TryMove(out read);
+            }
+
+            var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
+            SubsequentArrayElementsReader
+                <
+                    WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
+                >
+                subsequentArrayElements;
+            {
+                // true
+                var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
+                var nestedString = await nestedMember.MoveInternal1().ConfigureAwait(false);
+                var nestedStringDelimiter = await nestedString.MoveInternal1().ConfigureAwait(false);
+                var nestedChars = await nestedStringDelimiter.MoveInternal1().ConfigureAwait(false);
+                var nestedStringDeliminter2 = await nestedChars.MoveInternal1().ConfigureAwait(false);
+                var nestedWhitespace = await nestedStringDeliminter2.MoveInternal1().ConfigureAwait(false);
+                //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
+                var nestedColon = await nestedWhitespace.MoveInternal1().ConfigureAwait(false);
+                var nestedWhispace2 = await nestedColon.MoveInternal1().ConfigureAwait(false);
+                //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                var nestedValue = await nestedWhispace2.MoveInternal1().ConfigureAwait(false);
+                var nestedValueToken = await nestedValue.MoveInternal1().ConfigureAwait(false);
+                if (!nestedValueToken.TryTrue().TryGetValue(out var nestedTrue))
+                {
+                    throw new Exception("TODO");
+                }
+
+                var nestedSubsequentMembersReader = await nestedTrue.MoveInternal1().ConfigureAwait(false);
+                var nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
+                if (!read)
+                {
+                    await nestedSubsequentMembersReader.Read().ConfigureAwait(false);
+                    nestedSubsequentMembersToken = nestedSubsequentMembersReader.TryMove(out read);
+                }
+
+                var nestedsubsequentMemberReader = nestedSubsequentMembersToken.Apply(
+                    _ => throw new Exception("TODO"),
+                    more => more);
+
+                // false
+                var nestedcommaReader = await nestedsubsequentMemberReader.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespaceReader5 = await nestedcommaReader.MoveInternal1().ConfigureAwait(false);
+                //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
+                var nestedmemberReader2 = await nestedwhitespaceReader5.MoveInternal1().ConfigureAwait(false);
+                var nestedstringReader2 = await nestedmemberReader2.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiterReader3 = await nestedstringReader2.MoveInternal1().ConfigureAwait(false);
+                var nestedcharsReader2 = await nestedstringDelimiterReader3.MoveInternal1().ConfigureAwait(false);
+                var nestedstringDelimiterReader4 = await nestedcharsReader2.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespace6 = await nestedstringDelimiterReader4.MoveInternal1().ConfigureAwait(false);
+                //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
+                var nestedcolon2 = await nestedwhitespace6.MoveInternal1().ConfigureAwait(false);
+                var nestedwhitespace7 = await nestedcolon2.MoveInternal1().ConfigureAwait(false);
+                //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                var nestedvalue3 = await nestedwhitespace7.MoveInternal1().ConfigureAwait(false);
+                var nestedvalueToken3 = await nestedvalue3.MoveInternal1().ConfigureAwait(false);
+                if (!nestedvalueToken3.TryFalse().TryGetValue(out var nestedfalse))
+                {
+                    throw new Exception("TODO");
+                }
+
+                //// TODO
+                /*context.CurrentByteIndex = 15;
+                if (!nestedfalse.TryGetValue3(ref context, out _, out _, out _))
+                {
+                    throw new Exception("tODO");
+                }
+
+                if (!nestedfalse.TryMove3(ref context, out var _more1))
+                {
+                    throw new Exception("tODO");
+                }
+
+                var nestedsubsequentMembers2 = _more1();*/
             /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
             var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
             if (!read)
