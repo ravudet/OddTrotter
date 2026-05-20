@@ -2514,8 +2514,27 @@
             Assert.IsTrue(subsequentMembersToken5.TryMore(out var subsequentMember5));
 
 
+            // object
+            var comma5 = await subsequentMember5.Move1(context).ConfigureAwait(false);
+            var whitespace17 = await comma5.Move4(context).ConfigureAwait(false);
+            //var member6 = await whitespace17.AsReader.MoveInternal3(whitespace17.Factory).ConfigureAwait(false);
+            (context, var member6) = await whitespace17.Move2(context).ConfigureAwait(false);
+            var string7 = await member6.Move1(context).ConfigureAwait(false);
+            var stringDelimiter13 = await string7.Move1(context).ConfigureAwait(false);
+            var chars7 = await stringDelimiter13.Move4(context).ConfigureAwait(false);
+            (context, var stringDelimiter14) = await chars7.Move2(context).ConfigureAwait(false);
+            var whitespace18 = await stringDelimiter14.Move4(context).ConfigureAwait(false);
+            //var colon6 = await whitespace18.AsReader.MoveInternal3(whitespace18.Factory).ConfigureAwait(false);
+            (context, var colon6) = await whitespace18.Move2(context).ConfigureAwait(false);
+            var whitespace19 = await colon6.Move4(context).ConfigureAwait(false);
+            //var value7 = await whitespace19.AsReader.MoveInternal3(whitespace19.Factory).ConfigureAwait(false);
+            (context, var value7) = await whitespace19.Move2(context).ConfigureAwait(false);
+            var valueToken7 = await value7.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken7.TryObject(out var object2));
+            
+
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("120:3", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("140:0", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -2780,11 +2799,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-
-            Assert.AreEqual(120, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*// object
+            // object
             var comma5 = await subsequentMember5.MoveInternal1().ConfigureAwait(false);
             var whitespace17 = await comma5.MoveInternal1().ConfigureAwait(false);
             //var member6 = await whitespace17.AsReader.MoveInternal3(whitespace17.Factory).ConfigureAwait(false);
@@ -2805,7 +2820,11 @@
                 throw new Exception("TODO");
             }
 
-            var objectStart2 = await object2.MoveInternal1().ConfigureAwait(false);
+
+            Assert.AreEqual(140, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*var objectStart2 = await object2.MoveInternal1().ConfigureAwait(false);
             var whitespace20 = await objectStart2.MoveInternal1().ConfigureAwait(false);
             //var nestedMembers = await whitespace20.AsReader.MoveInternal3(whitespace20.Factory).ConfigureAwait(false);
             var nestedMembers = await whitespace20.MoveInternal1().ConfigureAwait(false);
