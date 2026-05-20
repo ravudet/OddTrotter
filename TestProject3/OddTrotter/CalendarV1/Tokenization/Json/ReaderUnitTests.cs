@@ -2484,7 +2484,7 @@
             var whitespace12 = await stringDelimiter8.Move4(context).ConfigureAwait(false);
             (context, var colon4) = await whitespace12.Move2(context).ConfigureAwait(false);
             //var colon4 = await whitespace12.Move21(context).ConfigureAwait(false);
-            /*var whitespace13 = await colon4.Move4(context).ConfigureAwait(false);
+            var whitespace13 = await colon4.Move4(context).ConfigureAwait(false);
             (context, var value5) = await whitespace13.Move2(context).ConfigureAwait(false);
             var valueToken5 = await value5.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken5.TryString(out var @string5));
@@ -2722,7 +2722,7 @@
             var whitespace12 = await stringDelimiter8.MoveInternal1().ConfigureAwait(false);
             //var colon4 = await whitespace12.AsReader.MoveInternal3(whitespace12.Factory).ConfigureAwait(false);
             var colon4 = await whitespace12.MoveInternal1().ConfigureAwait(false);
-            /*var whitespace13 = await colon4.MoveInternal1().ConfigureAwait(false);
+            var whitespace13 = await colon4.MoveInternal1().ConfigureAwait(false);
             //var value5 = await whitespace13.AsReader.MoveInternal3(whitespace13.Factory).ConfigureAwait(false);
             var value5 = await whitespace13.MoveInternal1().ConfigureAwait(false);
             var valueToken5 = await value5.MoveInternal1().ConfigureAwait(false);
