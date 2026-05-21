@@ -2708,35 +2708,21 @@
             (context, var value9) = await whitespace28.Move2(context).ConfigureAwait(false);
             var valueToken9 = await value9.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken9.TryArray(out var array));
-            var arrayStart = await array.MoveInternal1().ConfigureAwait(false);
-            var whitespace29 = await arrayStart.MoveInternal1().ConfigureAwait(false);
+            var arrayStart = await array.Move1(context).ConfigureAwait(false);
+            var whitespace29 = await arrayStart.Move4(context).ConfigureAwait(false);
             //var arrayElements = await whitespace29.AsReader.MoveInternal3(whitespace29.Factory).ConfigureAwait(false);
-            var arrayElements = await whitespace29.MoveInternal1().ConfigureAwait(false);
-            var arrayElementsToken = arrayElements.TryMove(out read);
-            if (!read)
-            {
-                await arrayElements.Read().ConfigureAwait(false);
-                arrayElementsToken = arrayElements.TryMove(out read);
-            }
-
-            var whitespace30 = arrayElementsToken.Apply(_ => _, _ => throw new Exception("TODO"));
+            (context, var arrayElements) = await whitespace29.Move2(context).ConfigureAwait(false);
+            var arrayElementsToken = await arrayElements.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(arrayElementsToken.TryNone(out var whitespace30));
             //var arrayEnd = await whitespace30.AsReader.MoveInternal3(whitespace30.Factory).ConfigureAwait(false);
-            var arrayEnd = await whitespace30.MoveInternal1().ConfigureAwait(false);
-            var subsequentMembers9 = await arrayEnd.MoveInternal1().ConfigureAwait(false);
-            var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-            if (!read)
-            {
-                await subsequentMembers9.Read().ConfigureAwait(false);
-                subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
-            }
-
-            var subsequentMember10 = subsequentMembersToken9.Apply(
-                _ => throw new Exception("TODO"),
-                _ => _);
+            (context, var arrayEnd) = await whitespace30.Move2(context).ConfigureAwait(false);
+            var subsequentMembers9 = await arrayEnd.Move4(context).ConfigureAwait(false);
+            var subsequentMembersToken9 = await subsequentMembers9.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken9.TryMore(out var subsequentMember10));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("280:14", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("300:17", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3342,7 +3328,7 @@
                 _ => _);
 
 
-            Assert.AreEqual(280, stream.Position);
+            Assert.AreEqual(300, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*// array

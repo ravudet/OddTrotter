@@ -10,6 +10,7 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
+    using OddTrotter.CalendarV1.Tokenization.Json2;
     using OddTrotter.CalendarV1.Tokenization.Json6;
 
     using static OddTrotter.Calendar.OdataCollectionResponse;
@@ -566,8 +567,34 @@
     {
     }
 
-    public sealed class ArrayElementsReader<TNextReader>
+    public sealed class ArrayElementsReader<TNextReader> : ITokenReader<ArrayElementsReader<TNextReader>, ArrayElementsToken<TNextReader>>
     {
+        public static bool TryMove(ReaderContext readerContext, out ArrayElementsToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                token = default;
+                return false;
+            }
+
+            var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+            if (currentByte == ']')
+            {
+                token = ArrayElementsToken<TNextReader>.None();
+            }
+            else
+            {
+                token = ArrayElementsToken<TNextReader>.Some();
+            }
+
+            return true;
+        }
     }
 
     public struct ArrayElementsToken<TNextReader>
@@ -603,12 +630,76 @@
         }
     }
 
-    public sealed class ArrayElementReader<TNextReader>
+    public sealed class ArrayElementReader<TNextReader> : IMoveReader<ArrayElementReader<TNextReader>, ValueReader<TNextReader>>
     {
+        public static bool TryMove(ReaderContext readerContext, out ValueReader<TNextReader> nextReader)
+        {
+            nextReader = default!;
+            return true;
+        }
     }
 
-    public sealed class SubsequentArrayElementsReader<TNextReader>
+    public sealed class SubsequentArrayElementsReader<TNextReader> : ITokenReader<SubsequentArrayElementsReader<TNextReader>, SubsequentArrayElementsToken<TNextReader>>
     {
+        public static bool TryMove(ReaderContext readerContext, out SubsequentArrayElementsToken<TNextReader> token)
+        {
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                token = default;
+                return false;
+            }
+
+            var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+            if (currentByte == ',')
+            {
+                token = SubsequentArrayElementsToken<TNextReader>.More();
+            }
+            else
+            {
+                token = SubsequentArrayElementsToken<TNextReader>.None();
+            }
+
+            return true;
+        }
+    }
+
+    public struct SubsequentArrayElementsToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static SubsequentArrayElementsToken<TNextReader> None()
+        {
+            return new SubsequentArrayElementsToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static SubsequentArrayElementsToken<TNextReader> More()
+        {
+            return new SubsequentArrayElementsToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryNone(out TNextReader nextReader)
+        {
+            nextReader = default!;
+            return this.type == 1;
+        }
+
+        public bool TryMore(out SubsequentArrayElementReader<SubsequentArrayElementsReader<TNextReader>> more)
+        {
+            more = default!;
+            return this.type == 2;
+        }
     }
 
     public sealed class ArrayEndReader<TNextReader> : IValueReader<ArrayEndReader<TNextReader>, TNextReader, ArrayEndToken>
