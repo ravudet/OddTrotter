@@ -2691,6 +2691,49 @@
             var subsequentMembersToken7 = await subsequentMembers7.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken7.TryMore(out var subsequentMember8));
 
+            // emptyarray
+            var comma7 = await subsequentMember8.Move1(context).ConfigureAwait(false);
+            var whitespace26 = await comma7.Move4(context).ConfigureAwait(false);
+            //var member8 = await whitespace26.AsReader.MoveInternal3(whitespace26.Factory).ConfigureAwait(false);
+            (context, var member8) = await whitespace26.Move2(context).ConfigureAwait(false);
+            var string9 = await member8.Move1(context).ConfigureAwait(false);
+            var stringDelimiter17 = await string9.Move1(context).ConfigureAwait(false);
+            var chars9 = await stringDelimiter17.Move4(context).ConfigureAwait(false);
+            (context, var stringDelimiter18) = await chars9.Move2(context).ConfigureAwait(false);
+            var whitespace27 = await stringDelimiter18.Move4(context).ConfigureAwait(false);
+            //var colon8 = await whitespace27.AsReader.MoveInternal3(whitespace27.Factory).ConfigureAwait(false);
+            (context, var colon8) = await whitespace27.Move2(context).ConfigureAwait(false);
+            var whitespace28 = await colon8.Move4(context).ConfigureAwait(false);
+            //var value9 = await whitespace28.AsReader.MoveInternal3(whitespace28.Factory).ConfigureAwait(false);
+            (context, var value9) = await whitespace28.Move2(context).ConfigureAwait(false);
+            var valueToken9 = await value9.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken9.TryArray(out var array));
+            var arrayStart = await array.MoveInternal1().ConfigureAwait(false);
+            var whitespace29 = await arrayStart.MoveInternal1().ConfigureAwait(false);
+            //var arrayElements = await whitespace29.AsReader.MoveInternal3(whitespace29.Factory).ConfigureAwait(false);
+            var arrayElements = await whitespace29.MoveInternal1().ConfigureAwait(false);
+            var arrayElementsToken = arrayElements.TryMove(out read);
+            if (!read)
+            {
+                await arrayElements.Read().ConfigureAwait(false);
+                arrayElementsToken = arrayElements.TryMove(out read);
+            }
+
+            var whitespace30 = arrayElementsToken.Apply(_ => _, _ => throw new Exception("TODO"));
+            //var arrayEnd = await whitespace30.AsReader.MoveInternal3(whitespace30.Factory).ConfigureAwait(false);
+            var arrayEnd = await whitespace30.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembers9 = await arrayEnd.MoveInternal1().ConfigureAwait(false);
+            var subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
+            if (!read)
+            {
+                await subsequentMembers9.Read().ConfigureAwait(false);
+                subsequentMembersToken9 = subsequentMembers9.TryMove(out read);
+            }
+
+            var subsequentMember10 = subsequentMembersToken9.Apply(
+                _ => throw new Exception("TODO"),
+                _ => _);
+
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
             Assert.AreEqual("280:14", $"{stream.Position}:{context.CurrentByteIndex}");
@@ -3251,11 +3294,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-
-            Assert.AreEqual(280, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*// emptyarray
+            // emptyarray
             var comma7 = await subsequentMember8.MoveInternal1().ConfigureAwait(false);
             var whitespace26 = await comma7.MoveInternal1().ConfigureAwait(false);
             //var member8 = await whitespace26.AsReader.MoveInternal3(whitespace26.Factory).ConfigureAwait(false);
@@ -3303,7 +3342,10 @@
                 _ => _);
 
 
-            // array
+            Assert.AreEqual(280, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*// array
             var comma8 = await subsequentMember10.MoveInternal1().ConfigureAwait(false);
             var whitespace31 = await comma8.MoveInternal1().ConfigureAwait(false);
             //var member9 = await whitespace31.AsReader.MoveInternal3(whitespace31.Factory).ConfigureAwait(false);

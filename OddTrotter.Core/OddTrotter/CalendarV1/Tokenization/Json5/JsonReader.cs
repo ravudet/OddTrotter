@@ -544,7 +544,83 @@
         }
     }
 
-    public sealed class ArrayReader<TNextReader>
+    public sealed class ArrayReader<TNextReader> : IMoveReader<ArrayReader<TNextReader>, ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!;
+            return true;
+        }
+    }
+
+    public sealed class ArrayStartReader<TNextReader> : IValueReader<ArrayStartReader<TNextReader>, TNextReader, ArrayStartToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ArrayStartToken value)
+        {
+            nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, '[');
+        }
+    }
+
+    public struct ArrayStartToken
+    {
+    }
+
+    public sealed class ArrayElementsReader<TNextReader>
+    {
+    }
+
+    public struct ArrayElementsToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static ArrayElementsToken<TNextReader> None()
+        {
+            return new ArrayElementsToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static ArrayElementsToken<TNextReader> Some()
+        {
+            return new ArrayElementsToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryNone(out TNextReader nextReader)
+        {
+            nextReader = default!;
+            return this.type == 1;
+        }
+
+        public bool TrySome(out ArrayElementReader<SubsequentArrayElementsReader<TNextReader>> arrayElementReader)
+        {
+            arrayElementReader = default!;
+            return this.type == 2;
+        }
+    }
+
+    public sealed class ArrayElementReader<TNextReader>
+    {
+    }
+
+    public sealed class SubsequentArrayElementsReader<TNextReader>
+    {
+    }
+
+    public sealed class ArrayEndReader<TNextReader> : IValueReader<ArrayEndReader<TNextReader>, TNextReader, ArrayEndToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ArrayEndToken value)
+        {
+            nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, ']');
+        }
+    }
+
+    public struct ArrayEndToken
     {
     }
 
