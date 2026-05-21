@@ -2662,9 +2662,38 @@
             var subsequentMembersToken6 = await subsequentMembers6.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken6.TryMore(out var subsequentMember6));
 
+            // emptyobject
+            var comma6 = await subsequentMember6.Move1(context).ConfigureAwait(false);
+            var whitespace21 = await comma6.Move4(context).ConfigureAwait(false);
+            //var member7 = await whitespace21.AsReader.MoveInternal3(whitespace21.Factory).ConfigureAwait(false);
+            (context, var member7) = await whitespace21.Move2(context).ConfigureAwait(false);
+            var string8 = await member7.Move1(context).ConfigureAwait(false);
+            var stringDelimiter15 = await string8.Move1(context).ConfigureAwait(false);
+            var chars8 = await stringDelimiter15.Move4(context).ConfigureAwait(false);
+            (context, var stringDelimiter16) = await chars8.Move2(context).ConfigureAwait(false);
+            var whitespace22 = await stringDelimiter16.Move4(context).ConfigureAwait(false);
+            //var colon7 = await whitespace22.AsReader.MoveInternal3(whitespace22.Factory).ConfigureAwait(false);
+            (context, var colon7) = await whitespace22.Move2(context).ConfigureAwait(false);
+            var whitespace23 = await colon7.Move4(context).ConfigureAwait(false);
+            //var value8 = await whitespace23.AsReader.MoveInternal3(whitespace23.Factory).ConfigureAwait(false);
+            (context, var value8) = await whitespace23.Move2(context).ConfigureAwait(false);
+            var valueToken8 = await value8.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken8.TryObject(out var object3));
+            var objectStart3 = await object3.Move1(context).ConfigureAwait(false);
+            var whitespace24 = await objectStart3.Move4(context).ConfigureAwait(false);
+            //var members3 = await whitespace24.AsReader.MoveInternal3(whitespace24.Factory).ConfigureAwait(false);
+            (context, var members3) = await whitespace24.Move2(context).ConfigureAwait(false);
+            var membersToken3 = await members3.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(membersToken3.TryNone(out var whitespace25));
+            //var objectEnd = await whitespace25.AsReader.MoveInternal3(whitespace25.Factory).ConfigureAwait(false);
+            (context, var objectEnd) = await whitespace25.Move2(context).ConfigureAwait(false);
+            var subsequentMembers7 = await objectEnd.Move4(context).ConfigureAwait(false);
+            var subsequentMembersToken7 = await subsequentMembers7.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken7.TryMore(out var subsequentMember8));
+
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("260:10", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("280:14", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3175,11 +3204,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-
-            Assert.AreEqual(260, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
-
-            /*// emptyobject
+            // emptyobject
             var comma6 = await subsequentMember6.MoveInternal1().ConfigureAwait(false);
             var whitespace21 = await comma6.MoveInternal1().ConfigureAwait(false);
             //var member7 = await whitespace21.AsReader.MoveInternal3(whitespace21.Factory).ConfigureAwait(false);
@@ -3226,7 +3251,11 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            // emptyarray
+
+            Assert.AreEqual(280, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+
+            /*// emptyarray
             var comma7 = await subsequentMember8.MoveInternal1().ConfigureAwait(false);
             var whitespace26 = await comma7.MoveInternal1().ConfigureAwait(false);
             //var member8 = await whitespace26.AsReader.MoveInternal3(whitespace26.Factory).ConfigureAwait(false);
