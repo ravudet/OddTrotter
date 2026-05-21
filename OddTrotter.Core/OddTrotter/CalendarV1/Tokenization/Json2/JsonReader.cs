@@ -4339,12 +4339,7 @@
                     throw new Exception("TODO escaped characters are not yet supported");
                 }
 
-                CharToken @char;
-                try
-                {
-                    @char = new CharToken.Unescaped(currentByte);
-                }
-                catch (Exception)
+                if (!CharToken.TryUnescaped(currentByte, out var @char))
                 {
                     break;
                 }
@@ -4380,19 +4375,31 @@
         {
         }
 
+        public static bool TryUnescaped(byte @char, out Unescaped unescaped)
+        {
+            if (!Unescaped.IsValid(@char))
+            {
+                unescaped = default!;
+                return false;
+            }
+
+            unescaped = new Unescaped(@char);
+            return true;
+        }
+
         public sealed class Unescaped : CharToken
         {
             public Unescaped(byte @char)
             {
-                if (!IsValid(@char))
+                /*if (!IsValid(@char))
                 {
                     throw new Exception("TODO invalid JSON");
-                }
+                }*/
 
                 Char = @char;
             }
 
-            private static bool IsValid(byte @char)
+            public static bool IsValid(byte @char)
             {
                 return
                     (@char >= 0x20 && @char <= 0x21) ||
