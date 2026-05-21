@@ -2659,12 +2659,12 @@
                 subsequentMembers6 = await nestedobjectEnd.Move4(context).ConfigureAwait(false);
             }
 
-            /*var subsequentMembersToken6 = await subsequentMembers6.Move31(context).ConfigureAwait(false);
+            var subsequentMembersToken6 = await subsequentMembers6.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken6.TryMore(out var subsequentMember6));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("260:10", $"{stream.Position}:{context.CurrentByteIndex}");*/
+            Assert.AreEqual("260:10", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3164,7 +3164,7 @@
             subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
         }
 
-        /*var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
+        var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
         if (!read)
         {
             await subsequentMembers6.Read().ConfigureAwait(false);
@@ -3177,7 +3177,7 @@
 
 
             Assert.AreEqual(260, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);*/
+            Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*// emptyobject
             var comma6 = await subsequentMember6.MoveInternal1().ConfigureAwait(false);
