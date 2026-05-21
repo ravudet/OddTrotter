@@ -2539,7 +2539,7 @@
             var nestedMembersToken = await nestedMembers.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(nestedMembersToken.TrySome(out var nestedFirstMember));
 
-            ////Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
+            Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
             {
                 // true
                 var nestedMember = await nestedFirstMember.Move1(context).ConfigureAwait(false);
@@ -2632,7 +2632,7 @@
                 var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
 
-                /*// null
+                // null
                 var nestedcomma4 = await nestedsubsequentMember4.Move1(context).ConfigureAwait(false);
                 var nestedwhitespace14 = await nestedcomma4.Move4(context).ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
@@ -2656,7 +2656,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
-                subsequentMembers6 = await nestedobjectEnd.Move4(context).ConfigureAwait(false);*/
+                subsequentMembers6 = await nestedobjectEnd.Move4(context).ConfigureAwait(false);
             }
 
             /*var subsequentMembersToken6 = await subsequentMembers6.Move31(context).ConfigureAwait(false);
@@ -2965,7 +2965,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            ////SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>> subsequentMembers6;
+            SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>> subsequentMembers6;
             {
                 // true
                 var nestedMember = await nestedFirstMember.MoveInternal1().ConfigureAwait(false);
@@ -3126,7 +3126,7 @@
                 _ => throw new Exception("TODO"),
                 _ => _);
 
-            /*// null
+            // null
             var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
             var nestedwhitespace14 = await nestedcomma4.MoveInternal1().ConfigureAwait(false);
             //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
@@ -3161,7 +3161,7 @@
 
             //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
             var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-            subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
+            subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
         }
 
         /*var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
