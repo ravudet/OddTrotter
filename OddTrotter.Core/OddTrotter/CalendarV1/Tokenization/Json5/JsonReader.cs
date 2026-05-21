@@ -1245,9 +1245,19 @@
         }
     }
 
-    public sealed class ObjectEndReader<TNextReader>
+    public sealed class ObjectEndReader<TNextReader> : IValueReader<ObjectEndReader<TNextReader>, TNextReader, ObjectEndToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectEndToken value)
+        {
+            nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, '}');
+        }
+    }
+
+    public struct ObjectEndToken
     {
     }
+
 }
 
 namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5

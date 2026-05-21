@@ -2539,7 +2539,7 @@
             var nestedMembersToken = await nestedMembers.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(nestedMembersToken.TrySome(out var nestedFirstMember));
 
-            SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>> subsequentMembers6;
+            Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
             {
                 // true
                 var nestedMember = await nestedFirstMember.Move1(context).ConfigureAwait(false);
@@ -2614,103 +2614,74 @@
                 var nestedsign = await nestednumber.Move1(context).ConfigureAwait(false);
                 var nestedint = await nestedsign.Move4(context).ConfigureAwait(false);
                 (context, var nestedfrac) = await nestedint.Move2(context).ConfigureAwait(false);
-                var nestedexp = await nestedfrac.Move31(context).ConfigureAwait(false);
-                Assert.IsTrue(nestedexp.TryAbsent(out var expReader)); //// TODO you are here; look at what you did above
-
-
-                Assert.IsTrue(nestedexp.TryAbsent(out var nestedsubsequentMembers3));
+                var nestedfracToken = await nestedfrac.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedfracToken.TryAbsent(out var nestedexp));
+                var nestedexpToken = await nestedexp.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedexpToken.TryAbsent(out var nestedsubsequentMembers3));
                 var nestedsubsequentMembersToken3 = await nestedsubsequentMembers3.Move31(context).ConfigureAwait(false);
-                Assert.IsTrue(nestedsubsequentMembersToken3.TryAbsent(out var nestedsubsequentMember3));
+                Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
 
                 // asdf
-                var nestedcomma3 = await nestedsubsequentMember3.Move31(context).ConfigureAwait(false);
-                var nestedwhitespace11 = await nestedcomma3.move(context).ConfigureAwait(false);
+                var nestedcomma3 = await nestedsubsequentMember3.Move1(context).ConfigureAwait(false);
+                var nestedwhitespace11 = await nestedcomma3.Move4(context).ConfigureAwait(false);
                 //var nestedmember4 = await nestedwhitespace11.AsReader.MoveInternal3(nestedwhitespace11.Factory).ConfigureAwait(false);
                 (context, var nestedmember4) = await nestedwhitespace11.Move2(context).ConfigureAwait(false);
-                var nestedstring4 = await nestedmember4.Move31(context).ConfigureAwait(false);
-                var nestedstringDelimiter7 = await nestedstring4.mo(context).ConfigureAwait(false);
-                var nestedchars4 = await nestedstringDelimiter7.MoveInternal1(context).ConfigureAwait(false);
-                var nestedstringDelimiter8 = await nestedchars4.MoveInternal1(context).ConfigureAwait(false);
-                var nestedwhitespace12 = await nestedstringDelimiter8.MoveInternal1(context).ConfigureAwait(false);
+                var nestedstring4 = await nestedmember4.Move1(context).ConfigureAwait(false);
+                var nestedstringDelimiter7 = await nestedstring4.Move1(context).ConfigureAwait(false);
+                var nestedchars4 = await nestedstringDelimiter7.Move4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter8) = await nestedchars4.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace12 = await nestedstringDelimiter8.Move4(context).ConfigureAwait(false);
                 //var nestedcolon4 = await nestedwhitespace12.AsReader.MoveInternal3(nestedwhitespace12.Factory).ConfigureAwait(false);
-                var nestedcolon4 = await nestedwhitespace12.MoveInternal1(context).ConfigureAwait(false);
-                var nestedwhitespace13 = await nestedcolon4.MoveInternal1(context).ConfigureAwait(false);
+                (context, var nestedcolon4) = await nestedwhitespace12.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace13 = await nestedcolon4.Move4(context).ConfigureAwait(false);
                 //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
-                var nestedvalue5 = await nestedwhitespace13.MoveInternal1(context).ConfigureAwait(false);
-                var nestedvalueToken5 = await nestedvalue5.MoveInternal1(context).ConfigureAwait(false);
-                if (!nestedvalueToken5.TryString().TryGetValue(out var nestedstring5))
+                (context, var nestedvalue5) = await nestedwhitespace13.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken5 = await nestedvalue5.Move31(context).ConfigureAwait(false);
+                if (!nestedvalueToken5.TryString(out var nestedstring5))
                 {
                     throw new Exception("TODO");
                 }
 
-                var nestedstringDelimiter9 = await @nestedstring5.MoveInternal1().ConfigureAwait(false);
-                var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
-                var nestedstringDelimiter10 = await nestedchars5.MoveInternal1().ConfigureAwait(false);
-                var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1().ConfigureAwait(false);
-
-                var nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
-                if (!read)
-                {
-                    await nestedsubsequentMembers4.Read().ConfigureAwait(false);
-                    nestedsubsequentMembersToken4 = nestedsubsequentMembers4.TryMove(out read);
-                }
-
-                var nestedsubsequentMember4 = nestedsubsequentMembersToken4.Apply(
-                    _ => throw new Exception("TODO"),
-                    _ => _);
+                var nestedstringDelimiter9 = await @nestedstring5.Move1(context).ConfigureAwait(false);
+                var nestedchars5 = await nestedstringDelimiter9.Move4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter10) = await nestedchars5.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembers4 = await nestedstringDelimiter10.Move4(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
 
                 // null
-                var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
-                var nestedwhitespace14 = await nestedcomma4.MoveInternal1().ConfigureAwait(false);
+                var nestedcomma4 = await nestedsubsequentMember4.Move1(context).ConfigureAwait(false);
+                var nestedwhitespace14 = await nestedcomma4.Move4(context).ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
-                var nestedmember5 = await nestedwhitespace14.MoveInternal1().ConfigureAwait(false);
-                var nestedstring6 = await nestedmember5.MoveInternal1().ConfigureAwait(false);
-                var nestedstringDelimiter11 = await nestedstring6.MoveInternal1().ConfigureAwait(false);
-                var nestedchars6 = await nestedstringDelimiter11.MoveInternal1().ConfigureAwait(false);
-                var nestedstringDelimiter12 = await nestedchars6.MoveInternal1().ConfigureAwait(false);
-                var nestedwhitespace15 = await nestedstringDelimiter12.MoveInternal1().ConfigureAwait(false);
+                (context, var nestedmember5) = await nestedwhitespace14.Move2(context).ConfigureAwait(false);
+                var nestedstring6 = await nestedmember5.Move1(context).ConfigureAwait(false);
+                var nestedstringDelimiter11 = await nestedstring6.Move1(context).ConfigureAwait(false);
+                var nestedchars6 = await nestedstringDelimiter11.Move4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter12) = await nestedchars6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace15 = await nestedstringDelimiter12.Move4(context).ConfigureAwait(false);
                 //var nestedcolon5 = await nestedwhitespace15.AsReader.MoveInternal3(nestedwhitespace15.Factory).ConfigureAwait(false);
-                var nestedcolon5 = await nestedwhitespace15.MoveInternal1().ConfigureAwait(false);
-                var nestedwhitespace16 = await nestedcolon5.MoveInternal1().ConfigureAwait(false);
+                (context, var nestedcolon5) = await nestedwhitespace15.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace16 = await nestedcolon5.Move4(context).ConfigureAwait(false);
                 //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
-                var nestedvalue6 = await nestedwhitespace16.MoveInternal1().ConfigureAwait(false);
-                var nestedvalueToken6 = await nestedvalue6.MoveInternal1().ConfigureAwait(false);
-                if (!nestedvalueToken6.TryNull().TryGetValue(out var nestednull))
-                {
-                    throw new Exception("TODO");
-                }
+                (context, var nestedvalue6) = await nestedwhitespace16.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken6 = await nestedvalue6.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken6.TryNull(out var nestednull));
 
-                var nestedsubsequentMembers5 = await @nestednull.MoveInternal1().ConfigureAwait(false);
-                var nestedsubsequentMembersToken5 = nestedsubsequentMembers5.TryMove(out read);
-                if (!read)
-                {
-                    await nestedsubsequentMembers5.Read().ConfigureAwait(false);
-                    nestedsubsequentMembersToken5 = nestedsubsequentMembers5.TryMove(out read);
-                }
-
-                var nestedsubsequentMember5 = nestedsubsequentMembersToken5.Apply(
-                    _ => _,
-                    _ => throw new Exception("TODO"));
+                (context, var nestedsubsequentMembers5) = await @nestednull.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken5 = await nestedsubsequentMembers5.Move31(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5));
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
-                var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                subsequentMembers6 = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
+                (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
+                subsequentMembers6 = await nestedobjectEnd.Move4(context).ConfigureAwait(false);
             }
 
-            var subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
-            if (!read)
-            {
-                await subsequentMembers6.Read().ConfigureAwait(false);
-                subsequentMembersToken6 = subsequentMembers6.TryMove(out read);
-            }
-
-            var subsequentMember6 = subsequentMembersToken6.Apply(
-                _ => throw new Exception("TODO"),
-                _ => _);
+            var subsequentMembersToken6 = await subsequentMembers6.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken6.TryMore(out var subsequentMember6));
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("140:0", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("260:10", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3222,7 +3193,7 @@
             _ => _);
 
 
-            Assert.AreEqual(140, stream.Position);
+            Assert.AreEqual(260, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*// emptyobject
