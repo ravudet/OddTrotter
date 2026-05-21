@@ -2625,13 +2625,12 @@
                 (context, var nestedvalue5) = await nestedwhitespace13.Move2(context).ConfigureAwait(false);
                 var nestedvalueToken5 = await nestedvalue5.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedvalueToken5.TryString(out var nestedstring5));
-
-                /*var nestedstringDelimiter9 = await @nestedstring5.Move1(context).ConfigureAwait(false);
+                var nestedstringDelimiter9 = await @nestedstring5.Move1(context).ConfigureAwait(false);
                 var nestedchars5 = await nestedstringDelimiter9.Move4(context).ConfigureAwait(false);
                 (context, var nestedstringDelimiter10) = await nestedchars5.Move2(context).ConfigureAwait(false);
                 var nestedsubsequentMembers4 = await nestedstringDelimiter10.Move4(context).ConfigureAwait(false);
                 var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.Move31(context).ConfigureAwait(false);
-                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));*/
+                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
 
                 /*// null
                 var nestedcomma4 = await nestedsubsequentMember4.Move1(context).ConfigureAwait(false);
@@ -3111,7 +3110,7 @@
                 throw new Exception("TODO");
             }
 
-            /*var nestedstringDelimiter9 = await @nestedstring5.MoveInternal1().ConfigureAwait(false);
+            var nestedstringDelimiter9 = await @nestedstring5.MoveInternal1().ConfigureAwait(false);
             var nestedchars5 = await nestedstringDelimiter9.MoveInternal1().ConfigureAwait(false);
             var nestedstringDelimiter10 = await nestedchars5.MoveInternal1().ConfigureAwait(false);
             var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveInternal1().ConfigureAwait(false);
@@ -3125,7 +3124,7 @@
 
             var nestedsubsequentMember4 = nestedsubsequentMembersToken4.Apply(
                 _ => throw new Exception("TODO"),
-                _ => _);*/
+                _ => _);
 
             /*// null
             var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
