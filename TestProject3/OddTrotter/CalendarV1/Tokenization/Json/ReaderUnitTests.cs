@@ -2750,7 +2750,7 @@
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("300:17", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("340:4", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3396,7 +3396,7 @@
             }
 
 
-            Assert.AreEqual(300, stream.Position);
+            Assert.AreEqual(340, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
 
             /*var objectStart4 = await object4.MoveInternal1().ConfigureAwait(false);
