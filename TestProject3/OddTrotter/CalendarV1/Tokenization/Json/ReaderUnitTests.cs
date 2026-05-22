@@ -2876,8 +2876,8 @@
             Assert.IsTrue(subsequentArrayElementsToken.TryNone(out var whitespace36));
             //var arrayEnd2 = await whitespace36.AsReader.MoveInternal3(whitespace36.Factory).ConfigureAwait(false);
             (context, var arrayEnd2) = await whitespace36.Move2(context).ConfigureAwait(false);
-            /*var subsequentMembers10 = await arrayEnd2.Move4(context).ConfigureAwait(false);
-            var subsequentMembersToken10 = await subsequentMembers10.Move31(context).ConfigureAwait(false);
+            var subsequentMembers10 = await arrayEnd2.Move4(context).ConfigureAwait(false);
+            /*var subsequentMembersToken10 = await subsequentMembers10.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersToken10.TryNone(out var whitespace37));
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             (context, var objectEnd2) = await whitespace37.Move2(context).ConfigureAwait(false);
@@ -3762,8 +3762,8 @@
                 _ => throw new Exception("TODO"));
             //var arrayEnd2 = await whitespace36.AsReader.MoveInternal3(whitespace36.Factory).ConfigureAwait(false);
             var arrayEnd2 = await whitespace36.MoveInternal1().ConfigureAwait(false);
-            /*var subsequentMembers10 = await arrayEnd2.MoveInternal1().ConfigureAwait(false);
-            var subsequentMembersToken10 = subsequentMembers10.TryMove(out read);
+            var subsequentMembers10 = await arrayEnd2.MoveInternal1().ConfigureAwait(false);
+            /*var subsequentMembersToken10 = subsequentMembers10.TryMove(out read);
             if (!read)
             {
                 await subsequentMembers10.Read().ConfigureAwait(false);
