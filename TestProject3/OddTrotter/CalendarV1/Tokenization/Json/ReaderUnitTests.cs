@@ -2773,7 +2773,7 @@
                 var nestedSubsequentMembersToken = await nestedSubsequentMembersReader.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
 
-                /*// false
+                // false
                 var nestedcommaReader = await nestedsubsequentMemberReader.Move1(context).ConfigureAwait(false);
                 var nestedwhitespaceReader5 = await nestedcommaReader.Move4(context).ConfigureAwait(false);
                 //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
@@ -2790,12 +2790,11 @@
                 (context, var nestedvalue3) = await nestedwhitespace7.Move2(context).ConfigureAwait(false);
                 var nestedvalueToken3 = await nestedvalue3.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
-
                 (context, var nestedsubsequentMembers2) = await nestedfalse.Move2(context).ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = await nestedsubsequentMembers2.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
 
-                // 1234
+                /*// 1234
                 var nestedcomma2 = await nestedsubsequentMember2.Move1(context).ConfigureAwait(false);
                 var nestedwhitespace8 = await nestedcomma2.Move4(context).ConfigureAwait(false);
                 //var nestedmember3 = await nestedwhitespace8.AsReader.MoveInternal3(nestedwhitespace8.Factory).ConfigureAwait(false);
@@ -3568,7 +3567,7 @@
                     _ => throw new Exception("TODO"),
                     more => more);
 
-                /*// false
+                // false
                 var nestedcommaReader = await nestedsubsequentMemberReader.MoveInternal1().ConfigureAwait(false);
                 var nestedwhitespaceReader5 = await nestedcommaReader.MoveInternal1().ConfigureAwait(false);
                 //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
@@ -3602,7 +3601,7 @@
                 }
 
                 var nestedsubsequentMembers2 = _more1();*/
-                /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -3614,7 +3613,7 @@
                     _ => throw new Exception("TODO"),
                     _ => _);
 
-                // 1234
+                /*// 1234
                 var nestedcomma2 = await nestedsubsequentMember2.MoveInternal1().ConfigureAwait(false);
                 var nestedwhitespace8 = await nestedcomma2.MoveInternal1().ConfigureAwait(false);
                 //var nestedmember3 = await nestedwhitespace8.AsReader.MoveInternal3(nestedwhitespace8.Factory).ConfigureAwait(false);
