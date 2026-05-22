@@ -2886,11 +2886,11 @@
             ////context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
             (context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
 
-            /*Assert.AreEqual(new Nothing(), nothing);
+            Assert.AreEqual(new Nothing(), nothing);
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");*/
+            ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3781,9 +3781,9 @@
             var nothingFactory = await whitespace38.AsReader.MoveInternal3(ref context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory();
 
-            /*Assert.AreEqual(new Nothing(), nothing);
+            Assert.AreEqual(new Nothing(), nothing);
 
-            Assert.AreEqual(stream.Length, stream.Position);
+            /*Assert.AreEqual(stream.Length, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);*/
         }
 
