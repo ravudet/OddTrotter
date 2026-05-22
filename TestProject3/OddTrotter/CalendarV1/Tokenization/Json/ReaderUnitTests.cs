@@ -2872,9 +2872,25 @@
                 subsequentArrayElements = await nestedobjectEnd.Move4(context).ConfigureAwait(false);
             }
 
+            var subsequentArrayElementsToken = await subsequentArrayElements.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentArrayElementsToken.TryNone(out var whitespace36));
+            //var arrayEnd2 = await whitespace36.AsReader.MoveInternal3(whitespace36.Factory).ConfigureAwait(false);
+            (context, var arrayEnd2) = await whitespace36.Move2(context).ConfigureAwait(false);
+            var subsequentMembers10 = await arrayEnd2.Move4(context).ConfigureAwait(false);
+            var subsequentMembersToken10 = await subsequentMembers10.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken10.TryNone(out var whitespace37));
+            //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
+            (context, var objectEnd2) = await whitespace37.Move2(context).ConfigureAwait(false);
+            var whitespace38 = await objectEnd2.Move4(context).ConfigureAwait(false);
+            //// TODO remove this when you fix moveinternal3
+            ////context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
+            (context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
+
+            Assert.AreEqual(new Nothing(), nothing);
+
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            //// Assert.AreEqual("480:18", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3734,11 +3750,7 @@
                 subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
             }
 
-
-            /*Assert.AreEqual(480, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);*/
-
-            /*var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
+            var subsequentArrayElementsToken = subsequentArrayElements.TryMove(out read);
             if (!read)
             {
                 await subsequentArrayElements.Read().ConfigureAwait(false);
@@ -3771,7 +3783,8 @@
 
             Assert.AreEqual(new Nothing(), nothing);
 
-            Assert.AreEqual(stream.Length, stream.Position);*/
+            Assert.AreEqual(stream.Length, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
         }
 
         static WhitespaceReader2<Nothing> Foo()
