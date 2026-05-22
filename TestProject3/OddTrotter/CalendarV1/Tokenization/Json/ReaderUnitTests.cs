@@ -2753,7 +2753,7 @@
             (context, var members4) = await whitespace35.Move2(context).ConfigureAwait(false);
             var membersToken4 = await members4.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(membersToken4.TrySome(out var firstMember4));
-            ////Json5.SubsequentArrayElementsReader<Json5.WhitespaceReader<Json5.ArrayEndReader<Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>>>>> subsequentArrayElements;
+            Json5.SubsequentArrayElementsReader<Json5.WhitespaceReader<Json5.ArrayEndReader<Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>>>>> subsequentArrayElements;
             {
                 // true
                 var nestedMember = await firstMember4.Move1(context).ConfigureAwait(false);
@@ -2869,7 +2869,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
-                /*subsequentArrayElements = await nestedobjectEnd.Move4(context).ConfigureAwait(false);*/
+                subsequentArrayElements = await nestedobjectEnd.Move4(context).ConfigureAwait(false);
             }
 
 
@@ -3531,11 +3531,11 @@
             }
 
             var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
-            /*SubsequentArrayElementsReader
+            SubsequentArrayElementsReader
                 <
                     WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
                 >
-                subsequentArrayElements;*/
+                subsequentArrayElements;
             {
                 // true
                 var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
@@ -3731,7 +3731,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                /*subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
+                subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
             }
 
 
