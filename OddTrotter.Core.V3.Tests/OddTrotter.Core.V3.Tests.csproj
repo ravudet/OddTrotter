@@ -23,4 +23,9 @@
     <ProjectReference Include="..\OddTrotter.Core.V3\OddTrotter.Core.V3.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Playground\TopLayer\OddTrotter\" />
+    <Folder Include="Playground\TopLayer\Odata\" />
+  </ItemGroup>
+
 </Project>
