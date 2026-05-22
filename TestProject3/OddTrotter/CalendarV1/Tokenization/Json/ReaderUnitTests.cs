@@ -2893,6 +2893,10 @@
             ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
             Assert.AreEqual(stream.Length, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
+
+            //// TODO you are here
+            //// TODO static only is fastest per your last tests (you should probably run this one more time just to be sure)
+            //// TODO now you need to compare it to .net
         }
 
         [TestMethod]
