@@ -2881,10 +2881,10 @@
             Assert.IsTrue(subsequentMembersToken10.TryNone(out var whitespace37));
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             (context, var objectEnd2) = await whitespace37.Move2(context).ConfigureAwait(false);
-            /*var whitespace38 = await objectEnd2.Move4(context).ConfigureAwait(false);
+            var whitespace38 = await objectEnd2.Move4(context).ConfigureAwait(false);
             //// TODO remove this when you fix moveinternal3
             ////context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
-            (context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
+            /*(context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
 
             Assert.AreEqual(new Nothing(), nothing);
 
@@ -3775,9 +3775,9 @@
                 _ => throw new Exception("TODO"));
             //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
-            /*var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
+            var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
             //// TODO remove this when you fix moveinternal3
-            context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
+            /*context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
             var nothingFactory = await whitespace38.AsReader.MoveInternal3(ref context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory();
 
