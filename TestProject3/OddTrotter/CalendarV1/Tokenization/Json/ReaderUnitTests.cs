@@ -2884,9 +2884,9 @@
             var whitespace38 = await objectEnd2.Move4(context).ConfigureAwait(false);
             //// TODO remove this when you fix moveinternal3
             ////context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
-            /*(context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
+            (context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
 
-            Assert.AreEqual(new Nothing(), nothing);
+            /*Assert.AreEqual(new Nothing(), nothing);
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
@@ -3777,11 +3777,11 @@
             var objectEnd2 = await whitespace37.MoveInternal1().ConfigureAwait(false);
             var whitespace38 = await objectEnd2.MoveInternal1().ConfigureAwait(false);
             //// TODO remove this when you fix moveinternal3
-            /*context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
+            context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
             var nothingFactory = await whitespace38.AsReader.MoveInternal3(ref context, Foo).ConfigureAwait(false);
             var nothing = nothingFactory();
 
-            Assert.AreEqual(new Nothing(), nothing);
+            /*Assert.AreEqual(new Nothing(), nothing);
 
             Assert.AreEqual(stream.Length, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);*/
