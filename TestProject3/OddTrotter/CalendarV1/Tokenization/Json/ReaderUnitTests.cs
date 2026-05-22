@@ -2821,7 +2821,7 @@
                 var nestedsubsequentMembersToken3 = await nestedsubsequentMembers3.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
 
-                /*// asdf
+                // asdf
                 var nestedcomma3 = await nestedsubsequentMember3.Move1(context).ConfigureAwait(false);
                 var nestedwhitespace11 = await nestedcomma3.Move4(context).ConfigureAwait(false);
                 //var nestedmember4 = await nestedwhitespace11.AsReader.MoveInternal3(nestedwhitespace11.Factory).ConfigureAwait(false);
@@ -2845,7 +2845,7 @@
                 var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
 
-                // null
+                /*// null
                 var nestedcomma4 = await nestedsubsequentMember4.Move1(context).ConfigureAwait(false);
                 var nestedwhitespace14 = await nestedcomma4.Move4(context).ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
@@ -3659,7 +3659,7 @@
                     _ => throw new Exception("TODO"),
                     _ => _);
 
-                /*// asdf
+                // asdf
                 var nestedcomma3 = await nestedsubsequentMember3.MoveInternal1().ConfigureAwait(false);
                 var nestedwhitespace11 = await nestedcomma3.MoveInternal1().ConfigureAwait(false);
                 //var nestedmember4 = await nestedwhitespace11.AsReader.MoveInternal3(nestedwhitespace11.Factory).ConfigureAwait(false);
@@ -3696,7 +3696,7 @@
                     _ => throw new Exception("TODO"),
                     _ => _);
 
-                // null
+                /*// null
                 var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
                 var nestedwhitespace14 = await nestedcomma4.MoveInternal1().ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
