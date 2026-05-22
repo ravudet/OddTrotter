@@ -2845,7 +2845,7 @@
                 var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.Move31(context).ConfigureAwait(false);
                 Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
 
-                /*// null
+                // null
                 var nestedcomma4 = await nestedsubsequentMember4.Move1(context).ConfigureAwait(false);
                 var nestedwhitespace14 = await nestedcomma4.Move4(context).ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
@@ -2869,7 +2869,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
-                subsequentArrayElements = await nestedobjectEnd.Move4(context).ConfigureAwait(false);*/
+                /*subsequentArrayElements = await nestedobjectEnd.Move4(context).ConfigureAwait(false);*/
             }
 
 
@@ -3696,7 +3696,7 @@
                     _ => throw new Exception("TODO"),
                     _ => _);
 
-                /*// null
+                // null
                 var nestedcomma4 = await nestedsubsequentMember4.MoveInternal1().ConfigureAwait(false);
                 var nestedwhitespace14 = await nestedcomma4.MoveInternal1().ConfigureAwait(false);
                 //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
@@ -3731,7 +3731,7 @@
 
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
-                subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
+                /*subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);*/
             }
 
 
