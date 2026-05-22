@@ -2891,6 +2891,8 @@
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
             ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual(stream.Length, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
         }
 
         [TestMethod]
@@ -3783,8 +3785,8 @@
 
             Assert.AreEqual(new Nothing(), nothing);
 
-            /*Assert.AreEqual(stream.Length, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);*/
+            Assert.AreEqual(stream.Length, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
         }
 
         static WhitespaceReader2<Nothing> Foo()
