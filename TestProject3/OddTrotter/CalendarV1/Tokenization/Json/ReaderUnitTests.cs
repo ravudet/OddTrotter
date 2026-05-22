@@ -2747,10 +2747,21 @@
             var value11 = await arrayElement.Move1(context).ConfigureAwait(false);
             var valueToken11 = await value11.Move31(context).ConfigureAwait(false);
             Assert.IsTrue(valueToken11.TryObject(out var object4));
+            var objectStart4 = await object4.Move1(context).ConfigureAwait(false);
+            var whitespace35 = await objectStart4.Move4(context).ConfigureAwait(false);
+            //var members4 = await whitespace35.AsReader.MoveInternal3(whitespace35.Factory).ConfigureAwait(false);
+            (context, var members4) = await whitespace35.Move2(context).ConfigureAwait(false);
+            var membersToken4 = await members4.Move31(context).ConfigureAwait(false);
+            Assert.IsTrue(membersToken4.TrySome(out var firstMember4));
+            /*SubsequentArrayElementsReader
+                <
+                    WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
+                >
+                subsequentArrayElements;*/
 
 
             //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            Assert.AreEqual("340:4", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual("340:19", $"{stream.Position}:{context.CurrentByteIndex}");
         }
 
         [TestMethod]
@@ -3407,12 +3418,12 @@
             }
 
             var firstMember4 = membersToken4.Apply(_ => throw new Exception("TODO"), _ => _);
-            SubsequentArrayElementsReader
+            /*SubsequentArrayElementsReader
                 <
                     WhitespaceReader<ArrayEndReader<SubsequentMembersReader<WhitespaceReader<ObjectEndReader<WhitespaceReader2<Nothing>>>>>>
                 >
-                subsequentArrayElements;
-            {
+                subsequentArrayElements;*/
+            /*{
                 // true
                 var nestedMember = await firstMember4.MoveInternal1().ConfigureAwait(false);
                 var nestedString = await nestedMember.MoveInternal1().ConfigureAwait(false);
@@ -3477,7 +3488,7 @@
                 }
 
                 var nestedsubsequentMembers2 = _more1();*/
-                var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
+                /*var nestedsubsequentMembers2 = await nestedfalse.MoveInternal1().ConfigureAwait(false);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.TryMove(out read);
                 if (!read)
                 {
@@ -3608,7 +3619,7 @@
                 //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
                 var nestedobjectEnd = await nestedsubsequentMember5.MoveInternal1().ConfigureAwait(false);
                 subsequentArrayElements = await nestedobjectEnd.MoveInternal1().ConfigureAwait(false);
-            }
+            }*/
 
 
             Assert.AreEqual(340, stream.Position);
