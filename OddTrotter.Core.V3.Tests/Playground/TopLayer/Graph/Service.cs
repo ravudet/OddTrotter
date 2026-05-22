@@ -1,4 +1,4 @@
-﻿namespace TopLayer.Graph
+﻿namespace Playground.TopLayer.Graph
 {
     internal class Service
     {

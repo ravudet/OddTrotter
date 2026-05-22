@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="Playground\TopLayer\OddTrotter\" />
-    <Folder Include="Playground\TopLayer\Odata\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,22 @@
-﻿namespace TopLayer.Graph
+﻿namespace Playground.TopLayer.Graph
 {
-    internal class Contract
+    public interface ISource
+    {
+    }
+
+    public interface IComplianceSource
+    {
+    }
+
+    public interface IMeSource
+    {
+    }
+
+    public interface IUsersSource
+    {
+    }
+
+    public interface IApplicationsSource
     {
     }
 }
