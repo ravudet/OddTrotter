@@ -1,6 +1,7 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.Json
 {
     using System;
+    using System.Buffers;
     using System.Data;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
@@ -2369,9 +2370,60 @@
         }
 
         [TestMethod]
+        public async Task DotNet()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await DotNet(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task DotNet(Stream stream)
+        {
+            stream.Position = 0;
+            var buffer = new byte[20];
+
+            System.Text.Json.JsonReaderState state;
+            while (true)
+            {
+                state = new System.Text.Json.JsonReaderState();
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                System.Text.Json.Utf8JsonReader reader;
+                var sequence = new ReadOnlySequence<byte>(buffer);
+                if (read == buffer.Length)
+                {
+                    reader = new System.Text.Json.Utf8JsonReader(sequence, false, state);
+                }
+                else
+                {
+                    reader = new System.Text.Json.Utf8JsonReader(sequence, true, state);
+                }
+
+                while (reader.Read())
+                {
+                }
+
+                state = reader.CurrentState;
+            }
+        }
+
+        [TestMethod]
         public async Task StaticOnly()
         {
-            //// TODO do the static method thing
+
+            //// TODO you are here
+            //// TODO static only is fastest per your last tests (you should probably run this one more time just to be sure)
+            //// TODO now you need to compare it to .net
+            //// TODO and optimize during .net comparison
+            
+
             //// TODO can you have ref structs but never instantiate them
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
@@ -2893,10 +2945,6 @@
             ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
             Assert.AreEqual(stream.Length, stream.Position);
             Assert.AreEqual(0, context.CurrentByteIndex);
-
-            //// TODO you are here
-            //// TODO static only is fastest per your last tests (you should probably run this one more time just to be sure)
-            //// TODO now you need to compare it to .net
         }
 
         [TestMethod]
