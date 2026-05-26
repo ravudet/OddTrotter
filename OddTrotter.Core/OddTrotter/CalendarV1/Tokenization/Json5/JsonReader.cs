@@ -53,12 +53,15 @@
         public static Task Read2(this ReaderContext readerContext)
         {
             return readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ContinueWith(
-                _ =>
+                (task, state) =>
                 {
-                    //// TODO avoid this closure
-                    readerContext.ValidBytes = _.Result;
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                    var readerContext = (ReaderContext)state;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                    readerContext!.ValidBytes = task.Result;
                     readerContext.CurrentByteIndex = 0;
-                });
+                },
+                readerContext);
         }
     }
 
