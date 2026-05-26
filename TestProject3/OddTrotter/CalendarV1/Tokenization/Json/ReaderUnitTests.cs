@@ -2370,7 +2370,7 @@
         }
 
         [TestMethod]
-        public async Task DotNet()
+        public async Task DotNetFullRead()
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
@@ -2378,39 +2378,22 @@
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < iterations; ++i)
                 {
-                    await DotNet(stream).ConfigureAwait(false);
+                    await DotNetFullRead(stream).ConfigureAwait(false);
                 }
 
                 Console.WriteLine(timer.ElapsedTicks);
             }
         }
 
-        public static async Task DotNet(Stream stream)
+        public static async Task DotNetFullRead(Stream stream)
         {
             stream.Position = 0;
-            var buffer = new byte[20];
+            var buffer = new byte[stream.Length];
+            Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));
 
-            System.Text.Json.JsonReaderState state;
-            while (true)
+            var reader = new System.Text.Json.Utf8JsonReader(buffer);
+            while (reader.Read())
             {
-                state = new System.Text.Json.JsonReaderState();
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                System.Text.Json.Utf8JsonReader reader;
-                var sequence = new ReadOnlySequence<byte>(buffer);
-                if (read == buffer.Length)
-                {
-                    reader = new System.Text.Json.Utf8JsonReader(sequence, false, state);
-                }
-                else
-                {
-                    reader = new System.Text.Json.Utf8JsonReader(sequence, true, state);
-                }
-
-                while (reader.Read())
-                {
-                }
-
-                state = reader.CurrentState;
             }
         }
 
@@ -2864,6 +2847,52 @@
 
             Assert.AreEqual(new Nothing(), nothing);
         }
+
+        [TestMethod]
+        public async Task DotNet()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await DotNet(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task DotNet(Stream stream)
+        {
+            stream.Position = 0;
+            var buffer = new byte[20];
+
+            System.Text.Json.JsonReaderState state;
+            while (true)
+            {
+                state = new System.Text.Json.JsonReaderState();
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                System.Text.Json.Utf8JsonReader reader;
+                var sequence = new ReadOnlySequence<byte>(buffer);
+                if (read == buffer.Length)
+                {
+                    reader = new System.Text.Json.Utf8JsonReader(sequence, false, state);
+                }
+                else
+                {
+                    reader = new System.Text.Json.Utf8JsonReader(sequence, true, state);
+                }
+
+                while (reader.Read())
+                {
+                }
+
+                state = reader.CurrentState;
+            }
+        }
+
         [TestMethod]
         public async Task StaticOnly()
         {
