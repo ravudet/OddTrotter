@@ -305,6 +305,8 @@
         }
     }
 
+    //// TODO you are here
+    //// TODO try ref struct, but first try just updating the interfaces to allow ref structs
     public readonly struct ValueToken<TNextReader>
     {
         private int type { get; init; }
