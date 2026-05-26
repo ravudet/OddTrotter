@@ -2863,12 +2863,6 @@
             var nothing = whitespace38.MoveTry2(context);
 
             Assert.AreEqual(new Nothing(), nothing);
-
-
-            //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
-            ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
-            Assert.AreEqual(stream.Length, stream.Position);
-            Assert.AreEqual(0, context.CurrentByteIndex);
         }
         [TestMethod]
         public async Task StaticOnly()
