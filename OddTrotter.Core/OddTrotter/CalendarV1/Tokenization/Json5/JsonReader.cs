@@ -1448,6 +1448,15 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             t2 = default!;
         }
 
+        public static TNextReader MoveTry1<TCurrentReader, TNextReader>(
+            this IMoveReader<TCurrentReader, TNextReader> moveReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader);
+            return nextReader;
+        }
+
         public static bool TryMove1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ReaderContext readerContext,
@@ -1455,6 +1464,15 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
         {
             return TCurrentReader.TryMove(readerContext, out nextReader);
+        }
+
+        public static TNextReader MoveTry2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader, out _, out _);
+            return nextReader;
         }
 
         public static bool TryMove2<TCurrentReader, TNextReader, TValue, TContext>(
@@ -1479,10 +1497,24 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryContinue( readerContext, out nextReader, out value, ref context);
         }
 
+        public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+        {
+            TCurrentReader.TryMove(readerContext, out var token);
+            return token;
+        }
+
         public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
             return TCurrentReader.TryMove(readerContext, out token);
+        }
+
+        public static bool MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader, out _);
+            return nextReader;
         }
 
         public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)

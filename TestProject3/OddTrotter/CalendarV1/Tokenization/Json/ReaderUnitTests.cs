@@ -2415,6 +2415,481 @@
         }
 
         [TestMethod]
+        public async Task StaticOnlyFullRead()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await StaticOnlyFullRead(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+
+        public static async Task StaticOnlyFullRead(Stream stream)
+        {
+            stream.Position = 0;
+            var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);
+            var reader = Readers.Create();
+
+            var whitespaceReader = reader.MoveTry1(context);
+            (context, var valueReader) = await whitespaceReader.Move2(context).ConfigureAwait(false);
+            var valueToken = valueReader.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken.TryObject(out var @object));
+            var objectStart = @object.MoveTry1(context).ConfigureAwait(false);
+            var whitespacereader2 = objectStart.MoveTry4(context).ConfigureAwait(false);
+            (context, var membersReader) = whitespacereader2.Move2(context).ConfigureAwait(false);
+            var membersToken = await membersReader.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+
+            // true
+            var memberReader = await firstMemberReader.MoveTry1(context).ConfigureAwait(false);
+            var stringReader = await memberReader.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiterReader = await stringReader.MoveTry1(context).ConfigureAwait(false);
+            var charsReader = await stringDelimiterReader.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiterReader2) = await charsReader.Move2(context).ConfigureAwait(false);
+            var whitespaceReader3 = await stringDelimiterReader2.MoveTry4(context).ConfigureAwait(false);
+            (context, var colonReader) = await whitespaceReader3.Move2(context).ConfigureAwait(false);
+            var whitespaceReader4 = await colonReader.MoveTry4(context).ConfigureAwait(false);
+            (context, var valueReader2) = await whitespaceReader4.Move2(context).ConfigureAwait(false);
+            var valueToken2 = await valueReader2.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken2.TryTrue(out var @true));
+            (context, var subsequentMembersReader) = await @true.Move2(context).ConfigureAwait(false);
+            var subsequentMembersToken = await subsequentMembersReader.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken.TryMore(out var subsequentMemberReader));
+            var commaReader = await subsequentMemberReader.MoveTry1(context).ConfigureAwait(false);
+            var whitespaceReader5 = await commaReader.MoveTry4(context).ConfigureAwait(false);
+
+            // false
+            (context, var memberReader2) = await whitespaceReader5.Move2(context).ConfigureAwait(false);
+            var stringReader2 = await memberReader2.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimterReader3 = await stringReader2.MoveTry1(context).ConfigureAwait(false);
+            var charsReader2 = await stringDelimterReader3.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiterReader4) = await charsReader2.Move2(context).ConfigureAwait(false);
+            var whitespace6 = await stringDelimiterReader4.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon2) = await whitespace6.Move2(context).ConfigureAwait(false);
+            var whitespace7 = await colon2.MoveTry4(context).ConfigureAwait(false);
+            (context, var value3) = await whitespace7.Move2(context).ConfigureAwait(false);
+            var valueToken3 = await value3.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken3.TryFalse(out var @false));
+            (context, var subsequentMembers2) = await @false.Move2(context).ConfigureAwait(false);
+            var subsequentMembersToken2 = await subsequentMembers2.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken2.TryMore(out var subsequentMember2));
+
+            // 1234
+            var comma2 = await subsequentMember2.MoveTry1(context).ConfigureAwait(false);
+            var whitespace8 = await comma2.MoveTry4(context).ConfigureAwait(false);
+            (context, var member3) = await whitespace8.Move2(context).ConfigureAwait(false);
+            var string3 = await member3.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter5 = await string3.MoveTry1(context).ConfigureAwait(false);
+            var chars3 = await stringDelimiter5.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter6) = await chars3.Move2(context).ConfigureAwait(false);
+            var whitespace9 = await stringDelimiter6.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon3) = await whitespace9.Move2(context).ConfigureAwait(false);
+            var whitespace10 = await colon3.MoveTry4(context).ConfigureAwait(false);
+            (context, var value4) = await whitespace10.Move2(context).ConfigureAwait(false);
+            var valueToken4 = await value4.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken4.TryNumber(out var number));
+            var sign = await number.MoveTry1(context).ConfigureAwait(false);
+            var @int = await sign.MoveTry4(context).ConfigureAwait(false);
+            (context, var frac) = await @int.Move2(context).ConfigureAwait(false);
+            var fracToken = await frac.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(fracToken.TryAbsent(out var exp));
+            var expToken = await exp.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(expToken.TryAbsent(out var subsequentMembers3));
+            var subsequentMembersToken3 = await subsequentMembers3.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken3.TryMore(out var subsequentMember3));
+
+            // asdf
+            var comma3 = await subsequentMember3.MoveTry1(context).ConfigureAwait(false);
+            var whitespace11 = await comma3.MoveTry4(context).ConfigureAwait(false);
+            (context, var member4) = await whitespace11.Move2(context).ConfigureAwait(false);
+            var string4 = await member4.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter7 = await string4.MoveTry1(context).ConfigureAwait(false);
+            var chars4 = await stringDelimiter7.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter8) = await chars4.Move2(context).ConfigureAwait(false);
+            var whitespace12 = await stringDelimiter8.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon4) = await whitespace12.Move2(context).ConfigureAwait(false);
+            var whitespace13 = await colon4.MoveTry4(context).ConfigureAwait(false);
+            (context, var value5) = await whitespace13.Move2(context).ConfigureAwait(false);
+            var valueToken5 = await value5.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken5.TryString(out var @string5));
+            var stringDelimiter9 = await string5.MoveTry1(context).ConfigureAwait(false);
+            var chars5 = await stringDelimiter9.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter10) = await chars5.Move2(context).ConfigureAwait(false);
+            var subsequentMembers4 = await stringDelimiter10.MoveTry4(context).ConfigureAwait(false);
+            var subsequentMembersToken4 = await subsequentMembers4.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken4.TryMore(out var subsequentMember4));
+
+            // null
+            var comma4 = await subsequentMember4.MoveTry1(context).ConfigureAwait(false);
+            var whitespace14 = await comma4.MoveTry4(context).ConfigureAwait(false);
+            (context, var member5) = await whitespace14.Move2(context).ConfigureAwait(false);
+            var string6 = await member5.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter11 = await string6.MoveTry1(context).ConfigureAwait(false);
+            var chars6 = await stringDelimiter11.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter12) = await chars6.Move2(context).ConfigureAwait(false);
+            var whitespace15 = await stringDelimiter12.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon5) = await whitespace15.Move2(context).ConfigureAwait(false);
+            var whitespace16 = await colon5.MoveTry4(context).ConfigureAwait(false);
+            (context, var value6) = await whitespace16.Move2(context).ConfigureAwait(false);
+            var valueToken6 = await value6.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken6.TryNull(out var @null));
+            (context, var subsequentMembers5) = await @null.Move2(context).ConfigureAwait(false);
+            var subsequentMembersToken5 = await subsequentMembers5.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken5.TryMore(out var subsequentMember5));
+
+
+            // object
+            var comma5 = await subsequentMember5.MoveTry1(context).ConfigureAwait(false);
+            var whitespace17 = await comma5.MoveTry4(context).ConfigureAwait(false);
+            (context, var member6) = await whitespace17.Move2(context).ConfigureAwait(false);
+            var string7 = await member6.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter13 = await string7.MoveTry1(context).ConfigureAwait(false);
+            var chars7 = await stringDelimiter13.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter14) = await chars7.Move2(context).ConfigureAwait(false);
+            var whitespace18 = await stringDelimiter14.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon6) = await whitespace18.Move2(context).ConfigureAwait(false);
+            var whitespace19 = await colon6.MoveTry4(context).ConfigureAwait(false);
+            (context, var value7) = await whitespace19.Move2(context).ConfigureAwait(false);
+            var valueToken7 = await value7.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken7.TryObject(out var object2));
+            var objectStart2 = await object2.MoveTry1(context).ConfigureAwait(false);
+            var whitespace20 = await objectStart2.MoveTry4(context).ConfigureAwait(false);
+            (context, var nestedMembers) = await whitespace20.Move2(context).ConfigureAwait(false);
+            var nestedMembersToken = await nestedMembers.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(nestedMembersToken.TrySome(out var nestedFirstMember));
+
+            Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
+            {
+                // true
+                var nestedMember = await nestedFirstMember.MoveTry1(context).ConfigureAwait(false);
+                var nestedString = await nestedMember.MoveTry1(context).ConfigureAwait(false);
+                var nestedStringDelimiter = await nestedString.MoveTry1(context).ConfigureAwait(false);
+                var nestedChars = await nestedStringDelimiter.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedStringDeliminter2) = await nestedChars.Move2(context).ConfigureAwait(false);
+                var nestedWhitespace = await nestedStringDeliminter2.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedColon) = await nestedWhitespace.Move2(context).ConfigureAwait(false);
+                var nestedWhispace2 = await nestedColon.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedValue) = await nestedWhispace2.Move2(context).ConfigureAwait(false);
+                var nestedValueToken = await nestedValue.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedValueToken.TryTrue(out var nestedTrue));
+                (context, var nestedSubsequentMembersReader) = await nestedTrue.Move2(context).ConfigureAwait(false);
+                var nestedSubsequentMembersToken = await nestedSubsequentMembersReader.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
+
+                // false
+                var nestedcommaReader = await nestedsubsequentMemberReader.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespaceReader5 = await nestedcommaReader.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedmemberReader2) = await nestedwhitespaceReader5.Move2(context).ConfigureAwait(false);
+                var nestedstringReader2 = await nestedmemberReader2.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiterReader3 = await nestedstringReader2.MoveTry1(context).ConfigureAwait(false);
+                var nestedcharsReader2 = await nestedstringDelimiterReader3.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiterReader4) = await nestedcharsReader2.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace6 = await nestedstringDelimiterReader4.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedcolon2) = await nestedwhitespace6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace7 = await nestedcolon2.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedvalue3) = await nestedwhitespace7.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken3 = await nestedvalue3.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
+
+                (context, var nestedsubsequentMembers2) = await nestedfalse.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken2 = await nestedsubsequentMembers2.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
+
+                // 1234
+                var nestedcomma2 = await nestedsubsequentMember2.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace8 = await nestedcomma2.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedmember3) = await nestedwhitespace8.Move2(context).ConfigureAwait(false);
+                var nestedstring3 = await nestedmember3.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter5 = await nestedstring3.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars3 = await nestedstringDelimiter5.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter6) = await nestedchars3.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace9 = await nestedstringDelimiter6.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedcolon3) = await nestedwhitespace9.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace10 = await nestedcolon3.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedvalue4) = await nestedwhitespace10.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken4 = await nestedvalue4.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken4.TryNumber(out var nestednumber));
+                var nestedsign = await nestednumber.MoveTry1(context).ConfigureAwait(false);
+                var nestedint = await nestedsign.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedfrac) = await nestedint.Move2(context).ConfigureAwait(false);
+                var nestedfracToken = await nestedfrac.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedfracToken.TryAbsent(out var nestedexp));
+                var nestedexpToken = await nestedexp.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedexpToken.TryAbsent(out var nestedsubsequentMembers3));
+                var nestedsubsequentMembersToken3 = await nestedsubsequentMembers3.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
+
+                // asdf
+                var nestedcomma3 = await nestedsubsequentMember3.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace11 = await nestedcomma3.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedmember4) = await nestedwhitespace11.Move2(context).ConfigureAwait(false);
+                var nestedstring4 = await nestedmember4.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter7 = await nestedstring4.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars4 = await nestedstringDelimiter7.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter8) = await nestedchars4.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace12 = await nestedstringDelimiter8.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedcolon4) = await nestedwhitespace12.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace13 = await nestedcolon4.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedvalue5) = await nestedwhitespace13.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken5 = await nestedvalue5.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken5.TryString(out var nestedstring5));
+                var nestedstringDelimiter9 = await @nestedstring5.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars5 = await nestedstringDelimiter9.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter10) = await nestedchars5.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveTry4(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
+
+                // null
+                var nestedcomma4 = await nestedsubsequentMember4.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace14 = await nestedcomma4.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedmember5) = await nestedwhitespace14.Move2(context).ConfigureAwait(false);
+                var nestedstring6 = await nestedmember5.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter11 = await nestedstring6.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars6 = await nestedstringDelimiter11.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter12) = await nestedchars6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace15 = await nestedstringDelimiter12.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedcolon5) = await nestedwhitespace15.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace16 = await nestedcolon5.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedvalue6) = await nestedwhitespace16.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken6 = await nestedvalue6.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken6.TryNull(out var nestednull));
+
+                (context, var nestedsubsequentMembers5) = await @nestednull.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken5 = await nestedsubsequentMembers5.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5));
+
+                (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
+                subsequentMembers6 = await nestedobjectEnd.MoveTry4(context).ConfigureAwait(false);
+            }
+
+            var subsequentMembersToken6 = await subsequentMembers6.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken6.TryMore(out var subsequentMember6));
+
+            // emptyobject
+            var comma6 = await subsequentMember6.MoveTry1(context).ConfigureAwait(false);
+            var whitespace21 = await comma6.MoveTry4(context).ConfigureAwait(false);
+            (context, var member7) = await whitespace21.Move2(context).ConfigureAwait(false);
+            var string8 = await member7.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter15 = await string8.MoveTry1(context).ConfigureAwait(false);
+            var chars8 = await stringDelimiter15.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter16) = await chars8.Move2(context).ConfigureAwait(false);
+            var whitespace22 = await stringDelimiter16.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon7) = await whitespace22.Move2(context).ConfigureAwait(false);
+            var whitespace23 = await colon7.MoveTry4(context).ConfigureAwait(false);
+            (context, var value8) = await whitespace23.Move2(context).ConfigureAwait(false);
+            var valueToken8 = await value8.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken8.TryObject(out var object3));
+            var objectStart3 = await object3.MoveTry1(context).ConfigureAwait(false);
+            var whitespace24 = await objectStart3.MoveTry4(context).ConfigureAwait(false);
+            (context, var members3) = await whitespace24.Move2(context).ConfigureAwait(false);
+            var membersToken3 = await members3.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(membersToken3.TryNone(out var whitespace25));
+            (context, var objectEnd) = await whitespace25.Move2(context).ConfigureAwait(false);
+            var subsequentMembers7 = await objectEnd.MoveTry4(context).ConfigureAwait(false);
+            var subsequentMembersToken7 = await subsequentMembers7.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken7.TryMore(out var subsequentMember8));
+
+            // emptyarray
+            var comma7 = await subsequentMember8.MoveTry1(context).ConfigureAwait(false);
+            var whitespace26 = await comma7.MoveTry4(context).ConfigureAwait(false);
+            (context, var member8) = await whitespace26.Move2(context).ConfigureAwait(false);
+            var string9 = await member8.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter17 = await string9.MoveTry1(context).ConfigureAwait(false);
+            var chars9 = await stringDelimiter17.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter18) = await chars9.Move2(context).ConfigureAwait(false);
+            var whitespace27 = await stringDelimiter18.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon8) = await whitespace27.Move2(context).ConfigureAwait(false);
+            var whitespace28 = await colon8.MoveTry4(context).ConfigureAwait(false);
+            (context, var value9) = await whitespace28.Move2(context).ConfigureAwait(false);
+            var valueToken9 = await value9.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken9.TryArray(out var array));
+            var arrayStart = await array.MoveTry1(context).ConfigureAwait(false);
+            var whitespace29 = await arrayStart.MoveTry4(context).ConfigureAwait(false);
+            (context, var arrayElements) = await whitespace29.Move2(context).ConfigureAwait(false);
+            var arrayElementsToken = await arrayElements.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(arrayElementsToken.TryNone(out var whitespace30));
+            (context, var arrayEnd) = await whitespace30.Move2(context).ConfigureAwait(false);
+            var subsequentMembers9 = await arrayEnd.MoveTry4(context).ConfigureAwait(false);
+            var subsequentMembersToken9 = await subsequentMembers9.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken9.TryMore(out var subsequentMember10));
+
+            // array
+            var comma8 = await subsequentMember10.MoveTry1(context).ConfigureAwait(false);
+            var whitespace31 = await comma8.MoveTry4(context).ConfigureAwait(false);
+            (context, var member9) = await whitespace31.Move2(context).ConfigureAwait(false);
+            var string10 = await member9.MoveTry1(context).ConfigureAwait(false);
+            var stringDelimiter19 = await string10.MoveTry1(context).ConfigureAwait(false);
+            var chars10 = await stringDelimiter19.MoveTry4(context).ConfigureAwait(false);
+            (context, var stringDelimiter20) = await chars10.Move2(context).ConfigureAwait(false);
+            var whitespace32 = await stringDelimiter20.MoveTry4(context).ConfigureAwait(false);
+            (context, var colon9) = await whitespace32.Move2(context).ConfigureAwait(false);
+            var whitespace33 = await colon9.MoveTry4(context).ConfigureAwait(false);
+            (context, var value10) = await whitespace33.Move2(context).ConfigureAwait(false);
+            var valueToken10 = await value10.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken10.TryArray(out var array2));
+            var arrayStart2 = await array2.MoveTry1(context).ConfigureAwait(false);
+            var whitespace34 = await arrayStart2.MoveTry4(context).ConfigureAwait(false);
+            (context, var arrayElements2) = await whitespace34.Move2(context).ConfigureAwait(false);
+            var arrayElementsToken2 = await arrayElements2.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(arrayElementsToken2.TrySome(out var arrayElement));
+            var value11 = await arrayElement.MoveTry1(context).ConfigureAwait(false);
+            var valueToken11 = await value11.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(valueToken11.TryObject(out var object4));
+            var objectStart4 = await object4.MoveTry1(context).ConfigureAwait(false);
+            var whitespace35 = await objectStart4.MoveTry4(context).ConfigureAwait(false);
+            (context, var members4) = await whitespace35.Move2(context).ConfigureAwait(false);
+            var membersToken4 = await members4.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(membersToken4.TrySome(out var firstMember4));
+            Json5.SubsequentArrayElementsReader<Json5.WhitespaceReader<Json5.ArrayEndReader<Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>>>>> subsequentArrayElements;
+            {
+                // true
+                var nestedMember = await firstMember4.MoveTry1(context).ConfigureAwait(false);
+                var nestedString = await nestedMember.MoveTry1(context).ConfigureAwait(false);
+                var nestedStringDelimiter = await nestedString.MoveTry1(context).ConfigureAwait(false);
+                var nestedChars = await nestedStringDelimiter.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedStringDeliminter2) = await nestedChars.Move2(context).ConfigureAwait(false);
+                var nestedWhitespace = await nestedStringDeliminter2.MoveTry4(context).ConfigureAwait(false);
+                //var nestedColon = await nestedWhitespace.AsReader.MoveInternal3(nestedWhitespace.Factory).ConfigureAwait(false);
+                (context, var nestedColon) = await nestedWhitespace.Move2(context).ConfigureAwait(false);
+                var nestedWhispace2 = await nestedColon.MoveTry4(context).ConfigureAwait(false);
+                //var nestedValue = await nestedWhispace2.AsReader.MoveInternal3(nestedWhispace2.Factory).ConfigureAwait(false);
+                (context, var nestedValue) = await nestedWhispace2.Move2(context).ConfigureAwait(false);
+                var nestedValueToken = await nestedValue.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedValueToken.TryTrue(out var nestedTrue));
+                (context, var nestedSubsequentMembersReader) = await nestedTrue.Move2(context).ConfigureAwait(false);
+                var nestedSubsequentMembersToken = await nestedSubsequentMembersReader.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
+
+                // false
+                var nestedcommaReader = await nestedsubsequentMemberReader.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespaceReader5 = await nestedcommaReader.MoveTry4(context).ConfigureAwait(false);
+                //var nestedmemberReader2 = await nestedwhitespaceReader5.AsReader.MoveInternal3(nestedwhitespaceReader5.Factory).ConfigureAwait(false);
+                (context, var nestedmemberReader2) = await nestedwhitespaceReader5.Move2(context).ConfigureAwait(false);
+                var nestedstringReader2 = await nestedmemberReader2.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiterReader3 = await nestedstringReader2.MoveTry1(context).ConfigureAwait(false);
+                var nestedcharsReader2 = await nestedstringDelimiterReader3.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiterReader4) = await nestedcharsReader2.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace6 = await nestedstringDelimiterReader4.MoveTry4(context).ConfigureAwait(false);
+                //var nestedcolon2 = await nestedwhitespace6.AsReader.MoveInternal3(nestedwhitespace6.Factory).ConfigureAwait(false);
+                (context, var nestedcolon2) = await nestedwhitespace6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace7 = await nestedcolon2.MoveTry4(context).ConfigureAwait(false);
+                //var nestedvalue3 = await nestedwhitespace7.AsReader.MoveInternal3(nestedwhitespace7.Factory).ConfigureAwait(false);
+                (context, var nestedvalue3) = await nestedwhitespace7.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken3 = await nestedvalue3.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
+                (context, var nestedsubsequentMembers2) = await nestedfalse.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken2 = await nestedsubsequentMembers2.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
+
+                // 1234
+                var nestedcomma2 = await nestedsubsequentMember2.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace8 = await nestedcomma2.MoveTry4(context).ConfigureAwait(false);
+                //var nestedmember3 = await nestedwhitespace8.AsReader.MoveInternal3(nestedwhitespace8.Factory).ConfigureAwait(false);
+                (context, var nestedmember3) = await nestedwhitespace8.Move2(context).ConfigureAwait(false);
+                var nestedstring3 = await nestedmember3.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter5 = await nestedstring3.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars3 = await nestedstringDelimiter5.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter6) = await nestedchars3.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace9 = await nestedstringDelimiter6.MoveTry4(context).ConfigureAwait(false);
+                //var nestedcolon3 = await nestedwhitespace9.AsReader.MoveInternal3(nestedwhitespace9.Factory).ConfigureAwait(false);
+                (context, var nestedcolon3) = await nestedwhitespace9.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace10 = await nestedcolon3.MoveTry4(context).ConfigureAwait(false);
+                //var nestedvalue4 = await nestedwhitespace10.AsReader.MoveInternal3(nestedwhitespace10.Factory).ConfigureAwait(false);
+                (context, var nestedvalue4) = await nestedwhitespace10.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken4 = await nestedvalue4.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken4.TryNumber(out var nestednumber));
+                var nestedsign = await nestednumber.MoveTry1(context).ConfigureAwait(false);
+                var nestedint = await nestedsign.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedfrac) = await nestedint.Move2(context).ConfigureAwait(false);
+                var nestedfracToken = await nestedfrac.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedfracToken.TryAbsent(out var nestedexp));
+                var nestedexpToken = await nestedexp.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedexpToken.TryAbsent(out var nestedsubsequentMembers3));
+                var nestedsubsequentMembersToken3 = await nestedsubsequentMembers3.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
+
+                // asdf
+                var nestedcomma3 = await nestedsubsequentMember3.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace11 = await nestedcomma3.MoveTry4(context).ConfigureAwait(false);
+                //var nestedmember4 = await nestedwhitespace11.AsReader.MoveInternal3(nestedwhitespace11.Factory).ConfigureAwait(false);
+                (context, var nestedmember4) = await nestedwhitespace11.Move2(context).ConfigureAwait(false);
+                var nestedstring4 = await nestedmember4.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter7 = await nestedstring4.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars4 = await nestedstringDelimiter7.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter8) = await nestedchars4.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace12 = await nestedstringDelimiter8.MoveTry4(context).ConfigureAwait(false);
+                //var nestedcolon4 = await nestedwhitespace12.AsReader.MoveInternal3(nestedwhitespace12.Factory).ConfigureAwait(false);
+                (context, var nestedcolon4) = await nestedwhitespace12.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace13 = await nestedcolon4.MoveTry4(context).ConfigureAwait(false);
+                //var nestedvalue5 = await nestedwhitespace13.AsReader.MoveInternal3(nestedwhitespace13.Factory).ConfigureAwait(false);
+                (context, var nestedvalue5) = await nestedwhitespace13.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken5 = await nestedvalue5.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken5.TryString(out var nestedstring5));
+                var nestedstringDelimiter9 = await @nestedstring5.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars5 = await nestedstringDelimiter9.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter10) = await nestedchars5.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembers4 = await nestedstringDelimiter10.MoveTry4(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken4 = await nestedsubsequentMembers4.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
+
+                // null
+                var nestedcomma4 = await nestedsubsequentMember4.MoveTry1(context).ConfigureAwait(false);
+                var nestedwhitespace14 = await nestedcomma4.MoveTry4(context).ConfigureAwait(false);
+                //var nestedmember5 = await nestedwhitespace14.AsReader.MoveInternal3(nestedwhitespace14.Factory).ConfigureAwait(false);
+                (context, var nestedmember5) = await nestedwhitespace14.Move2(context).ConfigureAwait(false);
+                var nestedstring6 = await nestedmember5.MoveTry1(context).ConfigureAwait(false);
+                var nestedstringDelimiter11 = await nestedstring6.MoveTry1(context).ConfigureAwait(false);
+                var nestedchars6 = await nestedstringDelimiter11.MoveTry4(context).ConfigureAwait(false);
+                (context, var nestedstringDelimiter12) = await nestedchars6.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace15 = await nestedstringDelimiter12.MoveTry4(context).ConfigureAwait(false);
+                //var nestedcolon5 = await nestedwhitespace15.AsReader.MoveInternal3(nestedwhitespace15.Factory).ConfigureAwait(false);
+                (context, var nestedcolon5) = await nestedwhitespace15.Move2(context).ConfigureAwait(false);
+                var nestedwhitespace16 = await nestedcolon5.MoveTry4(context).ConfigureAwait(false);
+                //var nestedvalue6 = await nestedwhitespace16.AsReader.MoveInternal3(nestedwhitespace16.Factory).ConfigureAwait(false);
+                (context, var nestedvalue6) = await nestedwhitespace16.Move2(context).ConfigureAwait(false);
+                var nestedvalueToken6 = await nestedvalue6.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedvalueToken6.TryNull(out var nestednull));
+
+                (context, var nestedsubsequentMembers5) = await @nestednull.Move2(context).ConfigureAwait(false);
+                var nestedsubsequentMembersToken5 = await nestedsubsequentMembers5.MoveTry3(context).ConfigureAwait(false);
+                Assert.IsTrue(nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5));
+
+                //var nestedobjectEnd = await nestedsubsequentMember5.AsReader.MoveInternal3(nestedsubsequentMember5.Factory).ConfigureAwait(false);
+                (context, var nestedobjectEnd) = await nestedsubsequentMember5.Move2(context).ConfigureAwait(false);
+                subsequentArrayElements = await nestedobjectEnd.MoveTry4(context).ConfigureAwait(false);
+            }
+
+            var subsequentArrayElementsToken = await subsequentArrayElements.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentArrayElementsToken.TryNone(out var whitespace36));
+            //var arrayEnd2 = await whitespace36.AsReader.MoveInternal3(whitespace36.Factory).ConfigureAwait(false);
+            (context, var arrayEnd2) = await whitespace36.Move2(context).ConfigureAwait(false);
+            var subsequentMembers10 = await arrayEnd2.MoveTry4(context).ConfigureAwait(false);
+            var subsequentMembersToken10 = await subsequentMembers10.MoveTry3(context).ConfigureAwait(false);
+            Assert.IsTrue(subsequentMembersToken10.TryNone(out var whitespace37));
+            //var objectEnd2 = await whitespace37.AsReader.MoveInternal3(whitespace37.Factory).ConfigureAwait(false);
+            (context, var objectEnd2) = await whitespace37.Move2(context).ConfigureAwait(false);
+            var whitespace38 = await objectEnd2.MoveTry4(context).ConfigureAwait(false);
+            //// TODO remove this when you fix moveinternal3
+            ////context.Read().ConfigureAwait(false).GetAwaiter().GetResult();
+            (context, var nothing) = await whitespace38.Move2(context).ConfigureAwait(false);
+
+            Assert.AreEqual(new Nothing(), nothing);
+
+
+            //// TODO now that you're not using `ref struct`, you can have intermediate helper methods
+            ////Assert.AreEqual($"{stream.Length}:0", $"{stream.Position}:{context.CurrentByteIndex}");
+            Assert.AreEqual(stream.Length, stream.Position);
+            Assert.AreEqual(0, context.CurrentByteIndex);
+        }
+        [TestMethod]
         public async Task StaticOnly()
         {
 
