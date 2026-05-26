@@ -331,7 +331,7 @@
 
     public sealed class FalseReader<TNextReader> : IContinuableValueReader<FalseReader<TNextReader>, TNextReader, FalseToken, int>
     {
-        private static readonly string literal = "false"; //// TODO const?
+        private const string literal = "false";
 
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out FalseToken value, ref int context)
         {
@@ -363,7 +363,7 @@
 
     public sealed class NullReader<TNextReader> : IContinuableValueReader<NullReader<TNextReader>, TNextReader, NullToken, int>
     {
-        private static readonly string literal = "null"; //// TODO const?
+        private const string literal = "null";
 
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out NullToken value, ref int context)
         {
@@ -395,7 +395,7 @@
 
     public sealed class TrueReader<TNextReader> : IContinuableValueReader<TrueReader<TNextReader>, TNextReader, TrueToken, int>
     {
-        private static readonly string literal = "true"; //// TODO const?
+        private const string literal = "true";
 
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out TrueToken value, ref int context)
         {
