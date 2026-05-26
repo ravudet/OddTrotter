@@ -2443,7 +2443,7 @@
             Assert.IsTrue(valueToken.TryObject(out var @object));
             var objectStart = @object.MoveTry1(context);
             var whitespacereader2 = objectStart.MoveTry4(context);
-            (context, var membersReader) = whitespacereader2.MoveTry2(context);
+            var membersReader = whitespacereader2.MoveTry2(context);
             var membersToken = membersReader.MoveTry3(context);
             Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
 
@@ -2452,52 +2452,52 @@
             var stringReader = memberReader.MoveTry1(context);
             var stringDelimiterReader = stringReader.MoveTry1(context);
             var charsReader = stringDelimiterReader.MoveTry4(context);
-            (context, var stringDelimiterReader2) = charsReader.MoveTry2(context);
+            var stringDelimiterReader2 = charsReader.MoveTry2(context);
             var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
-            (context, var colonReader) = whitespaceReader3.MoveTry2(context);
+            var colonReader = whitespaceReader3.MoveTry2(context);
             var whitespaceReader4 = colonReader.MoveTry4(context);
-            (context, var valueReader2) = whitespaceReader4.MoveTry2(context);
+            var valueReader2 = whitespaceReader4.MoveTry2(context);
             var valueToken2 = valueReader2.MoveTry3(context);
             Assert.IsTrue(valueToken2.TryTrue(out var @true));
-            (context, var subsequentMembersReader) = @true.MoveTry2(context);
+            var subsequentMembersReader = @true.MoveTry2(context);
             var subsequentMembersToken = subsequentMembersReader.MoveTry3(context);
             Assert.IsTrue(subsequentMembersToken.TryMore(out var subsequentMemberReader));
             var commaReader = subsequentMemberReader.MoveTry1(context);
             var whitespaceReader5 = commaReader.MoveTry4(context);
 
             // false
-            (context, var memberReader2) = whitespaceReader5.MoveTry2(context);
+            var memberReader2 = whitespaceReader5.MoveTry2(context);
             var stringReader2 = memberReader2.MoveTry1(context);
             var stringDelimterReader3 = stringReader2.MoveTry1(context);
             var charsReader2 = stringDelimterReader3.MoveTry4(context);
-            (context, var stringDelimiterReader4) = charsReader2.MoveTry2(context);
+            var stringDelimiterReader4 = charsReader2.MoveTry2(context);
             var whitespace6 = stringDelimiterReader4.MoveTry4(context);
-            (context, var colon2) = whitespace6.MoveTry2(context);
+            var colon2 = whitespace6.MoveTry2(context);
             var whitespace7 = colon2.MoveTry4(context);
-            (context, var value3) = whitespace7.MoveTry2(context);
+            var value3 = whitespace7.MoveTry2(context);
             var valueToken3 = value3.MoveTry3(context);
             Assert.IsTrue(valueToken3.TryFalse(out var @false));
-            (context, var subsequentMembers2) = @false.MoveTry2(context);
+            var subsequentMembers2 = @false.MoveTry2(context);
             var subsequentMembersToken2 = subsequentMembers2.MoveTry3(context);
             Assert.IsTrue(subsequentMembersToken2.TryMore(out var subsequentMember2));
 
             // 1234
             var comma2 = subsequentMember2.MoveTry1(context);
             var whitespace8 = comma2.MoveTry4(context);
-            (context, var member3) = whitespace8.MoveTry2(context);
+            var member3 = whitespace8.MoveTry2(context);
             var string3 = member3.MoveTry1(context);
             var stringDelimiter5 = string3.MoveTry1(context);
             var chars3 = stringDelimiter5.MoveTry4(context);
-            (context, var stringDelimiter6) = chars3.MoveTry2(context);
+            var stringDelimiter6 = chars3.MoveTry2(context);
             var whitespace9 = stringDelimiter6.MoveTry4(context);
-            (context, var colon3) = whitespace9.MoveTry2(context);
+            var colon3 = whitespace9.MoveTry2(context);
             var whitespace10 = colon3.MoveTry4(context);
-            (context, var value4) = whitespace10.MoveTry2(context);
+            var value4 = whitespace10.MoveTry2(context);
             var valueToken4 = value4.MoveTry3(context);
             Assert.IsTrue(valueToken4.TryNumber(out var number));
             var sign = number.MoveTry1(context);
             var @int = sign.MoveTry4(context);
-            (context, var frac) = @int.MoveTry2(context);
+            var frac = @int.MoveTry2(context);
             var fracToken = frac.MoveTry3(context);
             Assert.IsTrue(fracToken.TryAbsent(out var exp));
             var expToken = exp.MoveTry3(context);

@@ -1510,7 +1510,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryMove(readerContext, out token);
         }
 
-        public static bool MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
+        public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
         {
             TCurrentReader.TryMove(readerContext, out var nextReader, out _);
