@@ -190,6 +190,45 @@
                 throw new Exception("TODO invalid JSON");
             }
 
+            /*
+            switch (readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case (byte)'f':
+                    token = ValueToken<TNextReader>.False();
+                    return true;
+                case (byte)'n':
+                    token = ValueToken<TNextReader>.Null();
+                    return true;
+                case (byte)'t':
+                    token = ValueToken<TNextReader>.True();
+                    return true;
+                case (byte)'{':
+                    token = ValueToken<TNextReader>.Object();
+                    return true;
+                case (byte)'[':
+                    token = ValueToken<TNextReader>.Array();
+                    return true;
+                case (byte)'-':
+                case (byte)'0':
+                case (byte)'1':
+                case (byte)'2':
+                case (byte)'3':
+                case (byte)'4':
+                case (byte)'5':
+                case (byte)'6':
+                case (byte)'7':
+                case (byte)'8':
+                case (byte)'9':
+                    token = ValueToken<TNextReader>.Number();
+                    return true;
+                case (byte)'"':
+                    token = ValueToken<TNextReader>.String();
+                    return true;
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }
+            */
+
             switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
             {
                 case 'f':
@@ -226,6 +265,43 @@
                 default:
                     throw new Exception("tODO invalid JSON");
             }
+
+            /*switch (readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case 0x66:
+                    token = ValueToken<TNextReader>.False();
+                    return true;
+                case 0x6E:
+                    token = ValueToken<TNextReader>.Null();
+                    return true;
+                case 0x74:
+                    token = ValueToken<TNextReader>.True();
+                    return true;
+                case 0x7B:
+                    token = ValueToken<TNextReader>.Object();
+                    return true;
+                case 0x5B:
+                    token = ValueToken<TNextReader>.Array();
+                    return true;
+                case 0x2D:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                    token = ValueToken<TNextReader>.Number();
+                    return true;
+                case 0x22:
+                    token = ValueToken<TNextReader>.String();
+                    return true;
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }*/
         }
     }
 
