@@ -146,7 +146,7 @@
         }
     }
 
-    public struct WhitespaceToken
+    public readonly struct WhitespaceToken
     {
         public static bool TryCreate(byte @char, out WhitespaceToken whitespaceToken)
         {
@@ -226,7 +226,7 @@
         }
     }
 
-    public struct ValueToken<TNextReader>
+    public readonly struct ValueToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -357,7 +357,7 @@
         }
     }
 
-    public struct FalseToken
+    public readonly struct FalseToken
     {
     }
 
@@ -389,7 +389,7 @@
         }
     }
 
-    public struct NullToken
+    public readonly struct NullToken
     {
     }
 
@@ -421,7 +421,7 @@
         }
     }
 
-    public struct TrueToken
+    public readonly struct TrueToken
     {
     }
 
@@ -452,7 +452,7 @@
         }
     }
 
-    public struct ArrayStartToken
+    public readonly struct ArrayStartToken
     {
     }
 
@@ -486,7 +486,7 @@
         }
     }
 
-    public struct ArrayElementsToken<TNextReader>
+    public readonly struct ArrayElementsToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -558,7 +558,7 @@
         }
     }
 
-    public struct SubsequentArrayElementsToken<TNextReader>
+    public readonly struct SubsequentArrayElementsToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -600,7 +600,7 @@
         }
     }
 
-    public struct ArrayEndToken
+    public readonly struct ArrayEndToken
     {
     }
 
@@ -639,7 +639,7 @@
         }
     }
 
-    public struct SignToken
+    public readonly struct SignToken
     {
         private int type { get; init; }
 
@@ -718,7 +718,7 @@
         }
     }
 
-    public struct DigitToken
+    public readonly struct DigitToken
     {
         public static bool TryCreate(byte digit, out DigitToken digitToken)
         {
@@ -764,7 +764,7 @@
         }
     }
 
-    public struct FracToken<TNextReader>
+    public readonly struct FracToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -862,7 +862,7 @@
         }
     }
 
-    public struct ExpToken<TNextReader>
+    public readonly struct ExpToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -905,7 +905,7 @@
         }
     }
 
-    public struct EToken
+    public readonly struct EToken
     {
         public EToken(byte e)
         {
@@ -959,7 +959,7 @@
         }
     }
 
-    public struct ExpSignToken
+    public readonly struct ExpSignToken
     {
         private int type { get; init; }
 
@@ -1006,7 +1006,7 @@
         }
     }
 
-    public struct ObjectStartToken
+    public readonly struct ObjectStartToken
     {
     }
 
@@ -1038,7 +1038,7 @@
         }
     }
 
-    public struct MembersToken<TNextReader>
+    public readonly struct MembersToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -1098,7 +1098,7 @@
         }
     }
 
-    public struct ColonToken
+    public readonly struct ColonToken
     {
     }
 
@@ -1130,7 +1130,7 @@
         }
     }
 
-    public struct SubsequentMembersToken<TNextReader>
+    public readonly struct SubsequentMembersToken<TNextReader>
     {
         private int type { get; init; }
 
@@ -1181,7 +1181,7 @@
         }
     }
 
-    public struct CommaToken
+    public readonly struct CommaToken
     {
     }
 
@@ -1194,7 +1194,7 @@
         }
     }
 
-    public struct StringDelimiterToken
+    public readonly struct StringDelimiterToken
     {
     }
 
@@ -1260,7 +1260,7 @@
         }
     }
 
-    public struct CharToken //// TODO making this readonly preliminarily had good perf results...
+    public readonly struct CharToken
     {
         private int type { get; init; }
 
@@ -1300,7 +1300,7 @@
         }
     }
 
-    public struct ObjectEndToken
+    public readonly struct ObjectEndToken
     {
     }
 
