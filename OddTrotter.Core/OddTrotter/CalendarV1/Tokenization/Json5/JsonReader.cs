@@ -1434,6 +1434,11 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
                 return false;
             }
 
+            if (readerContext.ValidBytes == 0)
+            {
+                return false;
+            }
+
             ReadChar(readerContext, character);
             ++readerContext.CurrentByteIndex;
             return true;
@@ -1441,7 +1446,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
         private static void ReadChar(ReaderContext readerContext, char character)
         {
-            if (readerContext.ValidBytes == 0 || readerContext.Buffer[readerContext.CurrentByteIndex] != character)
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] != character)
             {
                 throw new Exception("TODO invalid JSON");
             }
