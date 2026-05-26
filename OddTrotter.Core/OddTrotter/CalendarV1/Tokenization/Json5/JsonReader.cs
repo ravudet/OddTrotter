@@ -778,12 +778,7 @@
             if (context.Count == 0)
             {
                 var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
-                DigitToken digit;
-                try
-                {
-                    digit = new DigitToken(currentByte);
-                }
-                catch (Exception)
+                if (!DigitToken.TryCreate(currentByte, out var digit))
                 {
                     throw new Exception("TODO invalid JSON");
                 }
@@ -813,12 +808,7 @@
                     return false;
                 }
 
-                DigitToken digit;
-                try
-                {
-                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                }
-                catch (Exception)
+                if (!DigitToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var digit))
                 {
                     break;
                 }
@@ -841,12 +831,20 @@
 
     public struct DigitToken
     {
-        public DigitToken(byte digit)
+        public static bool TryCreate(byte digit, out DigitToken digitToken)
         {
             if (digit < '0' || digit > '9')
             {
-                throw new Exception("TODO invalid JSON");
+                digitToken = default;
+                return false;
             }
+
+            digitToken = new DigitToken(digit);
+            return true;
+        }
+
+        private DigitToken(byte digit)
+        {
 
             Digit = digit;
         }
@@ -930,12 +928,7 @@
                     return false;
                 }
 
-                DigitToken digit;
-                try
-                {
-                    digit = new DigitToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                }
-                catch (Exception)
+                if (!DigitToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var digit))
                 {
                     break;
                 }
