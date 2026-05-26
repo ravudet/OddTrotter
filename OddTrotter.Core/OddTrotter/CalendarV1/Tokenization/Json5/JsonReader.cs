@@ -100,116 +100,6 @@
         }
     }
 
-    /*public sealed class WhitespaceReader<TNextReader> : ITokenReader<WhitespaceReader<TNextReader>, WhitespaceToken2<TNextReader>>
-    {
-        public static bool TryMove(ReaderContext readerContext, out WhitespaceToken2<TNextReader> token)
-        {
-            if (readerContext.ValidBytes == 0)
-            {
-                token = default!;
-                return false;
-            }
-
-            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                token = default!;
-                return false;
-            }
-
-            try
-            {
-                new WhitespaceCharToken(readerContext.Buffer[readerContext.CurrentByteIndex]);
-                token = WhitespaceToken2<TNextReader>.More();
-            }
-            catch //// TODO use control flow logic
-            {
-                token = WhitespaceToken2<TNextReader>.None();
-            }
-
-            return true;
-        }
-    }
-
-    public struct WhitespaceToken2<TNextReader>
-    {
-        private int type { get; init; }
-
-        public static WhitespaceToken2<TNextReader> More()
-        {
-            return new WhitespaceToken2<TNextReader>()
-            {
-                type = 1,
-            };
-        }
-
-        public static WhitespaceToken2<TNextReader> None()
-        {
-            return new WhitespaceToken2<TNextReader>()
-            {
-                type = 2,
-            };
-        }
-
-        public bool TryMore(out WhitespaceCharReader<WhitespaceReader<TNextReader>> more)
-        {
-            more = default!; //// TODO !
-            return this.type == 1;
-        }
-
-        public bool TryNone(out TNextReader none)
-        {
-            none = default!; //// TODO !
-            return this.type == 2;
-        }
-    }
-
-    public sealed class WhitespaceCharReader<TNextReader> : IValueReader<WhitespaceCharReader<TNextReader>, TNextReader, WhitespaceCharToken>
-    {
-        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out WhitespaceCharToken value)
-        {
-            if (readerContext.ValidBytes == 0)
-            {
-                nextReader = default!;
-                value = default!;
-                return false;
-            }
-
-            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                nextReader = default!;
-                value = default!;
-                return false;
-            }
-
-            nextReader = default!;
-            value = new WhitespaceCharToken(readerContext.Buffer[readerContext.CurrentByteIndex]); //// TODO handle exception
-            ++readerContext.CurrentByteIndex;
-            return true;
-        }
-    }
-
-    public struct WhitespaceCharToken
-    {
-        public WhitespaceCharToken(byte @char)
-        {
-            switch (@char)
-            {
-                case 0x20:
-                case 0x09:
-                case 0x0A:
-                case 0x0D:
-                    this.Char = @char;
-                    break;
-                default:
-                    throw new Exception("TODO invalid JSON");
-            }
-
-        }
-
-        public byte Char { get; }
-    }*/
-
-
 
 
 
@@ -235,7 +125,6 @@
                     return false;
                 }
 
-                //// TODO use control flow logic for other values, like chars
                 if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
                 {
                     break;
