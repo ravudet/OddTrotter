@@ -994,132 +994,9 @@ namespace Playground
             return true;
 
 
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                token = default!; //// TODO !
-                return false;
-            }
-
-            if (readerContext.ValidBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            //switch (readerContext.Buffer[readerContext.CurrentByteIndex])
-            //{
-            //    case (byte)'f':
-            //        token = ValueToken<TNextReader>.False();
-            //        return true;
-            //    case (byte)'n':
-            //        token = ValueToken<TNextReader>.Null();
-            //        return true;
-            //    case (byte)'t':
-            //        token = ValueToken<TNextReader>.True();
-            //        return true;
-            //    case (byte)'{':
-            //        token = ValueToken<TNextReader>.Object();
-            //        return true;
-            //    case (byte)'[':
-            //        token = ValueToken<TNextReader>.Array();
-            //        return true;
-            //    case (byte)'-':
-            //    case (byte)'0':
-            //    case (byte)'1':
-            //    case (byte)'2':
-            //    case (byte)'3':
-            //    case (byte)'4':
-            //    case (byte)'5':
-            //    case (byte)'6':
-            //    case (byte)'7':
-            //    case (byte)'8':
-            //    case (byte)'9':
-            //        token = ValueToken<TNextReader>.Number();
-            //        return true;
-            //    case (byte)'"':
-            //        token = ValueToken<TNextReader>.String();
-            //        return true;
-            //    default:
-            //        throw new Exception("tODO invalid JSON");
-            //}
-
-            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
-            {
-                case 'f':
-                    token = ValueToken<TNextReader>.False();
-                    return true;
-                case 'n':
-                    token = ValueToken<TNextReader>.Null();
-                    return true;
-                case 't':
-                    token = ValueToken<TNextReader>.True();
-                    return true;
-                case '{':
-                    token = ValueToken<TNextReader>.Object();
-                    return true;
-                case '[':
-                    token = ValueToken<TNextReader>.Array();
-                    return true;
-                case '-':
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    token = ValueToken<TNextReader>.Number();
-                    return true;
-                case '"':
-                    token = ValueToken<TNextReader>.String();
-                    return true;
-                default:
-                    throw new Exception("tODO invalid JSON");
-            }
-
-            //switch (readerContext.Buffer[readerContext.CurrentByteIndex])
-            //{
-            //    case 0x66:
-            //        token = ValueToken<TNextReader>.False();
-            //        return true;
-            //    case 0x6E:
-            //        token = ValueToken<TNextReader>.Null();
-            //        return true;
-            //    case 0x74:
-            //        token = ValueToken<TNextReader>.True();
-            //        return true;
-            //    case 0x7B:
-            //        token = ValueToken<TNextReader>.Object();
-            //        return true;
-            //    case 0x5B:
-            //        token = ValueToken<TNextReader>.Array();
-            //        return true;
-            //    case 0x2D:
-            //    case 0x30:
-            //    case 0x31:
-            //    case 0x32:
-            //    case 0x33:
-            //    case 0x34:
-            //    case 0x35:
-            //    case 0x36:
-            //    case 0x37:
-            //    case 0x38:
-            //    case 0x39:
-            //        token = ValueToken<TNextReader>.Number();
-            //        return true;
-            //    case 0x22:
-            //        token = ValueToken<TNextReader>.String();
-            //        return true;
-            //    default:
-            //        throw new Exception("tODO invalid JSON");
-            //}*/
         }
     }
 
-    //// TODO you are here
-    //// TODO try ref struct, but first try just updating the interfaces to allow ref structs
     public readonly struct ValueToken<TNextReader>
     {
         private int type { get; init; }
@@ -1180,18 +1057,6 @@ namespace Playground
             };
         }
 
-        public bool TryFalse(out FalseReader<TNextReader> falseReader)
-        {
-            falseReader = default!; //// TODO !
-            return this.type == 1;
-        }
-
-        public bool TryNull(out NullReader<TNextReader> nullReader)
-        {
-            nullReader = default!; //// TODO !
-            return this.type == 2;
-        }
-
         public bool TryTrue(out TrueReader<TNextReader> trueReader)
         {
             trueReader = default!; //// TODO !
@@ -1202,24 +1067,6 @@ namespace Playground
         {
             objectReader = default!; //// TODO !
             return this.type == 4;
-        }
-
-        public bool TryArray(out ArrayReader<TNextReader> arrayReader)
-        {
-            arrayReader = default!; //// TODO !
-            return this.type == 5;
-        }
-
-        public bool TryNumber(out NumberReader<TNextReader> numberReader)
-        {
-            numberReader = default!; //// TODO !
-            return this.type == 6;
-        }
-
-        public bool TryString(out StringReader<TNextReader> stringReader)
-        {
-            stringReader = default!; //// TODO !
-            return this.type == 7;
         }
     }
 
