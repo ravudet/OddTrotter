@@ -2417,7 +2417,7 @@
                 for (int i = 0; i < iterations; ++i)
                 {
                     timer.Start();
-                    StaticOnlyFullRead(buffer);
+                    StaticOnlyFullRead(buffer); // right around 5000 is the cost of doing the bare minimum setup (creating the reader context and having the initial jsonreader to kick everything off);
                     timer.Stop();
                 }
 
@@ -2430,10 +2430,10 @@
         {
             /*stream.Position = 0;
             var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);*/
-            /*var context = Json5.ReaderContext.FromBuffer(buffer);
+            var context = Json5.ReaderContext.FromBuffer(buffer);
             var reader = Readers.Create();
 
-            var whitespaceReader = reader.MoveTry1(context);
+            /*var whitespaceReader = reader.MoveTry1(context);
             var valueReader = whitespaceReader.MoveTry2(context);
             var valueToken = valueReader.MoveTry3(context);
             valueToken.TryObject(out var @object);

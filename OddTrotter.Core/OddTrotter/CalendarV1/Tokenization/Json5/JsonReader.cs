@@ -1755,6 +1755,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
     public static class Readers
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JsonReader Create()
         {
             return null!; //// TODO !
