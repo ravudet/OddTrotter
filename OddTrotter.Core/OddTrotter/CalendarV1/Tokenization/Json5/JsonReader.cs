@@ -1384,8 +1384,41 @@
 
     public sealed class SubsequentMembersReader<TNextReader> : ITokenReader<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>>
     {
+        private static int SubsequentMembersCount = 0;
+
         public static bool TryMove(ReaderContext readerContext, out SubsequentMembersToken<TNextReader> token)
         {
+            switch (SubsequentMembersCount)
+            {
+                case 0:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 1:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 2:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 3:
+                    token = SubsequentMembersToken<TNextReader>.None();
+                    break;
+                case 4:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 5:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 6:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 7:
+                    token = SubsequentMembersToken<TNextReader>.None();
+                    break;
+            }
+
+            ++SubsequentMembersCount;
+            return true;
+
             /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 token = default;
