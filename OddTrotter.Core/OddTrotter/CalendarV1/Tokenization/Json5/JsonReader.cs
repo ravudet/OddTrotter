@@ -1267,8 +1267,12 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
         {
+            /*nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, '{');*/
+
             nextReader = default!;
-            return Json6.Helpers.TryReadChar(readerContext, '{');
+            value = default!;
+            return true;
         }
     }
 
@@ -1406,7 +1410,7 @@
                     token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 3:
-                    token = SubsequentMembersToken<TNextReader>.None();
+                    token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 4:
                     token = SubsequentMembersToken<TNextReader>.More();
@@ -1418,6 +1422,36 @@
                     token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 7:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 8:
+                    token = SubsequentMembersToken<TNextReader>.None();
+                    break;
+                case 9:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 10:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 11:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 12:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 13:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 14:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 15:
+                    token = SubsequentMembersToken<TNextReader>.More();
+                    break;
+                case 16:
+                    token = SubsequentMembersToken<TNextReader>.None();
+                    break;
+                case 17:
                     token = SubsequentMembersToken<TNextReader>.None();
                     break;
                 default:
