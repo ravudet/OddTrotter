@@ -1414,6 +1414,8 @@
                 case 7:
                     token = SubsequentMembersToken<TNextReader>.None();
                     break;
+                default:
+                    throw new Exception("TODO invalid");
             }
 
             ++SubsequentMembersCount;
