@@ -1482,22 +1482,6 @@ namespace Playground
                 (@char >= 0x5D); //// TODO the upper bound here in the standard is not actually a valid byte...
         }
     }
-    public sealed class ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, ColonToken>
-    {
-        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ColonToken value)
-        {
-            /*nextReader = default!; //// TODO !
-            return Json6.Helpers.TryReadChar(readerContext, ':');*/
-
-            nextReader = default!;
-            value = default!;
-            return true;
-        }
-    }
-
-    public readonly struct ColonToken
-    {
-    }
 
     public sealed class SubsequentMembersReader<TNextReader>
     {
