@@ -199,58 +199,58 @@
                     token = ValueToken<TNextReader>.False();
                     break;
                 case 2:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Number();
                     break;
                 case 3:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.String();
                     break;
                 case 4:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Null();
                     break;
                 case 5:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 6:
                     token = ValueToken<TNextReader>.True();
                     break;
                 case 7:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.False();
                     break;
                 case 8:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Number();
                     break;
                 case 9:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.String();
                     break;
                 case 10:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Null();
                     break;
                 case 11:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 12:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Array();
                     break;
                 case 13:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Array();
                     break;
                 case 14:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 15:
                     token = ValueToken<TNextReader>.True();
                     break;
                 case 16:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.False();
                     break;
                 case 17:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Number();
                     break;
                 case 20:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.String();
                     break;
                 case 19:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Null();
                     break;
                 default:
                     throw new Exception("TODO invalid");
