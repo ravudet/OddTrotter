@@ -835,34 +835,6 @@ namespace Playground
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
         {
-            /*while (true)
-            {
-                if (readerContext.ValidBytes == 0)
-                {
-                    // no more bytes to read
-                    break;
-                }
-
-                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-                {
-                    nextReader = default!; //// TODO !
-                    value = default!; //// TODO !
-                    return false;
-                }
-
-                if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
-                {
-                    break;
-                }
-
-                ++readerContext.CurrentByteIndex;
-                context.Add(whitespace);
-            }
-
-            nextReader = default!; //// TODO !
-            value = context;
-            return true;*/
-
             nextReader = default!;
             value = default!;
             return true;
@@ -870,9 +842,6 @@ namespace Playground
 
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
         {
-            /*context = new List<WhitespaceToken>();
-            return WhitespaceReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
-
             nextReader = default!;
             value = default!;
             context = default!;
@@ -1074,9 +1043,6 @@ namespace Playground
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
         {
-            /*nextReader = default!;
-            return Json6.Helpers.TryReadChar(readerContext, '{');*/
-
             nextReader = default!;
             return true;
         }
@@ -1109,28 +1075,6 @@ namespace Playground
 
             ++MembersCount;
             return true;
-
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
-            {
-                token = default;
-                return false;
-            }
-
-            if (readerContext.ValidBytes == 0)
-            {
-                throw new Exception("TODO invalid JSON");
-            }
-
-            if (readerContext.Buffer[readerContext.CurrentByteIndex] == '"')
-            {
-                token = MembersToken<TNextReader>.Some();
-            }
-            else
-            {
-                token = MembersToken<TNextReader>.None();
-            }
-
-            return true;*/
         }
     }
 
