@@ -99,6 +99,14 @@
         static abstract bool TryMove(ReaderContext readerContext, out TToken token);
     }
 
+    public readonly ref struct FakeReader
+    {
+        public void DoNothing(byte[] buffer, out string value)
+        {
+            value = default!;
+        }
+    }
+
 
     public sealed class JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
     {
@@ -107,10 +115,36 @@
             nextReader = default!; //// TODO !
             return true;
         }
+
+        public static Result<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>> TryMove(ReaderContext readerContext)
+        {
+            return new Result<WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>(true);
+        }
+
+        public static void DoNothing(byte[] readerContext, out string value)
+        {
+            value = default!;
+        }
     }
 
 
+    public readonly ref struct Result<T>
+    {
+        public Result(bool moved)
+        {
+            Moved = moved;
+        }
 
+        public bool Moved { get; }
+
+        public T Value
+        {
+            get
+            {
+                return default!;
+            }
+        }
+    }
 
 
 

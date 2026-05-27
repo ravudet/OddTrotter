@@ -2397,9 +2397,9 @@
             Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));*/
 
             var reader = new System.Text.Json.Utf8JsonReader(buffer);
-            while (reader.Read())
+            /*while (reader.Read())
             {
-            }
+            }*/
         }
 
         [TestMethod]
@@ -2410,7 +2410,7 @@
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
-                var iterations = 10000;
+                var iterations = 1000000;
                 var buffer = new byte[stream.Length];
                 await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false);
                 var timer = new System.Diagnostics.Stopwatch();
@@ -2430,8 +2430,14 @@
         {
             /*stream.Position = 0;
             var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);*/
-            var context = Json5.ReaderContext.FromBuffer(buffer);
-            var reader = Readers.Create();
+            /*var context = Json5.ReaderContext.FromBuffer(buffer);
+            var reader = Readers.Create();*/
+
+            ////Json5.JsonReader.TryMove(context, out _);
+            ////Json5.JsonReader.TryMove(context);
+            Json5.JsonReader.DoNothing(buffer, out _);
+            /*var fakeReader = new Json5.FakeReader();
+            fakeReader.DoNothing(buffer, out _);*/
 
             /*var whitespaceReader = reader.MoveTry1(context);
             var valueReader = whitespaceReader.MoveTry2(context);
@@ -2441,9 +2447,9 @@
             var whitespacereader2 = objectStart.MoveTry4(context);
             var membersReader = whitespacereader2.MoveTry2(context);
             var membersToken = membersReader.MoveTry3(context);
-            membersToken.TrySome(out var firstMemberReader);
+            membersToken.TrySome(out var firstMemberReader);*/
 
-            // true
+            /*// true
             var memberReader = firstMemberReader.MoveTry1(context);
             var stringReader = memberReader.MoveTry1(context);
             var stringDelimiterReader = stringReader.MoveTry1(context);
@@ -2475,9 +2481,9 @@
             valueToken3.TryFalse(out var @false);
             var subsequentMembers2 = @false.MoveTry2(context);
             var subsequentMembersToken2 = subsequentMembers2.MoveTry3(context);
-            subsequentMembersToken2.TryMore(out var subsequentMember2);
+            subsequentMembersToken2.TryMore(out var subsequentMember2);*/
 
-            // 1234
+            /*// 1234
             var comma2 = subsequentMember2.MoveTry1(context);
             var whitespace8 = comma2.MoveTry4(context);
             var member3 = whitespace8.MoveTry2(context);
