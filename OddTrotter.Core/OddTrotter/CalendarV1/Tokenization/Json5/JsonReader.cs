@@ -35,6 +35,11 @@
         public int CurrentByteIndex { get; set; }
         public int ValidBytes { get; set; }
 
+        public static ReaderContext FromBuffer(byte[] buffer)
+        {
+            return new ReaderContext(null!, buffer, 0, buffer.Length);
+        }
+
         public static async ValueTask<ReaderContext> FromStream(Stream stream, byte[] buffer)
         {
             var readerContext = new ReaderContext(stream, buffer, 0, 0);

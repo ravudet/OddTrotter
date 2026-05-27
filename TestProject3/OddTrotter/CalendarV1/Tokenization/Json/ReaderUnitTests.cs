@@ -2375,21 +2375,24 @@
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
+                var buffer = new byte[stream.Length];
+                Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));
+
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < iterations; ++i)
                 {
-                    await DotNetFullRead(stream).ConfigureAwait(false);
+                    DotNetFullRead(buffer);
                 }
 
                 Console.WriteLine(timer.ElapsedTicks);
             }
         }
 
-        public static async Task DotNetFullRead(Stream stream)
+        public static void DotNetFullRead(byte[] buffer)
         {
-            stream.Position = 0;
+            /*stream.Position = 0;
             var buffer = new byte[stream.Length];
-            Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));
+            Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));*/
 
             var reader = new System.Text.Json.Utf8JsonReader(buffer);
             while (reader.Read())
@@ -2406,10 +2409,12 @@
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
+                var buffer = new byte[stream.Length];
+                await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false);
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < iterations; ++i)
                 {
-                    await StaticOnlyFullRead(stream).ConfigureAwait(false);
+                    StaticOnlyFullRead(buffer);
                 }
 
                 Console.WriteLine(timer.ElapsedTicks);
@@ -2417,10 +2422,11 @@
         }
 
 
-        public static async Task StaticOnlyFullRead(Stream stream)
+        public static void StaticOnlyFullRead(byte[] buffer)
         {
-            stream.Position = 0;
-            var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);
+            /*stream.Position = 0;
+            var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);*/
+            var context = Json5.ReaderContext.FromBuffer(buffer);
             var reader = Readers.Create();
 
             var whitespaceReader = reader.MoveTry1(context);
