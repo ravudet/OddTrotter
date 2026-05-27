@@ -1748,6 +1748,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Json5;
@@ -1766,6 +1767,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             t2 = default!;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNextReader MoveTry1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ReaderContext readerContext)
@@ -1784,6 +1786,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryMove(readerContext, out nextReader);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNextReader MoveTry2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
             ReaderContext readerContext)
@@ -1815,6 +1818,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryContinue( readerContext, out nextReader, out value, ref context);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
@@ -1828,6 +1832,7 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             return TCurrentReader.TryMove(readerContext, out token);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
         {

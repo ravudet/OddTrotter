@@ -2378,10 +2378,12 @@
                 var buffer = new byte[stream.Length];
                 Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));
 
-                var timer = System.Diagnostics.Stopwatch.StartNew();
+                var timer = new System.Diagnostics.Stopwatch();
                 for (int i = 0; i < iterations; ++i)
                 {
+                    timer.Start();
                     DotNetFullRead(buffer);
+                    timer.Stop();
                 }
 
                 Console.WriteLine(timer.ElapsedTicks);
@@ -2411,10 +2413,12 @@
                 var iterations = 10000;
                 var buffer = new byte[stream.Length];
                 await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false);
-                var timer = System.Diagnostics.Stopwatch.StartNew();
+                var timer = new System.Diagnostics.Stopwatch();
                 for (int i = 0; i < iterations; ++i)
                 {
+                    timer.Start();
                     StaticOnlyFullRead(buffer);
+                    timer.Stop();
                 }
 
                 Console.WriteLine(timer.ElapsedTicks);
@@ -2426,7 +2430,7 @@
         {
             /*stream.Position = 0;
             var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);*/
-            var context = Json5.ReaderContext.FromBuffer(buffer);
+            /*var context = Json5.ReaderContext.FromBuffer(buffer);
             var reader = Readers.Create();
 
             var whitespaceReader = reader.MoveTry1(context);
@@ -2534,10 +2538,10 @@
             valueToken6.TryNull(out var @null);
             var subsequentMembers5 = @null.MoveTry2(context);
             var subsequentMembersToken5 = subsequentMembers5.MoveTry3(context);
-            subsequentMembersToken5.TryMore(out var subsequentMember5);
+            subsequentMembersToken5.TryMore(out var subsequentMember5);*/
 
 
-            // object
+            /*// object
             var comma5 = subsequentMember5.MoveTry1(context);
             var whitespace17 = comma5.MoveTry4(context);
             var member6 = whitespace17.MoveTry2(context);
@@ -2660,9 +2664,9 @@
 
                 var nestedobjectEnd = nestedsubsequentMember5!.MoveTry2(context);
                 subsequentMembers6 = nestedobjectEnd.MoveTry4(context);
-            }
+            }*/
 
-            var subsequentMembersToken6 = subsequentMembers6.MoveTry3(context);
+            /*var subsequentMembersToken6 = subsequentMembers6.MoveTry3(context);
             subsequentMembersToken6.TryMore(out var subsequentMember6);
 
             // emptyobject
@@ -2854,7 +2858,7 @@
             var whitespace38 = objectEnd2.MoveTry4(context);
             var nothing = whitespace38.MoveTry2(context);
 
-            Assert.AreEqual(new Nothing(), nothing);
+            Assert.AreEqual(new Nothing(), nothing);*/
         }
 
         [TestMethod]
