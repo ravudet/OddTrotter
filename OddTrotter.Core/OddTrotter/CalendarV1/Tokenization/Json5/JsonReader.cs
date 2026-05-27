@@ -188,6 +188,12 @@
     public static class Counts
     {
         public static int ValueCount = -1;
+
+        public static int ArrayElementsCount = 0;
+
+        public static int MembersCount = 0;
+
+        public static int SubsequentMembersCount = 0;
     }
 
     public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
@@ -658,11 +664,9 @@
 
     public sealed class ArrayElementsReader<TNextReader> : ITokenReader<ArrayElementsReader<TNextReader>, ArrayElementsToken<TNextReader>>
     {
-        private static int ArrayElementsCount = 0;
-
         public static bool TryMove(ReaderContext readerContext, out ArrayElementsToken<TNextReader> token)
         {
-            switch (ArrayElementsCount)
+            switch (Counts.ArrayElementsCount)
             {
                 case 0:
                     token = ArrayElementsToken<TNextReader>.None();
@@ -674,7 +678,7 @@
                     throw new Exception("TODO invalid");
             }
 
-            ++ArrayElementsCount;
+            ++Counts.ArrayElementsCount;
             return true;
 
             /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
@@ -1274,11 +1278,9 @@
 
     public sealed class MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>>
     {
-        private static int MembersCount = 0;
-
         public static bool TryMove(ReaderContext readerContext, out MembersToken<TNextReader> token)
         {
-            switch (MembersCount)
+            switch (Counts.MembersCount)
             {
                 case 0:
                     token = MembersToken<TNextReader>.Some();
@@ -1293,7 +1295,7 @@
                     throw new Exception("TODO invalid");
             }
 
-            ++MembersCount;
+            ++Counts.MembersCount;
             return true;
 
             /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
@@ -1390,11 +1392,9 @@
 
     public sealed class SubsequentMembersReader<TNextReader> : ITokenReader<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>>
     {
-        private static int SubsequentMembersCount = 0;
-
         public static bool TryMove(ReaderContext readerContext, out SubsequentMembersToken<TNextReader> token)
         {
-            switch (SubsequentMembersCount)
+            switch (Counts.SubsequentMembersCount)
             {
                 case 0:
                     token = SubsequentMembersToken<TNextReader>.More();
@@ -1424,7 +1424,7 @@
                     throw new Exception("TODO invalid");
             }
 
-            ++SubsequentMembersCount;
+            ++Counts.SubsequentMembersCount;
             return true;
 
             /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
