@@ -1204,13 +1204,6 @@ namespace Playground
             return null!; //// TODO !
         }
 
-        public static void DoWork<T1, T2>(
-            this T1 t1,
-            out T2 t2)
-        {
-            t2 = default!;
-        }
-
         public static TNextReader MoveTry1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ReaderContext readerContext)
@@ -1218,15 +1211,6 @@ namespace Playground
         {
             TCurrentReader.TryMove(readerContext, out var nextReader);
             return nextReader;
-        }
-
-        public static bool TryMove1<TCurrentReader, TNextReader>(
-            this IMoveReader<TCurrentReader, TNextReader> moveReader,
-            ReaderContext readerContext,
-            out TNextReader nextReader)
-            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
-        {
-            return TCurrentReader.TryMove(readerContext, out nextReader);
         }
 
         public static TNextReader MoveTry2<TCurrentReader, TNextReader, TValue, TContext>(
@@ -1238,39 +1222,11 @@ namespace Playground
             return nextReader;
         }
 
-        public static bool TryMove2<TCurrentReader, TNextReader, TValue, TContext>(
-            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
-            ReaderContext readerContext,
-            out TNextReader nextReader,
-            out TValue value,
-            out TContext context)
-            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
-        {
-            return TCurrentReader.TryMove(readerContext, out nextReader, out value, out context);
-        }
-
-        public static bool TryContinue2<TCurrentReader, TNextReader, TValue, TContext>(
-            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
-            ReaderContext readerContext,
-            out TNextReader nextReader,
-            out TValue value,
-            ref TContext context)
-            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
-        {
-            return TCurrentReader.TryContinue(readerContext, out nextReader, out value, ref context);
-        }
-
         public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>
         {
             TCurrentReader.TryMove(readerContext, out var token);
             return token;
-        }
-
-        public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
-        {
-            return TCurrentReader.TryMove(readerContext, out token);
         }
 
         public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
@@ -1280,28 +1236,6 @@ namespace Playground
             return nextReader;
         }
 
-        public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
-        {
-            return TCurrentReader.TryMove(readerContext, out nextReader, out value);
-        }
-
-
-        /*public static async Task<(ReaderContext, TNextReader)> Move2<TNextReader>(this WhitespaceReader<TNextReader> whitespaceReader, ReaderContext readerContext)
-        {
-            while (true)
-            {
-                var whitespaceToken = await whitespaceReader.Move31(readerContext).ConfigureAwait(false);
-                if (whitespaceToken.TryMore(out var whitespaceCharReader))
-                {
-                    whitespaceReader = await whitespaceCharReader.Move4(readerContext).ConfigureAwait(false);
-                }
-                else if (whitespaceToken.TryNone(out var nextReader))
-                {
-                    return (readerContext, nextReader);
-                }
-            }
-        }*/
 
     }
 }
