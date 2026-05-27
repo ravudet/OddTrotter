@@ -2423,12 +2423,12 @@
             var whitespaceReader = reader.MoveTry1(context);
             var valueReader = whitespaceReader.MoveTry2(context);
             var valueToken = valueReader.MoveTry3(context);
-            Assert.IsTrue(valueToken.TryObject(out var @object));
+            valueToken.TryObject(out var @object);
             var objectStart = @object.MoveTry1(context);
             var whitespacereader2 = objectStart.MoveTry4(context);
             var membersReader = whitespacereader2.MoveTry2(context);
             var membersToken = membersReader.MoveTry3(context);
-            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+            membersToken.TrySome(out var firstMemberReader);
 
             // true
             var memberReader = firstMemberReader.MoveTry1(context);
@@ -2441,10 +2441,10 @@
             var whitespaceReader4 = colonReader.MoveTry4(context);
             var valueReader2 = whitespaceReader4.MoveTry2(context);
             var valueToken2 = valueReader2.MoveTry3(context);
-            Assert.IsTrue(valueToken2.TryTrue(out var @true));
+            valueToken2.TryTrue(out var @true);
             var subsequentMembersReader = @true.MoveTry2(context);
             var subsequentMembersToken = subsequentMembersReader.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken.TryMore(out var subsequentMemberReader));
+            subsequentMembersToken.TryMore(out var subsequentMemberReader);
             var commaReader = subsequentMemberReader.MoveTry1(context);
             var whitespaceReader5 = commaReader.MoveTry4(context);
 
@@ -2459,10 +2459,10 @@
             var whitespace7 = colon2.MoveTry4(context);
             var value3 = whitespace7.MoveTry2(context);
             var valueToken3 = value3.MoveTry3(context);
-            Assert.IsTrue(valueToken3.TryFalse(out var @false));
+            valueToken3.TryFalse(out var @false);
             var subsequentMembers2 = @false.MoveTry2(context);
             var subsequentMembersToken2 = subsequentMembers2.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken2.TryMore(out var subsequentMember2));
+            subsequentMembersToken2.TryMore(out var subsequentMember2);
 
             // 1234
             var comma2 = subsequentMember2.MoveTry1(context);
@@ -2477,16 +2477,16 @@
             var whitespace10 = colon3.MoveTry4(context);
             var value4 = whitespace10.MoveTry2(context);
             var valueToken4 = value4.MoveTry3(context);
-            Assert.IsTrue(valueToken4.TryNumber(out var number));
+            valueToken4.TryNumber(out var number);
             var sign = number.MoveTry1(context);
             var @int = sign.MoveTry4(context);
             var frac = @int.MoveTry2(context);
             var fracToken = frac.MoveTry3(context);
-            Assert.IsTrue(fracToken.TryAbsent(out var exp));
+            fracToken.TryAbsent(out var exp);
             var expToken = exp.MoveTry3(context);
-            Assert.IsTrue(expToken.TryAbsent(out var subsequentMembers3));
-            var subsequentMembersToken3 = subsequentMembers3.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken3.TryMore(out var subsequentMember3));
+            expToken.TryAbsent(out var subsequentMembers3);
+            var subsequentMembersToken3 = subsequentMembers3!.MoveTry3(context);
+            subsequentMembersToken3.TryMore(out var subsequentMember3);
 
             // asdf
             var comma3 = subsequentMember3.MoveTry1(context);
@@ -2501,13 +2501,13 @@
             var whitespace13 = colon4.MoveTry4(context);
             var value5 = whitespace13.MoveTry2(context);
             var valueToken5 = value5.MoveTry3(context);
-            Assert.IsTrue(valueToken5.TryString(out var @string5));
+            valueToken5.TryString(out var @string5);
             var stringDelimiter9 = string5.MoveTry1(context);
             var chars5 = stringDelimiter9.MoveTry4(context);
             var stringDelimiter10 = chars5.MoveTry2(context);
             var subsequentMembers4 = stringDelimiter10.MoveTry4(context);
             var subsequentMembersToken4 = subsequentMembers4.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken4.TryMore(out var subsequentMember4));
+            subsequentMembersToken4.TryMore(out var subsequentMember4);
 
             // null
             var comma4 = subsequentMember4.MoveTry1(context);
@@ -2522,10 +2522,10 @@
             var whitespace16 = colon5.MoveTry4(context);
             var value6 = whitespace16.MoveTry2(context);
             var valueToken6 = value6.MoveTry3(context);
-            Assert.IsTrue(valueToken6.TryNull(out var @null));
+            valueToken6.TryNull(out var @null);
             var subsequentMembers5 = @null.MoveTry2(context);
             var subsequentMembersToken5 = subsequentMembers5.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken5.TryMore(out var subsequentMember5));
+            subsequentMembersToken5.TryMore(out var subsequentMember5);
 
 
             // object
@@ -2541,12 +2541,12 @@
             var whitespace19 = colon6.MoveTry4(context);
             var value7 = whitespace19.MoveTry2(context);
             var valueToken7 = value7.MoveTry3(context);
-            Assert.IsTrue(valueToken7.TryObject(out var object2));
+            valueToken7.TryObject(out var object2);
             var objectStart2 = object2.MoveTry1(context);
             var whitespace20 = objectStart2.MoveTry4(context);
             var nestedMembers = whitespace20.MoveTry2(context);
             var nestedMembersToken = nestedMembers.MoveTry3(context);
-            Assert.IsTrue(nestedMembersToken.TrySome(out var nestedFirstMember));
+            nestedMembersToken.TrySome(out var nestedFirstMember);
 
             Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
             {
@@ -2561,10 +2561,10 @@
                 var nestedWhispace2 = nestedColon.MoveTry4(context);
                 var nestedValue = nestedWhispace2.MoveTry2(context);
                 var nestedValueToken = nestedValue.MoveTry3(context);
-                Assert.IsTrue(nestedValueToken.TryTrue(out var nestedTrue));
+                nestedValueToken.TryTrue(out var nestedTrue);
                 var nestedSubsequentMembersReader = nestedTrue.MoveTry2(context);
                 var nestedSubsequentMembersToken = nestedSubsequentMembersReader.MoveTry3(context);
-                Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
+                nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader);
 
                 // false
                 var nestedcommaReader = nestedsubsequentMemberReader.MoveTry1(context);
@@ -2579,11 +2579,11 @@
                 var nestedwhitespace7 = nestedcolon2.MoveTry4(context);
                 var nestedvalue3 = nestedwhitespace7.MoveTry2(context);
                 var nestedvalueToken3 = nestedvalue3.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
+                nestedvalueToken3.TryFalse(out var nestedfalse);
 
                 var nestedsubsequentMembers2 = nestedfalse.MoveTry2(context);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
+                nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2);
 
                 // 1234
                 var nestedcomma2 = nestedsubsequentMember2.MoveTry1(context);
@@ -2598,16 +2598,16 @@
                 var nestedwhitespace10 = nestedcolon3.MoveTry4(context);
                 var nestedvalue4 = nestedwhitespace10.MoveTry2(context);
                 var nestedvalueToken4 = nestedvalue4.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken4.TryNumber(out var nestednumber));
+                nestedvalueToken4.TryNumber(out var nestednumber);
                 var nestedsign = nestednumber.MoveTry1(context);
                 var nestedint = nestedsign.MoveTry4(context);
                 var nestedfrac = nestedint.MoveTry2(context);
                 var nestedfracToken = nestedfrac.MoveTry3(context);
-                Assert.IsTrue(nestedfracToken.TryAbsent(out var nestedexp));
+                nestedfracToken.TryAbsent(out var nestedexp);
                 var nestedexpToken = nestedexp.MoveTry3(context);
-                Assert.IsTrue(nestedexpToken.TryAbsent(out var nestedsubsequentMembers3));
-                var nestedsubsequentMembersToken3 = nestedsubsequentMembers3.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
+                nestedexpToken.TryAbsent(out var nestedsubsequentMembers3);
+                var nestedsubsequentMembersToken3 = nestedsubsequentMembers3!.MoveTry3(context);
+                nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3);
 
                 // asdf
                 var nestedcomma3 = nestedsubsequentMember3.MoveTry1(context);
@@ -2622,13 +2622,13 @@
                 var nestedwhitespace13 = nestedcolon4.MoveTry4(context);
                 var nestedvalue5 = nestedwhitespace13.MoveTry2(context);
                 var nestedvalueToken5 = nestedvalue5.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken5.TryString(out var nestedstring5));
+                nestedvalueToken5.TryString(out var nestedstring5);
                 var nestedstringDelimiter9 = @nestedstring5.MoveTry1(context);
                 var nestedchars5 = nestedstringDelimiter9.MoveTry4(context);
                 var nestedstringDelimiter10 = nestedchars5.MoveTry2(context);
                 var nestedsubsequentMembers4 = nestedstringDelimiter10.MoveTry4(context);
                 var nestedsubsequentMembersToken4 = nestedsubsequentMembers4.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
+                nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4);
 
                 // null
                 var nestedcomma4 = nestedsubsequentMember4.MoveTry1(context);
@@ -2643,18 +2643,18 @@
                 var nestedwhitespace16 = nestedcolon5.MoveTry4(context);
                 var nestedvalue6 = nestedwhitespace16.MoveTry2(context);
                 var nestedvalueToken6 = nestedvalue6.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken6.TryNull(out var nestednull));
+                nestedvalueToken6.TryNull(out var nestednull);
 
                 var nestedsubsequentMembers5 = @nestednull.MoveTry2(context);
                 var nestedsubsequentMembersToken5 = nestedsubsequentMembers5.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5));
+                nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5);
 
-                var nestedobjectEnd = nestedsubsequentMember5.MoveTry2(context);
+                var nestedobjectEnd = nestedsubsequentMember5!.MoveTry2(context);
                 subsequentMembers6 = nestedobjectEnd.MoveTry4(context);
             }
 
             var subsequentMembersToken6 = subsequentMembers6.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken6.TryMore(out var subsequentMember6));
+            subsequentMembersToken6.TryMore(out var subsequentMember6);
 
             // emptyobject
             var comma6 = subsequentMember6.MoveTry1(context);
@@ -2669,16 +2669,16 @@
             var whitespace23 = colon7.MoveTry4(context);
             var value8 = whitespace23.MoveTry2(context);
             var valueToken8 = value8.MoveTry3(context);
-            Assert.IsTrue(valueToken8.TryObject(out var object3));
+            valueToken8.TryObject(out var object3);
             var objectStart3 = object3.MoveTry1(context);
             var whitespace24 = objectStart3.MoveTry4(context);
             var members3 = whitespace24.MoveTry2(context);
             var membersToken3 = members3.MoveTry3(context);
-            Assert.IsTrue(membersToken3.TryNone(out var whitespace25));
-            var objectEnd = whitespace25.MoveTry2(context);
+            membersToken3.TryNone(out var whitespace25);
+            var objectEnd = whitespace25!.MoveTry2(context);
             var subsequentMembers7 = objectEnd.MoveTry4(context);
             var subsequentMembersToken7 = subsequentMembers7.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken7.TryMore(out var subsequentMember8));
+            subsequentMembersToken7.TryMore(out var subsequentMember8);
 
             // emptyarray
             var comma7 = subsequentMember8.MoveTry1(context);
@@ -2693,16 +2693,16 @@
             var whitespace28 = colon8.MoveTry4(context);
             var value9 = whitespace28.MoveTry2(context);
             var valueToken9 = value9.MoveTry3(context);
-            Assert.IsTrue(valueToken9.TryArray(out var array));
+            valueToken9.TryArray(out var array);
             var arrayStart = array.MoveTry1(context);
             var whitespace29 = arrayStart.MoveTry4(context);
             var arrayElements = whitespace29.MoveTry2(context);
             var arrayElementsToken = arrayElements.MoveTry3(context);
-            Assert.IsTrue(arrayElementsToken.TryNone(out var whitespace30));
+            arrayElementsToken.TryNone(out var whitespace30);
             var arrayEnd = whitespace30.MoveTry2(context);
             var subsequentMembers9 = arrayEnd.MoveTry4(context);
             var subsequentMembersToken9 = subsequentMembers9.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken9.TryMore(out var subsequentMember10));
+            subsequentMembersToken9.TryMore(out var subsequentMember10);
 
             // array
             var comma8 = subsequentMember10.MoveTry1(context);
@@ -2717,20 +2717,20 @@
             var whitespace33 = colon9.MoveTry4(context);
             var value10 = whitespace33.MoveTry2(context);
             var valueToken10 = value10.MoveTry3(context);
-            Assert.IsTrue(valueToken10.TryArray(out var array2));
+            valueToken10.TryArray(out var array2);
             var arrayStart2 = array2.MoveTry1(context);
             var whitespace34 = arrayStart2.MoveTry4(context);
             var arrayElements2 = whitespace34.MoveTry2(context);
             var arrayElementsToken2 = arrayElements2.MoveTry3(context);
-            Assert.IsTrue(arrayElementsToken2.TrySome(out var arrayElement));
+            arrayElementsToken2.TrySome(out var arrayElement);
             var value11 = arrayElement.MoveTry1(context);
             var valueToken11 = value11.MoveTry3(context);
-            Assert.IsTrue(valueToken11.TryObject(out var object4));
+            valueToken11.TryObject(out var object4);
             var objectStart4 = object4.MoveTry1(context);
             var whitespace35 = objectStart4.MoveTry4(context);
             var members4 = whitespace35.MoveTry2(context);
             var membersToken4 = members4.MoveTry3(context);
-            Assert.IsTrue(membersToken4.TrySome(out var firstMember4));
+            membersToken4.TrySome(out var firstMember4);
             Json5.SubsequentArrayElementsReader<Json5.WhitespaceReader<Json5.ArrayEndReader<Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>>>>> subsequentArrayElements;
             {
                 // true
@@ -2744,10 +2744,10 @@
                 var nestedWhispace2 = nestedColon.MoveTry4(context);
                 var nestedValue = nestedWhispace2.MoveTry2(context);
                 var nestedValueToken = nestedValue.MoveTry3(context);
-                Assert.IsTrue(nestedValueToken.TryTrue(out var nestedTrue));
+                nestedValueToken.TryTrue(out var nestedTrue);
                 var nestedSubsequentMembersReader = nestedTrue.MoveTry2(context);
                 var nestedSubsequentMembersToken = nestedSubsequentMembersReader.MoveTry3(context);
-                Assert.IsTrue(nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader));
+                nestedSubsequentMembersToken.TryMore(out var nestedsubsequentMemberReader);
 
                 // false
                 var nestedcommaReader = nestedsubsequentMemberReader.MoveTry1(context);
@@ -2762,10 +2762,10 @@
                 var nestedwhitespace7 = nestedcolon2.MoveTry4(context);
                 var nestedvalue3 = nestedwhitespace7.MoveTry2(context);
                 var nestedvalueToken3 = nestedvalue3.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken3.TryFalse(out var nestedfalse));
+                nestedvalueToken3.TryFalse(out var nestedfalse);
                 var nestedsubsequentMembers2 = nestedfalse.MoveTry2(context);
                 var nestedsubsequentMembersToken2 = nestedsubsequentMembers2.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2));
+                nestedsubsequentMembersToken2.TryMore(out var nestedsubsequentMember2);
 
                 // 1234
                 var nestedcomma2 = nestedsubsequentMember2.MoveTry1(context);
@@ -2780,16 +2780,16 @@
                 var nestedwhitespace10 = nestedcolon3.MoveTry4(context);
                 var nestedvalue4 = nestedwhitespace10.MoveTry2(context);
                 var nestedvalueToken4 = nestedvalue4.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken4.TryNumber(out var nestednumber));
+                nestedvalueToken4.TryNumber(out var nestednumber);
                 var nestedsign = nestednumber.MoveTry1(context);
                 var nestedint = nestedsign.MoveTry4(context);
                 var nestedfrac = nestedint.MoveTry2(context);
                 var nestedfracToken = nestedfrac.MoveTry3(context);
-                Assert.IsTrue(nestedfracToken.TryAbsent(out var nestedexp));
+                nestedfracToken.TryAbsent(out var nestedexp);
                 var nestedexpToken = nestedexp.MoveTry3(context);
-                Assert.IsTrue(nestedexpToken.TryAbsent(out var nestedsubsequentMembers3));
-                var nestedsubsequentMembersToken3 = nestedsubsequentMembers3.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3));
+                nestedexpToken.TryAbsent(out var nestedsubsequentMembers3);
+                var nestedsubsequentMembersToken3 = nestedsubsequentMembers3!.MoveTry3(context);
+                nestedsubsequentMembersToken3.TryMore(out var nestedsubsequentMember3);
 
                 // asdf
                 var nestedcomma3 = nestedsubsequentMember3.MoveTry1(context);
@@ -2804,13 +2804,13 @@
                 var nestedwhitespace13 = nestedcolon4.MoveTry4(context);
                 var nestedvalue5 = nestedwhitespace13.MoveTry2(context);
                 var nestedvalueToken5 = nestedvalue5.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken5.TryString(out var nestedstring5));
+                nestedvalueToken5.TryString(out var nestedstring5);
                 var nestedstringDelimiter9 = @nestedstring5.MoveTry1(context);
                 var nestedchars5 = nestedstringDelimiter9.MoveTry4(context);
                 var nestedstringDelimiter10 = nestedchars5.MoveTry2(context);
                 var nestedsubsequentMembers4 = nestedstringDelimiter10.MoveTry4(context);
                 var nestedsubsequentMembersToken4 = nestedsubsequentMembers4.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4));
+                nestedsubsequentMembersToken4.TryMore(out var nestedsubsequentMember4);
 
                 // null
                 var nestedcomma4 = nestedsubsequentMember4.MoveTry1(context);
@@ -2825,23 +2825,23 @@
                 var nestedwhitespace16 = nestedcolon5.MoveTry4(context);
                 var nestedvalue6 = nestedwhitespace16.MoveTry2(context);
                 var nestedvalueToken6 = nestedvalue6.MoveTry3(context);
-                Assert.IsTrue(nestedvalueToken6.TryNull(out var nestednull));
+                nestedvalueToken6.TryNull(out var nestednull);
 
                 var nestedsubsequentMembers5 = @nestednull.MoveTry2(context);
                 var nestedsubsequentMembersToken5 = nestedsubsequentMembers5.MoveTry3(context);
-                Assert.IsTrue(nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5));
+                nestedsubsequentMembersToken5.TryNone(out var nestedsubsequentMember5);
 
-                var nestedobjectEnd = nestedsubsequentMember5.MoveTry2(context);
+                var nestedobjectEnd = nestedsubsequentMember5!.MoveTry2(context);
                 subsequentArrayElements = nestedobjectEnd.MoveTry4(context);
             }
 
             var subsequentArrayElementsToken = subsequentArrayElements.MoveTry3(context);
-            Assert.IsTrue(subsequentArrayElementsToken.TryNone(out var whitespace36));
+            subsequentArrayElementsToken.TryNone(out var whitespace36);
             var arrayEnd2 = whitespace36.MoveTry2(context);
             var subsequentMembers10 = arrayEnd2.MoveTry4(context);
             var subsequentMembersToken10 = subsequentMembers10.MoveTry3(context);
-            Assert.IsTrue(subsequentMembersToken10.TryNone(out var whitespace37));
-            var objectEnd2 = whitespace37.MoveTry2(context);
+            subsequentMembersToken10.TryNone(out var whitespace37);
+            var objectEnd2 = whitespace37!.MoveTry2(context);
             var whitespace38 = objectEnd2.MoveTry4(context);
             var nothing = whitespace38.MoveTry2(context);
 
