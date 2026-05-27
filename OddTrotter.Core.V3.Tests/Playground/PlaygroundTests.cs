@@ -702,14 +702,7 @@ namespace Playground
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                /*var iterations = 10000;
-                var timer = System.Diagnostics.Stopwatch.StartNew();
-                for (int i = 0; i < iterations; ++i)
-                {*/
-                    await StaticOnlyFullRead(stream).ConfigureAwait(false);
-                /*}
-
-                Console.WriteLine(timer.ElapsedTicks);*/
+                await StaticOnlyFullRead(stream).ConfigureAwait(false);
             }
         }
 
