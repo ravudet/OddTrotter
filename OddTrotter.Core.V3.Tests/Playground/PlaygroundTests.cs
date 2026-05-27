@@ -10,6 +10,7 @@ namespace Playground
     using System.Linq.Expressions;
     using System.Net.Http;
     using System.Net.Sockets;
+    using System.Text;
     using System.Threading.Tasks;
 
     using Fx.Either;
@@ -21,6 +22,7 @@ namespace Playground
     using OddTrotter.Odata.v4_01.StrongConventionContext;
 
     using static Playground.PlaygroundTests;
+    using static Playground.TopLayer.Odata.MetadataDto;
 
     [TestClass]
     public sealed class PlaygroundTests
@@ -665,6 +667,81 @@ namespace Playground
             var foo2 = FooExtensions.GetFoo<Foo>();
             foo2.DoWork2();
         }
+
+        private const string data =
+"""
+{
+    "true": true,
+    "false": false,
+    "number": 1234,
+    "string": "asdf",
+    "null": null,
+    "object": {
+        "true": true,
+        "false": false,
+        "number": 1234,
+        "string": "asdf",
+        "null": null
+    },
+    "emptyObject": {},
+    "emptyArray": [],
+    "array": [
+        {
+            "true": true,
+            "false": false,
+            "number": 1234,
+            "string": "asdf",
+            "null": null
+        }
+    ]
+}
+""";
+
+        [TestMethod]
+        public async Task Test2()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var iterations = 10000;
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    await StaticOnlyFullRead(stream).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(timer.ElapsedTicks);
+            }
+        }
+
+        public static async Task StaticOnlyFullRead(Stream stream)
+        {
+            stream.Position = 0;
+            var context = await ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);
+            var reader = Readers.Create();
+
+            var whitespaceReader = reader.MoveTry1(context);
+            var valueReader = whitespaceReader.MoveTry2(context);
+            var valueToken = valueReader.MoveTry3(context);
+            Assert.IsTrue(valueToken.TryObject(out var @object));
+            var objectStart = @object.MoveTry1(context);
+            var whitespacereader2 = objectStart.MoveTry4(context);
+            var membersReader = whitespacereader2.MoveTry2(context);
+            var membersToken = membersReader.MoveTry3(context);
+            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+
+            // true
+            var memberReader = firstMemberReader.MoveTry1(context);
+            var stringReader = memberReader.MoveTry1(context);
+            var stringDelimiterReader = stringReader.MoveTry1(context);
+            var charsReader = stringDelimiterReader.MoveTry4(context);
+            var stringDelimiterReader2 = charsReader.MoveTry2(context);
+            var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
+            var colonReader = whitespaceReader3.MoveTry2(context);
+            var whitespaceReader4 = colonReader.MoveTry4(context);
+            var valueReader2 = whitespaceReader4.MoveTry2(context);
+            var valueToken2 = valueReader2.MoveTry3(context);
+            Assert.IsTrue(valueToken2.TryTrue(out var @true));
+        }
     }
 
     public static class FooExtensions
@@ -695,5 +772,880 @@ namespace Playground
             Console.WriteLine(Value);
             ++Value;
         }
+    }
+
+    public sealed class ReaderContext
+    {
+        private ReaderContext(
+            Stream stream,
+            byte[] buffer,
+            int currentByteIndex,
+            int validBytes)
+        {
+            Stream = stream;
+            Buffer = buffer;
+            CurrentByteIndex = currentByteIndex;
+            ValidBytes = validBytes;
+        }
+
+        public Stream Stream { get; }
+        public byte[] Buffer { get; }
+        public int CurrentByteIndex { get; set; }
+        public int ValidBytes { get; set; }
+
+        public static async ValueTask<ReaderContext> FromStream(Stream stream, byte[] buffer)
+        {
+            var readerContext = new ReaderContext(stream, buffer, 0, 0);
+            await readerContext.Read().ConfigureAwait(false);
+            return readerContext;
+        }
+    }
+
+    public static class ReaderContextExtensions
+    {
+        public static async ValueTask Read(this ReaderContext readerContext)
+        {
+            readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer.AsMemory()).ConfigureAwait(false);
+            readerContext.CurrentByteIndex = 0;
+        }
+
+        public static Task Read2(this ReaderContext readerContext)
+        {
+            return readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ContinueWith(
+                (task, state) =>
+                {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                    var readerContext = (ReaderContext)state;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                    readerContext!.ValidBytes = task.Result;
+                    readerContext.CurrentByteIndex = 0;
+                },
+                readerContext);
+        }
+    }
+
+
+
+    public interface IMoveReader<TCurrentReader, TNextReader>
+        where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+    {
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader);
+    }
+
+    public interface IValueReader<TCurrentReader, TNextReader, TValue>
+        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+    {
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value);
+    }
+
+    public interface IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+    {
+        static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
+
+        static abstract bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out TValue value, ref TContext context);
+    }
+
+    public interface ITokenReader<TCurrentReader, TToken>
+        where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+    {
+        static abstract bool TryMove(ReaderContext readerContext, out TToken token);
+    }
+
+
+    public sealed class JsonReader : IMoveReader<JsonReader, WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class WhitespaceReader<TNextReader> : IContinuableValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
+    {
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
+        {
+            /*while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    nextReader = default!; //// TODO !
+                    value = default!; //// TODO !
+                    return false;
+                }
+
+                if (!WhitespaceToken.TryCreate(readerContext.Buffer[readerContext.CurrentByteIndex], out var whitespace))
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                context.Add(whitespace);
+            }
+
+            nextReader = default!; //// TODO !
+            value = context;
+            return true;*/
+
+            nextReader = default!;
+            value = default!;
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
+        {
+            /*context = new List<WhitespaceToken>();
+            return WhitespaceReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
+
+            nextReader = default!;
+            value = default!;
+            context = default!;
+            return true;
+        }
+    }
+
+    public readonly struct WhitespaceToken
+    {
+        public static bool TryCreate(byte @char, out WhitespaceToken whitespaceToken)
+        {
+            switch (@char)
+            {
+                case 0x20:
+                case 0x09:
+                case 0x0A:
+                case 0x0D:
+                    whitespaceToken = new WhitespaceToken(@char);
+                    return true;
+                default:
+                    whitespaceToken = default;
+                    return false;
+            }
+        }
+
+        private WhitespaceToken(byte @char)
+        {
+            this.Char = @char;
+        }
+
+        public byte Char { get; }
+    }
+
+    public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
+    {
+        private static int ValueCount = -1;
+
+        public static bool TryMove(ReaderContext readerContext, out ValueToken<TNextReader> token)
+        {
+            switch (ValueCount)
+            {
+                case -1:
+                    token = ValueToken<TNextReader>.Object();
+                    break;
+                case 0:
+                    token = ValueToken<TNextReader>.True();
+                    break;
+                case 1:
+                    token = ValueToken<TNextReader>.False();
+                    break;
+                case 2:
+                    token = ValueToken<TNextReader>.Number();
+                    break;
+                case 3:
+                    token = ValueToken<TNextReader>.String();
+                    break;
+                case 4:
+                    token = ValueToken<TNextReader>.Null();
+                    break;
+                case 5:
+                    token = ValueToken<TNextReader>.Object();
+                    break;
+                case 6:
+                    token = ValueToken<TNextReader>.True();
+                    break;
+                case 7:
+                    token = ValueToken<TNextReader>.False();
+                    break;
+                case 8:
+                    token = ValueToken<TNextReader>.Number();
+                    break;
+                case 9:
+                    token = ValueToken<TNextReader>.String();
+                    break;
+                case 10:
+                    token = ValueToken<TNextReader>.Null();
+                    break;
+                case 11:
+                    token = ValueToken<TNextReader>.Object();
+                    break;
+                case 12:
+                    token = ValueToken<TNextReader>.Array();
+                    break;
+                case 13:
+                    token = ValueToken<TNextReader>.Array();
+                    break;
+                case 14:
+                    token = ValueToken<TNextReader>.Object();
+                    break;
+                case 15:
+                    token = ValueToken<TNextReader>.True();
+                    break;
+                case 16:
+                    token = ValueToken<TNextReader>.False();
+                    break;
+                case 17:
+                    token = ValueToken<TNextReader>.Number();
+                    break;
+                case 20:
+                    token = ValueToken<TNextReader>.String();
+                    break;
+                case 19:
+                    token = ValueToken<TNextReader>.Null();
+                    break;
+                default:
+                    throw new Exception("TODO invalid");
+            }
+
+            ++ValueCount;
+            return true;
+
+
+            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default!; //// TODO !
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            //switch (readerContext.Buffer[readerContext.CurrentByteIndex])
+            //{
+            //    case (byte)'f':
+            //        token = ValueToken<TNextReader>.False();
+            //        return true;
+            //    case (byte)'n':
+            //        token = ValueToken<TNextReader>.Null();
+            //        return true;
+            //    case (byte)'t':
+            //        token = ValueToken<TNextReader>.True();
+            //        return true;
+            //    case (byte)'{':
+            //        token = ValueToken<TNextReader>.Object();
+            //        return true;
+            //    case (byte)'[':
+            //        token = ValueToken<TNextReader>.Array();
+            //        return true;
+            //    case (byte)'-':
+            //    case (byte)'0':
+            //    case (byte)'1':
+            //    case (byte)'2':
+            //    case (byte)'3':
+            //    case (byte)'4':
+            //    case (byte)'5':
+            //    case (byte)'6':
+            //    case (byte)'7':
+            //    case (byte)'8':
+            //    case (byte)'9':
+            //        token = ValueToken<TNextReader>.Number();
+            //        return true;
+            //    case (byte)'"':
+            //        token = ValueToken<TNextReader>.String();
+            //        return true;
+            //    default:
+            //        throw new Exception("tODO invalid JSON");
+            //}
+
+            switch ((char)readerContext.Buffer[readerContext.CurrentByteIndex])
+            {
+                case 'f':
+                    token = ValueToken<TNextReader>.False();
+                    return true;
+                case 'n':
+                    token = ValueToken<TNextReader>.Null();
+                    return true;
+                case 't':
+                    token = ValueToken<TNextReader>.True();
+                    return true;
+                case '{':
+                    token = ValueToken<TNextReader>.Object();
+                    return true;
+                case '[':
+                    token = ValueToken<TNextReader>.Array();
+                    return true;
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    token = ValueToken<TNextReader>.Number();
+                    return true;
+                case '"':
+                    token = ValueToken<TNextReader>.String();
+                    return true;
+                default:
+                    throw new Exception("tODO invalid JSON");
+            }
+
+            //switch (readerContext.Buffer[readerContext.CurrentByteIndex])
+            //{
+            //    case 0x66:
+            //        token = ValueToken<TNextReader>.False();
+            //        return true;
+            //    case 0x6E:
+            //        token = ValueToken<TNextReader>.Null();
+            //        return true;
+            //    case 0x74:
+            //        token = ValueToken<TNextReader>.True();
+            //        return true;
+            //    case 0x7B:
+            //        token = ValueToken<TNextReader>.Object();
+            //        return true;
+            //    case 0x5B:
+            //        token = ValueToken<TNextReader>.Array();
+            //        return true;
+            //    case 0x2D:
+            //    case 0x30:
+            //    case 0x31:
+            //    case 0x32:
+            //    case 0x33:
+            //    case 0x34:
+            //    case 0x35:
+            //    case 0x36:
+            //    case 0x37:
+            //    case 0x38:
+            //    case 0x39:
+            //        token = ValueToken<TNextReader>.Number();
+            //        return true;
+            //    case 0x22:
+            //        token = ValueToken<TNextReader>.String();
+            //        return true;
+            //    default:
+            //        throw new Exception("tODO invalid JSON");
+            //}*/
+        }
+    }
+
+    //// TODO you are here
+    //// TODO try ref struct, but first try just updating the interfaces to allow ref structs
+    public readonly struct ValueToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static ValueToken<TNextReader> False()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static ValueToken<TNextReader> Null()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public static ValueToken<TNextReader> True()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 3,
+            };
+        }
+
+        public static ValueToken<TNextReader> Object()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 4,
+            };
+        }
+
+        public static ValueToken<TNextReader> Array()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 5,
+            };
+        }
+
+        public static ValueToken<TNextReader> Number()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 6,
+            };
+        }
+
+        public static ValueToken<TNextReader> String()
+        {
+            return new ValueToken<TNextReader>()
+            {
+                type = 7,
+            };
+        }
+
+        public bool TryFalse(out FalseReader<TNextReader> falseReader)
+        {
+            falseReader = default!; //// TODO !
+            return this.type == 1;
+        }
+
+        public bool TryNull(out NullReader<TNextReader> nullReader)
+        {
+            nullReader = default!; //// TODO !
+            return this.type == 2;
+        }
+
+        public bool TryTrue(out TrueReader<TNextReader> trueReader)
+        {
+            trueReader = default!; //// TODO !
+            return this.type == 3;
+        }
+
+        public bool TryObject(out ObjectReader<TNextReader> objectReader)
+        {
+            objectReader = default!; //// TODO !
+            return this.type == 4;
+        }
+
+        public bool TryArray(out ArrayReader<TNextReader> arrayReader)
+        {
+            arrayReader = default!; //// TODO !
+            return this.type == 5;
+        }
+
+        public bool TryNumber(out NumberReader<TNextReader> numberReader)
+        {
+            numberReader = default!; //// TODO !
+            return this.type == 6;
+        }
+
+        public bool TryString(out StringReader<TNextReader> stringReader)
+        {
+            stringReader = default!; //// TODO !
+            return this.type == 7;
+        }
+    }
+
+    public sealed class ObjectReader<TNextReader> : IMoveReader<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class ObjectStartReader<TNextReader> : IValueReader<ObjectStartReader<TNextReader>, TNextReader, ObjectStartToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
+        {
+            /*nextReader = default!;
+            return Json6.Helpers.TryReadChar(readerContext, '{');*/
+
+            nextReader = default!;
+            return true;
+        }
+    }
+
+    public readonly struct ObjectStartToken
+    {
+    }
+
+    public sealed class MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>>
+    {
+        private static int MembersCount = 0;
+
+        public static bool TryMove(ReaderContext readerContext, out MembersToken<TNextReader> token)
+        {
+            switch (MembersCount)
+            {
+                case 0:
+                    token = MembersToken<TNextReader>.Some();
+                    break;
+                case 1:
+                    token = MembersToken<TNextReader>.None();
+                    break;
+                case 2:
+                    token = MembersToken<TNextReader>.Some();
+                    break;
+                default:
+                    throw new Exception("TODO invalid");
+            }
+
+            ++MembersCount;
+            return true;
+
+            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            {
+                token = default;
+                return false;
+            }
+
+            if (readerContext.ValidBytes == 0)
+            {
+                throw new Exception("TODO invalid JSON");
+            }
+
+            if (readerContext.Buffer[readerContext.CurrentByteIndex] == '"')
+            {
+                token = MembersToken<TNextReader>.Some();
+            }
+            else
+            {
+                token = MembersToken<TNextReader>.None();
+            }
+
+            return true;*/
+        }
+    }
+
+    public readonly struct MembersToken<TNextReader>
+    {
+        private int type { get; init; }
+
+        public static MembersToken<TNextReader> None()
+        {
+            return new MembersToken<TNextReader>()
+            {
+                type = 1,
+            };
+        }
+
+        public static MembersToken<TNextReader> Some()
+        {
+            return new MembersToken<TNextReader>()
+            {
+                type = 2,
+            };
+        }
+
+        public bool TryNone([MaybeNullWhen(false)] out TNextReader nextReader)
+        {
+            nextReader = default;
+            return this.type == 1;
+        }
+
+        public bool TrySome(out FirstMemberReader<TNextReader> firstMemberReader)
+        {
+            firstMemberReader = default!; //// TODO !
+            return this.type == 2;
+        }
+    }
+
+    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMembersReader<TNextReader>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
+    {
+        public static bool TryMove(ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
+        {
+            nextReader = default!; //// TODO !
+            return true;
+        }
+    }
+
+    public sealed class StringDelimiterReader<TNextReader> : IValueReader<StringDelimiterReader<TNextReader>, TNextReader, StringDelimiterToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
+        {
+            /*nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(readerContext, '"');*/
+
+            nextReader = default!;
+            value = default!;
+            return true;
+        }
+    }
+
+    public readonly struct StringDelimiterToken
+    {
+    }
+
+    public sealed class CharsReader<TNextReader> : IContinuableValueReader<CharsReader<TNextReader>, TNextReader, List<CharToken>, (List<CharToken>, bool)>
+    {
+        public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
+        {
+            /*while (true)
+            {
+                if (readerContext.ValidBytes == 0)
+                {
+                    // no more bytes to read
+                    break;
+                }
+
+                if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                {
+                    // read more from the stream
+                    nextReader = default!; //// TODO !
+                    context = (context.Item1, false);
+                    value = context.Item1;
+                    return false;
+                }
+
+                var currentByte = readerContext.Buffer[readerContext.CurrentByteIndex];
+                if (currentByte == 0x5C)
+                {
+                    ++readerContext.CurrentByteIndex;
+                    if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+                    {
+                        nextReader = default!; //// TODO !
+                        context = (context.Item1, true); //// TODO you need to leverage the context that we are in the middle of an escape
+                        value = context.Item1;
+                        return false;
+                    }
+
+                    if (readerContext.ValidBytes == 0)
+                    {
+                        throw new Exception("TODO invalid JSON");
+                    }
+
+                    throw new Exception("TODO escaped characters are not yet supported");
+                }
+
+                if (!CharToken.TryUnescaped(currentByte, out var @char))
+                {
+                    break;
+                }
+
+                ++readerContext.CurrentByteIndex;
+                context.Item1.Add(@char);
+            }
+
+            nextReader = default!; //// TODO !
+            value = context.Item1;
+            return true;*/
+
+            nextReader = default!;
+            value = default!;
+            context = default!;
+            return true;
+        }
+
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, out (List<CharToken>, bool) context)
+        {
+            /*context = (new List<CharToken>(), false);
+            return CharsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
+
+            nextReader = default!;
+            value = default!;
+            context = default!;
+            return true;
+        }
+    }
+
+    public readonly struct CharToken
+    {
+        private int type { get; init; }
+
+        public byte Char { get; private init; }
+
+        public static bool TryUnescaped(byte @char, out CharToken charToken)
+        {
+            if (!IsValid(@char))
+            {
+                charToken = default;
+                return false;
+            }
+
+            charToken = new CharToken()
+            {
+                type = 1,
+                Char = @char,
+            };
+            return true;
+        }
+
+        private static bool IsValid(byte @char)
+        {
+            return
+                (@char >= 0x20 && @char <= 0x21) ||
+                (@char >= 0x23 && @char <= 0x5B) ||
+                (@char >= 0x5D); //// TODO the upper bound here in the standard is not actually a valid byte...
+        }
+    }
+    public sealed class ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, ColonToken>
+    {
+        public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ColonToken value)
+        {
+            /*nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(readerContext, ':');*/
+
+            nextReader = default!;
+            value = default!;
+            return true;
+        }
+    }
+
+    public readonly struct ColonToken
+    {
+    }
+
+    public sealed class SubsequentMembersReader<TNextReader>
+    {
+    }
+
+    public sealed class ObjectEndReader<TNextReader>
+    {
+    }
+
+    public sealed class FalseReader<TNextReader>
+    {
+    }
+
+    public sealed class NullReader<TNextReader>
+    {
+    }
+
+    public sealed class TrueReader<TNextReader>
+    {
+    }
+
+    public sealed class ArrayReader<TNextReader>
+    {
+    }
+
+    public sealed class NumberReader<TNextReader>
+    {
+    }
+    public static class Readers
+    {
+        public static JsonReader Create()
+        {
+            return null!; //// TODO !
+        }
+
+        public static void DoWork<T1, T2>(
+            this T1 t1,
+            out T2 t2)
+        {
+            t2 = default!;
+        }
+
+        public static TNextReader MoveTry1<TCurrentReader, TNextReader>(
+            this IMoveReader<TCurrentReader, TNextReader> moveReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader);
+            return nextReader;
+        }
+
+        public static bool TryMove1<TCurrentReader, TNextReader>(
+            this IMoveReader<TCurrentReader, TNextReader> moveReader,
+            ReaderContext readerContext,
+            out TNextReader nextReader)
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
+        {
+            return TCurrentReader.TryMove(readerContext, out nextReader);
+        }
+
+        public static TNextReader MoveTry2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
+            ReaderContext readerContext)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader, out _, out _);
+            return nextReader;
+        }
+
+        public static bool TryMove2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
+            ReaderContext readerContext,
+            out TNextReader nextReader,
+            out TValue value,
+            out TContext context)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            return TCurrentReader.TryMove(readerContext, out nextReader, out value, out context);
+        }
+
+        public static bool TryContinue2<TCurrentReader, TNextReader, TValue, TContext>(
+            this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
+            ReaderContext readerContext,
+            out TNextReader nextReader,
+            out TValue value,
+            ref TContext context)
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
+        {
+            return TCurrentReader.TryContinue(readerContext, out nextReader, out value, ref context);
+        }
+
+        public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+        {
+            TCurrentReader.TryMove(readerContext, out var token);
+            return token;
+        }
+
+        public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+        {
+            return TCurrentReader.TryMove(readerContext, out token);
+        }
+
+        public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            TCurrentReader.TryMove(readerContext, out var nextReader, out _);
+            return nextReader;
+        }
+
+        public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+        {
+            return TCurrentReader.TryMove(readerContext, out nextReader, out value);
+        }
+
+
+        /*public static async Task<(ReaderContext, TNextReader)> Move2<TNextReader>(this WhitespaceReader<TNextReader> whitespaceReader, ReaderContext readerContext)
+        {
+            while (true)
+            {
+                var whitespaceToken = await whitespaceReader.Move31(readerContext).ConfigureAwait(false);
+                if (whitespaceToken.TryMore(out var whitespaceCharReader))
+                {
+                    whitespaceReader = await whitespaceCharReader.Move4(readerContext).ConfigureAwait(false);
+                }
+                else if (whitespaceToken.TryNone(out var nextReader))
+                {
+                    return (readerContext, nextReader);
+                }
+            }
+        }*/
+
     }
 }
