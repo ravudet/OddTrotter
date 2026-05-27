@@ -1193,25 +1193,10 @@ namespace Playground
     {
     }
 
-    public sealed class FalseReader<TNextReader>
-    {
-    }
-
-    public sealed class NullReader<TNextReader>
-    {
-    }
-
     public sealed class TrueReader<TNextReader>
     {
     }
 
-    public sealed class ArrayReader<TNextReader>
-    {
-    }
-
-    public sealed class NumberReader<TNextReader>
-    {
-    }
     public static class Readers
     {
         public static JsonReader Create()
