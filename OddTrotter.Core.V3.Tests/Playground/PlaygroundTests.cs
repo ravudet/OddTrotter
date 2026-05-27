@@ -652,4 +652,45 @@ namespace Playground
 
 
     }
+
+    [TestClass]
+    public sealed class StaticMemberRepro
+    {
+        [TestMethod]
+        public void Test()
+        {
+            var foo = FooExtensions.GetFoo();
+            foo.DoWork2();
+            foo.DoWork2();
+        }
+    }
+
+    public static class FooExtensions
+    {
+        public static Foo GetFoo()
+        {
+            return null!;
+        }
+
+        public static void DoWork2(this Foo foo)
+        {
+            Foo.DoWork();
+        }
+    }
+
+    public interface IFoo
+    {
+        static abstract void DoWork();
+    }
+
+    public sealed class Foo : IFoo
+    {
+        public static int Value = -1;
+
+        public static void DoWork()
+        {
+            Console.WriteLine(Value);
+            ++Value;
+        }
+    }
 }
