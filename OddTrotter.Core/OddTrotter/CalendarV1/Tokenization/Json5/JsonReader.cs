@@ -185,14 +185,20 @@
         public byte Char { get; }
     }
 
+    public static class Counts
+    {
+        public static int ValueCount = -1;
+    }
+
     public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
     {
-        private static int ValueCount = 0;
-
         public static bool TryMove(ReaderContext readerContext, out ValueToken<TNextReader> token)
         {
-            switch (ValueCount)
+            switch (Counts.ValueCount)
             {
+                case -1:
+                    token = ValueToken<TNextReader>.Object();
+                    break;
                 case 0:
                     token = ValueToken<TNextReader>.True();
                     break;
@@ -257,7 +263,7 @@
                     throw new Exception("TODO invalid");
             }
 
-            ++ValueCount;
+            ++Counts.ValueCount;
             return true;
 
 
