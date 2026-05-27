@@ -187,7 +187,7 @@
 
     public static class Counts
     {
-        public static int ValueCount = -1;
+        public static int ValueCount = 0;
 
         public static int ArrayElementsCount = 0;
 
@@ -202,67 +202,67 @@
         {
             switch (Counts.ValueCount)
             {
-                case -1:
-                    token = ValueToken<TNextReader>.Object();
-                    break;
                 case 0:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 1:
-                    token = ValueToken<TNextReader>.False();
-                    break;
-                case 2:
-                    token = ValueToken<TNextReader>.Number();
-                    break;
-                case 3:
-                    token = ValueToken<TNextReader>.String();
-                    break;
-                case 4:
-                    token = ValueToken<TNextReader>.Null();
-                    break;
-                case 5:
-                    token = ValueToken<TNextReader>.Object();
-                    break;
-                case 6:
                     token = ValueToken<TNextReader>.True();
                     break;
-                case 7:
+                case 2:
                     token = ValueToken<TNextReader>.False();
                     break;
-                case 8:
+                case 3:
                     token = ValueToken<TNextReader>.Number();
                     break;
-                case 9:
+                case 4:
                     token = ValueToken<TNextReader>.String();
                     break;
-                case 10:
+                case 5:
                     token = ValueToken<TNextReader>.Null();
                     break;
-                case 11:
+                case 6:
                     token = ValueToken<TNextReader>.Object();
                     break;
+                case 7:
+                    token = ValueToken<TNextReader>.True();
+                    break;
+                case 8:
+                    token = ValueToken<TNextReader>.False();
+                    break;
+                case 9:
+                    token = ValueToken<TNextReader>.Number();
+                    break;
+                case 10:
+                    token = ValueToken<TNextReader>.String();
+                    break;
+                case 11:
+                    token = ValueToken<TNextReader>.Null();
+                    break;
                 case 12:
-                    token = ValueToken<TNextReader>.Array();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 13:
                     token = ValueToken<TNextReader>.Array();
                     break;
                 case 14:
-                    token = ValueToken<TNextReader>.Object();
+                    token = ValueToken<TNextReader>.Array();
                     break;
                 case 15:
-                    token = ValueToken<TNextReader>.True();
+                    token = ValueToken<TNextReader>.Object();
                     break;
                 case 16:
-                    token = ValueToken<TNextReader>.False();
+                    token = ValueToken<TNextReader>.True();
                     break;
                 case 17:
-                    token = ValueToken<TNextReader>.Number();
+                    token = ValueToken<TNextReader>.False();
                     break;
                 case 18:
-                    token = ValueToken<TNextReader>.String();
+                    token = ValueToken<TNextReader>.Number();
                     break;
                 case 19:
+                    token = ValueToken<TNextReader>.String();
+                    break;
+                case 20:
                     token = ValueToken<TNextReader>.Null();
                     break;
                 default:
