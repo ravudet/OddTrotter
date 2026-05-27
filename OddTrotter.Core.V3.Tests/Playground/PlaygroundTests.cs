@@ -736,8 +736,7 @@ namespace Playground
             var charsReader = stringDelimiterReader.MoveTry4(context);
             var stringDelimiterReader2 = charsReader.MoveTry2(context);
             var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
-            var colonReader = whitespaceReader3.MoveTry2(context);
-            var whitespaceReader4 = colonReader.MoveTry4(context);
+            var whitespaceReader4 = whitespaceReader3.MoveTry2(context);
             var valueReader2 = whitespaceReader4.MoveTry2(context);
             var valueToken2 = valueReader2.MoveTry3(context);
             Assert.IsTrue(valueToken2.TryTrue(out var @true));
@@ -807,20 +806,6 @@ namespace Playground
         {
             readerContext.ValidBytes = await readerContext.Stream.ReadAsync(readerContext.Buffer.AsMemory()).ConfigureAwait(false);
             readerContext.CurrentByteIndex = 0;
-        }
-
-        public static Task Read2(this ReaderContext readerContext)
-        {
-            return readerContext.Stream.ReadAsync(readerContext.Buffer, 0, readerContext.Buffer.Length).ContinueWith(
-                (task, state) =>
-                {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                    var readerContext = (ReaderContext)state;
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-                    readerContext!.ValidBytes = task.Result;
-                    readerContext.CurrentByteIndex = 0;
-                },
-                readerContext);
         }
     }
 
@@ -1360,9 +1345,9 @@ namespace Playground
         }
     }
 
-    public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
+    public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<WhitespaceReader<ValueReader<TNextReader>>>>>
     {
-        public static bool TryMove(ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out StringReader<WhitespaceReader<WhitespaceReader<ValueReader<TNextReader>>>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
