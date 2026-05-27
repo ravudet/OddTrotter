@@ -14,6 +14,8 @@ namespace Playground.TopLayer.Graph
     public interface ISource
     {
         IMetadataSource<SchemaVersion> Metadata();
+
+        void Batch(); //// TODO
     }
 
     public interface IComplianceSource
