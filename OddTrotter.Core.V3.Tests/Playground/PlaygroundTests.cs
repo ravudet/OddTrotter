@@ -721,8 +721,7 @@ namespace Playground
                 var stringReader = memberReader.MoveTry1(context);
                 var stringDelimiterReader = stringReader.MoveTry1(context);
                 var charsReader = stringDelimiterReader.MoveTry4(context);
-                var stringDelimiterReader2 = charsReader.MoveTry2(context);
-                var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
+                var whitespaceReader3 = charsReader.MoveTry2(context);
                 var whitespaceReader4 = whitespaceReader3.MoveTry2(context);
                 var valueReader2 = whitespaceReader4.MoveTry2(context);
                 var valueToken2 = valueReader2.MoveTry3(context);
@@ -1189,9 +1188,9 @@ namespace Playground
         }
     }
 
-    public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
+    public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<TNextReader>>>
     {
-        public static bool TryMove(ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out StringDelimiterReader<CharsReader<TNextReader>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
