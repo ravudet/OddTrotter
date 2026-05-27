@@ -717,8 +717,7 @@ namespace Playground
                 Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
 
                 // true
-                var memberReader = firstMemberReader.MoveTry1(context);
-                var valueReader2 = memberReader.MoveTry1(context);
+                var valueReader2 = firstMemberReader.MoveTry1(context);
                 var valueToken2 = valueReader2.MoveTry3(context);
                 Assert.IsFalse(valueToken2.TryTrue(out var @true)); //// TODO should be true
             }
@@ -1109,9 +1108,9 @@ namespace Playground
         }
     }
 
-    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>>
+    public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, ValueReader<SubsequentMembersReader<TNextReader>>>
     {
-        public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMembersReader<TNextReader>> nextReader)
+        public static bool TryMove(ReaderContext readerContext, out ValueReader<SubsequentMembersReader<TNextReader>> nextReader)
         {
             nextReader = default!; //// TODO !
             return true;
