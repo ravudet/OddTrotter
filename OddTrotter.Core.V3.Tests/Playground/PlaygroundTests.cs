@@ -702,37 +702,32 @@ namespace Playground
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                await StaticOnlyFullRead(stream).ConfigureAwait(false);
+                stream.Position = 0;
+                var context = await ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);
+                var reader = Readers.Create();
+
+                var whitespaceReader = reader.MoveTry1(context);
+                var valueReader = whitespaceReader.MoveTry2(context);
+                var valueToken = valueReader.MoveTry3(context);
+                Assert.IsTrue(valueToken.TryObject(out var @object));
+                var objectStart = @object.MoveTry1(context);
+                var whitespacereader2 = objectStart.MoveTry4(context);
+                var membersReader = whitespacereader2.MoveTry2(context);
+                var membersToken = membersReader.MoveTry3(context);
+                Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
+
+                // true
+                var memberReader = firstMemberReader.MoveTry1(context);
+                var stringReader = memberReader.MoveTry1(context);
+                var stringDelimiterReader = stringReader.MoveTry1(context);
+                var charsReader = stringDelimiterReader.MoveTry4(context);
+                var stringDelimiterReader2 = charsReader.MoveTry2(context);
+                var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
+                var whitespaceReader4 = whitespaceReader3.MoveTry2(context);
+                var valueReader2 = whitespaceReader4.MoveTry2(context);
+                var valueToken2 = valueReader2.MoveTry3(context);
+                Assert.IsFalse(valueToken2.TryTrue(out var @true)); //// TODO should be true
             }
-        }
-
-        public static async Task StaticOnlyFullRead(Stream stream)
-        {
-            stream.Position = 0;
-            var context = await ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);
-            var reader = Readers.Create();
-
-            var whitespaceReader = reader.MoveTry1(context);
-            var valueReader = whitespaceReader.MoveTry2(context);
-            var valueToken = valueReader.MoveTry3(context);
-            Assert.IsTrue(valueToken.TryObject(out var @object));
-            var objectStart = @object.MoveTry1(context);
-            var whitespacereader2 = objectStart.MoveTry4(context);
-            var membersReader = whitespacereader2.MoveTry2(context);
-            var membersToken = membersReader.MoveTry3(context);
-            Assert.IsTrue(membersToken.TrySome(out var firstMemberReader));
-
-            // true
-            var memberReader = firstMemberReader.MoveTry1(context);
-            var stringReader = memberReader.MoveTry1(context);
-            var stringDelimiterReader = stringReader.MoveTry1(context);
-            var charsReader = stringDelimiterReader.MoveTry4(context);
-            var stringDelimiterReader2 = charsReader.MoveTry2(context);
-            var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
-            var whitespaceReader4 = whitespaceReader3.MoveTry2(context);
-            var valueReader2 = whitespaceReader4.MoveTry2(context);
-            var valueToken2 = valueReader2.MoveTry3(context);
-            Assert.IsFalse(valueToken2.TryTrue(out var @true)); //// TODO should be true
         }
     }
 
