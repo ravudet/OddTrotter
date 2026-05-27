@@ -672,7 +672,8 @@ namespace Playground
             return null!;
         }
 
-        public static void DoWork2(this Foo foo)
+        public static void DoWork2<TFoo>(this TFoo foo)
+            where TFoo : IFoo
         {
             Foo.DoWork();
         }
