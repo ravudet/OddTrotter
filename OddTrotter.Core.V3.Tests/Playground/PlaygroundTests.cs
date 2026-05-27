@@ -659,23 +659,25 @@ namespace Playground
         [TestMethod]
         public void Test()
         {
-            var foo = FooExtensions.GetFoo();
+            var foo = FooExtensions.GetFoo<Foo>();
             foo.DoWork2();
-            foo.DoWork2();
+
+            var foo2 = FooExtensions.GetFoo<Foo>();
+            foo2.DoWork2();
         }
     }
 
     public static class FooExtensions
     {
-        public static Foo GetFoo()
+        public static TFoo GetFoo<TFoo>()
         {
-            return null!;
+            return default!;
         }
 
         public static void DoWork2<TFoo>(this TFoo foo)
             where TFoo : IFoo
         {
-            Foo.DoWork();
+            TFoo.DoWork();
         }
     }
 
