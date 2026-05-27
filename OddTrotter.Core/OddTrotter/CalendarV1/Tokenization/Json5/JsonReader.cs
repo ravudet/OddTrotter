@@ -259,7 +259,7 @@
                 case 17:
                     token = ValueToken<TNextReader>.Number();
                     break;
-                case 20:
+                case 18:
                     token = ValueToken<TNextReader>.String();
                     break;
                 case 19:
@@ -1290,9 +1290,12 @@
                     token = MembersToken<TNextReader>.Some();
                     break;
                 case 1:
-                    token = MembersToken<TNextReader>.None();
+                    token = MembersToken<TNextReader>.Some();
                     break;
                 case 2:
+                    token = MembersToken<TNextReader>.None();
+                    break;
+                case 3:
                     token = MembersToken<TNextReader>.Some();
                     break;
                 default:
@@ -1425,10 +1428,10 @@
                     token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 8:
-                    token = SubsequentMembersToken<TNextReader>.None();
+                    token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 9:
-                    token = SubsequentMembersToken<TNextReader>.More();
+                    token = SubsequentMembersToken<TNextReader>.None();
                     break;
                 case 10:
                     token = SubsequentMembersToken<TNextReader>.More();
@@ -1449,9 +1452,12 @@
                     token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 16:
-                    token = SubsequentMembersToken<TNextReader>.None();
+                    token = SubsequentMembersToken<TNextReader>.More();
                     break;
                 case 17:
+                    token = SubsequentMembersToken<TNextReader>.None();
+                    break;
+                case 18:
                     token = SubsequentMembersToken<TNextReader>.None();
                     break;
                 default:
