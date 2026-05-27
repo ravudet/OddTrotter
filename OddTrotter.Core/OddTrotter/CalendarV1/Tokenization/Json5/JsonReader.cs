@@ -187,13 +187,61 @@
 
     public static class Counts
     {
-        public static int ValueCount = 0;
+        private static int valueCount = 0;
 
-        public static int ArrayElementsCount = 0;
+        public static int ValueCount
+        {
+            get
+            {
+                return valueCount;
+            }
+            set
+            {
+                valueCount = value % 21;
+            }
+        }
 
-        public static int MembersCount = 0;
+        private static int arrayElementsCount = 0;
 
-        public static int SubsequentMembersCount = 0;
+        public static int ArrayElementsCount
+        {
+            get
+            {
+                return arrayElementsCount;
+            }
+            set
+            {
+                arrayElementsCount = value % 2;
+            }
+        }
+
+        private static int membersCount = 0;
+
+        public static int MembersCount
+        {
+            get
+            {
+                return membersCount;
+            }
+            set
+            {
+                membersCount = value % 4;
+            }
+        }
+
+        private static int subsequentMembersCount = 0;
+
+        public static int SubsequentMembersCount
+        {
+            get
+            {
+                return subsequentMembersCount;
+            }
+            set
+            {
+                subsequentMembersCount = value % 19;
+            }
+        }
     }
 
     public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
