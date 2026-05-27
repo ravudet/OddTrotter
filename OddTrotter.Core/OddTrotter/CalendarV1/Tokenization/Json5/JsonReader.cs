@@ -1633,7 +1633,6 @@
 
             nextReader = default!;
             value = default!;
-            context = default!;
             return true;
         }
     }
