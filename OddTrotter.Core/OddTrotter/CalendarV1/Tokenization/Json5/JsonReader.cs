@@ -74,25 +74,25 @@
 
 
     public interface IMoveReader<TCurrentReader, TNextReader>
-        where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>, allows ref struct
-        where TNextReader : allows ref struct
+        where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>/*, allows ref struct //// TODO making everything allow ref struct apparently makes it slower...
+        where TNextReader : allows ref struct*/
     {
         static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader);
     }
 
     public interface IValueReader<TCurrentReader, TNextReader, TValue>
-        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
+        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
         where TNextReader : allows ref struct
-        where TValue : allows ref struct
+        where TValue : allows ref struct*/
     {
         static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value);
     }
 
     public interface IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
-        where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>, allows ref struct
+        where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>/*, allows ref struct
         where TNextReader : allows ref struct
         where TValue : allows ref struct
-        where TContext : allows ref struct
+        where TContext : allows ref struct*/
     {
         static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value, out TContext context);
 
@@ -100,8 +100,8 @@
     }
 
     public interface ITokenReader<TCurrentReader, TToken>
-        where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
-        where TToken : allows ref struct
+        where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
+        where TToken : allows ref struct*/
     {
         static abstract bool TryMove(ReaderContext readerContext, out TToken token);
     }
@@ -157,7 +157,7 @@
 
 
     public sealed class WhitespaceReader<TNextReader> : IContinuableValueReader<WhitespaceReader<TNextReader>, TNextReader, List<WhitespaceToken>, List<WhitespaceToken>>
-        where TNextReader : allows ref struct
+        //// where TNextReader : allows ref struct
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
         {
@@ -292,7 +292,7 @@
     }
 
     public sealed class ValueReader<TNextReader> : ITokenReader<ValueReader<TNextReader>, ValueToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ValueToken<TNextReader> token)
         {
@@ -496,7 +496,7 @@
     //// TODO you are here
     //// TODO try ref struct, but first try just updating the interfaces to allow ref structs
     public readonly struct ValueToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -600,7 +600,7 @@
     }
 
     public sealed class FalseReader<TNextReader> : IContinuableValueReader<FalseReader<TNextReader>, TNextReader, FalseToken, int>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private const string literal = "false";
 
@@ -642,7 +642,7 @@
     }
 
     public sealed class NullReader<TNextReader> : IContinuableValueReader<NullReader<TNextReader>, TNextReader, NullToken, int>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private const string literal = "null";
 
@@ -685,7 +685,7 @@
     }
 
     public sealed class TrueReader<TNextReader> : IContinuableValueReader<TrueReader<TNextReader>, TNextReader, TrueToken, int>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private const string literal = "true";
 
@@ -728,7 +728,7 @@
     }
 
     public sealed class ObjectReader<TNextReader> : IMoveReader<ObjectReader<TNextReader>, ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ObjectStartReader<WhitespaceReader<MembersReader<WhitespaceReader<ObjectEndReader<TNextReader>>>>> nextReader)
         {
@@ -738,7 +738,7 @@
     }
 
     public sealed class ArrayReader<TNextReader> : IMoveReader<ArrayReader<TNextReader>, ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ArrayStartReader<WhitespaceReader<ArrayElementsReader<WhitespaceReader<ArrayEndReader<TNextReader>>>>> nextReader)
         {
@@ -748,7 +748,7 @@
     }
 
     public sealed class ArrayStartReader<TNextReader> : IValueReader<ArrayStartReader<TNextReader>, TNextReader, ArrayStartToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ArrayStartToken value)
         {
@@ -766,7 +766,7 @@
     }
 
     public sealed class ArrayElementsReader<TNextReader> : ITokenReader<ArrayElementsReader<TNextReader>, ArrayElementsToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ArrayElementsToken<TNextReader> token)
         {
@@ -812,7 +812,7 @@
     }
 
     public readonly struct ArrayElementsToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -846,7 +846,7 @@
     }
 
     public sealed class ArrayElementReader<TNextReader> : IMoveReader<ArrayElementReader<TNextReader>, ValueReader<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ValueReader<TNextReader> nextReader)
         {
@@ -856,7 +856,7 @@
     }
 
     public sealed class SubsequentArrayElementsReader<TNextReader> : ITokenReader<SubsequentArrayElementsReader<TNextReader>, SubsequentArrayElementsToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out SubsequentArrayElementsToken<TNextReader> token)
         {
@@ -890,7 +890,7 @@
     }
 
     public readonly struct SubsequentArrayElementsToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -924,7 +924,7 @@
     }
 
     public sealed class ArrayEndReader<TNextReader> : IValueReader<ArrayEndReader<TNextReader>, TNextReader, ArrayEndToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ArrayEndToken value)
         {
@@ -942,7 +942,7 @@
     }
 
     public sealed class NumberReader<TNextReader> : IMoveReader<NumberReader<TNextReader>, SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out SignReader<IntReader<FracReader<ExpReader<TNextReader>>>> nextReader)
         {
@@ -952,7 +952,7 @@
     }
 
     public sealed class SignReader<TNextReader> : IValueReader<SignReader<TNextReader>, TNextReader, SignToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out SignToken value)
         {
@@ -1004,7 +1004,7 @@
     }
 
     public sealed class IntReader<TNextReader> : IContinuableValueReader<IntReader<TNextReader>, TNextReader, List<DigitToken>, List<DigitToken>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, ref List<DigitToken> context)
         {
@@ -1096,7 +1096,7 @@
     }
 
     public sealed class FracReader<TNextReader> : ITokenReader<FracReader<TNextReader>, FracToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out FracToken<TNextReader> token)
         {
@@ -1123,7 +1123,7 @@
     }
 
     public readonly struct FracToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -1157,7 +1157,7 @@
     }
 
     public sealed class DigitsReader<TNextReader> : IContinuableValueReader<DigitsReader<TNextReader>, TNextReader, List<DigitToken>, List<DigitToken>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, ref List<DigitToken> context)
         {
@@ -1209,7 +1209,7 @@
     }
 
     public sealed class ExpReader<TNextReader> : ITokenReader<ExpReader<TNextReader>, ExpToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out ExpToken<TNextReader> token)
         {
@@ -1237,7 +1237,7 @@
     }
 
     public readonly struct ExpToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -1271,7 +1271,7 @@
     }
 
     public sealed class EReader<TNextReader> : IValueReader<EReader<TNextReader>, TNextReader, EToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out EToken value)
         {
@@ -1301,7 +1301,7 @@
     }
 
     public sealed class ExpSignReader<TNextReader> : IValueReader<ExpSignReader<TNextReader>, TNextReader, ExpSignToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ExpSignToken value)
         {
@@ -1374,7 +1374,7 @@
     }
 
     public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>> nextReader)
         {
@@ -1401,7 +1401,7 @@
     }
 
     public sealed class MembersReader<TNextReader> : ITokenReader<MembersReader<TNextReader>, MembersToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out MembersToken<TNextReader> token)
         {
@@ -1451,7 +1451,7 @@
     }
 
     public readonly struct MembersToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -1485,7 +1485,7 @@
     }
 
     public sealed class FirstMemberReader<TNextReader> : IMoveReader<FirstMemberReader<TNextReader>, MemberReader<SubsequentMembersReader<TNextReader>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out MemberReader<SubsequentMembersReader<TNextReader>> nextReader)
         {
@@ -1495,7 +1495,7 @@
     }
 
     public sealed class MemberReader<TNextReader> : IMoveReader<MemberReader<TNextReader>, StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out StringReader<WhitespaceReader<ColonReader<WhitespaceReader<ValueReader<TNextReader>>>>> nextReader)
         {
@@ -1505,7 +1505,7 @@
     }
 
     public sealed class ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, ColonToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ColonToken value)
         {
@@ -1523,7 +1523,7 @@
     }
 
     public sealed class SubsequentMembersReader<TNextReader> : ITokenReader<SubsequentMembersReader<TNextReader>, SubsequentMembersToken<TNextReader>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out SubsequentMembersToken<TNextReader> token)
         {
@@ -1618,7 +1618,7 @@
     }
 
     public readonly struct SubsequentMembersToken<TNextReader>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         private int type { get; init; }
 
@@ -1652,7 +1652,7 @@
     }
 
     public sealed class SubsequentMemberReader<TNextReader> : IMoveReader<SubsequentMemberReader<TNextReader>, CommaReader<WhitespaceReader<MemberReader<TNextReader>>>>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out CommaReader<WhitespaceReader<MemberReader<TNextReader>>> nextReader)
         {
@@ -1662,7 +1662,7 @@
     }
 
     public sealed class CommaReader<TNextReader> : IValueReader<CommaReader<TNextReader>, TNextReader, CommaToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out CommaToken value)
         {
@@ -1680,7 +1680,7 @@
     }
 
     public sealed class StringDelimiterReader<TNextReader> : IValueReader<StringDelimiterReader<TNextReader>, TNextReader, StringDelimiterToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
         {
@@ -1698,7 +1698,7 @@
     }
 
     public sealed class CharsReader<TNextReader> : IContinuableValueReader<CharsReader<TNextReader>, TNextReader, List<CharToken>, (List<CharToken>, bool)>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
         {
@@ -1802,7 +1802,7 @@
     }
 
     public sealed class ObjectEndReader<TNextReader> : IValueReader<ObjectEndReader<TNextReader>, TNextReader, ObjectEndToken>
-        where TNextReader : allows ref struct
+        //where TNextReader : allows ref struct
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectEndToken value)
         {
@@ -1852,8 +1852,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         public static TNextReader MoveTry1<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ReaderContext readerContext)
-            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>, allows ref struct
-            where TNextReader : allows ref struct
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>/*, allows ref struct
+            where TNextReader : allows ref struct*/
         {
             TCurrentReader.TryMove(readerContext, out var nextReader);
             return nextReader;
@@ -1863,8 +1863,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             this IMoveReader<TCurrentReader, TNextReader> moveReader,
             ReaderContext readerContext,
             out TNextReader nextReader)
-            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
-            where TNextReader : allows ref struct
+            where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>/*, allows ref struct
+            where TNextReader : allows ref struct*/
         {
             return TCurrentReader.TryMove(readerContext, out nextReader);
         }
@@ -1873,10 +1873,10 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         public static TNextReader MoveTry2<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> continuableValueReader,
             ReaderContext readerContext)
-            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>, allows ref struct
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>/*, allows ref struct
             where TNextReader : allows ref struct
             where TValue : allows ref struct
-            where TContext : allows ref struct
+            where TContext : allows ref struct*/
         {
             TCurrentReader.TryMove(readerContext, out var nextReader, out _, out _);
             return nextReader;
@@ -1888,10 +1888,10 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             out TNextReader nextReader,
             out TValue value,
             out TContext context)
-            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>, allows ref struct
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>/*, allows ref struct
             where TNextReader : allows ref struct
             where TValue : allows ref struct
-            where TContext : allows ref struct
+            where TContext : allows ref struct*/
         {
             return TCurrentReader.TryMove(readerContext, out nextReader, out value, out context);
         }
@@ -1902,44 +1902,44 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
             out TNextReader nextReader,
             out TValue value,
             ref TContext context)
-            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>, allows ref struct
+            where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>/*, allows ref struct
             where TNextReader : allows ref struct
             where TValue : allows ref struct
-            where TContext : allows ref struct
+            where TContext : allows ref struct*/
         {
             return TCurrentReader.TryContinue( readerContext, out nextReader, out value, ref context);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
-            where TToken : allows ref struct
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
+            where TToken : allows ref struct*/
         {
             TCurrentReader.TryMove(readerContext, out var token);
             return token;
         }
 
         public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
-            where TToken : allows ref struct
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
+            where TToken : allows ref struct*/
         {
             return TCurrentReader.TryMove(readerContext, out token);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
             where TNextReader : allows ref struct
-            where TValue : allows ref struct
+            where TValue : allows ref struct*/
         {
             TCurrentReader.TryMove(readerContext, out var nextReader, out _);
             return nextReader;
         }
 
         public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
             where TNextReader : allows ref struct
-            where TValue : allows ref struct
+            where TValue : allows ref struct*/
         {
             return TCurrentReader.TryMove(readerContext, out nextReader, out value);
         }
