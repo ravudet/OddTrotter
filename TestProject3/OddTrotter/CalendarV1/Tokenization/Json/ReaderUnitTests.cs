@@ -2405,9 +2405,6 @@
         [TestMethod]
         public async Task StaticOnlyFullRead()
         {
-            //// TODO you are here
-            //// TODO you just removed the assertions but you need to check if that actually improved performance; but basically, the overhead of the design costs half of the perf that the .net reader uses to actually read, so i'm not sure you'll be able to actually match their performance
-
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
