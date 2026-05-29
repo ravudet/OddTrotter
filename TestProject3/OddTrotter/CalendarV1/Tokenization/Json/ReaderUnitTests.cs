@@ -2422,7 +2422,6 @@
             }
         }
 
-
         public static void StaticOnlyFullRead(byte[] buffer)
         {
             /*stream.Position = 0;
@@ -2430,133 +2429,35 @@
             var context = Json5.ReaderContext.FromBuffer(buffer);
             var reader = Readers.Create();
 
-            var whitespaceReader = reader.MoveTry1(context);
-            var valueReader = whitespaceReader.MoveTry2(context);
-            var valueToken = valueReader.MoveTry3(context);
-            valueToken.TryObject(out var @object);
-            var objectStart = @object.MoveTry1(context);
-            var whitespacereader2 = objectStart.MoveTry4(context);
-            var membersReader = whitespacereader2.MoveTry2(context);
-            var membersToken = membersReader.MoveTry3(context);
-            membersToken.TrySome(out var firstMemberReader);
+            reader.MoveTry1(context).MoveTry2(context).MoveTry3(context).TryObject(out var @object);
+            @object.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TrySome(out var firstMemberReader);
 
             // true
-            var memberReader = firstMemberReader.MoveTry1(context);
-            var stringReader = memberReader.MoveTry1(context);
-            var stringDelimiterReader = stringReader.MoveTry1(context);
-            var charsReader = stringDelimiterReader.MoveTry4(context);
-            var stringDelimiterReader2 = charsReader.MoveTry2(context);
-            var whitespaceReader3 = stringDelimiterReader2.MoveTry4(context);
-            var colonReader = whitespaceReader3.MoveTry2(context);
-            var whitespaceReader4 = colonReader.MoveTry4(context);
-            var valueReader2 = whitespaceReader4.MoveTry2(context);
-            var valueToken2 = valueReader2.MoveTry3(context);
-            valueToken2.TryTrue(out var @true);
-            var subsequentMembersReader = @true.MoveTry2(context);
-            var subsequentMembersToken = subsequentMembersReader.MoveTry3(context);
-            subsequentMembersToken.TryMore(out var subsequentMemberReader);
-            var commaReader = subsequentMemberReader.MoveTry1(context);
-            var whitespaceReader5 = commaReader.MoveTry4(context);
+            firstMemberReader.MoveTry1(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryTrue(out var @true);
+            @true.MoveTry2(context).MoveTry3(context).TryMore(out var subsequentMemberReader);
+            var whitespaceReader5 = subsequentMemberReader.MoveTry1(context).MoveTry4(context);
 
             // false
-            var memberReader2 = whitespaceReader5.MoveTry2(context);
-            var stringReader2 = memberReader2.MoveTry1(context);
-            var stringDelimterReader3 = stringReader2.MoveTry1(context);
-            var charsReader2 = stringDelimterReader3.MoveTry4(context);
-            var stringDelimiterReader4 = charsReader2.MoveTry2(context);
-            var whitespace6 = stringDelimiterReader4.MoveTry4(context);
-            var colon2 = whitespace6.MoveTry2(context);
-            var whitespace7 = colon2.MoveTry4(context);
-            var value3 = whitespace7.MoveTry2(context);
-            var valueToken3 = value3.MoveTry3(context);
-            valueToken3.TryFalse(out var @false);
-            var subsequentMembers2 = @false.MoveTry2(context);
-            var subsequentMembersToken2 = subsequentMembers2.MoveTry3(context);
-            subsequentMembersToken2.TryMore(out var subsequentMember2);
+            whitespaceReader5.MoveTry2(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryFalse(out var @false);
+            @false.MoveTry2(context).MoveTry3(context).TryMore(out var subsequentMember2);
 
             // 1234
-            var comma2 = subsequentMember2.MoveTry1(context);
-            var whitespace8 = comma2.MoveTry4(context);
-            var member3 = whitespace8.MoveTry2(context);
-            var string3 = member3.MoveTry1(context);
-            var stringDelimiter5 = string3.MoveTry1(context);
-            var chars3 = stringDelimiter5.MoveTry4(context);
-            var stringDelimiter6 = chars3.MoveTry2(context);
-            var whitespace9 = stringDelimiter6.MoveTry4(context);
-            var colon3 = whitespace9.MoveTry2(context);
-            var whitespace10 = colon3.MoveTry4(context);
-            var value4 = whitespace10.MoveTry2(context);
-            var valueToken4 = value4.MoveTry3(context);
-            valueToken4.TryNumber(out var number);
-            var sign = number.MoveTry1(context);
-            var @int = sign.MoveTry4(context);
-            var frac = @int.MoveTry2(context);
-            var fracToken = frac.MoveTry3(context);
-            fracToken.TryAbsent(out var exp);
-            var expToken = exp.MoveTry3(context);
-            expToken.TryAbsent(out var subsequentMembers3);
-            var subsequentMembersToken3 = subsequentMembers3!.MoveTry3(context);
-            subsequentMembersToken3.TryMore(out var subsequentMember3);
+            subsequentMember2.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryNumber(out var number);
+            var sign = number.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryAbsent(out var exp);
+            var expToken = exp.MoveTry3(context).TryAbsent(out var subsequentMembers3);
+            var subsequentMembersToken3 = subsequentMembers3!.MoveTry3(context).TryMore(out var subsequentMember3);
 
             // asdf
-            var comma3 = subsequentMember3.MoveTry1(context);
-            var whitespace11 = comma3.MoveTry4(context);
-            var member4 = whitespace11.MoveTry2(context);
-            var string4 = member4.MoveTry1(context);
-            var stringDelimiter7 = string4.MoveTry1(context);
-            var chars4 = stringDelimiter7.MoveTry4(context);
-            var stringDelimiter8 = chars4.MoveTry2(context);
-            var whitespace12 = stringDelimiter8.MoveTry4(context);
-            var colon4 = whitespace12.MoveTry2(context);
-            var whitespace13 = colon4.MoveTry4(context);
-            var value5 = whitespace13.MoveTry2(context);
-            var valueToken5 = value5.MoveTry3(context);
-            valueToken5.TryString(out var @string5);
-            var stringDelimiter9 = string5.MoveTry1(context);
-            var chars5 = stringDelimiter9.MoveTry4(context);
-            var stringDelimiter10 = chars5.MoveTry2(context);
-            var subsequentMembers4 = stringDelimiter10.MoveTry4(context);
-            var subsequentMembersToken4 = subsequentMembers4.MoveTry3(context);
-            subsequentMembersToken4.TryMore(out var subsequentMember4);
+            subsequentMember3.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryString(out var string5);
+            string5.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry3(context).TryMore(out var subsequentMember4);
 
             // null
-            var comma4 = subsequentMember4.MoveTry1(context);
-            var whitespace14 = comma4.MoveTry4(context);
-            var member5 = whitespace14.MoveTry2(context);
-            var string6 = member5.MoveTry1(context);
-            var stringDelimiter11 = string6.MoveTry1(context);
-            var chars6 = stringDelimiter11.MoveTry4(context);
-            var stringDelimiter12 = chars6.MoveTry2(context);
-            var whitespace15 = stringDelimiter12.MoveTry4(context);
-            var colon5 = whitespace15.MoveTry2(context);
-            var whitespace16 = colon5.MoveTry4(context);
-            var value6 = whitespace16.MoveTry2(context);
-            var valueToken6 = value6.MoveTry3(context);
-            valueToken6.TryNull(out var @null);
-            var subsequentMembers5 = @null.MoveTry2(context);
-            var subsequentMembersToken5 = subsequentMembers5.MoveTry3(context);
-            subsequentMembersToken5.TryMore(out var subsequentMember5);
-
+            subsequentMember4.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryNull(out var @null);
+            @null.MoveTry2(context).MoveTry3(context).TryMore(out var subsequentMember5);
 
             // object
-            var comma5 = subsequentMember5.MoveTry1(context);
-            var whitespace17 = comma5.MoveTry4(context);
-            var member6 = whitespace17.MoveTry2(context);
-            var string7 = member6.MoveTry1(context);
-            var stringDelimiter13 = string7.MoveTry1(context);
-            var chars7 = stringDelimiter13.MoveTry4(context);
-            var stringDelimiter14 = chars7.MoveTry2(context);
-            var whitespace18 = stringDelimiter14.MoveTry4(context);
-            var colon6 = whitespace18.MoveTry2(context);
-            var whitespace19 = colon6.MoveTry4(context);
-            var value7 = whitespace19.MoveTry2(context);
-            var valueToken7 = value7.MoveTry3(context);
-            valueToken7.TryObject(out var object2);
-            var objectStart2 = object2.MoveTry1(context);
-            var whitespace20 = objectStart2.MoveTry4(context);
-            var nestedMembers = whitespace20.MoveTry2(context);
-            var nestedMembersToken = nestedMembers.MoveTry3(context);
-            nestedMembersToken.TrySome(out var nestedFirstMember);
+            subsequentMember5.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry1(context).MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TryObject(out var object2);
+            var objectStart2 = object2.MoveTry1(context).MoveTry4(context).MoveTry2(context).MoveTry3(context).TrySome(out var nestedFirstMember);
 
             Json5.SubsequentMembersReader<Json5.WhitespaceReader<Json5.ObjectEndReader<Json5.WhitespaceReader<Nothing>>>> subsequentMembers6;
             {
