@@ -2424,6 +2424,11 @@
 
         public static void StaticOnlyFullRead(byte[] buffer)
         {
+            //// TODO your design makes feature gaps explicit
+            //// TODO your design is strongly typed and so it allows correct by construction
+            //// TODO your design is strongly typed and so it allows helper methods that don't require (non-null) validations (note that this also means that other designs have to expose more details than they might otherwise; for example, the .net json reader *doesn't* expose the reader state in a way that gives you all of the information needed, so you have to pass the ref struct reader, which means you have to jump through hoops to get async methods)
+            //// TODO your design allows for more fine granularity without breaking changes (e.g. a urlreader could be a ivaluereader<url>, and in the future *also* implement a imovereader<schemereader<domainreader<portreader<segmentsreader<queryoptionsreader<fragmentreader>>>>>>)
+
             /*stream.Position = 0;
             var context = await Json5.ReaderContext.FromStream(stream, new byte[stream.Length]).ConfigureAwait(false);*/
             var context = Json5.ReaderContext.FromBuffer(buffer);
