@@ -95,11 +95,11 @@
 
     public static class MetadataDtoExtensions
     {
-        public static TResult Apply<TResult>(this MetadataDto metadataDto, Func<MetadataDto.Xml, TResult> xml, Func<MetadataDto.Json, TResult> json)
+        public static TResult Apply2<TResult>(this MetadataDto metadataDto, Func<MetadataDto.Xml, TResult> xml, Func<MetadataDto.Json, TResult> json, Func<MetadataDto.Unknown, TResult> unknown)
         {
             //// TODO does this work? external consumers can only get this extension method, so if we add a new derived type, then this method can still be found with binary compatibility, and this method implementation will be updated in the new binary to call the correct `metadatadto.apply` method; we would also expose a *new* extension with the new parameter
 
-            return metadataDto.Apply(xml, json);
+            return metadataDto.Apply(xml, json, unknown);
         }
     }
 }
