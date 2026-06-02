@@ -21,7 +21,33 @@
     }
 
 
-    public interface IMetadataSource<TSchemaVersion>
+    public interface IMetadataSource<out TSchemaVersion>
+    {
+        IMetadataContext<TSchemaVersion> Get();
+    }
+
+    public interface IMetadataContext<out TSchemaVersion>: IMetadataContext<TSchemaVersion, MetadataDto>
+    {
+    }
+
+    public interface IMetadataContext<out TSchemaVersion, out TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
+        where TFormat : MetadataDto
+    {
+        ITask<IResponse<TFormat>> Evaluate();
+
+        IMetadataContext<TSchemaVersion, TConcreteFormat> Format<TConcreteFormat>()
+            where TConcreteFormat : MetadataDto, IMetadataDto;
+    }
+
+    public interface IMetadataDto
+    {
+    }
+
+    public abstract class MetadataDto
+    {
+    }
+
+    /*public interface IMetadataSource<TSchemaVersion>
     {
         IMetadataContext<TSchemaVersion> Get();
 
@@ -133,5 +159,5 @@
 
             return metadataDto.Apply(xml, json, unknown);
         }
-    }
+    }*/
 }
