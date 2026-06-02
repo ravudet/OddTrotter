@@ -12,6 +12,11 @@
         public static void DoWork<TSchemaVersion>(IMetadataSource<TSchemaVersion> source)
         {
             source.Get2().Format<MetadataDto.Json>().Evaluate();
+
+            source.Get2().Evaluate().GetAwaiter().GetResult().Apply(
+                _ => "asdf",
+                _ => "asdf",
+                _ => "asdf");
         }
     }
 
