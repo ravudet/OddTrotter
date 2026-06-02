@@ -11,7 +11,7 @@
     {
         public static void DoWork<TSchemaVersion>(IMetadataSource<TSchemaVersion> source)
         {
-            source.Get2().Format<MetadataDto.Json>().Evaluate();
+            source.Get2().Format<MetadataFormat.Json>().Evaluate();
 
             source.Get2().Evaluate().GetAwaiter().GetResult().Apply(
                 _ => "asdf",
@@ -26,24 +26,29 @@
         IMetadataContext<TSchemaVersion> Get();
     }
 
-    public interface IMetadataContext<out TSchemaVersion>: IMetadataContext<TSchemaVersion, MetadataDto>
+    public interface IMetadataContext<out TSchemaVersion>: IMetadataContext<TSchemaVersion, MetadataFormat>
     {
     }
 
-    public interface IMetadataContext<out TSchemaVersion, out TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
-        where TFormat : MetadataDto
+    public interface IMetadataContext<out TSchemaVersion, TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
+        where TFormat : MetadataFormat
     {
-        ITask<IResponse<TFormat>> Evaluate();
+        ITask<IResponse<MetadataDto<TFormat>>> Evaluate();
 
         IMetadataContext<TSchemaVersion, TConcreteFormat> Format<TConcreteFormat>()
-            where TConcreteFormat : MetadataDto, IMetadataDto;
+            where TConcreteFormat : MetadataFormat, IMetadataDto;
     }
 
     public interface IMetadataDto
     {
     }
 
-    public abstract class MetadataDto
+    public abstract class MetadataFormat
+    {
+    }
+
+    public abstract class MetadataDto<TFormat>
+        where TFormat : MetadataFormat //// TODO i thnk this addresses the above TODO, but i'm wanting to add the imetadatadto constraint //// TODO also rename the interface to be imetadataforamt i think
     {
     }
 
