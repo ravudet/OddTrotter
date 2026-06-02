@@ -6,15 +6,42 @@
     //// TODO you are here
     //// TODO finish this file, including todos
 
+
+    public static class Playground
+    {
+        public static void DoWork<TSchemaVersion>(IMetadataSource<TSchemaVersion> source)
+        {
+            source.Get2().Format<MetadataDto.Json>().Evaluate();
+        }
+    }
+
+
     public interface IMetadataSource<TSchemaVersion>
     {
         IMetadataContext<TSchemaVersion> Get();
 
+        IMetadataContext2<TSchemaVersion, IMetadataDto> Get2();
+
         //// TODO other verbs
     }
 
+    public interface IMetadataDto
+    {
+        internal void CantImplement();
 
+        TResult Apply<TResult>(
+            Func<MetadataDto.Xml, TResult> xml,
+            Func<MetadataDto.Json, TResult> json,
+            Func<MetadataDto.Unknown, TResult> unknown);
+    }
 
+    public interface IMetadataContext2<TSchemaVersion, TFormat>
+        where TFormat : class, IMetadataDto
+    {
+        ITask<TFormat> Evaluate();
+
+        IMetadataContext2<TSchemaVersion, TFormat2> Format<TFormat2>() where TFormat2 : MetadataDto, IMetadataDto;
+    }
 
 
 
@@ -59,7 +86,7 @@
             Func<MetadataDto.Json, TResult> json,
             Func<MetadataDto.Unknown, TResult> unknown);
 
-        public sealed class Xml : MetadataDto
+        public sealed class Xml : MetadataDto, IMetadataDto
         {
             protected internal override TResult Apply<TResult>(
                 Func<Xml, TResult> xml,
@@ -70,7 +97,7 @@
             }
         }
 
-        public sealed class Json : MetadataDto
+        public sealed class Json : MetadataDto, IMetadataDto
         {
             protected internal override TResult Apply<TResult>(
                 Func<Xml, TResult> xml,
