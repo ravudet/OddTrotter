@@ -136,7 +136,7 @@
                     return new TaskAwaiter(this.read?.GetAwaiter(), this.readerContext);
                 }
 
-                public struct TaskAwaiter : ITaskAwaiter<RefTuple<ReaderContext, TToken>>
+                public struct TaskAwaiter : ITaskAwaiter<TToken>
                 {
                     private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
                     private readonly ReaderContext readerContext;
@@ -155,12 +155,12 @@
                         }
                     }
 
-                    public RefTuple<ReaderContext, TToken> GetResult()
+                    public TToken GetResult()
                     {
                         this.read?.GetResult(); //// TODO this basically will just throw if needed... //// TODO you do this in other types too
                         TCurrentReader.TryMove(this.readerContext, out var token);
 
-                        return RefTuple.Create(readerContext, token);
+                        return token;
                     }
 
                     public void OnCompleted(Action continuation)
