@@ -1,10 +1,13 @@
 ﻿namespace OddTrotter.CalendarV1.Tokenization.Json6
 {
     using System;
+    using System.Linq.V2;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     using OddTrotter.CalendarV1.Tokenization.Json5;
+
+    using Stash;
 
     public static partial class Extensions
     {
@@ -51,7 +54,8 @@
         public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
             ReaderContext readerContext)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
+            where TToken : allows ref struct
         {
             //// TODO i don't really know why this is faster that move21; the other methods got faster when i removed the custom awaitable implementation; it's *possible* because of the closure `token`, but `move3` has a closure on `token`...
             //// TODO also worth noting though that this has a bug; the `_` should actually be returned, because otherwise you are reading the value twice
@@ -63,8 +67,39 @@
             return new Move3Task<TCurrentReader, TToken>(readerContext.Read(), readerContext);
         }
 
+        public readonly ref struct RefTuple<T1, T2>
+            where T1 : allows ref struct
+            where T2 : allows ref struct
+        {
+            public RefTuple(T1 item1, T2 item2)
+            {
+                this.Item1 = item1;
+                this.Item2 = item2;
+            }
+
+            public T1 Item1 { get; }
+            public T2 Item2 { get; }
+
+            public void Deconstruct(out T1 item1, out T2 item2)
+            {
+                item1 = this.Item1;
+                item2 = this.Item2;
+            }
+        }
+
+        public static class RefTuple
+        {
+            public static RefTuple<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
+                where T1 : allows ref struct
+                where T2 : allows ref struct
+            {
+                return new RefTuple<T1, T2>(item1, item2);
+            }
+        }
+
         public ref struct Move3Task<TCurrentReader, TToken>
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
+            where TToken : allows ref struct
         {
             private readonly ValueTask? read;
             private readonly ReaderContext readerContext;
@@ -101,7 +136,7 @@
                     return new TaskAwaiter(this.read?.GetAwaiter(), this.readerContext);
                 }
 
-                public struct TaskAwaiter : ITaskAwaiter<(ReaderContext, TToken)>
+                public struct TaskAwaiter : ITaskAwaiter<RefTuple<ReaderContext, TToken>>
                 {
                     private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
                     private readonly ReaderContext readerContext;
@@ -120,12 +155,12 @@
                         }
                     }
 
-                    public (ReaderContext, TToken) GetResult()
+                    public RefTuple<ReaderContext, TToken> GetResult()
                     {
                         this.read?.GetResult(); //// TODO this basically will just throw if needed... //// TODO you do this in other types too
                         TCurrentReader.TryMove(this.readerContext, out var token);
 
-                        return (readerContext, token);
+                        return RefTuple.Create(readerContext, token);
                     }
 
                     public void OnCompleted(Action continuation)
@@ -154,7 +189,7 @@
                 }
             }
 
-            public ITaskAwaiter<(ReaderContext, TToken)> GetAwaiter()
+            public ITaskAwaiter<RefTuple<ReaderContext, TToken>> GetAwaiter()
             {
                 throw new System.NotImplementedException();
             }

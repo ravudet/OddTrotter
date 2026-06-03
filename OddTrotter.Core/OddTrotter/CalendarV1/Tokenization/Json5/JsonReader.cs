@@ -100,8 +100,8 @@
     }
 
     public interface ITokenReader<TCurrentReader, TToken>
-        where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
-        where TToken : allows ref struct*/
+        where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
+        where TToken : allows ref struct
     {
         static abstract bool TryMove(ReaderContext readerContext, out TToken token);
     }
@@ -1812,8 +1812,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         }
 
         public static bool TryMove3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext, out TToken token)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
-            where TToken : allows ref struct*/
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
+            where TToken : allows ref struct
         {
             return TCurrentReader.TryMove(readerContext, out token);
         }
