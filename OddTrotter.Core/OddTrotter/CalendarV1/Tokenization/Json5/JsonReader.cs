@@ -1531,7 +1531,7 @@
         }
     }
 
-    public readonly struct SubsequentMembersToken<TNextReader>
+    public readonly ref struct SubsequentMembersToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
@@ -1804,8 +1804,8 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TToken MoveTry3<TCurrentReader, TToken>(this ITokenReader<TCurrentReader, TToken> tokenReader, ReaderContext readerContext)
-            where TCurrentReader : ITokenReader<TCurrentReader, TToken>/*, allows ref struct
-            where TToken : allows ref struct*/
+            where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
+            where TToken : allows ref struct
         {
             TCurrentReader.TryMove(readerContext, out var token);
             return token;
