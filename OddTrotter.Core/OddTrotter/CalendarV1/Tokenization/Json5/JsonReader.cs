@@ -1309,12 +1309,8 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectStartToken value)
         {
-            /*nextReader = default!;
-            return Json6.Helpers.TryReadChar(readerContext, '{');*/
-
             nextReader = default!;
-            value = default!;
-            return true;
+            return Json6.Helpers.TryReadChar(readerContext, '{');
         }
     }
 
@@ -1327,7 +1323,7 @@
     {
         public static bool TryMove(ReaderContext readerContext, out MembersToken<TNextReader> token)
         {
-            switch (Counts.MembersCount)
+            /*switch (Counts.MembersCount)
             {
                 case 0:
                     token = MembersToken<TNextReader>.Some();
@@ -1346,9 +1342,9 @@
             }
 
             ++Counts.MembersCount;
-            return true;
+            return true;*/
 
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 token = default;
                 return false;
@@ -1368,7 +1364,7 @@
                 token = MembersToken<TNextReader>.None();
             }
 
-            return true;*/
+            return true;
         }
     }
 
@@ -1431,12 +1427,8 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ColonToken value)
         {
-            /*nextReader = default!; //// TODO !
-            return Json6.Helpers.TryReadChar(readerContext, ':');*/
-
-            nextReader = default!;
-            value = default!;
-            return true;
+            nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(readerContext, ':');
         }
     }
 
@@ -1449,7 +1441,7 @@
     {
         public static bool TryMove(ReaderContext readerContext, out SubsequentMembersToken<TNextReader> token)
         {
-            switch (Counts.SubsequentMembersCount)
+            /*switch (Counts.SubsequentMembersCount)
             {
                 case 0:
                     token = SubsequentMembersToken<TNextReader>.More();
@@ -1513,9 +1505,9 @@
             }
 
             ++Counts.SubsequentMembersCount;
-            return true;
+            return true;*/
 
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 token = default;
                 return false;
@@ -1535,7 +1527,7 @@
                 token = SubsequentMembersToken<TNextReader>.None();
             }
 
-            return true;*/
+            return true;
         }
     }
 
@@ -1588,12 +1580,8 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out CommaToken value)
         {
-            /*nextReader = default!;
-            return Json6.Helpers.TryReadChar(readerContext, ',');*/
-
             nextReader = default!;
-            value = default!;
-            return true;
+            return Json6.Helpers.TryReadChar(readerContext, ',');
         }
     }
 
@@ -1606,12 +1594,8 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out StringDelimiterToken value)
         {
-            /*nextReader = default!; //// TODO !
-            return Json6.Helpers.TryReadChar(readerContext, '"');*/
-
-            nextReader = default!;
-            value = default!;
-            return true;
+            nextReader = default!; //// TODO !
+            return Json6.Helpers.TryReadChar(readerContext, '"');
         }
     }
 
@@ -1624,7 +1608,7 @@
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, ref (List<CharToken>, bool) context)
         {
-            /*while (true)
+            while (true)
             {
                 if (readerContext.ValidBytes == 0)
                 {
@@ -1672,23 +1656,13 @@
 
             nextReader = default!; //// TODO !
             value = context.Item1;
-            return true;*/
-
-            nextReader = default!;
-            value = default!;
-            context = default!;
             return true;
         }
 
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<CharToken> value, out (List<CharToken>, bool) context)
         {
-            /*context = (new List<CharToken>(), false);
-            return CharsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
-
-            nextReader = default!;
-            value = default!;
-            context = default!;
-            return true;
+            context = (new List<CharToken>(), false);
+            return CharsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
         }
     }
 
@@ -1728,12 +1702,8 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ObjectEndToken value)
         {
-            /*nextReader = default!;
-            return Json6.Helpers.TryReadChar(readerContext, '}');*/
-
             nextReader = default!;
-            value = default!;
-            return true;
+            return Json6.Helpers.TryReadChar(readerContext, '}');
         }
     }
 
