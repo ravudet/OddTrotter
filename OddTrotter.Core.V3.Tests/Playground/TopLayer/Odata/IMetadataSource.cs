@@ -45,11 +45,25 @@
 
     public abstract class MetadataFormat
     {
+        public sealed class Json : MetadataFormat, IMetadataFormat
+        {
+        }
+
+        public sealed class Xml : MetadataFormat, IMetadataFormat
+        {
+        }
     }
 
     public abstract class MetadataDto<TFormat>
         where TFormat : MetadataFormat //// TODO i thnk this addresses the above TODO, but i'm wanting to add the imetadatadto constraint
     {
+        public sealed class Concrete : MetadataDto<TFormat>
+        {
+        }
+
+        public sealed class Unknown : MetadataDto<TFormat>
+        {
+        }
     }
 
     /*public interface IMetadataSource<TSchemaVersion>
