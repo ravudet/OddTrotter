@@ -81,9 +81,9 @@
     }
 
     public interface IValueReader<TCurrentReader, TNextReader, TValue>
-        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
+        where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
         where TNextReader : allows ref struct
-        where TValue : allows ref struct*/
+        where TValue : allows ref struct
     {
         static abstract bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out TValue value);
     }
@@ -1829,9 +1829,9 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
         }
 
         public static bool TryMove4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext, out TNextReader nextReader, out TValue value)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
             where TNextReader : allows ref struct
-            where TValue : allows ref struct*/
+            where TValue : allows ref struct
         {
             return TCurrentReader.TryMove(readerContext, out nextReader, out value);
         }

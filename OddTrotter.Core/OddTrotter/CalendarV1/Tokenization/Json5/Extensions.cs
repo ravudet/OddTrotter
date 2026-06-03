@@ -11,17 +11,123 @@
 
     public static partial class Extensions
     {
-        public static async ValueTask<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
+        public static Move4Task<TCurrentReader, TNextReader, TValue> Move4<TCurrentReader, TNextReader, TValue>(
             this IValueReader<TCurrentReader, TNextReader, TValue> currentReader,
             ReaderContext readerContext)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
+            where TNextReader : allows ref struct
+            where TValue : allows ref struct
         {
             if (!currentReader.TryMove4(readerContext, out _, out _))
             {
-                await readerContext.Read().ConfigureAwait(false);
+                return new Move4Task<TCurrentReader, TNextReader, TValue>(readerContext.Read(), readerContext);
             }
 
-            return default!;
+            return new Move4Task<TCurrentReader, TNextReader, TValue>(readerContext);
+        }
+
+        public ref struct Move4Task<TCurrentReader, TNextReader, TValue>
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
+            where TNextReader : allows ref struct
+            where TValue : allows ref struct
+        {
+            private readonly ValueTask? read;
+            private readonly ReaderContext readerContext;
+
+            public Move4Task(ValueTask read, ReaderContext readerContext)
+            {
+                this.read = read;
+                this.readerContext = readerContext;
+            }
+
+            public Move4Task(ReaderContext readerContext)
+            {
+                this.readerContext = readerContext;
+            }
+
+            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            {
+                return new ConfiguredAwaitable(this.read?.ConfigureAwait(continueOnCapturedContext), this.readerContext);
+            }
+
+            public ref struct ConfiguredAwaitable
+            {
+                private readonly ConfiguredValueTaskAwaitable? read;
+                private readonly ReaderContext readerContext;
+
+                public ConfiguredAwaitable(ConfiguredValueTaskAwaitable? read, ReaderContext readerContext)
+                {
+                    this.read = read;
+                    this.readerContext = readerContext;
+                }
+
+                public TaskAwaiter GetAwaiter()
+                {
+                    return new TaskAwaiter(this.read?.GetAwaiter(), this.readerContext);
+                }
+
+                public struct TaskAwaiter : ITaskAwaiter<TNextReader>
+                {
+                    private readonly ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read;
+                    private readonly ReaderContext readerContext;
+
+                    public TaskAwaiter(ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter? read, ReaderContext readerContext)
+                    {
+                        this.read = read;
+                        this.readerContext = readerContext;
+                    }
+
+                    public bool IsCompleted
+                    {
+                        get
+                        {
+                            return this.read?.IsCompleted ?? true;
+                        }
+                    }
+
+                    public TNextReader GetResult()
+                    {
+                        if (this.read == null)
+                        {
+                            return default!;
+                        }
+                        
+                        this.read?.GetResult(); //// TODO this basically will just throw if needed... //// TODO you do this in other types too
+                        TCurrentReader.TryMove(this.readerContext, out _, out _);
+
+                        return default!;
+                    }
+
+                    public void OnCompleted(Action continuation)
+                    {
+                        if (this.read == null)
+                        {
+                            ValueTask.CompletedTask.GetAwaiter().OnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.read.Value.OnCompleted(continuation);
+                        }
+                    }
+
+                    public void UnsafeOnCompleted(Action continuation)
+                    {
+                        if (this.read == null)
+                        {
+                            ValueTask.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+                        }
+                        else
+                        {
+                            this.read.Value.UnsafeOnCompleted(continuation);
+                        }
+                    }
+                }
+            }
+
+            public ITaskAwaiter<TNextReader> GetAwaiter()
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
         /*public static Move1Task<TNextReader> Move4<TCurrentReader, TNextReader, TValue>(
