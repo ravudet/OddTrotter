@@ -719,7 +719,7 @@
         }
     }
 
-    public readonly struct ArrayStartToken
+    public readonly ref struct ArrayStartToken
     {
     }
 
@@ -891,7 +891,7 @@
         }
     }
 
-    public readonly struct ArrayEndToken
+    public readonly ref struct ArrayEndToken
     {
     }
 
@@ -932,7 +932,7 @@
         }
     }
 
-    public readonly struct SignToken
+    public readonly ref struct SignToken
     {
         private int type { get; init; }
 
@@ -1211,7 +1211,7 @@
         }
     }
 
-    public readonly struct EToken
+    public readonly ref struct EToken
     {
         public EToken(byte e)
         {
@@ -1266,7 +1266,7 @@
         }
     }
 
-    public readonly struct ExpSignToken
+    public readonly ref struct ExpSignToken
     {
         private int type { get; init; }
 
@@ -1314,7 +1314,7 @@
         }
     }
 
-    public readonly struct ObjectStartToken
+    public readonly ref struct ObjectStartToken
     {
     }
 
@@ -1432,7 +1432,7 @@
         }
     }
 
-    public readonly struct ColonToken
+    public readonly ref struct ColonToken
     {
     }
 
@@ -1585,7 +1585,7 @@
         }
     }
 
-    public readonly struct CommaToken
+    public readonly ref struct CommaToken
     {
     }
 
@@ -1599,7 +1599,7 @@
         }
     }
 
-    public readonly struct StringDelimiterToken
+    public readonly ref struct StringDelimiterToken
     {
     }
 
@@ -1707,7 +1707,7 @@
         }
     }
 
-    public readonly struct ObjectEndToken
+    public readonly ref struct ObjectEndToken
     {
     }
 
@@ -1820,9 +1820,9 @@ namespace OddTrotter.CalendarV1.Tokenization.Json6 //// TODO should be json5
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNextReader MoveTry4<TCurrentReader, TNextReader, TValue>(this IValueReader<TCurrentReader, TNextReader, TValue> valueReader, ReaderContext readerContext)
-            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>/*, allows ref struct
+            where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
             where TNextReader : allows ref struct
-            where TValue : allows ref struct*/
+            where TValue : allows ref struct
         {
             TCurrentReader.TryMove(readerContext, out var nextReader, out _);
             return nextReader;
