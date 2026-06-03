@@ -161,7 +161,7 @@
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, ref List<WhitespaceToken> context)
         {
-            /*while (true)
+            while (true)
             {
                 if (readerContext.ValidBytes == 0)
                 {
@@ -187,22 +187,13 @@
 
             nextReader = default!; //// TODO !
             value = context;
-            return true;*/
-
-            nextReader = default!;
-            value = default!;
             return true;
         }
 
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<WhitespaceToken> value, out List<WhitespaceToken> context)
         {
-            /*context = new List<WhitespaceToken>();
-            return WhitespaceReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
-
-            nextReader = default!;
-            value = default!;
-            context = default!;
-            return true;
+            context = new List<WhitespaceToken>();
+            return WhitespaceReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
         }
     }
 
@@ -296,7 +287,7 @@
     {
         public static bool TryMove(ReaderContext readerContext, out ValueToken<TNextReader> token)
         {
-            switch (Counts.ValueCount)
+            /*switch (Counts.ValueCount)
             {
                 case 0:
                     token = ValueToken<TNextReader>.Object();
@@ -366,10 +357,10 @@
             }
 
             ++Counts.ValueCount;
-            return true;
+            return true;*/
 
 
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 token = default!; //// TODO !
                 return false;
@@ -489,7 +480,7 @@
             //        return true;
             //    default:
             //        throw new Exception("tODO invalid JSON");
-            //}*/
+            //}
         }
     }
 
