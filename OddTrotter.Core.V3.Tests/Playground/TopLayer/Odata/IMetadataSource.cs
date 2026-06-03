@@ -1,7 +1,9 @@
 ﻿namespace Playground.TopLayer.Odata
 {
     using System;
+    using System.Formats.Tar;
     using System.Threading.Tasks;
+    using System.Xml;
 
     //// TODO you are here
     //// TODO finish this file, including todos
@@ -9,59 +11,89 @@
 
     public static class Playground
     {
-        public static void DoWork<TSchemaVersion>(IMetadataSource<TSchemaVersion> source)
+        public static async Task DoWork(IMetadataSource<string> source)
         {
-            source.Get2().Format<MetadataFormat.Json>().Evaluate();
 
-            source.Get2().Evaluate().GetAwaiter().GetResult().Apply(
-                _ => "asdf",
-                _ => "asdf",
-                _ => "asdf");
+            var formatted = source.Get().Format<MetadataDto.Known.Xml>();
+            var evaluated = await formatted.Evaluate();
+
+            var versioned = formatted.SchemaVersion("asdf");
+            var versionedEvaluation = await versioned.Evaluate();
+
+        }
+
+        public static async Task FormatTest(
+            IMetadataContext1<string, MetadataFormat> first,
+            IMetadataContext1<string, MetadataFormat.Xml> second,
+            IMetadataContext1<string, MetadataFormat.Json> third)
+        {
+            var xmlResponse = await second.Evaluate();
         }
     }
 
 
-    public interface IMetadataSource<out TSchemaVersion>
+    public interface IMetadataSource<TSchemaVersion>
     {
-        IMetadataContext<TSchemaVersion> Get();
+        IMetadataContext1<TSchemaVersion> Get();
     }
 
-    public interface IMetadataContext<out TSchemaVersion>: IMetadataContext<TSchemaVersion, MetadataFormat>
+    public interface IMetadataContext1<TSchemaVersion>
+        : IMetadataContext1<IMetadataContext1<TSchemaVersion>, TSchemaVersion>
     {
     }
 
-    public interface IMetadataContext<out TSchemaVersion, TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
+    public interface IMetadataContext1<out TMetadataContext, TSchemaVersion>
+        where TMetadataContext : IMetadataContext1<TMetadataContext, TSchemaVersion>
+    {
+        ITask<IResponse<MetadataDto>> Evaluate();
+
+        TMetadataContext SchemaVersion(TSchemaVersion schemaVersion);
+
+        IMetadataContext2<TSchemaVersion, TFormat> Format<TFormat>()
+            where TFormat : MetadataDto.Known, IMetadataFormat;
+    }
+
+    public interface IMetadataContext2<TSchemaVersion, out TFormat>
+        : IMetadataContext2<IMetadataContext2<TSchemaVersion, TFormat>, TSchemaVersion, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+    }
+
+    public interface IMetadataContext2<out TMetadataContext, TSchemaVersion, out TFormat>
+        : IMetadataContext1<TMetadataContext, TSchemaVersion>
+        where TMetadataContext : IMetadataContext2<TMetadataContext, TSchemaVersion, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+        new ITask<IResponse<TFormat>> Evaluate();
+    }
+
+    /*public interface IMetadataContext<out TSchemaVersion, TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
         where TFormat : MetadataFormat
     {
-        ITask<IResponse<MetadataDto<TFormat>>> Evaluate();
+        ITask<IResponse<TFormat>> Evaluate();
 
         IMetadataContext<TSchemaVersion, TConcreteFormat> Format<TConcreteFormat>()
             where TConcreteFormat : MetadataFormat, IMetadataFormat;
-    }
+    }*/
 
     public interface IMetadataFormat
     {
     }
 
-    public abstract class MetadataFormat
+    public abstract class MetadataDto
     {
-        public sealed class Json : MetadataFormat, IMetadataFormat
+        public abstract class Known : MetadataDto
         {
+            public sealed class Json : Known, IMetadataFormat
+            {
+            }
+
+            public sealed class Xml : Known, IMetadataFormat
+            {
+            }
         }
 
-        public sealed class Xml : MetadataFormat, IMetadataFormat
-        {
-        }
-    }
-
-    public abstract class MetadataDto<TFormat>
-        where TFormat : MetadataFormat //// TODO i thnk this addresses the above TODO, but i'm wanting to add the imetadatadto constraint
-    {
-        public sealed class Concrete : MetadataDto<TFormat>
-        {
-        }
-
-        public sealed class Unknown : MetadataDto<TFormat>
+        public sealed class Unknown : MetadataDto
         {
         }
     }
