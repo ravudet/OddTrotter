@@ -2833,6 +2833,12 @@
         public async Task StaticOnly()
         {
 
+            //// TODO i think you are about ready to start moving forward with this design and productizing
+            //// first of all, remember that making values ref structs seems to have made things a bit slower for `staticonly`; it *may* have may `staticonlyfullread` *slightly* faster; so maybe revert that change
+            //// but i also want to try in `staticonly` getting rid of all of the `await` calls because they introduce intermediate items on the stack frame; see if you can write extensions that allow chaining them together in a fluent api, that way fewer things end up in your stack from (i hope)
+
+
+
             //// TODO you are here
             //// TODO static only is fastest per your last tests (you should probably run this one more time just to be sure)
             //// TODO now you need to compare it to .net
