@@ -36,10 +36,10 @@
         ITask<IResponse<MetadataDto<TFormat>>> Evaluate();
 
         IMetadataContext<TSchemaVersion, TConcreteFormat> Format<TConcreteFormat>()
-            where TConcreteFormat : MetadataFormat, IMetadataDto;
+            where TConcreteFormat : MetadataFormat, IMetadataFormat;
     }
 
-    public interface IMetadataDto
+    public interface IMetadataFormat
     {
     }
 
@@ -48,7 +48,7 @@
     }
 
     public abstract class MetadataDto<TFormat>
-        where TFormat : MetadataFormat //// TODO i thnk this addresses the above TODO, but i'm wanting to add the imetadatadto constraint //// TODO also rename the interface to be imetadataforamt i think
+        where TFormat : MetadataFormat //// TODO i thnk this addresses the above TODO, but i'm wanting to add the imetadatadto constraint
     {
     }
 
