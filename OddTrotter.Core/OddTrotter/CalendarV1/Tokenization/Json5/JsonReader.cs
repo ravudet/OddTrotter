@@ -486,7 +486,7 @@
 
     //// TODO you are here
     //// TODO try ref struct, but first try just updating the interfaces to allow ref structs
-    public readonly struct ValueToken<TNextReader>
+    public readonly ref struct ValueToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
@@ -769,7 +769,7 @@
         }
     }
 
-    public readonly struct ArrayElementsToken<TNextReader>
+    public readonly ref struct ArrayElementsToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
@@ -847,7 +847,7 @@
         }
     }
 
-    public readonly struct SubsequentArrayElementsToken<TNextReader>
+    public readonly ref struct SubsequentArrayElementsToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
@@ -1062,7 +1062,7 @@
         }
     }
 
-    public readonly struct FracToken<TNextReader>
+    public readonly ref struct FracToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
@@ -1368,7 +1368,7 @@
         }
     }
 
-    public readonly struct MembersToken<TNextReader>
+    public readonly ref struct MembersToken<TNextReader>
         //where TNextReader : allows ref struct
     {
         private int type { get; init; }
