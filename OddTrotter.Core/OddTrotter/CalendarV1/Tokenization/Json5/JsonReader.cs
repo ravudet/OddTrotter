@@ -1101,7 +1101,7 @@
     {
         public static bool TryContinue(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, ref List<DigitToken> context)
         {
-            /*//// TODO there might be a bug that allows an "empty" fraction portion...
+            //// TODO there might be a bug that allows an "empty" fraction portion...
             while (true)
             {
                 if (readerContext.ValidBytes == 0)
@@ -1128,23 +1128,13 @@
 
             nextReader = default!; //// TODO !
             value = context;
-            return true;*/
-
-            nextReader = default!;
-            value = default!;
-            context = default!;
             return true;
         }
 
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out List<DigitToken> value, out List<DigitToken> context)
         {
-            /*context = new List<DigitToken>();
-            return DigitsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);*/
-
-            nextReader = default!;
-            value = default!;
-            context = default!;
-            return true;
+            context = new List<DigitToken>();
+            return DigitsReader<TNextReader>.TryContinue(readerContext, out nextReader, out value, ref context);
         }
     }
 
@@ -1153,7 +1143,7 @@
     {
         public static bool TryMove(ReaderContext readerContext, out ExpToken<TNextReader> token)
         {
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 token = default;
                 return false;
@@ -1169,10 +1159,10 @@
                 token = ExpToken<TNextReader>.Present();
             }
 
-            return true;*/
-
-            token = ExpToken<TNextReader>.Absent();
             return true;
+
+            /*token = ExpToken<TNextReader>.Absent();
+            return true;*/
         }
     }
 
@@ -1215,13 +1205,9 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out EToken value)
         {
-            /*nextReader = default!; //// TODO !
+            nextReader = default!; //// TODO !
             value = new EToken((byte)'e');
-            return Json6.Helpers.TryReadChar(readerContext, 'e'); //// TODO should also allow 'E'*/
-
-            nextReader = default!;
-            value = default!;
-            return true;
+            return Json6.Helpers.TryReadChar(readerContext, 'e'); //// TODO should also allow 'E'
         }
     }
 
@@ -1245,7 +1231,7 @@
     {
         public static bool TryMove(ReaderContext readerContext, out TNextReader nextReader, out ExpSignToken value)
         {
-            /*if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
+            if (readerContext.CurrentByteIndex >= readerContext.ValidBytes)
             {
                 nextReader = default!; //// TODO !
                 value = default;
@@ -1276,10 +1262,6 @@
             }
 
             nextReader = default!; //// TODO !
-            return true;*/
-
-            nextReader = default!;
-            value = default!;
             return true;
         }
     }
