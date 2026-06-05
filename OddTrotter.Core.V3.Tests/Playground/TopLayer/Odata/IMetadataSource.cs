@@ -73,15 +73,6 @@
         new ITask<IResponse<TFormat>> Evaluate();
     }
 
-    /*public interface IMetadataContext<out TSchemaVersion, TFormat> //// TODO you shouldn't be able to get a context that has metadatadto.unknown as the type; since the context is "client-side" we can't know yet that the response will be `unknown`
-        where TFormat : MetadataFormat
-    {
-        ITask<IResponse<TFormat>> Evaluate();
-
-        IMetadataContext<TSchemaVersion, TConcreteFormat> Format<TConcreteFormat>()
-            where TConcreteFormat : MetadataFormat, IMetadataFormat;
-    }*/
-
     public interface IMetadataFormat
     {
     }
