@@ -8,7 +8,8 @@
     {
         public static bool TryMove(Context context, out WhitespaceReader<ValueReader<WhitespaceReader<Nothing>>>? nextReader)
         {
-            throw new NotImplementedException();
+            nextReader = null;
+            return true;
         }
     }
 
