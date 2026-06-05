@@ -15,10 +15,13 @@
         {
 
             var formatted = source.Get().Format<MetadataDto.Known.Xml>();
-            var evaluated = await formatted.Evaluate();
+            IResponse<MetadataDto.Known.Xml> evaluated = await formatted.Evaluate();
 
             var versioned = formatted.SchemaVersion("asdf");
-            var versionedEvaluation = await versioned.Evaluate();
+            IResponse<MetadataDto.Known.Xml> versionedEvaluation = await versioned.Evaluate();
+
+            var versionedFirst = source.Get().SchemaVersion("asf").Format<MetadataDto.Known.Xml>();
+            IResponse<MetadataDto.Known.Xml> versionedFirstEvalation = await versionedFirst.Evaluate();
 
         }
 
