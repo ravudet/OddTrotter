@@ -23,11 +23,14 @@
             var versionedFirst = source.Get().SchemaVersion("asf").Format<MetadataDto.Known.Xml>();
             IResponse<MetadataDto.Known.Xml> versionedFirstEvalation = await versionedFirst.Evaluate();
 
+
+            // source.Get().SchemaVersion("asf").Format<MetadataDto.Known>(); // correctly doesn't compile; the caller should be telling us exactly what format they expect
+            // source.Get().SchemaVersion("asf").Format<MetadataDto.Unknown>(); // correctly doesn't compile; the caller shouldn't take any action on the "client side" if they don't know what format they expect
         }
 
         public static void FormatTest(
             // IMetadataContext2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
-            // IMetadataContext2<string, MetadataDto.Known> second, //correctly doesn't compile; if you know the type, then the explicit type should be used
+            // IMetadataContext2<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
             IMetadataContext2<string, MetadataDto.Known.Xml> third,
             IMetadataContext2<string, MetadataDto.Known.Json> fourth)
         {
