@@ -25,12 +25,12 @@
 
         }
 
-        public static async Task FormatTest(
-            IMetadataContext1<string, MetadataFormat> first,
-            IMetadataContext1<string, MetadataFormat.Xml> second,
-            IMetadataContext1<string, MetadataFormat.Json> third)
+        public static void FormatTest(
+            // IMetadataContext2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
+            // IMetadataContext2<string, MetadataDto.Known> second, //correctly doesn't compile; if you know the type, then the explicit type should be used
+            IMetadataContext2<string, MetadataDto.Known.Xml> third,
+            IMetadataContext2<string, MetadataDto.Known.Json> fourth)
         {
-            var xmlResponse = await second.Evaluate();
         }
     }
 
