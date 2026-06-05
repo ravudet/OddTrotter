@@ -41,6 +41,8 @@
     public interface IMetadataSource<TSchemaVersion>
     {
         IMetadataContext1<TSchemaVersion> Get();
+        
+        //// TODO i'm torn about putting other verbs here; they don't mean anything for `$metadata`, but do you want to always include all verbs and let the caller get an error anyway?
     }
 
     public interface IMetadataContext1<TSchemaVersion>
