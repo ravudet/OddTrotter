@@ -2,9 +2,9 @@
 
 namespace Fx.Parsing.Reader
 {
-    public interface IMoveReader<out TSelf, out TNextReader>
+    public interface IMoveReader<out TSelf, TNextReader>
         where TSelf : IMoveReader<TSelf, TNextReader>
     {
-        static abstract TNextReader? MoveTry(Context context, out bool moved); //// TODO does this covariance thing make it slower?
+        static abstract bool MoveTry(Context context, out TNextReader? nextReader);
     }
 }
