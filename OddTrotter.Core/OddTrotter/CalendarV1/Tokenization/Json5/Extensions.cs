@@ -11,7 +11,7 @@
 
     public static partial class Extensions
     {
-        public static Move4Task<TCurrentReader, TNextReader, TValue> Move4<TCurrentReader, TNextReader, TValue>(
+        public static Move4Task<TCurrentReader, TNextReader, TValue> Move<TCurrentReader, TNextReader, TValue>(
             this IValueReader<TCurrentReader, TNextReader, TValue> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IValueReader<TCurrentReader, TNextReader, TValue>, allows ref struct
@@ -157,7 +157,7 @@
             return token;
         }
 
-        public static Move3Task<TCurrentReader, TToken> Move3<TCurrentReader, TToken>(
+        public static Move3Task<TCurrentReader, TToken> Move<TCurrentReader, TToken>(
             this ITokenReader<TCurrentReader, TToken> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : ITokenReader<TCurrentReader, TToken>, allows ref struct
@@ -315,7 +315,7 @@
             return default!;
         }
 
-        public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move2<TCurrentReader, TNextReader, TValue, TContext>(
+        public static Move2Task<TCurrentReader, TNextReader, TValue, TContext> Move<TCurrentReader, TNextReader, TValue, TContext>(
             this IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IContinuableValueReader<TCurrentReader, TNextReader, TValue, TContext>
@@ -444,7 +444,7 @@
             }
         }
 
-        public static async ValueTask<TNextReader> Move1<TCurrentReader, TNextReader>(
+        public static async ValueTask<TNextReader> Move<TCurrentReader, TNextReader>(
             this IMoveReader<TCurrentReader, TNextReader> currentReader,
             ReaderContext readerContext)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
