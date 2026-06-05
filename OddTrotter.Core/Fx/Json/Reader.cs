@@ -12,12 +12,4 @@
             return true;
         }
     }
-
-    public sealed class WhitespaceReader<TNextReader>
-    {
-    }
-
-    public sealed class ValueReader<TNextReader>
-    {
-    }
 }
