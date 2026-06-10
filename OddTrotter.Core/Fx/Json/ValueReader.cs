@@ -1,5 +1,6 @@
 ﻿namespace Fx.Json
 {
+    using System;
     using System.Diagnostics.CodeAnalysis;
 
     using Fx.Parsing.Reader;
@@ -83,7 +84,130 @@
             };
         }
 
-        public TResult Apply<TResult>
+        public TResult Apply<TResult>(
+            Func<FalseReader<TNextReader>?, TResult> falseReader,
+            Func<NullReader<TNextReader>?, TResult> nullReader,
+            Func<TrueReader<TNextReader>?, TResult> trueReader,
+            Func<ObjectReader<TNextReader>?, TResult> objectReader,
+            Func<ArrayReader<TNextReader>?, TResult> arrayReader,
+            Func<NumberReader<TNextReader>?, TResult> numberReader,
+            Func<StringReader<TNextReader>?, TResult> stringReader)
+        {
+            switch (this.type)
+            {
+                case Type.False:
+                    return falseReader(default);
+                case Type.Null:
+                    return nullReader(default);
+                case Type.True:
+                    return trueReader(default);
+                case Type.Object:
+                    return objectReader(default);
+                case Type.Array:
+                    return arrayReader(default);
+                case Type.Number:
+                    return numberReader(default);
+                case Type.String:
+                    return stringReader(default);
+                default:
+                    throw new Exception("TODO bug");
+            }
+        }
+
+        public bool TryFalse(out FalseReader<TNextReader>? falseReader)
+        {
+            falseReader = default;
+            return this.type == Type.False;
+        }
+
+        public bool TryNull(out NullReader<TNextReader>? nullReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
             
+            nullReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
+
+        public bool TryTrue(out TrueReader<TNextReader>? trueReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
+
+            trueReader = default;
+            return this.Apply(
+                _ => false,
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
+
+        public bool TryNull(out NullReader<TNextReader>? nullReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
+
+            nullReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
+
+        public bool TryNull(out NullReader<TNextReader>? nullReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
+
+            nullReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
+
+        public bool TryNull(out NullReader<TNextReader>? nullReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
+
+            nullReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
+
+        public bool TryNull(out NullReader<TNextReader>? nullReader)
+        {
+            //// TODO you can optimize this method by making it more like `tryfalse`
+
+            nullReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false,
+                _ => false);
+        }
     }
 }
