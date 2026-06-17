@@ -12,6 +12,8 @@
 
         public static bool TryContinue(Context context, int continuationToken, out TNextReader? nextReader, [MaybeNullWhen(false)] out FalseToken value, [MaybeNullWhen(true)] out int nextContinuationToken)
         {
+            //// TODO call "valuereader" a "tokenreader"? since you're using the name "token" in the types returned...
+
             //// TODO you need to have a test for the case where they read past the buffer, but there were no bytes returned
             Helpers.EnsureValidBytes(context);
             if (Helpers.NeedsMoreBytes(context, continuationToken, out nextReader, out value, out nextContinuationToken))
@@ -43,6 +45,14 @@
             where TCategory : allows ref struct
         {
             category = default;
+            return context.CurrentByteIndex >= context.ValidBytes;
+        }
+
+        public static bool NeedsMoreBytes<TNextReader, TValue>(Context context, [MaybeNull] out TNextReader nextReader, [MaybeNull] out TValue value)
+            where TValue : allows ref struct
+        {
+            nextReader = default;
+            value = default;
             return context.CurrentByteIndex >= context.ValidBytes;
         }
 

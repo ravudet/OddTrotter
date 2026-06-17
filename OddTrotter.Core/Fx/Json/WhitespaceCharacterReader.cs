@@ -8,16 +8,10 @@
     {
         public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out WhitespaceCharacterToken value)
         {
-            if (context.CurrentByteIndex >= context.ValidBytes)
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
             {
-                nextReader = default;
-                value = default;
                 return false;
-            }
-
-            if (context.ValidBytes == 0)
-            {
-                throw new InvalidPayloadException("TODO invalid JSON");
             }
 
             if (!WhitespaceCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))

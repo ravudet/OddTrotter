@@ -9,16 +9,15 @@
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out WhitespaceCategory<TNextReader> category)
         {
-            if (context.CurrentByteIndex >= context.ValidBytes)
-            {
-                category = default;
-                return false;
-            }
-
             if (context.ValidBytes == 0)
             {
                 category = WhitespaceCategory<TNextReader>.None();
                 return true;
+            }
+
+            if (Helpers.NeedsMoreBytes(context, out category))
+            {
+                return false;
             }
 
             if (WhitespaceCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out _))
