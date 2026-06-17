@@ -9,15 +9,10 @@
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out ValueCategory<TNextReader> category)
         {
-            if (context.CurrentByteIndex >= context.ValidBytes)
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out category))
             {
-                category = default;
                 return false;
-            }
-
-            if (context.ValidBytes == 0)
-            {
-                throw new InvalidPayloadException("TODO invalid JSON");
             }
 
             switch ((char)context.Buffer[context.CurrentByteIndex])

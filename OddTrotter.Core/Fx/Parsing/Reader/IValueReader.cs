@@ -4,6 +4,7 @@ namespace Fx.Parsing.Reader
 {
     public interface IValueReader<out TSelf, TNextReader, TValue>
         where TSelf : IValueReader<TSelf, TNextReader, TValue>
+        where TValue : allows ref struct
     {
         /// <summary>
         /// 

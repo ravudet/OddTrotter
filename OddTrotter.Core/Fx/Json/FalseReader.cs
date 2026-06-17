@@ -14,7 +14,7 @@
         {
             //// TODO you need to have a test for the case where they read past the buffer, but there were no bytes returned
             Helpers.EnsureValidBytes(context);
-            if (Helpers.NeedsMoreBytes(context, out nextReader, out value, out nextContinuationToken))
+            if (Helpers.NeedsMoreBytes(context, continuationToken, out nextReader, out value, out nextContinuationToken))
             {
                 return false;
             }
@@ -37,15 +37,26 @@
 
     public static class Helpers
     {
+        public static bool NeedsMoreBytes<TCategory>(
+            Context context,
+            [MaybeNull] out TCategory category)
+            where TCategory : allows ref struct
+        {
+            category = default;
+            return context.CurrentByteIndex >= context.ValidBytes;
+        }
+
         public static bool NeedsMoreBytes<TNextReader, TValue, TContinuationToken>(
             Context context, 
+            TContinuationToken continuationToken,
             out TNextReader? nextReader,
-            [MaybeNullWhen(false)] out TValue value,
-            [MaybeNullWhen(true)] out TContinuationToken nextContinuationToken)
+            [MaybeNull] out TValue value,
+            out TContinuationToken nextContinuationToken)
+            where TValue : allows ref struct
         {
             nextReader = default;
             value = default;
-            nextContinuationToken = default;
+            nextContinuationToken = continuationToken;
             return context.CurrentByteIndex >= context.ValidBytes;
         }
 
