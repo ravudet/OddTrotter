@@ -22,7 +22,6 @@ namespace Playground
     using OddTrotter.Odata.v4_01.StrongConventionContext;
 
     using static Playground.PlaygroundTests;
-    using static Playground.TopLayer.Odata.MetadataFormat;
 
     [TestClass]
     public sealed class PlaygroundTests
