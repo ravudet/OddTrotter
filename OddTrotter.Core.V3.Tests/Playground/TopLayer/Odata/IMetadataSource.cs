@@ -106,7 +106,7 @@
             {
             }
 
-            internal abstract TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml);
+            internal abstract TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType);
 
             internal override TResult Visit<TResult>(Func<Known, TResult> known, Func<Unknown, TResult> unknown)
             {
@@ -115,7 +115,7 @@
 
             public sealed class Json : Known, IMetadataFormat
             {
-                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml)
+                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
                 {
                     throw new NotImplementedException();
                 }
@@ -128,7 +128,20 @@
 
             public sealed class Xml : Known, IMetadataFormat
             {
-                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml)
+                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
+                {
+                    throw new NotImplementedException();
+                }
+
+                void IMetadataFormat.CantImplement()
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public sealed class NewType : Known, IMetadataFormat
+            {
+                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
                 {
                     throw new NotImplementedException();
                 }
@@ -160,7 +173,7 @@
             //// TODO does this work? external consumers can only get this extension method, so if we add a new derived type, then this method can still be found with binary compatibility, and this method implementation will be updated in the new binary to call the correct `metadatadto.apply` method; we would also expose a *new* extension with the new parameter
 
             return metadataDto.Visit(
-                known => known.Visit(json, xml),
+                known => known.Visit(json, xml, newType => ),
                 unknown);
         }
     }
