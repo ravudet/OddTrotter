@@ -3,5 +3,4 @@
     public sealed class WhitespaceCharacterReader<TNextReader>
     {
     }
-
 }
