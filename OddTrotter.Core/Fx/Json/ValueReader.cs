@@ -54,7 +54,7 @@
                     category = ValueCategory<TNextReader>.String();
                     return true;
                 default:
-                    throw new Exception("tODO invalid JSON");
+                    throw new InvalidPayloadException("tODO invalid JSON");
             }
         }
     }

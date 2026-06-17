@@ -17,7 +17,8 @@
 
             if (context.ValidBytes == 0)
             {
-                throw new Exception("TODO invalid JSON");
+                category = WhitespaceCategory<TNextReader>.None();
+                return true;
             }
 
             if (WhitespaceCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out _))

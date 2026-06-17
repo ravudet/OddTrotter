@@ -1,6 +1,5 @@
 ﻿namespace Fx.Json
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
 
     using Fx.Parsing.Reader;
@@ -18,12 +17,12 @@
 
             if (context.ValidBytes == 0)
             {
-                throw new Exception("TODO invalid JSON");
+                throw new InvalidPayloadException("TODO invalid JSON");
             }
 
             if (!WhitespaceCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))
             {
-                throw new Exception("TODO");
+                throw new InvalidPayloadException("TODO");
             }
 
             nextReader = default;
