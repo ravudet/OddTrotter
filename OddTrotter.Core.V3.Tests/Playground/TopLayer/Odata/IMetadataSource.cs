@@ -172,6 +172,8 @@
         {
             //// TODO does this work? external consumers can only get this extension method, so if we add a new derived type, then this method can still be found with binary compatibility, and this method implementation will be updated in the new binary to call the correct `metadatadto.apply` method; we would also expose a *new* extension with the new parameter
 
+            //// TODO you are here
+            //// TODO make sure to use useful comments
             return metadataDto.Visit(
                 known => known.Visit(json, xml, newType => ),
                 unknown);
