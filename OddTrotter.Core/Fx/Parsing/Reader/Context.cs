@@ -8,8 +8,8 @@
         private Context(
             Stream stream,
             byte[] buffer,
-            int currentByteIndex,
-            int validBytes)
+            uint currentByteIndex,
+            uint validBytes)
         {
             Stream = stream;
             Buffer = buffer;
@@ -19,8 +19,8 @@
 
         public Stream Stream { get; }
         public byte[] Buffer { get; }
-        public int CurrentByteIndex { get; set; }
-        public int ValidBytes { get; set; }
+        public uint CurrentByteIndex { get; set; }
+        public uint ValidBytes { get; set; }
 
         public static async Task<Context> FromStream(Stream stream, byte[] buffer)
         {
