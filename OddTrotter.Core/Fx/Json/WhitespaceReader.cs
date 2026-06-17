@@ -9,80 +9,27 @@ namespace Fx.Json
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out WhitespaceCategory<TNextReader> category)
         {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public readonly ref struct WhitespaceCategory<TNextReader>
-    {
-        private enum Type
-        {
-            None = 1,
-            Some,
-        }
-
-        private Type type { get; init; }
-
-        public static WhitespaceCategory<TNextReader> None()
-        {
-            return new WhitespaceCategory<TNextReader>()
+            if (context.CurrentByteIndex >= context.ValidBytes)
             {
-                type = Type.None,
-            };
-        }
-
-        public static WhitespaceCategory<TNextReader> Some()
-        {
-            return new WhitespaceCategory<TNextReader>()
-            {
-                type = Type.Some,
-            };
-        }
-
-        public TResult Apply<TResult>(
-            Func<TNextReader?, TResult> noneReader,
-            Func<WhitespaceCharaceterReader<TNextReader>?, TResult> someReader)
-        {
-            switch (this.type)
-            {
-                case Type.None:
-                    return noneReader(default);
-                case Type.Some:
-                    return someReader(default);
-                default:
-                    throw new Exception("TODO bug");
+                category = default;
+                return false;
             }
-        }
-    }
 
-    public sealed class WhitespaceCharaceterReader<TNextReader>
-    {
-    }
-
-    public readonly struct WhitespaceCharacterToken
-    {
-        public static bool TryCreate(byte @char, out WhitespaceCharacterToken whitespaceToken)
-        {
-            switch (@char)
+            if (context.ValidBytes == 0)
             {
-                case 0x20:
-                case 0x09:
-                case 0x0A:
-                case 0x0D:
-                    whitespaceToken = new WhitespaceCharacterToken(@char);
-                    return true;
-                default:
-                    whitespaceToken = default;
-                    return false;
+                throw new Exception("TODO invalid JSON");
             }
-        }
 
-        private WhitespaceCharacterToken(byte @char)
-        {
-            this.Char = @char;
-        }
+            if (WhitespaceCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out _))
+            {
+                category = WhitespaceCategory<TNextReader>.Some();
+            }
+            else
+            {
+                category = WhitespaceCategory<TNextReader>.None();
+            }
 
-        public byte Char { get; }
+            return true;
+        }
     }
-
 }
