@@ -12,14 +12,12 @@
 
         public static bool TryContinue(Context context, int continuationToken, out TNextReader? nextReader, [MaybeNullWhen(false)] out FalseToken value, [MaybeNullWhen(true)] out int nextContinuationToken)
         {
-            //// TODO you need to fix the case where they read past the buffer, but there were no bytes returned
-            //// TODO have a test for this case
+            //// TODO you need to have a test for the case where they read past the buffer, but there were no bytes returned
+            Helpers.EnsureValidBytes(context);
             if (Helpers.NeedsMoreBytes(context, out nextReader, out value, out nextContinuationToken))
             {
                 return false;
             }
-
-            Helpers.EnsureValidBytes(context);
 
             for (; continuationToken < literal.Length; ++continuationToken)
             {
