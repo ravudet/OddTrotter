@@ -17,7 +17,7 @@
 
             if (context.ValidBytes == 0)
             {
-                throw new Exception("TODO invalid JSON");
+                throw new InvalidPayloadException("TODO invalid JSON");
             }
 
             switch ((char)context.Buffer[context.CurrentByteIndex])
