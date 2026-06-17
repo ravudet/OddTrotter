@@ -53,9 +53,12 @@
     public interface IMetadataContext1<out TMetadataContext, TSchemaVersion>
         where TMetadataContext : IMetadataContext1<TMetadataContext, TSchemaVersion>
     {
-        ITask<IResponse<MetadataDto>> Evaluate();
 
-        TMetadataContext SchemaVersion(TSchemaVersion schemaVersion);
+        //// TODO request headers //// TODO maybe it makes the most sense to just have 3 "sets" of interfaces, 1 for each portion of the URL (i.e. source is segments, context is query options, and "something else" is headers)
+
+        ITask<IResponse<MetadataDto>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
+
+        TMetadataContext SchemaVersion(TSchemaVersion schemaVersion); //// TODO strongly type schema version
 
         IMetadataContext2<TSchemaVersion, TFormat> Format<TFormat>()
             where TFormat : MetadataDto.Known, IMetadataFormat;
@@ -72,23 +75,37 @@
         where TMetadataContext : IMetadataContext2<TMetadataContext, TSchemaVersion, TFormat>
         where TFormat : MetadataDto.Known, IMetadataFormat
     {
-        new ITask<IResponse<TFormat>> Evaluate();
+        new ITask<IResponse<TFormat>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
     }
 
     public interface IMetadataFormat
     {
+        internal void CantImplement();
     }
 
     public abstract class MetadataDto
     {
+
+        //// TODO have apply methods
+        
+        //// TODO private constructors
+
         public abstract class Known : MetadataDto
         {
             public sealed class Json : Known, IMetadataFormat
             {
+                void IMetadataFormat.CantImplement()
+                {
+                    throw new NotImplementedException();
+                }
             }
 
             public sealed class Xml : Known, IMetadataFormat
             {
+                void IMetadataFormat.CantImplement()
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
 
@@ -97,109 +114,7 @@
         }
     }
 
-    /*public interface IMetadataSource<TSchemaVersion>
-    {
-        IMetadataContext<TSchemaVersion> Get();
-
-        IMetadataContext2<TSchemaVersion, IMetadataDto> Get2();
-
-        //// TODO other verbs
-    }
-
-    public interface IMetadataDto
-    {
-        internal void CantImplement();
-
-        TResult Apply<TResult>(
-            Func<MetadataDto.Xml, TResult> xml,
-            Func<MetadataDto.Json, TResult> json,
-            Func<MetadataDto.Unknown, TResult> unknown);
-    }
-
-    public interface IMetadataContext2<TSchemaVersion, TFormat>
-        where TFormat : class, IMetadataDto
-    {
-        ITask<TFormat> Evaluate();
-
-        IMetadataContext2<TSchemaVersion, TFormat2> Format<TFormat2>() where TFormat2 : MetadataDto, IMetadataDto;
-    }
-
-
-
-    public interface IBaseMetadataContext<TSchemaVersion>
-    {
-        ITask<MetadataDto> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
-
-        //// TODO request headers
-    }
-
-
-    public interface IMetadataContext<TSchemaVersion> : IBaseMetadataContext<TSchemaVersion>
-    {
-        ISchemaVersionMetadataContext<TSchemaVersion> SchemaVersion(TSchemaVersion schemaVersion); //// TODO lots of implications, read through this: https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionschemaversion
-
-        IFormatMetadataContext<TSchemaVersion, TFormat> Format<TFormat>() where TFormat : MetadataDto;
-    }
-
-    public interface IFormatMetadataContext<TSchemaVersion, TFormat> : IBaseMetadataContext<TSchemaVersion> 
-        where TFormat : MetadataDto //// TODO is there a way to disallow the base type? //// TODO and `unknown`
-    {
-        new ITask<TFormat> Evaluate();
-
-        IBaseMetadataContext<TSchemaVersion> SchemaVersion(TSchemaVersion schemaVersion); //// TODO lots of implications, read through this: https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionschemaversion
-    }
-
-    public interface ISchemaVersionMetadataContext<TSchemaVersion> : IBaseMetadataContext<TSchemaVersion>
-    {
-        IBaseMetadataContext<TSchemaVersion> Format<TFormat>() where TFormat : MetadataDto;
-    }
-
-    public abstract class MetadataDto
-    {
-        //// TODO
-
-        private MetadataDto()
-        {
-        }
-
-        protected internal abstract TResult Apply<TResult>(
-            Func<MetadataDto.Xml, TResult> xml, 
-            Func<MetadataDto.Json, TResult> json,
-            Func<MetadataDto.Unknown, TResult> unknown);
-
-        public sealed class Xml : MetadataDto, IMetadataDto
-        {
-            protected internal override TResult Apply<TResult>(
-                Func<Xml, TResult> xml,
-                Func<Json, TResult> json,
-                Func<MetadataDto.Unknown, TResult> unknown)
-            {
-                return xml(this);
-            }
-        }
-
-        public sealed class Json : MetadataDto, IMetadataDto
-        {
-            protected internal override TResult Apply<TResult>(
-                Func<Xml, TResult> xml,
-                Func<Json, TResult> json,
-                Func<MetadataDto.Unknown, TResult> unknown)
-            {
-                return json(this);
-            }
-        }
-
-        public sealed class Unknown : MetadataDto
-        {
-            protected internal override TResult Apply<TResult>(
-                Func<Xml, TResult> xml,
-                Func<Json, TResult> json,
-                Func<MetadataDto.Unknown, TResult> unknown)
-            {
-                return unknown(this);
-            }
-        }
-    }
+    /*
 
     public static class MetadataDtoExtensions
     {
