@@ -1,7 +1,9 @@
 ﻿namespace Playground.TopLayer.Odata
 {
     using System;
+    using System.ComponentModel.Design;
     using System.Formats.Tar;
+    using System.Runtime.InteropServices.Marshalling;
     using System.Threading.Tasks;
     using System.Xml;
 
@@ -92,6 +94,8 @@
         {
         }
 
+        internal abstract TResult Visit<TResult>(Func<Known, TResult> known, Func<Unknown, TResult> unknown);
+
 
         //// TODO have apply methods
         
@@ -102,8 +106,20 @@
             {
             }
 
+            internal abstract TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml);
+
+            internal override TResult Visit<TResult>(Func<Known, TResult> known, Func<Unknown, TResult> unknown)
+            {
+                return known(this);
+            }
+
             public sealed class Json : Known, IMetadataFormat
             {
+                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml)
+                {
+                    throw new NotImplementedException();
+                }
+
                 void IMetadataFormat.CantImplement()
                 {
                     throw new NotImplementedException();
@@ -112,6 +128,11 @@
 
             public sealed class Xml : Known, IMetadataFormat
             {
+                internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml)
+                {
+                    throw new NotImplementedException();
+                }
+
                 void IMetadataFormat.CantImplement()
                 {
                     throw new NotImplementedException();
@@ -121,18 +142,26 @@
 
         public sealed class Unknown : MetadataDto
         {
+            internal override TResult Visit<TResult>(Func<Known, TResult> known, Func<Unknown, TResult> unknown)
+            {
+                return unknown(this);
+            }
         }
     }
 
-    /*
-
     public static class MetadataDtoExtensions
     {
-        public static TResult Apply2<TResult>(this MetadataDto metadataDto, Func<MetadataDto.Xml, TResult> xml, Func<MetadataDto.Json, TResult> json, Func<MetadataDto.Unknown, TResult> unknown)
+        public static TResult Apply<TResult>(
+            this MetadataDto metadataDto, 
+            Func<MetadataDto.Known.Xml, TResult> xml, 
+            Func<MetadataDto.Known.Json, TResult> json, 
+            Func<MetadataDto.Unknown, TResult> unknown)
         {
             //// TODO does this work? external consumers can only get this extension method, so if we add a new derived type, then this method can still be found with binary compatibility, and this method implementation will be updated in the new binary to call the correct `metadatadto.apply` method; we would also expose a *new* extension with the new parameter
 
-            return metadataDto.Apply(xml, json, unknown);
+            return metadataDto.Visit(
+                known => known.Visit(json, xml),
+                unknown);
         }
-    }*/
+    }
 }
