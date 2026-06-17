@@ -1,10 +1,10 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-
-using Fx.Parsing.Reader;
-
-namespace Fx.Json
+﻿namespace Fx.Json
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+
+    using Fx.Parsing.Reader;
+
     public sealed class WhitespaceReader<TNextReader> : ICategoryReader<WhitespaceReader<TNextReader>, WhitespaceCategory<TNextReader>>
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out WhitespaceCategory<TNextReader> category)

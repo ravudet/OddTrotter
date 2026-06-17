@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Fx.Json
+﻿namespace Fx.Json
 {
+    using System;
+
     public readonly ref struct WhitespaceCategory<TNextReader>
     {
         private enum Type

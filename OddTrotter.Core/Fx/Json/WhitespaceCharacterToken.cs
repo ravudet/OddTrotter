@@ -25,5 +25,4 @@
 
         public byte Char { get; }
     }
-
 }
