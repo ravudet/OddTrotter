@@ -88,13 +88,20 @@
 
     public abstract class MetadataDto
     {
+        private MetadataDto()
+        {
+        }
+
 
         //// TODO have apply methods
         
-        //// TODO private constructors
-
+        
         public abstract class Known : MetadataDto
         {
+            private Known()
+            {
+            }
+
             public sealed class Json : Known, IMetadataFormat
             {
                 void IMetadataFormat.CantImplement()
