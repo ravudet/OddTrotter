@@ -1,6 +1,5 @@
 ﻿namespace Fx.Json
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
 
     using Fx.Parsing.Reader;
