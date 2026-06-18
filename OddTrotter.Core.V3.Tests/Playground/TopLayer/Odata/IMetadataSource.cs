@@ -96,10 +96,6 @@
 
         internal abstract TResult Visit<TResult>(Func<Known, TResult> known, Func<Unknown, TResult> unknown);
 
-
-        //// TODO have apply methods
-        
-        
         public abstract class Known : MetadataDto
         {
             private Known()
@@ -117,7 +113,7 @@
             {
                 internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
                 {
-                    throw new NotImplementedException();
+                    return json(this);
                 }
 
                 void IMetadataFormat.CantImplement()
@@ -130,7 +126,7 @@
             {
                 internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
                 {
-                    throw new NotImplementedException();
+                    return xml(this);
                 }
 
                 void IMetadataFormat.CantImplement()
@@ -143,7 +139,7 @@
             {
                 internal override TResult Visit<TResult>(Func<Json, TResult> json, Func<Xml, TResult> xml, Func<NewType, TResult> newType)
                 {
-                    throw new NotImplementedException();
+                    return newType(this);
                 }
 
                 void IMetadataFormat.CantImplement()
