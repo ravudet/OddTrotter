@@ -30,7 +30,7 @@
 
         public TResult Apply<TResult>(
             Func<TNextReader?, TResult> noneReader,
-            Func<FirstMemberReader<TNextReader>?, TResult> someReader)
+            Func<MemberReader<MembersReader<TNextReader>>?, TResult> someReader)
         {
             switch (this.type)
             {

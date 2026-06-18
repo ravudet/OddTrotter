@@ -4,9 +4,9 @@
 
     using Fx.Parsing.Reader;
 
-    public sealed class ObjectEndReader<TNextReader> : IValueReader<ObjectEndReader<TNextReader>, TNextReader, ObjectEndToken>
+    public sealed class ColonReader<TNextReader> : IValueReader<ColonReader<TNextReader>, TNextReader, ColonToken>
     {
-        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out ObjectEndToken value)
+        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out ColonToken value)
         {
             Helpers.EnsureValidBytes(context);
             if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
@@ -14,7 +14,7 @@
                 return false;
             }
 
-            return Helpers.TryReadChar(context, '}');
+            return Helpers.TryReadChar(context, ':');
         }
     }
 }
