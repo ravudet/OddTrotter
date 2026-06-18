@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct ArrayElementsCategory<TNextReader>
+    public readonly ref struct SubsequentMembersCategory<TNextReader>
     {
         private enum Type
         {
@@ -12,17 +12,17 @@
 
         private Type type { get; init; }
 
-        public static ArrayElementsCategory<TNextReader> None()
+        public static SubsequentMembersCategory<TNextReader> None()
         {
-            return new ArrayElementsCategory<TNextReader>()
+            return new SubsequentMembersCategory<TNextReader>()
             {
                 type = Type.None,
             };
         }
 
-        public static ArrayElementsCategory<TNextReader> Some()
+        public static SubsequentMembersCategory<TNextReader> Some()
         {
-            return new ArrayElementsCategory<TNextReader>()
+            return new SubsequentMembersCategory<TNextReader>()
             {
                 type = Type.Some,
             };
@@ -30,11 +30,8 @@
 
         public TResult Apply<TResult>(
             Func<TNextReader?, TResult> noneReader,
-            Func<ArrayElementReader<ArrayElementsReader<TNextReader>>?, TResult> someReader)
+            Func<MemberReader<SubsequentMembersReader<TNextReader>>?, TResult> someReader)
         {
-            //// TODO you are here
-            //// TODO you need a "subsequent array elements reader" like for object members
-
             switch (this.type)
             {
                 case Type.None:
@@ -46,5 +43,4 @@
             }
         }
     }
-
 }

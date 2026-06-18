@@ -14,10 +14,6 @@
                 return false;
             }
 
-            //// TODO you are here
-            //// TODO this is actually broken because subsequent members are comma delimited
-            //// TODO make sure to update the array reading to do the same
-
             if (context.Buffer[context.CurrentByteIndex] == '}')
             {
                 category = MembersCategory<TNextReader>.None();
