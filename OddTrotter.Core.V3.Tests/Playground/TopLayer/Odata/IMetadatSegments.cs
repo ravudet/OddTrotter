@@ -76,8 +76,6 @@
 
         IMetadataHeaders Headers();
 
-        //// TODO request headers //// TODO maybe it makes the most sense to just have 3 "sets" of interfaces, 1 for each portion of the URL (i.e. source is segments, context is query options, and "something else" is headers)
-
         //// TODO how to have custom query options
         //// TODO how to have custom headers
 
