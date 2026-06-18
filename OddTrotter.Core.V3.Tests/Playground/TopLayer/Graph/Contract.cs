@@ -11,26 +11,26 @@ namespace Playground.TopLayer.Graph
         // NOTE: graph only has a single schema version right now, we just needed a placeholder type
     }
 
-    public interface ISource
+    public interface IRootSegments
     {
-        IMetadataSource<SchemaVersion> Metadata();
+        IMetadatSegments<SchemaVersion> Metadata();
 
         void Batch(); //// TODO
     }
 
-    public interface IComplianceSource
+    public interface IComplianceSegments
     {
     }
 
-    public interface IMeSource
+    public interface IMeSegments
     {
     }
 
-    public interface IUsersSource
+    public interface IUsersSegments
     {
     }
 
-    public interface IApplicationsSource
+    public interface IApplicationsSegments
     {
     }
 }
