@@ -79,6 +79,7 @@
         //// TODO how to have custom query options
         //// TODO how to have custom headers
 
+        //// TODO move the evaluation to the headers
         ITask<IResponse<MetadataDto>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
 
         TMetadataContext SchemaVersion(TSchemaVersion schemaVersion); //// TODO strongly type schema version
@@ -87,7 +88,7 @@
             where TFormat : MetadataDto.Known, IMetadataFormat;
     }
 
-    public interface IMetadataOptions2<TSchemaVersion, out TFormat>
+    public interface IMetadataOptions2<TSchemaVersion, out TFormat> //// TODO call this one "formatted metdataoptions" //// TODO use the same naming convention for the headers
         : IMetadataOptions2<IMetadataOptions2<TSchemaVersion, TFormat>, TSchemaVersion, TFormat>
         where TFormat : MetadataDto.Known, IMetadataFormat
     {
