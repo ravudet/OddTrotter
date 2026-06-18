@@ -14,13 +14,17 @@
                 return false;
             }
 
-            if (context.Buffer[context.CurrentByteIndex] == '"')
+            //// TODO you are here
+            //// TODO this is actually broken because subsequent members are comma delimited
+            //// TODO make sure to update the array reading to do the same
+
+            if (context.Buffer[context.CurrentByteIndex] == '}')
             {
-                category = MembersCategory<TNextReader>.Some();
+                category = MembersCategory<TNextReader>.None();
             }
             else
             {
-                category = MembersCategory<TNextReader>.None();
+                category = MembersCategory<TNextReader>.Some();
             }
 
             return true;
