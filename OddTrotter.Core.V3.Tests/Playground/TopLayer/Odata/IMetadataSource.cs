@@ -170,12 +170,28 @@
             Func<MetadataDto.Known.Json, TResult> json, 
             Func<MetadataDto.Unknown, TResult> unknown)
         {
-            //// TODO does this work? external consumers can only get this extension method, so if we add a new derived type, then this method can still be found with binary compatibility, and this method implementation will be updated in the new binary to call the correct `metadatadto.apply` method; we would also expose a *new* extension with the new parameter
+            //// TODO test the backwards compatibility of this with binary *and* source compatibility
 
-            //// TODO you are here
-            //// TODO make sure to use useful comments
             return metadataDto.Visit(
-                known => known.Visit(json, xml, newType => ),
+                known => known.Visit(
+                    json, 
+                    xml, 
+                    newType => unknown(new MetadataDto.Unknown())),
+                unknown);
+        }
+
+        public static TResult Apply<TResult>(
+            this MetadataDto metadataDto,
+            Func<MetadataDto.Known.Xml, TResult> xml,
+            Func<MetadataDto.Known.Json, TResult> json,
+            Func<MetadataDto.Known.NewType, TResult> newType,
+            Func<MetadataDto.Unknown, TResult> unknown)
+        {
+            return metadataDto.Visit(
+                known => known.Visit(
+                    json,
+                    xml,
+                    newType),
                 unknown);
         }
     }
