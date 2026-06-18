@@ -54,7 +54,7 @@
 
         //// TODO i'm torn about putting other verbs here; they don't mean anything for `$metadata`, but do you want to always include all verbs and let the caller get an error anyway? ///// TODO i want there to be a layer *somewhere* (and maybe *this* isn't that layer) that represents what odata actually looks like when the rules are followed
 
-        IMetadataVerbs<TSchemaVersion> Get();
+        IMetadataVerbs<TSchemaVersion> Get(); //// TODO should this just return the options directly? it kind of breaks the larger pattern, but once you've selected the verb, there's nothing else to really do
 
         IMetadataOptions1<TSchemaVersion> Options();
     }
