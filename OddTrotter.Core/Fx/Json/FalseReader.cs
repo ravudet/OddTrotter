@@ -21,17 +21,20 @@
 
             for (; continuationToken < literal.Length; ++continuationToken)
             {
-
+                if (!Helpers.TryReadChar(context, literal[continuationToken]))
+                {
+                    value = default;
+                    return false;
+                }
             }
+
+            value = new FalseToken();
+            return true;
         }
 
         public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out FalseToken value, [MaybeNullWhen(true)] out int continuationToken)
         {
             return TryContinue(context, 0, out nextReader, out value, out continuationToken);
         }
-    }
-
-    public readonly struct FalseToken
-    {
     }
 }
