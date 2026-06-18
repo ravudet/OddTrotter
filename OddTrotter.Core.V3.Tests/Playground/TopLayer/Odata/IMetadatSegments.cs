@@ -30,8 +30,8 @@
         }
 
         public static void FormatTest(
-            // IMetadataContext2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
-            // IMetadataContext2<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
+            // IMetadataOptions2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
+            // IMetadataOptions2<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
             IMetadataOptions2<string, MetadataDto.Known.Xml> third,
             IMetadataOptions2<string, MetadataDto.Known.Json> fourth)
         {
