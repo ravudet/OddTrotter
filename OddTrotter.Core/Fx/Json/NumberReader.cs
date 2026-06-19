@@ -6,7 +6,8 @@
     {
         public static bool TryMove(Context context, out SignReader<IntReader<FracReader<ExpReader<TNextReader>>>>? nextReader)
         {
-            throw new System.NotImplementedException();
+            nextReader = default;
+            return true;
         }
     }
 }
