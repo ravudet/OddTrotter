@@ -4,6 +4,10 @@
 
     using Fx.Parsing.Reader;
 
+    //// TODO you need a todo list somewhere
+    //// TODO see if it's better to remove the static interfaces and just use extension methods; maybe generics are getting in the way of the existing extension methods too
+
+
     public sealed class ValueReader<TNextReader> : ICategoryReader<ValueReader<TNextReader>, ValueCategory<TNextReader>>
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out ValueCategory<TNextReader> category)
