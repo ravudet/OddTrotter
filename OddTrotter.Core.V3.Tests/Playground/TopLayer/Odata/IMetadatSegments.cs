@@ -27,13 +27,20 @@
 
             // source.Verbs().Get().Options().SchemaVersion("asf").Format<MetadataDto.Known>(); // correctly doesn't compile; the caller should be telling us exactly what format they expect
             // source.Verbs().Get().Options().SchemaVersion("asf").Format<MetadataDto.Unknown>(); // correctly doesn't compile; the caller shouldn't take any action on the "client side" if they don't know what format they expect
+
+            IResponse<MetadataDto> unknownEvaluation = await source.Verbs().Get().Options().Headers().Evaluate();
         }
 
         public static void FormatTest(
-            // IMetadataOptions2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
-            // IMetadataOptions2<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
+            // IFormattedMetadataOptions<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
+            // IFormattedMetadataOptions<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
             IFormattedMetadataOptions<string, MetadataDto.Known.Xml> third,
-            IFormattedMetadataOptions<string, MetadataDto.Known.Json> fourth)
+            IFormattedMetadataOptions<string, MetadataDto.Known.Json> fourth,
+
+            // IFormattedMetadataHeaders<MetadataDto.Unknown> fifth, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
+            // IFormattedMetadataHeaders<MetadataDto.Known> sixth, // correctly doesn't compile; if you know the type, then the explicit type should be used
+            IFormattedMetadataHeaders<MetadataDto.Known.Xml> seventh,
+            IFormattedMetadataHeaders<MetadataDto.Known.Json> eighth)
         {
         }
     }
