@@ -71,8 +71,44 @@
         }
     }
 
-    public sealed class LeadingDigitReader<TNextReader>
+    public sealed class LeadingDigitReader<TNextReader> : IValueReader<LeadingDigitReader<TNextReader>, TNextReader, LeadingDigitToken>
     {
+        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out LeadingDigitToken value)
+        {
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
+            {
+                return false;
+            }
+
+            if (!LeadingDigitToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))
+            {
+                throw new InvalidPayloadException("TODO");
+            }
+
+            return true;
+        }
+    }
+
+    public readonly ref struct LeadingDigitToken
+    {
+        public static bool TryCreate(byte digit, out LeadingDigitToken leadingDigitToken)
+        {
+            if (digit < '1' || digit > '9')
+            {
+                leadingDigitToken = default;
+                return false;
+            }
+
+            leadingDigitToken = new LeadingDigitToken(digit);
+            return true;
+        }
+
+        private LeadingDigitToken(byte digit)
+        {
+            Digit = digit;
+        }
+        public byte Digit { get; }
     }
 
     public sealed class DigitsReader<TNextReader>
