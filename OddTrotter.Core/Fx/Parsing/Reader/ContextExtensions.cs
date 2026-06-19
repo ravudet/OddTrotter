@@ -6,7 +6,7 @@
     {
         public static async ValueTask Read(this Context context)
         {
-            context.ValidBytes = await context.Stream.ReadAsync(context.Buffer).ConfigureAwait(false);
+            context.ValidBytes = (uint)await context.Stream.ReadAsync(context.Buffer).ConfigureAwait(false);
             context.CurrentByteIndex = 0;
         }
     }

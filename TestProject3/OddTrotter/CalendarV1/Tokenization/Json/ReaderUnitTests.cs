@@ -2377,6 +2377,7 @@
                 var iterations = 10000;
                 var buffer = new byte[stream.Length];
                 Assert.AreEqual(buffer.Length, await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false));
+                DotNetFullRead(buffer);
 
                 var timer = new System.Diagnostics.Stopwatch();
                 for (int i = 0; i < iterations; ++i)
@@ -2410,6 +2411,8 @@
                 var iterations = 10000;
                 var buffer = new byte[stream.Length];
                 await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false);
+                StaticOnlyFullRead(buffer);
+
                 var timer = new System.Diagnostics.Stopwatch();
                 for (int i = 0; i < iterations; ++i)
                 {
@@ -2770,6 +2773,7 @@
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
+                await DotNet(stream).ConfigureAwait(false);
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < iterations; ++i)
                 {
@@ -2849,6 +2853,7 @@
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var iterations = 10000;
+                await StaticOnly(stream).ConfigureAwait(false);
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < iterations; ++i)
                 {
