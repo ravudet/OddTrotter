@@ -52,7 +52,8 @@
     ////    1. to know the legal verbs, you have to know the segments; for example, you can't do `post` to a single-valued property
     ////    2. to know the legal query options, you have to know the segments; for example, you can't do `$filter` to a single-valued property
     ////    3. to know the legal query options, you have to know the verb; for example, you can't use `$index` with a `get` request
-    //// TODO what else?
+    ////    4. to know the legal headers, you have to know the segments; for example, `maxpagesize` can only be used with multi-valued properties
+    //// TODO is there anything else?
 
 
     public interface IMetadatSegments<TSchemaVersion>
