@@ -9,7 +9,23 @@
     {
         public static bool TryMove(Context context, [MaybeNullWhen(false)] out IntCategory<TNextReader> category)
         {
-            throw new System.NotImplementedException();
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out category))
+            {
+                return false;
+            }
+
+            if (context.Buffer[context.CurrentByteIndex] == '0')
+            {
+                category = IntCategory<TNextReader>.Zero();
+                ++context.CurrentByteIndex;
+            }
+            else
+            {
+                category = IntCategory<TNextReader>.NonZero();
+            }
+
+            return true;
         }
     }
 
