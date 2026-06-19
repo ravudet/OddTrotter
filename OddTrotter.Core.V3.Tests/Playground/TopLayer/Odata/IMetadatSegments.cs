@@ -46,6 +46,15 @@
     }
 
 
+
+
+    //// TODO consider:
+    ////    1. to know the legal verbs, you have to know the segments; for example, you can't do `post` to a single-valued property
+    ////    2. to know the legal query options, you have to know the segments; for example, you can't do `$filter` to a single-valued property
+    ////    3. to know the legal query options, you have to know the verb; for example, you can't use `$index` with a `get` request
+    //// TODO what else?
+
+
     public interface IMetadatSegments<TSchemaVersion>
     {
         IMetadataVerbs<TSchemaVersion> Verbs();
