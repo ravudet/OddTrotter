@@ -1,6 +1,7 @@
 ﻿namespace Fx.Json
 {
     using System;
+    using System.ComponentModel.Design;
     using System.Diagnostics.CodeAnalysis;
 
     using Fx.Parsing.Reader;
@@ -111,19 +112,112 @@
         public byte Digit { get; }
     }
 
-    public sealed class DigitsReader<TNextReader>
+    public sealed class DigitsReader<TNextReader> : ICategoryReader<DigitsReader<TNextReader>, DigitsCategory<TNextReader>>
     {
+        public static bool TryMove(Context context, [MaybeNullWhen(false)] out DigitsCategory<TNextReader> category)
+        {
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out category))
+            {
+                return false;
+            }
+
+            if (DigitToken.TryCreate(context.Buffer[context.CurrentByteIndex], out _))
+            {
+                category = DigitsCategory<TNextReader>.Some();
+            }
+            else
+            {
+                category = DigitsCategory<TNextReader>.None();
+            }
+
+            return true;
+        }
     }
 
     public readonly ref struct DigitsCategory<TNextReader>
     {
+        private enum Type
+        {
+            None = 1,
+            Some,
+        }
+
+        private Type type { get; init; }
+
+        public static DigitsCategory<TNextReader> None()
+        {
+            return new DigitsCategory<TNextReader>()
+            {
+                type = Type.None,
+            };
+        }
+
+        public static DigitsCategory<TNextReader> Some()
+        {
+            return new DigitsCategory<TNextReader>()
+            {
+                type = Type.Some,
+            };
+        }
+
+        public TResult Apply<TResult>(
+            Func<TNextReader?, TResult> none,
+            Func<DigitReader<DigitsReader<TNextReader>>?, TResult> some)
+        {
+            switch (this.type)
+            {
+                case Type.None:
+                    return none(default);
+                case Type.Some:
+                    return some(default);
+                default:
+                    throw new Exception("TODO bug");
+            }
+        }
     }
 
-    public sealed class DigitReader<TNextReader>
+    public sealed class DigitReader<TNextReader> : IValueReader<DigitReader<TNextReader>, TNextReader, DigitToken>
     {
+        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out DigitToken value)
+        {
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
+            {
+                return false;
+            }
+
+            if (DigitToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))
+            {
+                ++context.CurrentByteIndex;
+                return true;
+            }
+            else
+            {
+                throw new InvalidPayloadException("TODO");
+            }
+        }
     }
 
-    public readonly struct Digit //// TODO should all of your non-continuable tokens be ref struct?
+    public readonly struct DigitToken //// TODO should all of your non-continuable tokens be ref struct?
     {
+        public static bool TryCreate(byte digit, out DigitToken digitToken)
+        {
+            if (digit < '0' || digit > '9')
+            {
+                digitToken = default;
+                return false;
+            }
+
+            digitToken = new DigitToken(digit);
+            return true;
+        }
+
+        private DigitToken(byte digit)
+        {
+            Digit = digit;
+        }
+
+        public byte Digit { get; }
     }
 }
