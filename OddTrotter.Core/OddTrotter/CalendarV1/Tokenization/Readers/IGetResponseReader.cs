@@ -254,10 +254,7 @@ false = %x66.61.6C.73.65  ; "false"
 null  = %x6E.75.6C.6C     ; "null"
 true  = %x74.72.75.65     ; "true"
 
-// object = %x7B ws [ member *( %x2C ws member ) ] ws %x7D
-// member = string ws %x3A ws value
-
-object = %x7B ws *( member %x2C ws ) %x7D
+object = %x7B ws [ member *( %x2C ws member ) ] ws %x7D
 member = string ws %x3A ws value
 
 array = %x5B ws [ value *( %x2C ws value ) ] ws %x5D
