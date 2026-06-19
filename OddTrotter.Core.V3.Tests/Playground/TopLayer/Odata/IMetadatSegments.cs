@@ -70,11 +70,11 @@
     {
     }
 
-    public interface IMetadataOptions1<out TMetadataContext, TSchemaVersion>
-        where TMetadataContext : IMetadataOptions1<TMetadataContext, TSchemaVersion>
+    public interface IMetadataOptions1<out TMetadataOptions, TSchemaVersion>
+        where TMetadataOptions : IMetadataOptions1<TMetadataOptions, TSchemaVersion>
     {
 
-        IMetadataHeaders Headers();
+        IMetadataHeaders1 Headers();
 
         //// TODO how to have custom query options
         //// TODO how to have custom headers
@@ -82,7 +82,7 @@
         //// TODO move the evaluation to the headers
         ITask<IResponse<MetadataDto>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
 
-        TMetadataContext SchemaVersion(TSchemaVersion schemaVersion); //// TODO strongly type schema version
+        TMetadataOptions SchemaVersion(TSchemaVersion schemaVersion); //// TODO strongly type schema version
 
         IMetadataOptions2<TSchemaVersion, TFormat> Format<TFormat>()
             where TFormat : MetadataDto.Known, IMetadataFormat;
@@ -94,9 +94,9 @@
     {
     }
 
-    public interface IMetadataOptions2<out TMetadataContext, TSchemaVersion, out TFormat>
-        : IMetadataOptions1<TMetadataContext, TSchemaVersion>
-        where TMetadataContext : IMetadataOptions2<TMetadataContext, TSchemaVersion, TFormat>
+    public interface IMetadataOptions2<out TMetadataOptions, TSchemaVersion, out TFormat>
+        : IMetadataOptions1<TMetadataOptions, TSchemaVersion>
+        where TMetadataOptions : IMetadataOptions2<TMetadataOptions, TSchemaVersion, TFormat>
         where TFormat : MetadataDto.Known, IMetadataFormat
     {
         new ITask<IResponse<TFormat>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
@@ -106,11 +106,27 @@
 
 
 
-
-
-    public interface IMetadataHeaders
+    public interface IMetadataHeaders1 : IMetadataHeaders1<IMetadataHeaders1>
     {
     }
+
+    public interface IMetadataHeaders1<TMetadataHeaders>
+        where TMetadataHeaders : IMetadataHeaders1<TMetadataHeaders>
+    {
+    }
+
+    public interface IMetadataHeaders2<TFormat> : IMetadataHeaders2<IMetadataHeaders2<TFormat>, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+    }
+
+    public interface IMetadataHeaders2<TMetadataHeaders, TFormat>
+        where TMetadataHeaders : IMetadataHeaders2<TMetadataHeaders, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+    }
+
+
 
 
 
