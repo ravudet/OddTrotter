@@ -17,13 +17,13 @@
         {
 
             var formatted = source.Verbs().Get().Options().Format<MetadataDto.Known.Xml>();
-            IResponse<MetadataDto.Known.Xml> evaluated = await formatted.Evaluate();
+            IResponse<MetadataDto.Known.Xml> evaluated = await formatted.Headers().Evaluate();
 
             var versioned = formatted.SchemaVersion("asdf");
-            IResponse<MetadataDto.Known.Xml> versionedEvaluation = await versioned.Evaluate();
+            IResponse<MetadataDto.Known.Xml> versionedEvaluation = await versioned.Headers().Evaluate();
 
             var versionedFirst = source.Verbs().Get().Options().SchemaVersion("asf").Format<MetadataDto.Known.Xml>();
-            IResponse<MetadataDto.Known.Xml> versionedFirstEvalation = await versionedFirst.Evaluate();
+            IResponse<MetadataDto.Known.Xml> versionedFirstEvalation = await versionedFirst.Headers().Evaluate();
 
             // source.Verbs().Get().Options().SchemaVersion("asf").Format<MetadataDto.Known>(); // correctly doesn't compile; the caller should be telling us exactly what format they expect
             // source.Verbs().Get().Options().SchemaVersion("asf").Format<MetadataDto.Unknown>(); // correctly doesn't compile; the caller shouldn't take any action on the "client side" if they don't know what format they expect
@@ -32,8 +32,8 @@
         public static void FormatTest(
             // IMetadataOptions2<string, MetadataDto.Unknown> first, // correctly doesn't compile; you shouldn't be able to know that the type is unknwon while still on the "client side"
             // IMetadataOptions2<string, MetadataDto.Known> second, // correctly doesn't compile; if you know the type, then the explicit type should be used
-            IMetadataOptions2<string, MetadataDto.Known.Xml> third,
-            IMetadataOptions2<string, MetadataDto.Known.Json> fourth)
+            IFormattedMetadataOptions<string, MetadataDto.Known.Xml> third,
+            IFormattedMetadataOptions<string, MetadataDto.Known.Json> fourth)
         {
         }
     }
@@ -56,7 +56,7 @@
 
         IMetadataVerbs<TSchemaVersion> Get(); //// TODO should this just return the options directly? it kind of breaks the larger pattern, but once you've selected the verb, there's nothing else to really do
 
-        IMetadataOptions1<TSchemaVersion> Options();
+        IMetadataOptions<TSchemaVersion> Options();
     }
 
 
@@ -65,65 +65,64 @@
 
 
 
-    public interface IMetadataOptions1<TSchemaVersion>
-        : IMetadataOptions1<IMetadataOptions1<TSchemaVersion>, TSchemaVersion>
+    public interface IMetadataOptions<TSchemaVersion>
+        : IMetadataOptions<IMetadataOptions<TSchemaVersion>, TSchemaVersion>
     {
     }
 
-    public interface IMetadataOptions1<out TMetadataOptions, TSchemaVersion>
-        where TMetadataOptions : IMetadataOptions1<TMetadataOptions, TSchemaVersion>
+    public interface IMetadataOptions<out TMetadataOptions, TSchemaVersion>
+        where TMetadataOptions : IMetadataOptions<TMetadataOptions, TSchemaVersion>
     {
 
-        IMetadataHeaders1 Headers();
+        IMetadataHeaders Headers();
 
         //// TODO how to have custom query options
         //// TODO how to have custom headers
 
-        //// TODO move the evaluation to the headers
-        ITask<IResponse<MetadataDto>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
-
         TMetadataOptions SchemaVersion(TSchemaVersion schemaVersion); //// TODO strongly type schema version
 
-        IMetadataOptions2<TSchemaVersion, TFormat> Format<TFormat>()
+        IFormattedMetadataOptions<TSchemaVersion, TFormat> Format<TFormat>()
             where TFormat : MetadataDto.Known, IMetadataFormat;
     }
 
-    public interface IMetadataOptions2<TSchemaVersion, out TFormat> //// TODO call this one "formatted metdataoptions" //// TODO use the same naming convention for the headers
-        : IMetadataOptions2<IMetadataOptions2<TSchemaVersion, TFormat>, TSchemaVersion, TFormat>
+    public interface IFormattedMetadataOptions<TSchemaVersion, out TFormat>
+        : IFormattedMetadataOptions<IFormattedMetadataOptions<TSchemaVersion, TFormat>, TSchemaVersion, TFormat>
         where TFormat : MetadataDto.Known, IMetadataFormat
     {
     }
 
-    public interface IMetadataOptions2<out TMetadataOptions, TSchemaVersion, out TFormat>
-        : IMetadataOptions1<TMetadataOptions, TSchemaVersion>
-        where TMetadataOptions : IMetadataOptions2<TMetadataOptions, TSchemaVersion, TFormat>
+    public interface IFormattedMetadataOptions<out TMetadataOptions, TSchemaVersion, out TFormat>
+        : IMetadataOptions<TMetadataOptions, TSchemaVersion>
+        where TMetadataOptions : IFormattedMetadataOptions<TMetadataOptions, TSchemaVersion, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+        new IFormattedMetadataHeaders<TFormat> Headers();
+    }
+
+
+
+
+
+    public interface IMetadataHeaders : IMetadataHeaders<IMetadataHeaders>
+    {
+    }
+
+    public interface IMetadataHeaders<out TMetadataHeaders>
+        where TMetadataHeaders : IMetadataHeaders<TMetadataHeaders>
+    {
+        ITask<IResponse<MetadataDto>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
+    }
+
+    public interface IFormattedMetadataHeaders<out TFormat> : IFormattedMetadataHeaders<IFormattedMetadataHeaders<TFormat>, TFormat>
+        where TFormat : MetadataDto.Known, IMetadataFormat
+    {
+    }
+
+    public interface IFormattedMetadataHeaders<out TMetadataHeaders, out TFormat> : IMetadataHeaders<TMetadataHeaders>
+        where TMetadataHeaders : IFormattedMetadataHeaders<TMetadataHeaders, TFormat>
         where TFormat : MetadataDto.Known, IMetadataFormat
     {
         new ITask<IResponse<TFormat>> Evaluate(); //// TODO can't just return the dto, need to have control information, headers, etc.
-    }
-
-
-
-
-
-    public interface IMetadataHeaders1 : IMetadataHeaders1<IMetadataHeaders1>
-    {
-    }
-
-    public interface IMetadataHeaders1<TMetadataHeaders>
-        where TMetadataHeaders : IMetadataHeaders1<TMetadataHeaders>
-    {
-    }
-
-    public interface IMetadataHeaders2<TFormat> : IMetadataHeaders2<IMetadataHeaders2<TFormat>, TFormat>
-        where TFormat : MetadataDto.Known, IMetadataFormat
-    {
-    }
-
-    public interface IMetadataHeaders2<TMetadataHeaders, TFormat>
-        where TMetadataHeaders : IMetadataHeaders2<TMetadataHeaders, TFormat>
-        where TFormat : MetadataDto.Known, IMetadataFormat
-    {
     }
 
 
