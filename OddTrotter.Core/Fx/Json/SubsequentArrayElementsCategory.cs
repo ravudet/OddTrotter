@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct ArrayElementsCategory<TNextReader>
+    public readonly ref struct SubsequentArrayElementsCategory<TNextReader>
     {
         private enum Type
         {
@@ -12,17 +12,17 @@
 
         private Type type { get; init; }
 
-        public static ArrayElementsCategory<TNextReader> None()
+        public static SubsequentArrayElementsCategory<TNextReader> None()
         {
-            return new ArrayElementsCategory<TNextReader>()
+            return new SubsequentArrayElementsCategory<TNextReader>()
             {
                 type = Type.None,
             };
         }
 
-        public static ArrayElementsCategory<TNextReader> Some()
+        public static SubsequentArrayElementsCategory<TNextReader> Some()
         {
-            return new ArrayElementsCategory<TNextReader>()
+            return new SubsequentArrayElementsCategory<TNextReader>()
             {
                 type = Type.Some,
             };
@@ -43,5 +43,4 @@
             }
         }
     }
-
 }
