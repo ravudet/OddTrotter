@@ -8,34 +8,22 @@
     {
         public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out SignToken value)
         {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public readonly ref struct SignToken
-    {
-        private enum Type
-        {
-            Absent = 1,
-            Present,
-        }
-
-        private Type type { get; init; }
-
-        public static SignToken Absent()
-        {
-            return new SignToken()
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
             {
-                type = Type.Absent,
-            };
-        }
+                return false;
+            }
 
-        public static SignToken Present()
-        {
-            return new SignToken()
+            if (context.ValidBytes == 0 || context.Buffer[context.CurrentByteIndex] != '-')
             {
-                type = Type.Present,
-            };
+                value = SignToken.Absent();
+            }
+            else
+            {
+                value = SignToken.Negative();
+                ++context.CurrentByteIndex;
+            }
+
+            return true;
         }
     }
 }
