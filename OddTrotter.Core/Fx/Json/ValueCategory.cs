@@ -103,7 +103,7 @@
             }
         }
 
-        public bool TryFalse(out FalseReader<TNextReader>? falseReader)
+        public bool TryFalse(out FalseReader<TNextReader>? falseReader) //// TODO do you want to add `try` variants to all of the other category types?
         {
             falseReader = default;
             return this.type == Type.False;
