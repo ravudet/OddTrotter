@@ -33,31 +33,6 @@
         }
     }
 
-    public sealed class EReader<TNextReader>
-    {
-    }
-
-    public readonly ref struct EToken
-    {
-        public static bool TryCreate(byte digit, out EToken eToken)
-        {
-            if (digit < '1' || digit > '9')
-            {
-                eToken = default;
-                return false;
-            }
-
-            eToken = new EToken(digit);
-            return true;
-        }
-
-        private EToken(byte e)
-        {
-            E = e;
-        }
-        public byte E { get; }
-    }
-
     public sealed class ExpSignReader<TNextReader>
     {
     }
