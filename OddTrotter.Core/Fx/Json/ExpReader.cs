@@ -19,7 +19,7 @@
                 return false;
             }
 
-            if (context.Buffer[context.CurrentByteIndex] == '-')
+            if (EToken.TryCreate(context.Buffer[context.CurrentByteIndex], out _))
             {
                 category = ExpCategory<TNextReader>.Present();
                 ++context.CurrentByteIndex;
@@ -31,9 +31,5 @@
 
             return true;
         }
-    }
-
-    public sealed class ExpSignReader<TNextReader>
-    {
     }
 }
