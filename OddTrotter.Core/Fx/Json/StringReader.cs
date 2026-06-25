@@ -211,15 +211,61 @@
         public byte Char { get; }
     }
 
-    public sealed class EscapedCharReader<TNextReader>
+    public sealed class EscapedCharReader<TNextReader> : IMoveReader<EscapedCharReader<TNextReader>, EscapeCharacterReader<EscapableCharReader<TNextReader>>>
     {
+        public static bool TryMove(Context context, out EscapeCharacterReader<EscapableCharReader<TNextReader>>? nextReader)
+        {
+            nextReader = default;
+            return true;
+        }
+    }
+
+    public sealed class EscapeCharacterReader<TNextReader> : IValueReader<EscapeCharacterReader<TNextReader>, TNextReader, EscapeCharacterToken>
+    {
+        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out EscapeCharacterToken value)
+        {
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
+            {
+                return false;
+            }
+
+            if (!EscapeCharacterToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))
+            {
+                throw new InvalidPayloadException("TODO");
+            }
+
+            return true;
+        }
     }
 
     public readonly ref struct EscapeCharacterToken
     {
         public static bool TryCreate(byte escapeCharacter, out EscapeCharacterToken escapeCharacterToken)
         {
+            if (escapeCharacter != 0x5C)
+            {
+                return false;
+            }
+
+            return true;
         }
+    }
+
+    public sealed class EscapableCharReader<TNextReader> //// TODO you are here
+    {
+    }
+
+    public sealed class UnicodeReader<TNextReader>
+    {
+    }
+
+    public sealed class UReader<TNextReader>
+    {
+    }
+
+    public sealed class HexDigReader<TNextReader>
+    {
     }
 
     public sealed class SubsequentCharsReader<TNextReader>
