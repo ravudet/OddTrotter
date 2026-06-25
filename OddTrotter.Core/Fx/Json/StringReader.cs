@@ -31,7 +31,7 @@
                 // unescaped
                 category = CharsCategory<TNextReader>.Some();
             }
-            else if (currentByte == 0x5C)
+            else if (EscapeCharacterToken.TryCreate(currentByte, out _))
             {
                 // escaped
                 category = CharsCategory<TNextReader>.Some();
@@ -98,7 +98,7 @@
             }
 
             var currentByte = context.Buffer[context.CurrentByteIndex];
-            if (currentByte == 0x5C)
+            if (EscapeCharacterToken.TryCreate(currentByte, out _))
             {
                 category = CharCategory<TNextReader>.Escaped();
             }
@@ -182,6 +182,13 @@
 
     public sealed class EscapedCharReader<TNextReader>
     {
+    }
+
+    public readonly ref struct EscapeCharacterToken
+    {
+        public static bool TryCreate(byte escapeCharacter, out EscapeCharacterToken escapeCharacterToken)
+        {
+        }
     }
 
     public sealed class SubsequentCharsReader<TNextReader>
