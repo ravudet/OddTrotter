@@ -2,12 +2,16 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Net.Http.Headers;
-
+    
     using Fx.Parsing.Reader;
 
-    public sealed class StringReader<TNextReader>
+    public sealed class StringReader<TNextReader> : IMoveReader<StringReader<TNextReader>, StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>>
     {
+        public static bool TryMove(Context context, out StringDelimiterReader<CharsReader<StringDelimiterReader<TNextReader>>>? nextReader)
+        {
+            nextReader = default;
+            return true;
+        }
     }
 
     public sealed class CharsReader<TNextReader> : ICategoryReader<CharsReader<TNextReader>, CharsCategory<TNextReader>>
