@@ -7,6 +7,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using Fx.Parsing.Reader;
+
     [TestClass]
     public sealed class ReaderUnitTests
     {
@@ -45,13 +47,19 @@
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
                 var buffer = new byte[stream.Length];
-                await stream.ReadAsync(buffer.AsMemory()).ConfigureAwait(false);
-                FullRead(buffer);
+                var context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
+                FullRead(context);
             }
         }
 
-        private static void FullRead(byte[] buffer)
+        private static void FullRead(Context context)
         {
+            var reader = context.Json();
+            Assert.IsTrue(reader.TryMove(context, out var whitespaceReader));
+            Assert.IsTrue(whitespaceReader.TryMove(context, out var whitespaceCategory));
+            
+            //// TODO you are here
+            //// TODO implement the "helper" methods on each of the categories
         }
 
         [TestMethod]
