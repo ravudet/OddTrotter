@@ -77,7 +77,7 @@
 
         public TResult Apply<TResult>(
             Func<TNextReader?, TResult> none,
-            Func<CharReader<SubsequentCharsReader<TNextReader>>?, TResult> some)
+            Func<CharReader<CharsReader<TNextReader>>?, TResult> some)
         {
             switch (this.type)
             {
@@ -177,6 +177,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             return true;
         }
     }
@@ -235,6 +236,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             return true;
         }
     }
@@ -332,6 +334,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             return true;
         }
     }
@@ -390,6 +393,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             return true;
         }
     }
@@ -418,6 +422,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             return true;
         }
     }
@@ -445,9 +450,5 @@
         }
 
         public byte Digit { get; }
-    }
-
-    public sealed class SubsequentCharsReader<TNextReader>
-    {
     }
 }
