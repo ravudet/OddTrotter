@@ -317,8 +317,53 @@
         }
     }
 
-    public sealed class NonUnicodeReader<TNextReader>
+    public sealed class NonUnicodeReader<TNextReader> : IValueReader<NonUnicodeReader<TNextReader>, TNextReader, NonUnicodeToken>
     {
+        public static bool TryMove(Context context, out TNextReader? nextReader, [MaybeNullWhen(false)] out NonUnicodeToken value)
+        {
+            Helpers.EnsureValidBytes(context);
+            if (Helpers.NeedsMoreBytes(context, out nextReader, out value))
+            {
+                return false;
+            }
+
+            if (!NonUnicodeToken.TryCreate(context.Buffer[context.CurrentByteIndex], out value))
+            {
+                throw new InvalidPayloadException("TODO");
+            }
+
+            return true;
+        }
+    }
+
+    public readonly ref struct NonUnicodeToken
+    {
+        public static bool TryCreate(byte @char, out NonUnicodeToken nonUnicodeToken)
+        {
+            switch (@char)
+            {
+                case 0x22:
+                case 0x5C:
+                case 0x2F:
+                case 0x62:
+                case 0x66:
+                case 0x6E:
+                case 0x72:
+                case 0x74:
+                    nonUnicodeToken = new NonUnicodeToken(@char);
+                    return true;
+                default:
+                    nonUnicodeToken = default;
+                    return false;
+            }
+        }
+
+        private NonUnicodeToken(byte @char)
+        {
+            Char = @char;
+        }
+
+        public byte Char { get; }
     }
 
     public sealed class UnicodeReader<TNextReader>
