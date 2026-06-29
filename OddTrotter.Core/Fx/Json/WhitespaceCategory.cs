@@ -51,9 +51,9 @@
                 _ => false);
         }
 
-        public bool TrySome(out TNextReader? nextReader)
+        public bool TrySome(out WhitespaceCharacterReader<TNextReader>? whitespaceCharacterReader)
         {
-            nextReader = default;
+            whitespaceCharacterReader = default;
             return this.Apply(
                 _ => false,
                 _ => true);

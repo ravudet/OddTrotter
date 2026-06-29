@@ -42,6 +42,9 @@
                     throw new Exception("TODO bug");
             }
         }
-    }
 
+        public bool TryNone(out TNextReader? nextReader)
+        {
+        }
+    }
 }
