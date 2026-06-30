@@ -42,5 +42,21 @@
                     throw new Exception("TODO bug");
             }
         }
+
+        public bool TryNone(out TNextReader? nextReader)
+        {
+            nextReader = default;
+            return this.Apply(
+                _ => true,
+                _ => false);
+        }
+
+        public bool TrySome(out DigitReader<DigitsReader<TNextReader>>? digitReader)
+        {
+            digitReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true);
+        }
     }
 }
