@@ -55,9 +55,12 @@
         private static void FullRead(Context context)
         {
             var reader = context.Json();
-            Assert.IsTrue(reader.TryMove(context, out var whitespaceReader));
-            Assert.IsTrue(whitespaceReader.TryMove(context, out var whitespaceCategory));
-            
+            Assert.IsTrue(reader.TryMove(context, out var whitespace1));
+            Assert.IsTrue(whitespace1.TryMove(context, out var whitespaceCategory1));
+            Assert.IsTrue(whitespaceCategory1.TryNone(out var value1));
+            value1.TryMove(context, out var valueCategory1);
+            valueCategory1.TryObject(out var )
+
             //// TODO you are here
             //// TODO implement the "helper" methods on each of the categories
         }

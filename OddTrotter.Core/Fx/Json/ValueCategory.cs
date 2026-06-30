@@ -139,11 +139,11 @@
                 _ => false);
         }
 
-        public bool TryObject(out ObjectReader<TNextReader>? nullReader)
+        public bool TryObject(out ObjectReader<TNextReader>? objectReader)
         {
             //// TODO you can optimize this method by making it more like `tryfalse`
 
-            nullReader = default;
+            objectReader = default;
             return this.Apply(
                 _ => false,
                 _ => false,
@@ -154,11 +154,11 @@
                 _ => false);
         }
 
-        public bool TryArray(out ArrayReader<TNextReader>? nullReader)
+        public bool TryArray(out ArrayReader<TNextReader>? arrayReader)
         {
             //// TODO you can optimize this method by making it more like `tryfalse`
 
-            nullReader = default;
+            arrayReader = default;
             return this.Apply(
                 _ => false,
                 _ => false,
@@ -169,11 +169,11 @@
                 _ => false);
         }
 
-        public bool TryNumber(out NumberReader<TNextReader>? nullReader)
+        public bool TryNumber(out NumberReader<TNextReader>? numberReader)
         {
             //// TODO you can optimize this method by making it more like `tryfalse`
 
-            nullReader = default;
+            numberReader = default;
             return this.Apply(
                 _ => false,
                 _ => false,
@@ -184,11 +184,11 @@
                 _ => false);
         }
 
-        public bool TryString(out NullReader<TNextReader>? nullReader)
+        public bool TryString(out StringReader<TNextReader>? stringReader)
         {
             //// TODO you can optimize this method by making it more like `tryfalse`
 
-            nullReader = default;
+            stringReader = default;
             return this.Apply(
                 _ => false,
                 _ => false,
