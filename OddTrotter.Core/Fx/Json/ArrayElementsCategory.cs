@@ -45,6 +45,18 @@
 
         public bool TryNone(out TNextReader? nextReader)
         {
+            nextReader = default;
+            return this.Apply(
+                _ => true,
+                _ => false);
+        }
+
+        public bool TrySome(out ValueReader<SubsequentArrayElementsReader<TNextReader>>? valueReader)
+        {
+            valueReader = default;
+            return this.Apply(
+                _ => false,
+                _ => true);
         }
     }
 }
