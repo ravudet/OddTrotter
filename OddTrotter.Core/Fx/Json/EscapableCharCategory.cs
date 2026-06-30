@@ -42,5 +42,21 @@
                     throw new Exception("TODO bug");
             }
         }
+
+        public bool TryUnicode(out UnicodeReader<TNextReader>? unicode)
+        {
+            unicode = default;
+            return this.Apply(
+                _ => true,
+                _ => false);
+        }
+
+        public bool TryNonUnicode(out NonUnicodeReader<TNextReader>? nonUnicode)
+        {
+            nonUnicode = default;
+            return this.Apply(
+                _ => false,
+                _ => true);
+        }
     }
 }
