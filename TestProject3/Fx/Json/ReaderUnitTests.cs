@@ -72,15 +72,18 @@
             Assert.IsTrue(valueCategory2.TryTrue(out var true1));
             Assert.IsTrue(true1.TryMove(context, out var subsequentMembers1, out _, out _));
             Assert.IsTrue(subsequentMembers1.TryMove(context, out var subsequentMembersCategory1));
-            Assert.IsTrue(subsequentMembersCategory1.TrySome(out var member2));
-            ReadMemberToValue(member2, context, 5, out var value3);
-            Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
-            Assert.IsTrue(valueCategory3.TryFalse(out var false1));
-            Assert.IsTrue(false1.TryMove(context, out var subsequentMembers2, out _, out _));
-            Assert.IsTrue(subsequentMembers2.TryMove(context, out var subsequentMembersCategory2));
-            Assert.IsTrue(subsequentMembersCategory2.TrySome(out var member3));
+            ReadSubsequentMemberToValue(subsequentMembers1, context, 5, 6, out var value3);
 
             //// TODO you are here
+        }
+
+        private static void ReadSubsequentMemberToValue<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int memberNameLength, int tabLength, out ValueReader<TNextReader>? valueReader)
+        {
+            Assert.IsTrue(subsequentMembersReader.TryMove(context, out var subsequentMembersCategory));
+            Assert.IsTrue(subsequentMembersCategory.TrySome(out var comma));
+            Assert.IsTrue(comma.TryMove(context, out var whitespace, out _));
+            ReadWhitespace(whitespace, context, tabLength, out var member);
+            ReadMemberToValue(member, context, memberNameLength, out valueReader);
         }
 
         private static void ReadMemberToValue<TNextReader>(MemberReader<TNextReader>? memberReader, Context context, int memberNameLength, out ValueReader<TNextReader>? nextReader)

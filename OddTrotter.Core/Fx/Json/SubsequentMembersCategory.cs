@@ -51,7 +51,7 @@
                 _ => false);
         }
 
-        public bool TrySome(out MemberReader<SubsequentMembersReader<TNextReader>>? memberReader)
+        public bool TrySome(out CommaReader<WhitespaceReader<MemberReader<SubsequentMembersReader<TNextReader>>>>? memberReader)
         {
             memberReader = default;
             return this.Apply(
