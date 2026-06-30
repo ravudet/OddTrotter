@@ -19,6 +19,7 @@
                 throw new InvalidPayloadException("TODO");
             }
 
+            ++context.CurrentByteIndex;
             nextReader = default;
             return true;
         }
