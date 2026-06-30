@@ -65,6 +65,10 @@
             Assert.IsTrue(objectStart1.TryMove(context, out var whitespace2, out _));
             ReadWhitespace(whitespace2, context, 6, out var members1);
             Assert.IsTrue(members1.TryMove(context, out var membersCategory1));
+            Assert.IsTrue(membersCategory1.TrySome(out var member1));
+            Assert.IsTrue(member1.TryMove(context, out var string1));
+            Assert.IsTrue(string1.TryMove(context, out var stringDelimiter1));
+            Assert.IsTrue(stringDelimiter1.try)
 
             //// TODO you are here
         }
