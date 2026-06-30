@@ -42,5 +42,21 @@
                     throw new Exception("TODO bug");
             }
         }
+
+        public bool TryEscaped(out EscapableCharReader<TNextReader>? escaped)
+        {
+            escaped = default;
+            return this.Apply(
+                _ => true,
+                _ => false);
+        }
+
+        public bool TryUnescaped(out EscapableCharReader<TNextReader>? unescaped)
+        {
+            unescaped = default;
+            return this.Apply(
+                _ => false,
+                _ => true);
+        }
     }
 }
