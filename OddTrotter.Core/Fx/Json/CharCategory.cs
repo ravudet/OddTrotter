@@ -51,7 +51,7 @@
                 _ => false);
         }
 
-        public bool TryUnescaped(out EscapableCharReader<TNextReader>? unescaped)
+        public bool TryUnescaped(out UnescapedCharReader<TNextReader>? unescaped)
         {
             unescaped = default;
             return this.Apply(
