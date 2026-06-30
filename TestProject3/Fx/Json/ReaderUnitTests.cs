@@ -63,13 +63,13 @@
             Assert.IsTrue(valueCategory1.TryObject(out var object1));
             Assert.IsTrue(object1.TryMove(context, out var objectStart1));
             Assert.IsTrue(objectStart1.TryMove(context, out var whitespace2, out _));
-            whitespace2 = ReadWhitespace(whitespace2, context, 6);
-            Assert.IsTrue(whitespace2.TryMove(context, out var whitespaceCategory2));
+            ReadWhitespace(whitespace2, context, 6, out var members1);
+            Assert.IsTrue(members1.TryMove(context, out var membersCategory1));
 
             //// TODO you are here
         }
 
-        private static WhitespaceReader<TNextReader>? ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
+        private static void ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count, out TNextReader? nextReader)
         {
             for (int i = 0; i < count; ++i)
             {
@@ -78,7 +78,8 @@
                 Assert.IsTrue(whitespaceCharacter.TryMove(context, out whitespaceReader, out _));
             }
 
-            return whitespaceReader;
+            Assert.IsTrue(whitespaceReader.TryMove(context, out var category));
+            Assert.IsTrue(category.TryNone(out nextReader));
         }
 
         [TestMethod]
