@@ -68,31 +68,65 @@
             Assert.IsTrue(members1.TryMove(context, out var membersCategory1));
             Assert.IsTrue(membersCategory1.TrySome(out var member1));
 
+            ReadTrueFalseNumberStringNull(member1, context, 1, 4, out var subsequentMembers1);
+
+            
+
+
+            //// TODO you are here
+        }
+
+        private static void ReadTrueFalseNumberStringNull<TNextReader>(MemberReader<SubsequentMembersReader<TNextReader>>? memberReader, Context context, int tabCount, int tabLength, out SubsequentMembersReader<TNextReader>? nextReader)
+        {
+            var whitespaceLength = tabCount * tabLength + 2;
+
             // true
-            ReadMemberToValue(member1, context, 4, out var value2);
+            ReadMemberToValue(memberReader, context, 4, out var value2);
             Assert.IsTrue(value2.TryMove(context, out var valueCategory2));
             Assert.IsTrue(valueCategory2.TryTrue(out var true1));
-            Assert.IsTrue(true1.TryMove(context, out var subsequentMembers1, out _, out _));
+            Assert.IsTrue(true1.TryMove(context, out var subsequentMembers, out _, out _));
 
+            ReadFalseNumberStringNull(subsequentMembers, context, whitespaceLength, out nextReader);
+        }
+
+        private static void ReadTrueFalseNumberStringNull<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int tabCount, int tabLength, out SubsequentMembersReader<TNextReader>? nextReader)
+        {
+            var whitespaceLength = tabCount * tabLength + 2;
+
+            // true
+            ReadSubsequentMemberToValue(subsequentMembersReader, context, 4, whitespaceLength, out var value2);
+            Assert.IsTrue(value2.TryMove(context, out var valueCategory2));
+            Assert.IsTrue(valueCategory2.TryTrue(out var true1));
+            Assert.IsTrue(true1.TryMove(context, out var subsequentMembers, out _, out _));
+
+            ReadFalseNumberStringNull(subsequentMembers, context, whitespaceLength, out nextReader);
+        }
+
+        private static void ReadFalseNumberStringNull<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int whitespaceLength, out SubsequentMembersReader<TNextReader>? nextReader)
+        {
             // false
-            ReadSubsequentMemberToValue(subsequentMembers1, context, 5, 6, out var value3);
+            ReadSubsequentMemberToValue(subsequentMembersReader, context, 5, whitespaceLength, out var value3);
             Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
             Assert.IsTrue(valueCategory3.TryFalse(out var false1));
             Assert.IsTrue(false1.TryMove(context, out var subsequentMembers2, out _, out _));
 
             // 1234
-            ReadSubsequentMemberToValue(subsequentMembers2, context, 6, 6, out var value4);
+            ReadSubsequentMemberToValue(subsequentMembers2, context, 6, whitespaceLength, out var value4);
             Assert.IsTrue(value4.TryMove(context, out var valueCategory4));
             Assert.IsTrue(valueCategory4.TryNumber(out var number1));
             ReadNumber(number1, context, out var subsequentMembers3);
 
             // asdf
-            ReadSubsequentMemberToValue(subsequentMembers3, context, 6, 6, out var value5);
+            ReadSubsequentMemberToValue(subsequentMembers3, context, 6, whitespaceLength, out var value5);
             Assert.IsTrue(value5.TryMove(context, out var valueCategory5));
             Assert.IsTrue(valueCategory5.TryString(out var string1));
-            ReadString(string1, context, 4, out var subsequentMember4);
+            ReadString(string1, context, 4, out var subsequentMembers4);
 
-            //// TODO you are here
+            // null
+            ReadSubsequentMemberToValue(subsequentMembers4, context, 4, whitespaceLength, out var value6);
+            Assert.IsTrue(value6.TryMove(context, out var valueCategory6));
+            Assert.IsTrue(valueCategory6.TryNull(out var null1));
+            Assert.IsTrue(null1.TryMove(context, out nextReader, out _, out _));
         }
 
         private static void ReadNumber<TNextReader>(NumberReader<TNextReader>? numberReader, Context context, out TNextReader? nextReader)
