@@ -86,6 +86,11 @@
             Assert.IsTrue(membersCategory2.TrySome(out var member2));
             ReadTrueFalseNumberStringNull(member2, context, 2, 4, out var subsequentMembers2);
 
+            // emptyobject
+            ReadSubsequentMemberToValue(subsequentMembers2, context, 11, 6, out var value3);
+            Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
+            Assert.IsTrue(valueCategory3.TryObject(out var object3));
+            Assert.IsTrue(object3.TryMove(context, out var objectStart3));
 
 
 
