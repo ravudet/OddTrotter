@@ -50,7 +50,18 @@
             {
                 var buffer = new byte[stream.Length];
                 var context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
-                FullRead(context);
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                var iterations = 10000;
+                for (int i = 0; i < iterations; ++i)
+                {
+                    stopwatch.Start();
+                    FullRead(context);
+                    stopwatch.Stop();
+                    context.ValidBytes = (uint)stream.Length;
+                    context.CurrentByteIndex = 0;
+                }
+
+                Console.WriteLine(stopwatch.ElapsedTicks);
             }
         }
 
