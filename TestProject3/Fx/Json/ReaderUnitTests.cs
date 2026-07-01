@@ -106,7 +106,16 @@
             ReadSubsequentMemberToValue(subsequentMembers4, context, 10, 6, out var value4);
             Assert.IsTrue(value4.TryMove(context, out var valueCategory4));
             Assert.IsTrue(valueCategory4.TryArray(out var array1));
+            Assert.IsTrue(array1.TryMove(context, out var arrayStart1));
+            Assert.IsTrue(arrayStart1.TryMove(context, out var whitespace7, out _));
+            ReadWhitespace(whitespace7, context, 0, out var arrayElements1);
+            Assert.IsTrue(arrayElements1.TryMove(context, out var arrayElementsCategory1));
+            Assert.IsTrue(arrayElementsCategory1.TryNone(out var whitespace8));
+            ReadWhitespace(whitespace8, context, 0, out var arrayEnd1);
+            Assert.IsTrue(arrayEnd1.TryMove(context, out var subsequentMembers5, out _));
 
+            // array
+            ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6, out var value5);
 
 
             //// TODO you are here
