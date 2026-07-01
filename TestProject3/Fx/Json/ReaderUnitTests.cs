@@ -91,6 +91,17 @@
             Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
             Assert.IsTrue(valueCategory3.TryObject(out var object3));
             Assert.IsTrue(object3.TryMove(context, out var objectStart3));
+            Assert.IsTrue(objectStart3.TryMove(context, out var whitespace4, out _));
+            ReadWhitespace(whitespace4, context, 0, out var members3);
+            Assert.IsTrue(members3.TryMove(context, out var membersCategory3));
+            Assert.IsTrue(membersCategory3.TryNone(out var whitespace5));
+            ReadWhitespace(whitespace5, context, 0, out var objectEnd1);
+            Assert.IsTrue(objectEnd1.TryMove(context, out var subsequentMembers3, out _));
+
+            // emptyarray
+            ReadSubsequentMemberToValue(subsequentMembers3, context, 10, 6, out var value4);
+            Assert.IsTrue(value4.TryMove(context, out var valueCategory4));
+            Assert.IsTrue(valueCategory4.TryArray(out var array1));
 
 
 
