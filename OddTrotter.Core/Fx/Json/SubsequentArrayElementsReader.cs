@@ -16,11 +16,11 @@
 
             if (context.Buffer[context.CurrentByteIndex] == ',')
             {
-                category = SubsequentArrayElementsCategory<TNextReader>.None();
+                category = SubsequentArrayElementsCategory<TNextReader>.Some();
             }
             else
             {
-                category = SubsequentArrayElementsCategory<TNextReader>.Some();
+                category = SubsequentArrayElementsCategory<TNextReader>.None();
             }
 
             return true;

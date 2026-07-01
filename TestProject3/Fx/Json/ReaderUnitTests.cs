@@ -116,7 +116,41 @@
 
             // array
             ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6, out var value5);
+            Assert.IsTrue(value5.TryMove(context, out var valueCategory5));
+            Assert.IsTrue(valueCategory5.TryArray(out var array2));
+            Assert.IsTrue(array2.TryMove(context, out var arrayStart2));
+            Assert.IsTrue(arrayStart2.TryMove(context, out var whitespace9, out _));
+            ReadWhitespace(whitespace9, context, 10, out var arrayElements2);
+            Assert.IsTrue(arrayElements2.TryMove(context, out var arrayElementsCategory2));
+            Assert.IsTrue(arrayElementsCategory2.TrySome(out var value6));
+            Assert.IsTrue(value6.TryMove(context, out var valueCategory6));
+            Assert.IsTrue(valueCategory6.TryObject(out var object4));
+            Assert.IsTrue(object4.TryMove(context, out var objectStart4));
+            Assert.IsTrue(objectStart4.TryMove(context, out var whitespace10, out _));
+            ReadWhitespace(whitespace10, context, 14, out var members4);
+            Assert.IsTrue(members4.TryMove(context, out var membersCategory4));
+            Assert.IsTrue(membersCategory4.TrySome(out var member4));
+            ReadTrueFalseNumberStringNull(member4, context, 3, 4, out var subsequentMembers6);
+            Assert.IsTrue(subsequentMembers6.TryMove(context, out var subsequentMembersCategory6));
+            Assert.IsTrue(subsequentMembersCategory6.TryNone(out var whitespace11));
+            ReadWhitespace(whitespace11, context, 10, out var objectEnd3);
+            Assert.IsTrue(objectEnd3.TryMove(context, out var subsequentArrayElements1, out _));
+            Assert.IsTrue(subsequentArrayElements1.TryMove(context, out var subsequentArrayElementsCategory1));
+            Assert.IsTrue(subsequentArrayElementsCategory1.TryNone(out var whitespace12));
+            ReadWhitespace(whitespace12, context, 6, out var arrayEnd2);
+            Assert.IsTrue(arrayEnd2.TryMove(context, out var subsequentMembers7, out _));
+            Assert.IsTrue(subsequentMembers7.TryMove(context, out var subsequentMembersCategory7));
+            Assert.IsTrue(subsequentMembersCategory7.TryNone(out var whitespace13));
+            ReadWhitespace(whitespace13, context, 2, out var objectEnd4);
+            Assert.IsTrue(objectEnd4.TryMove(context, out var whitespace14, out _));
 
+            Assert.IsFalse(whitespace14.TryMove(context, out _));
+            Assert.AreEqual(context.Stream.Length, context.CurrentByteIndex);
+            context.ValidBytes = 0; // simulate a read of the exhausted stream
+            ReadWhitespace(whitespace14, context, 0, out var nothing);
+            Assert.AreEqual(new Nothing(), nothing);
+
+            Assert.AreEqual(context.Stream.Length, context.CurrentByteIndex);
 
             //// TODO you are here
         }
@@ -131,26 +165,8 @@
             Assert.IsTrue(valueCategory2.TryTrue(out var true1));
             Assert.IsTrue(true1.TryMove(context, out var subsequentMembers, out _, out _));
 
-            ReadFalseNumberStringNull(subsequentMembers, context, whitespaceLength, out nextReader);
-        }
-
-        private static void ReadTrueFalseNumberStringNull<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int tabCount, int tabLength, out SubsequentMembersReader<TNextReader>? nextReader)
-        {
-            var whitespaceLength = tabCount * tabLength + 2;
-
-            // true
-            ReadSubsequentMemberToValue(subsequentMembersReader, context, 4, whitespaceLength, out var value2);
-            Assert.IsTrue(value2.TryMove(context, out var valueCategory2));
-            Assert.IsTrue(valueCategory2.TryTrue(out var true1));
-            Assert.IsTrue(true1.TryMove(context, out var subsequentMembers, out _, out _));
-
-            ReadFalseNumberStringNull(subsequentMembers, context, whitespaceLength, out nextReader);
-        }
-
-        private static void ReadFalseNumberStringNull<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int whitespaceLength, out SubsequentMembersReader<TNextReader>? nextReader)
-        {
             // false
-            ReadSubsequentMemberToValue(subsequentMembersReader, context, 5, whitespaceLength, out var value3);
+            ReadSubsequentMemberToValue(subsequentMembers, context, 5, whitespaceLength, out var value3);
             Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
             Assert.IsTrue(valueCategory3.TryFalse(out var false1));
             Assert.IsTrue(false1.TryMove(context, out var subsequentMembers2, out _, out _));

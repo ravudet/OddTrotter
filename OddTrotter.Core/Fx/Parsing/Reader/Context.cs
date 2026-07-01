@@ -20,7 +20,7 @@
         public Stream Stream { get; }
         public byte[] Buffer { get; }
         public uint CurrentByteIndex { get; set; }
-        public uint ValidBytes { get; set; }
+        public uint ValidBytes { get; set; } //// TODO private setter?
 
         public static async Task<Context> FromStream(Stream stream, byte[] buffer)
         {
