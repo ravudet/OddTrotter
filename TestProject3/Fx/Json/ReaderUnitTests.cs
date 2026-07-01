@@ -68,9 +68,25 @@
             Assert.IsTrue(members1.TryMove(context, out var membersCategory1));
             Assert.IsTrue(membersCategory1.TrySome(out var member1));
 
+            // true
+            // false
+            // 1234
+            // asdf
+            // null
             ReadTrueFalseNumberStringNull(member1, context, 1, 4, out var subsequentMembers1);
 
-            
+            // object
+            ReadSubsequentMemberToValue(subsequentMembers1, context, 6, 6, out var value2);
+            Assert.IsTrue(value2.TryMove(context, out var valueCategory2));
+            Assert.IsTrue(valueCategory2.TryObject(out var object2));
+            Assert.IsTrue(object2.TryMove(context, out var objectStart2));
+            Assert.IsTrue(objectStart2.TryMove(context, out var whitespace3, out _));
+            ReadWhitespace(whitespace3, context, 10, out var members2);
+            Assert.IsTrue(members2.TryMove(context, out var membersCategory2));
+            Assert.IsTrue(membersCategory2.TrySome(out var member2));
+            ReadTrueFalseNumberStringNull(member2, context, 2, 4, out var subsequentMembers2);
+
+
 
 
             //// TODO you are here
