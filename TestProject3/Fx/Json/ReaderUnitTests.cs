@@ -151,8 +151,6 @@
             Assert.AreEqual(new Nothing(), nothing);
 
             Assert.AreEqual(context.Stream.Length, context.CurrentByteIndex);
-
-            //// TODO you are here
         }
 
         private static void ReadTrueFalseNumberStringNull<TNextReader>(MemberReader<SubsequentMembersReader<TNextReader>>? memberReader, Context context, int tabCount, int tabLength, out SubsequentMembersReader<TNextReader>? nextReader)
