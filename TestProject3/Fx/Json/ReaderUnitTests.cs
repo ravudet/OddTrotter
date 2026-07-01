@@ -87,7 +87,7 @@
             ReadTrueFalseNumberStringNull(member2, context, 2, 4, out var subsequentMembers2);
             Assert.IsTrue(subsequentMembers2.TryMove(context, out var subsequentMembersCategory2));
             Assert.IsTrue(subsequentMembersCategory2.TryNone(out var whitespace4));
-            ReadWhitespace(whitespace4, context, 0, out var objectEnd1);
+            ReadWhitespace(whitespace4, context, 6, out var objectEnd1);
             Assert.IsTrue(objectEnd1.TryMove(context, out var subsequentMembers3, out _));
 
             // emptyobject
