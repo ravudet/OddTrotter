@@ -302,5 +302,29 @@
 
         //// TODO write the streamed read test
         //// TODO go through all todos for `oddtrotter.calendarv1.tokenization`; also look at the unit tests for those same types
+
+
+
+        [TestMethod]
+        public async Task RefTaskTest()
+        {
+            var foo = await GetFoo();
+            Assert.AreEqual(42, foo.Value);
+        }
+
+        private static CategoryReaderExtensions.RefTask<Foo, Foo> GetFoo()
+        {
+            return RefTask.Completed(new Foo(42));
+        }
+
+        public readonly ref struct Foo
+        {
+            public Foo(int value)
+            {
+                Value = value;
+            }
+
+            public int Value { get; }
+        }
     }
 }

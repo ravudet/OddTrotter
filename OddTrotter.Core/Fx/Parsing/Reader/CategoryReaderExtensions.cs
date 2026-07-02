@@ -5,7 +5,21 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
-    using OddTrotter.CalendarV1.Tokenization.Json;
+    public static class RefTask
+    {
+        public static CategoryReaderExtensions.RefTask<TResult, TResult> Completed<TResult>(TResult result)
+            where TResult : allows ref struct
+        {
+            CategoryReaderExtensions.TryOperate<TResult, TResult> foo = (TResult context, [MaybeNullWhen(false)] out TResult category, [MaybeNullWhen(true)] out ValueTask task) =>
+            {
+                category = context;
+                task = default;
+                return true;
+            };
+
+            return new CategoryReaderExtensions.RefTask<TResult, TResult>(foo, result);
+        }
+    }
 
     public static class CategoryReaderExtensions
     {
@@ -38,14 +52,16 @@
         }
 
         public delegate bool TryOperate<TIn, TOut>(TIn @in, [MaybeNullWhen(false)] out TOut @out, [MaybeNullWhen(true)] out ValueTask task)
+            where TIn : allows ref struct
             where TOut : allows ref struct;
 
-        public ref struct RefTask<TResult, TContext> //// TODO go ahead and create the awaitable types; you'll want to look at the `ieither` stuff too
+        public unsafe ref struct RefTask<TResult, TContext> //// TODO go ahead and create the awaitable types; you'll want to look at the `ieither` stuff too
             where TResult : allows ref struct
+            where TContext : allows ref struct
         {
             private readonly TryOperate<TContext, TResult> tryOperate;
-            private readonly TContext context;
-            private readonly TResult result;
+            private TContext context;
+            private TResult result;
             private readonly ValueTask? task;
 
             public RefTask(TryOperate<TContext, TResult> tryOperate, TContext context)
@@ -64,50 +80,63 @@
                 }
             }
 
-            public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            ////public ConfiguredAwaitable ConfigureAwait(bool continueOnCapturedContext)
+            public ConfiguredAwaitable.Awaiter GetAwaiter()
             {
-                return new ConfiguredAwaitable(this.tryOperate,  this.context, this.result, this.task, continueOnCapturedContext);
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                return new ConfiguredAwaitable.Awaiter(this.tryOperate, (TContext*)Unsafe.AsPointer(ref this.context), (TResult*)Unsafe.AsPointer(ref this.result), this.task, false);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
             }
 
-            public ref struct ConfiguredAwaitable
+            public unsafe ref struct ConfiguredAwaitable
             {
                 private readonly TryOperate<TContext, TResult> tryOperate;
-                private readonly TContext context;
-                private TResult result;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                private readonly TContext* context;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                private TResult* result;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                 private readonly ValueTask? task;
                 private readonly bool continueOnCapturedContext;
 
-                public ConfiguredAwaitable(TryOperate<TContext, TResult> tryOperate, TContext context, TResult result, ValueTask? task, bool continueOnCapturedContext)
+                public ConfiguredAwaitable(TryOperate<TContext, TResult> tryOperate, ref TContext context, ref TResult result, ValueTask? task, bool continueOnCapturedContext)
                 {
                     this.tryOperate = tryOperate;
-                    this.context = context;
-                    this.result = result;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    this.context = (TContext*)Unsafe.AsPointer(ref context);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    this.result = (TResult*)Unsafe.AsPointer(ref result);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     this.task = task;
                     this.continueOnCapturedContext = continueOnCapturedContext;
                 }
 
                 public Awaiter GetAwaiter()
                 {
-                    return new Awaiter(this.tryOperate, this.context, ref this.result, this.task, this.continueOnCapturedContext);
+                    return new Awaiter(this.tryOperate, this.context, this.result, this.task, this.continueOnCapturedContext);
                 }
 
-                public unsafe struct Awaiter : ICriticalNotifyCompletion
+                public struct Awaiter : ICriticalNotifyCompletion
                 {
                     private readonly TryOperate<TContext, TResult> tryOperate;
-                    private readonly TContext context;
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    private readonly TContext* context;
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private TResult* result;
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     private ValueTask? task;
                     private readonly bool continueOnCapturedContext;
 
-                    public Awaiter(TryOperate<TContext, TResult> tryOperate, TContext context, ref TResult result, ValueTask? task, bool continueOnCapturedContext)
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                    public Awaiter(TryOperate<TContext, TResult> tryOperate, TContext* context, TResult* result, ValueTask? task, bool continueOnCapturedContext)
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                     {
                         this.tryOperate = tryOperate;
                         this.context = context;
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-                        this.result = (TResult*)Unsafe.AsPointer(ref result);
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                        this.result = result;
                         this.task = task;
                         this.continueOnCapturedContext = continueOnCapturedContext;
                     }
@@ -126,9 +155,18 @@
                                 return false;
                             }
 
-                            if (this.tryOperate(this.context, out var result, out var task))
+                            if (this.tryOperate(Unsafe.AsRef<TContext>(this.context), out var result, out var task))
                             {
-                                this.result = Unsafe.AsPointer(ref result);
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                                this.result = (TResult*)Unsafe.AsPointer(ref result);
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                                //// TODO THIS DOESNT ACTUALLY WORK BECAUSE `result` LEAVES THE STACK FRAME IN A MOMENT
+                                return true;
+                            }
+                            else
+                            {
+                                this.task = task;
+                                return this.IsCompleted;
                             }
                         }
                     }
@@ -145,16 +183,10 @@
 
                     public TResult GetResult()
                     {
-                        if (this.task == null)
-                        {
-                            return Unsafe.AsRef<TResult>(this.result);
-                        }
-                        else
-                        {
-
-                        }
+                        return Unsafe.AsRef<TResult>(this.result);
                     }
                 }
+            }
         }
     }
 }
