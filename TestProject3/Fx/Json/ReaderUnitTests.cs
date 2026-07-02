@@ -271,8 +271,31 @@
         }
 
         [TestMethod]
-        public void StreamedRead()
+        public async Task StreamedRead()
         {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
+            {
+                var buffer = new byte[stream.Length];
+                var context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                var iterations = 10000;
+                for (int i = 0; i < iterations; ++i)
+                {
+                    stopwatch.Start();
+                    await StreamedRead(context).ConfigureAwait(false);
+                    stopwatch.Stop();
+
+                    stream.Position = 0;
+                    context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
+                }
+
+                Console.WriteLine(stopwatch.ElapsedTicks);
+            }
+        }
+
+        private static async Task StreamedRead(Context context)
+        {
+            var reader = context.Json();
         }
 
         //// TODO write the streamed read test
