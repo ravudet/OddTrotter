@@ -296,7 +296,8 @@
         private static async Task StreamedRead(Context context)
         {
             var reader = context.Json();
-            reader.TryMove(context, out _);
+            var whitespace = await reader.Move(context);
+            whitespace.TryMove(context, out _);
         }
 
         //// TODO write the streamed read test

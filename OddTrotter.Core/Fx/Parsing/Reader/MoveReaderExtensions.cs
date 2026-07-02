@@ -10,14 +10,16 @@
             return TCurrentReader.TryMove(context, out nextReader);
         }
 
-        public static ValueTask<TNextReader> Move<TCurrentReader, TNextReader>(this IMoveReader<TCurrentReader, TNextReader> currentReader, Context context)
+        public static async ValueTask<TNextReader?> Move<TCurrentReader, TNextReader>(this IMoveReader<TCurrentReader, TNextReader>? currentReader, Context context)
             where TCurrentReader : IMoveReader<TCurrentReader, TNextReader>
         {
             TNextReader? nextReader;
             while (!currentReader.TryMove(context, out nextReader))
             {
-
+                await context.Read().ConfigureAwait(false);
             }
+
+            return nextReader;
         }
     }
 }
