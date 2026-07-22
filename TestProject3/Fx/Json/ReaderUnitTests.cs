@@ -296,8 +296,13 @@
         private static async Task StreamedRead(Context context)
         {
             var reader = context.Json();
-            var whitespace = await reader.Move(context);
-            whitespace.TryMove(context, out _);
+            var whitespace1 = await reader.Move(context);
+            var whitespaceCategory1 = await whitespace1.Move(context);
+            Assert.IsTrue(whitespaceCategory1.TryNone(out var value1));
+            var valueCategory1 = await value1.Move(context);
+            Assert.IsTrue(valueCategory1.TryObject(out var object1));
+            var objectStart1 = await object1.Move(context);
+            objectStart1.TryMove(context, out _, out _);
         }
 
         //// TODO write the streamed read test

@@ -10,7 +10,7 @@
         public static CategoryReaderExtensions.RefTask<TResult, TResult> Completed<TResult>(TResult result)
             where TResult : allows ref struct
         {
-            CategoryReaderExtensions.TryOperate<TResult, TResult> foo = (TResult context, [MaybeNullWhen(false)] out TResult category, [MaybeNullWhen(true)] out ValueTask task) =>
+            CategoryReaderExtensions.TryOperate<TResult, TResult> foo = static (TResult context, [MaybeNullWhen(false)] out TResult category, [MaybeNullWhen(true)] out ValueTask task) =>
             {
                 category = context;
                 task = default;
@@ -34,9 +34,9 @@
             where TCurrentReader : ICategoryReader<TCurrentReader, TCategory>
             where TCategory : allows ref struct
         {
-            TryOperate<Context, TCategory> foo = (Context context, [MaybeNullWhen(false)] out TCategory category, [MaybeNullWhen(true)] out ValueTask task) =>
+            TryOperate<Context, TCategory> foo = static (Context context, [MaybeNullWhen(false)] out TCategory category, [MaybeNullWhen(true)] out ValueTask task) =>
             {
-                if (categoryReader.TryMove(context, out category))
+                if (TCurrentReader.TryMove(context, out category))
                 {
                     task = default;
                     return true;
@@ -161,6 +161,7 @@
                                 this.result = (TResult*)Unsafe.AsPointer(ref result);
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                                 //// TODO THIS DOESNT ACTUALLY WORK BECAUSE `result` LEAVES THE STACK FRAME IN A MOMENT
+                                //// TODO it works for your current stuff because the readers are always null...
                                 return true;
                             }
                             else
