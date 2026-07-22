@@ -10,6 +10,7 @@
     using Fx.Parsing.Reader;
     using System.Threading;
     using NuGet.Frameworks;
+    using OddTrotter.CalendarV1.Tokenization.Json;
 
     [TestClass]
     public sealed class ReaderUnitTests
@@ -297,12 +298,27 @@
         {
             var reader = context.Json();
             var whitespace1 = await reader.Move(context);
-            var whitespaceCategory1 = await whitespace1.Move(context);
-            Assert.IsTrue(whitespaceCategory1.TryNone(out var value1));
+            var value1 = await ReadWhitespace(whitespace1, context, 0);
             var valueCategory1 = await value1.Move(context);
             Assert.IsTrue(valueCategory1.TryObject(out var object1));
             var objectStart1 = await object1.Move(context);
-            objectStart1.TryMove(context, out _, out _);
+            (var whitespace2, _) = await objectStart1.Move(context);
+            var members = await ReadWhitespace(whitespace2, context, 6);
+        }
+
+        private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                var whitespaceCategory = await whitespaceReader.Move(context);
+                Assert.IsTrue(whitespaceCategory.TrySome(out var whitespaceCharacter));
+                (whitespaceReader, _) = await whitespaceCharacter.Move(context);
+            }
+
+            var category = await whitespaceReader.Move(context);
+            Assert.IsTrue(category.TryNone(out var nextReader));
+
+            return nextReader;
         }
 
         //// TODO write the streamed read test
