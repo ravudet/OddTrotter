@@ -42,27 +42,6 @@
             return category;
         }
 
-        /*public static RefTask<TCategory, Context> Move<TCurrentReader, TCategory>(this ICategoryReader<TCurrentReader, TCategory>? categoryReader, Context context)
-            where TCurrentReader : ICategoryReader<TCurrentReader, TCategory>
-            where TCategory : allows ref struct
-        {
-            TryOperate<Context, TCategory> foo = static (Context context, [MaybeNullWhen(false)] out TCategory category, [MaybeNullWhen(true)] out ValueTask task) =>
-            {
-                if (TCurrentReader.TryMove(context, out category))
-                {
-                    task = default;
-                    return true;
-                }
-                else
-                {
-                    task = context.Read();
-                    return false;
-                }
-            };
-
-            return new RefTask<TCategory, Context>(foo, context);
-        }*/
-
         public delegate bool TryOperate<TIn, TOut>(TIn @in, [MaybeNullWhen(false)] out TOut @out, [MaybeNullWhen(true)] out ValueTask task)
             where TIn : allows ref struct
             where TOut : allows ref struct;
