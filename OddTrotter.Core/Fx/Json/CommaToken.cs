@@ -1,6 +1,6 @@
 ﻿namespace Fx.Json
 {
-    public readonly ref struct CommaToken
+    public readonly struct CommaToken
     {
     }
 }

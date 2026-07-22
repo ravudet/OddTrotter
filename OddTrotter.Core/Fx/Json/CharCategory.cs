@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct CharCategory<TNextReader>
+    public readonly struct CharCategory<TNextReader>
     {
         private enum Type
         {

@@ -303,7 +303,10 @@
             Assert.IsTrue(valueCategory1.TryObject(out var object1));
             var objectStart1 = await object1.Move(context);
             (var whitespace2, _) = await objectStart1.Move(context);
-            var members = await ReadWhitespace(whitespace2, context, 6);
+            var members1 = await ReadWhitespace(whitespace2, context, 6);
+            var membersCategory1 = await members1.Move(context);
+            Assert.IsTrue(membersCategory1.TrySome(out var member1));
+            var subsequentMembers1 = await ReadTrueFalseNumberStringNull(member1, context, 1, 4);
         }
 
         private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
@@ -317,6 +320,84 @@
 
             var category = await whitespaceReader.Move(context);
             Assert.IsTrue(category.TryNone(out var nextReader));
+
+            return nextReader;
+        }
+
+        private static async ValueTask<SubsequentMembersReader<TNextReader>?> ReadTrueFalseNumberStringNull<TNextReader>(MemberReader<SubsequentMembersReader<TNextReader>>? memberReader, Context context, int tabCount, int tabLength)
+        {
+            var whitespaceLength = tabCount * tabLength + 2;
+
+            // true
+            var value2 = await ReadMemberToValue(memberReader, context, 4);
+            var valueCategory2 = await value2.Move(context);
+            Assert.IsTrue(valueCategory2.TryTrue(out var true1));
+            (var subsequentMembers, _) = await true1.Move(context);
+
+            // false
+            //// TODO you are here
+            ReadSubsequentMemberToValue(subsequentMembers, context, 5, whitespaceLength, out var value3);
+            Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
+            Assert.IsTrue(valueCategory3.TryFalse(out var false1));
+            Assert.IsTrue(false1.TryMove(context, out var subsequentMembers2, out _, out _));
+
+            // 1234
+            ReadSubsequentMemberToValue(subsequentMembers2, context, 6, whitespaceLength, out var value4);
+            Assert.IsTrue(value4.TryMove(context, out var valueCategory4));
+            Assert.IsTrue(valueCategory4.TryNumber(out var number1));
+            ReadNumber(number1, context, out var subsequentMembers3);
+
+            // asdf
+            ReadSubsequentMemberToValue(subsequentMembers3, context, 6, whitespaceLength, out var value5);
+            Assert.IsTrue(value5.TryMove(context, out var valueCategory5));
+            Assert.IsTrue(valueCategory5.TryString(out var string1));
+            ReadString(string1, context, 4, out var subsequentMembers4);
+
+            // null
+            ReadSubsequentMemberToValue(subsequentMembers4, context, 4, whitespaceLength, out var value6);
+            Assert.IsTrue(value6.TryMove(context, out var valueCategory6));
+            Assert.IsTrue(valueCategory6.TryNull(out var null1));
+            Assert.IsTrue(null1.TryMove(context, out nextReader, out _, out _));
+        }
+
+        private static async ValueTask<ValueReader<SubsequentMembersReader<TNextReader>>?> ReadSubsequentMemberToValue<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int memberNameLength, int tabLength)
+        {
+            var subsequentMembersCategory = await subsequentMembersReader.Move(context);
+            Assert.IsTrue(subsequentMembersCategory.TrySome(out var comma));
+            (var whitespace1, _) = await comma.Move(context);
+            var member = await ReadWhitespace(whitespace1, context, tabLength);
+            var valueReader = await ReadMemberToValue(member, context, memberNameLength);
+
+            return valueReader;
+        }
+
+        private static async ValueTask<ValueReader<TNextReader>?> ReadMemberToValue<TNextReader>(MemberReader<TNextReader>? memberReader, Context context, int memberNameLength)
+        {
+            Assert.IsTrue(memberReader.TryMove(context, out var string1));
+            var whitespace3 = await ReadString(string1, context, memberNameLength);
+            var colon1 = await ReadWhitespace(whitespace3, context, 0);
+            (var whitespace4, _) = await colon1.Move(context);
+            var nextReader = await ReadWhitespace(whitespace4, context, 1);
+
+            return nextReader;
+        }
+
+        private static async ValueTask<TNextReader?> ReadString<TNextReader>(StringReader<TNextReader>? stringReader, Context context, int count)
+        {
+            var stringDelimiter1 = await stringReader.Move(context);
+            (var charsReader, _) = await stringDelimiter1.Move(context);
+            for (int i = 0; i < count; ++i)
+            {
+                var charsCategory = await charsReader.Move(context);
+                Assert.IsTrue(charsCategory.TrySome(out var @char));
+                var charCategory = await @char.Move(context);
+                Assert.IsTrue(charCategory.TryUnescaped(out var unescapedChar));
+                (charsReader, _) = await unescapedChar.Move(context);
+            }
+
+            var category = await charsReader.Move(context);
+            Assert.IsTrue(category.TryNone(out var stringDelimiter2));
+            (var nextReader, _) = await stringDelimiter2.Move(context);
 
             return nextReader;
         }

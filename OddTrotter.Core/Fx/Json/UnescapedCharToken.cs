@@ -1,6 +1,6 @@
 ﻿namespace Fx.Json
 {
-    public readonly ref struct UnescapedCharToken
+    public readonly struct UnescapedCharToken
     {
         public static bool TryCreate(byte @char, out UnescapedCharToken charToken)
         {
