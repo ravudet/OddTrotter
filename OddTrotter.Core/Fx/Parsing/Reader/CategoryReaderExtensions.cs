@@ -30,7 +30,19 @@
             return TCurrentReader.TryMove(context, out category);
         }
 
-        public static RefTask<TCategory, Context> Move<TCurrentReader, TCategory>(this ICategoryReader<TCurrentReader, TCategory>? categoryReader, Context context)
+        public static async ValueTask<TCategory> Move<TCurrentReader, TCategory>(this ICategoryReader<TCurrentReader, TCategory>? categoryReader, Context context)
+            where TCurrentReader : ICategoryReader<TCurrentReader, TCategory>
+        {
+            TCategory? category;
+            while (!categoryReader.TryMove(context, out category))
+            {
+                await context.Read().ConfigureAwait(false);
+            }
+
+            return category;
+        }
+
+        /*public static RefTask<TCategory, Context> Move<TCurrentReader, TCategory>(this ICategoryReader<TCurrentReader, TCategory>? categoryReader, Context context)
             where TCurrentReader : ICategoryReader<TCurrentReader, TCategory>
             where TCategory : allows ref struct
         {
@@ -49,7 +61,7 @@
             };
 
             return new RefTask<TCategory, Context>(foo, context);
-        }
+        }*/
 
         public delegate bool TryOperate<TIn, TOut>(TIn @in, [MaybeNullWhen(false)] out TOut @out, [MaybeNullWhen(true)] out ValueTask task)
             where TIn : allows ref struct
@@ -162,6 +174,7 @@
 #pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
                                 //// TODO THIS DOESNT ACTUALLY WORK BECAUSE `result` LEAVES THE STACK FRAME IN A MOMENT
                                 //// TODO it works for your current stuff because the readers are always null...
+                                //// TODO is that actually true? isn't the result sometimes a category?
                                 return true;
                             }
                             else

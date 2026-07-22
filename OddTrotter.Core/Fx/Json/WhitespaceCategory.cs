@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct WhitespaceCategory<TNextReader>
+    public readonly struct WhitespaceCategory<TNextReader>
     {
         private enum Type
         {
