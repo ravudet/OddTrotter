@@ -11,6 +11,7 @@
     using System.Threading;
     using NuGet.Frameworks;
     using OddTrotter.CalendarV1.Tokenization.Json;
+    using System.Runtime.InteropServices;
 
     [TestClass]
     public sealed class ReaderUnitTests
@@ -313,6 +314,21 @@
             // asdf
             // null
             var subsequentMembers1 = await ReadTrueFalseNumberStringNull(member1, context, 1, 4);
+
+            // object
+            var value2 = await ReadSubsequentMemberToValue(subsequentMembers1, context, 6, 6);
+            var valueCategory2 = await value2.Move(context);
+            Assert.IsTrue(valueCategory2.TryObject(out var object2));
+            var objectStart2 = await object2.Move(context);
+            (var whitespace3, _) = await objectStart2.Move(context);
+            var members2 = await ReadWhitespace(whitespace3, context, 10);
+            var membersCategory2 = await members2.Move(context);
+            Assert.IsTrue(membersCategory2.TrySome(out var member2));
+            var subsequentMembers2 = await ReadTrueFalseNumberStringNull(member2, context, 2, 4);
+            var subsequentMembersCategory2 = await subsequentMembers2.Move(context);
+            Assert.IsTrue(subsequentMembersCategory2.TryNone(out var whitespace4));
+            var objectEnd1 = await ReadWhitespace(whitespace4, context, 6);
+            (var subsequentMembers3, _) = await objectEnd1.Move(context);
         }
 
         private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
