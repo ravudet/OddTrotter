@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct FracCategory<TNextReader>
+    public readonly struct FracCategory<TNextReader>
     {
         private enum Type
         {

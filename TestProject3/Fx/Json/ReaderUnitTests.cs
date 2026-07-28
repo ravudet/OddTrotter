@@ -335,29 +335,54 @@
             (var subsequentMembers, _) = await true1.Move(context);
 
             // false
-            //// TODO you are here
-            ReadSubsequentMemberToValue(subsequentMembers, context, 5, whitespaceLength, out var value3);
-            Assert.IsTrue(value3.TryMove(context, out var valueCategory3));
+            var value3 = await ReadSubsequentMemberToValue(subsequentMembers, context, 5, whitespaceLength);
+            var valueCategory3 = await value3.Move(context);
             Assert.IsTrue(valueCategory3.TryFalse(out var false1));
-            Assert.IsTrue(false1.TryMove(context, out var subsequentMembers2, out _, out _));
+            (var subsequentMembers2, _) = await false1.Move(context);
 
             // 1234
-            ReadSubsequentMemberToValue(subsequentMembers2, context, 6, whitespaceLength, out var value4);
-            Assert.IsTrue(value4.TryMove(context, out var valueCategory4));
+            var value4 = await ReadSubsequentMemberToValue(subsequentMembers2, context, 6, whitespaceLength);
+            var valueCategory4 = await value4.Move(context);
             Assert.IsTrue(valueCategory4.TryNumber(out var number1));
-            ReadNumber(number1, context, out var subsequentMembers3);
+            var subsequentMembers3 = await ReadNumber(number1, context);
 
             // asdf
-            ReadSubsequentMemberToValue(subsequentMembers3, context, 6, whitespaceLength, out var value5);
-            Assert.IsTrue(value5.TryMove(context, out var valueCategory5));
+            var value5 = await ReadSubsequentMemberToValue(subsequentMembers3, context, 6, whitespaceLength);
+            var valueCategory5 = await value5.Move(context);
             Assert.IsTrue(valueCategory5.TryString(out var string1));
-            ReadString(string1, context, 4, out var subsequentMembers4);
+            var subsequentMembers4 = await ReadString(string1, context, 4);
 
             // null
-            ReadSubsequentMemberToValue(subsequentMembers4, context, 4, whitespaceLength, out var value6);
-            Assert.IsTrue(value6.TryMove(context, out var valueCategory6));
+            var value6 = await ReadSubsequentMemberToValue(subsequentMembers4, context, 4, whitespaceLength);
+            var valueCategory6 = await value6.Move(context);
             Assert.IsTrue(valueCategory6.TryNull(out var null1));
-            Assert.IsTrue(null1.TryMove(context, out nextReader, out _, out _));
+            (var nextReader, _) = await null1.Move(context);
+
+            return nextReader;
+        }
+
+        private static async ValueTask<TNextReader?> ReadNumber<TNextReader>(NumberReader<TNextReader>? numberReader, Context context)
+        {
+            var sign = await numberReader.Move(context);
+            (var @int, _) = await sign.Move(context);
+            var intCategory = await @int.Move(context);
+            Assert.IsTrue(intCategory.TryNonZero(out var leadingDigit));
+            (var digits, _) = await leadingDigit.Move(context);
+            for (int i = 0; i < 4; ++i)
+            {
+                var category = await digits.Move(context);
+                Assert.IsTrue(category.TrySome(out var digit));
+                (digits, _) = await digit.Move(context);
+            }
+
+            var digitsCategory = await digits.Move(context);
+            Assert.IsTrue(digitsCategory.TryNone(out var frac));
+            var fracCategory = await frac.Move(context);
+            Assert.IsTrue(fracCategory.TryAbsent(out var exp));
+            var expCategory = await exp.Move(context);
+            Assert.IsTrue(expCategory.TryAbsent(out var nextReader));
+
+            return nextReader;
         }
 
         private static async ValueTask<ValueReader<SubsequentMembersReader<TNextReader>>?> ReadSubsequentMemberToValue<TNextReader>(SubsequentMembersReader<TNextReader>? subsequentMembersReader, Context context, int memberNameLength, int tabLength)

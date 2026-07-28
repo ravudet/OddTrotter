@@ -1,6 +1,6 @@
 ﻿namespace Fx.Json
 {
-    public readonly ref struct SignToken
+    public readonly struct SignToken
     {
         private enum Type
         {

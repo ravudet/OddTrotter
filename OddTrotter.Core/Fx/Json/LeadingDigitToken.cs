@@ -1,6 +1,6 @@
 ﻿namespace Fx.Json
 {
-    public readonly ref struct LeadingDigitToken
+    public readonly struct LeadingDigitToken
     {
         public static bool TryCreate(byte digit, out LeadingDigitToken leadingDigitToken)
         {

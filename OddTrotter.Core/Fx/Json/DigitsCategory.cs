@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct DigitsCategory<TNextReader>
+    public readonly struct DigitsCategory<TNextReader>
     {
         private enum Type
         {
