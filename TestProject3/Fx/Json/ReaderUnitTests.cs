@@ -306,6 +306,12 @@
             var members1 = await ReadWhitespace(whitespace2, context, 6);
             var membersCategory1 = await members1.Move(context);
             Assert.IsTrue(membersCategory1.TrySome(out var member1));
+
+            // true
+            // false
+            // 1234
+            // asdf
+            // null
             var subsequentMembers1 = await ReadTrueFalseNumberStringNull(member1, context, 1, 4);
         }
 
