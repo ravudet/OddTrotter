@@ -329,6 +329,20 @@
             Assert.IsTrue(subsequentMembersCategory2.TryNone(out var whitespace4));
             var objectEnd1 = await ReadWhitespace(whitespace4, context, 6);
             (var subsequentMembers3, _) = await objectEnd1.Move(context);
+
+            // emptyobject
+            var value3 = await ReadSubsequentMemberToValue(subsequentMembers3, context, 11, 6);
+            var valueCategory3 = await value3.Move(context);
+            Assert.IsTrue(valueCategory3.TryObject(out var object3));
+            var objectStart3 = await object3.Move(context);
+            (var whitespace5, _) = await objectStart3.Move(context);
+            var members3 = await ReadWhitespace(whitespace5, context, 0);
+            var membersCategory3 = await members3.Move(context);
+            Assert.IsTrue(membersCategory3.TryNone(out var whitespace6));
+            var objectEnd2 = await ReadWhitespace(whitespace6, context, 0);
+            (var subsequentMembers4, _) = await objectEnd2.Move(context);
+
+            //// TODO you are here
         }
 
         private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
