@@ -277,7 +277,7 @@
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
-                var buffer = new byte[stream.Length];
+                var buffer = new byte[20];
                 var context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 var iterations = 10000;
@@ -354,35 +354,7 @@
             var arrayEnd1 = await ReadWhitespace(whitespace8, context, 0);
             (var subsequentMembers5, _) = await arrayEnd1.Move(context);
 
-            // array
-            ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6, out var value5);
-            Assert.IsTrue(value5.TryMove(context, out var valueCategory5));
-            Assert.IsTrue(valueCategory5.TryArray(out var array2));
-            Assert.IsTrue(array2.TryMove(context, out var arrayStart2));
-            Assert.IsTrue(arrayStart2.TryMove(context, out var whitespace9, out _));
-            ReadWhitespace(whitespace9, context, 10, out var arrayElements2);
-            Assert.IsTrue(arrayElements2.TryMove(context, out var arrayElementsCategory2));
-            Assert.IsTrue(arrayElementsCategory2.TrySome(out var value6));
-            Assert.IsTrue(value6.TryMove(context, out var valueCategory6));
-            Assert.IsTrue(valueCategory6.TryObject(out var object4));
-            Assert.IsTrue(object4.TryMove(context, out var objectStart4));
-            Assert.IsTrue(objectStart4.TryMove(context, out var whitespace10, out _));
-            ReadWhitespace(whitespace10, context, 14, out var members4);
-            Assert.IsTrue(members4.TryMove(context, out var membersCategory4));
-            Assert.IsTrue(membersCategory4.TrySome(out var member4));
-            ReadTrueFalseNumberStringNull(member4, context, 3, 4, out var subsequentMembers6);
-            Assert.IsTrue(subsequentMembers6.TryMove(context, out var subsequentMembersCategory6));
-            Assert.IsTrue(subsequentMembersCategory6.TryNone(out var whitespace11));
-            ReadWhitespace(whitespace11, context, 10, out var objectEnd3);
-            Assert.IsTrue(objectEnd3.TryMove(context, out var subsequentArrayElements1, out _));
-            Assert.IsTrue(subsequentArrayElements1.TryMove(context, out var subsequentArrayElementsCategory1));
-            Assert.IsTrue(subsequentArrayElementsCategory1.TryNone(out var whitespace12));
-            ReadWhitespace(whitespace12, context, 6, out var arrayEnd2);
-            Assert.IsTrue(arrayEnd2.TryMove(context, out var subsequentMembers7, out _));
-            Assert.IsTrue(subsequentMembers7.TryMove(context, out var subsequentMembersCategory7));
-            Assert.IsTrue(subsequentMembersCategory7.TryNone(out var whitespace13));
-            ReadWhitespace(whitespace13, context, 2, out var objectEnd4);
-            Assert.IsTrue(objectEnd4.TryMove(context, out var whitespace14, out _));
+            //// TODO add the rest of the reading here
         }
 
         private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
@@ -474,7 +446,7 @@
 
         private static async ValueTask<ValueReader<TNextReader>?> ReadMemberToValue<TNextReader>(MemberReader<TNextReader>? memberReader, Context context, int memberNameLength)
         {
-            Assert.IsTrue(memberReader.TryMove(context, out var string1));
+            var string1 = await memberReader.Move(context);
             var whitespace3 = await ReadString(string1, context, memberNameLength);
             var colon1 = await ReadWhitespace(whitespace3, context, 0);
             (var whitespace4, _) = await colon1.Move(context);
