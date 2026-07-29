@@ -2,7 +2,7 @@
 {
     using System;
 
-    public readonly ref struct SubsequentArrayElementsCategory<TNextReader>
+    public readonly struct SubsequentArrayElementsCategory<TNextReader>
     {
         private enum Type
         {

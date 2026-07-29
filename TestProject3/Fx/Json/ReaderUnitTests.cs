@@ -354,6 +354,36 @@
             var arrayEnd1 = await ReadWhitespace(whitespace8, context, 0);
             (var subsequentMembers5, _) = await arrayEnd1.Move(context);
 
+            // array
+            var value5 = await ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6);
+            var valueCategory5 = await value5.Move(context);
+            Assert.IsTrue(valueCategory5.TryArray(out var array2));
+            var arrayStart2 = await array2.Move(context);
+            (var whitespace9, _) = await arrayStart2.Move(context);
+            var arrayElements2 = await ReadWhitespace(whitespace9, context, 10);
+            var arrayElementsCategory2 = await arrayElements2.Move(context);
+            Assert.IsTrue(arrayElementsCategory2.TrySome(out var value6));
+            var valueCategory6 = await value6.Move(context);
+            Assert.IsTrue(valueCategory6.TryObject(out var object4));
+            var objectStart4 = await object4.Move(context);
+            (var whitespace10, _) = await objectStart4.Move(context);
+            var members4 = await ReadWhitespace(whitespace10, context, 14);
+            var membersCategory4 = await members4.Move(context);
+            Assert.IsTrue(membersCategory4.TrySome(out var member4));
+            var subsequentMembers6 = await ReadTrueFalseNumberStringNull(member4, context, 3, 4);
+            var subsequentMembersCategory6 = await subsequentMembers6.Move(context);
+            Assert.IsTrue(subsequentMembersCategory6.TryNone(out var whitespace11));
+            var objectEnd3 = await ReadWhitespace(whitespace11, context, 10);
+            (var subsequentArrayElements1, _) = await objectEnd3.Move(context);
+            var subsequentArrayElementsCategory1 = await subsequentArrayElements1.Move(context);
+            Assert.IsTrue(subsequentArrayElementsCategory1.TryNone(out var whitespace12));
+            var arrayEnd2 = await ReadWhitespace(whitespace12, context, 6);
+            (var subsequentMembers7, _) = await arrayEnd2.Move(context);
+            var subsequentMembersCategory7 = await subsequentMembers7.Move(context);
+            Assert.IsTrue(subsequentMembersCategory7.TryNone(out var whitespace13));
+            var objectEnd4 = await ReadWhitespace(whitespace13, context, 2);
+            (var whitespace14, _) = await objectEnd4.Move(context);
+
             //// TODO add the rest of the reading here
         }
 
