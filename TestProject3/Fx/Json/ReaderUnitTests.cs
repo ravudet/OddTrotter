@@ -277,7 +277,7 @@
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ReaderUnitTests.data)))
             {
-                var buffer = new byte[20];
+                var buffer = new byte[1];
                 var context = await Context.FromStream(stream, buffer).ConfigureAwait(false);
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 var iterations = 10000;
@@ -297,15 +297,18 @@
 
         private static async Task StreamedRead(Context context)
         {
+            //// TODO add configure await
+            Assert.AreEqual(context.ValidBytes, context.Stream.Position);
+
             var reader = context.Json();
-            var whitespace1 = await reader.Move(context);
-            var value1 = await ReadWhitespace(whitespace1, context, 0);
-            var valueCategory1 = await value1.Move(context);
-            Assert.IsTrue(valueCategory1.TryObject(out var object1));
-            var objectStart1 = await object1.Move(context);
-            (var whitespace2, _) = await objectStart1.Move(context);
-            var members1 = await ReadWhitespace(whitespace2, context, 6);
-            var membersCategory1 = await members1.Move(context);
+            var whitespace1 = await reader.Move(context).ConfigureAwait(false);
+            var value1 = await ReadWhitespace(whitespace1, context, 0).ConfigureAwait(false);
+            var valueCategory1 = await value1.Move(context).ConfigureAwait(false);
+            Assert.IsTrue(valueCategory1.TryObject(out var object1)).ConfigureAwait(false);
+            var objectStart1 = await object1.Move(context).ConfigureAwait(false);
+            (var whitespace2, _) = await objectStart1.Move(context).ConfigureAwait(false);
+            var members1 = await ReadWhitespace(whitespace2, context, 6).ConfigureAwait(false);
+            var membersCategory1 = await members1.Move(context).ConfigureAwait(false);
             Assert.IsTrue(membersCategory1.TrySome(out var member1));
 
             // true
@@ -313,60 +316,60 @@
             // 1234
             // asdf
             // null
-            var subsequentMembers1 = await ReadTrueFalseNumberStringNull(member1, context, 1, 4);
+            var subsequentMembers1 = await ReadTrueFalseNumberStringNull(member1, context, 1, 4).ConfigureAwait(false);
 
             // object
-            var value2 = await ReadSubsequentMemberToValue(subsequentMembers1, context, 6, 6);
-            var valueCategory2 = await value2.Move(context);
-            Assert.IsTrue(valueCategory2.TryObject(out var object2));
-            var objectStart2 = await object2.Move(context);
-            (var whitespace3, _) = await objectStart2.Move(context);
-            var members2 = await ReadWhitespace(whitespace3, context, 10);
-            var membersCategory2 = await members2.Move(context);
+            var value2 = await ReadSubsequentMemberToValue(subsequentMembers1, context, 6, 6).ConfigureAwait(false);
+            var valueCategory2 = await value2.Move(context).ConfigureAwait(false);
+            Assert.IsTrue(valueCategory2.TryObject(out var object2)).ConfigureAwait(false);
+            var objectStart2 = await object2.Move(context).ConfigureAwait(false);
+            (var whitespace3, _) = await objectStart2.Move(context).ConfigureAwait(false);
+            var members2 = await ReadWhitespace(whitespace3, context, 10).ConfigureAwait(false);
+            var membersCategory2 = await members2.Move(context).ConfigureAwait(false);
             Assert.IsTrue(membersCategory2.TrySome(out var member2));
-            var subsequentMembers2 = await ReadTrueFalseNumberStringNull(member2, context, 2, 4);
-            var subsequentMembersCategory2 = await subsequentMembers2.Move(context);
+            var subsequentMembers2 = await ReadTrueFalseNumberStringNull(member2, context, 2, 4).ConfigureAwait(false);
+            var subsequentMembersCategory2 = await subsequentMembers2.Move(context).ConfigureAwait(false);
             Assert.IsTrue(subsequentMembersCategory2.TryNone(out var whitespace4));
-            var objectEnd1 = await ReadWhitespace(whitespace4, context, 6);
-            (var subsequentMembers3, _) = await objectEnd1.Move(context);
+            var objectEnd1 = await ReadWhitespace(whitespace4, context, 6).ConfigureAwait(false);
+            (var subsequentMembers3, _) = await objectEnd1.Move(context).ConfigureAwait(false);
 
             // emptyobject
-            var value3 = await ReadSubsequentMemberToValue(subsequentMembers3, context, 11, 6);
-            var valueCategory3 = await value3.Move(context);
+            var value3 = await ReadSubsequentMemberToValue(subsequentMembers3, context, 11, 6).ConfigureAwait(false);
+            var valueCategory3 = await value3.Move(context).ConfigureAwait(false);
             Assert.IsTrue(valueCategory3.TryObject(out var object3));
-            var objectStart3 = await object3.Move(context);
-            (var whitespace5, _) = await objectStart3.Move(context);
-            var members3 = await ReadWhitespace(whitespace5, context, 0);
-            var membersCategory3 = await members3.Move(context);
-            Assert.IsTrue(membersCategory3.TryNone(out var whitespace6));
-            var objectEnd2 = await ReadWhitespace(whitespace6, context, 0);
-            (var subsequentMembers4, _) = await objectEnd2.Move(context);
+            var objectStart3 = await object3.Move(context).ConfigureAwait(false);
+            (var whitespace5, _) = await objectStart3.Move(context).ConfigureAwait(false);
+            var members3 = await ReadWhitespace(whitespace5, context, 0).ConfigureAwait(false);
+            var membersCategory3 = await members3.Move(context).ConfigureAwait(false);
+            Assert.IsTrue(membersCategory3.TryNone(out var whitespace6)).ConfigureAwait(false);
+            var objectEnd2 = await ReadWhitespace(whitespace6, context, 0).ConfigureAwait(false);
+            (var subsequentMembers4, _) = await objectEnd2.Move(context).ConfigureAwait(false);
 
             // emptyarray
-            var value4 = await ReadSubsequentMemberToValue(subsequentMembers4, context, 10, 6);
-            var valueCategory4 = await value4.Move(context);
+            var value4 = await ReadSubsequentMemberToValue(subsequentMembers4, context, 10, 6).ConfigureAwait(false);
+            var valueCategory4 = await value4.Move(context).ConfigureAwait(false);
             Assert.IsTrue(valueCategory4.TryArray(out var array1));
-            var arrayStart1 = await array1.Move(context);
-            (var whitespace7, _) = await arrayStart1.Move(context);
-            var arrayElements1 = await ReadWhitespace(whitespace7, context, 0);
-            var arrayElementsCategory1 = await arrayElements1.Move(context);
+            var arrayStart1 = await array1.Move(context).ConfigureAwait(false);
+            (var whitespace7, _) = await arrayStart1.Move(context).ConfigureAwait(false);
+            var arrayElements1 = await ReadWhitespace(whitespace7, context, 0).ConfigureAwait(false);
+            var arrayElementsCategory1 = await arrayElements1.Move(context).ConfigureAwait(false);
             Assert.IsTrue(arrayElementsCategory1.TryNone(out var whitespace8));
-            var arrayEnd1 = await ReadWhitespace(whitespace8, context, 0);
-            (var subsequentMembers5, _) = await arrayEnd1.Move(context);
+            var arrayEnd1 = await ReadWhitespace(whitespace8, context, 0).ConfigureAwait(false);
+            (var subsequentMembers5, _) = await arrayEnd1.Move(context).ConfigureAwait(false);
 
             // array
-            var value5 = await ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6);
-            var valueCategory5 = await value5.Move(context);
+            var value5 = await ReadSubsequentMemberToValue(subsequentMembers5, context, 5, 6).ConfigureAwait(false);
+            var valueCategory5 = await value5.Move(context).ConfigureAwait(false);
             Assert.IsTrue(valueCategory5.TryArray(out var array2));
-            var arrayStart2 = await array2.Move(context);
-            (var whitespace9, _) = await arrayStart2.Move(context);
-            var arrayElements2 = await ReadWhitespace(whitespace9, context, 10);
-            var arrayElementsCategory2 = await arrayElements2.Move(context);
+            var arrayStart2 = await array2.Move(context).ConfigureAwait(false);
+            (var whitespace9, _) = await arrayStart2.Move(context).ConfigureAwait(false);
+            var arrayElements2 = await ReadWhitespace(whitespace9, context, 10).ConfigureAwait(false);
+            var arrayElementsCategory2 = await arrayElements2.Move(context).ConfigureAwait(false);
             Assert.IsTrue(arrayElementsCategory2.TrySome(out var value6));
-            var valueCategory6 = await value6.Move(context);
+            var valueCategory6 = await value6.Move(context).ConfigureAwait(false);
             Assert.IsTrue(valueCategory6.TryObject(out var object4));
-            var objectStart4 = await object4.Move(context);
-            (var whitespace10, _) = await objectStart4.Move(context);
+            var objectStart4 = await object4.Move(context).ConfigureAwait(false);
+            (var whitespace10, _) = await objectStart4.Move(context).ConfigureAwait(false);
             var members4 = await ReadWhitespace(whitespace10, context, 14);
             var membersCategory4 = await members4.Move(context);
             Assert.IsTrue(membersCategory4.TrySome(out var member4));
@@ -384,7 +387,10 @@
             var objectEnd4 = await ReadWhitespace(whitespace13, context, 2);
             (var whitespace14, _) = await objectEnd4.Move(context);
 
-            //// TODO add the rest of the reading here
+            var nothing = await ReadWhitespace(whitespace14, context, 0);
+            Assert.AreEqual(new Nothing(), nothing);
+
+            Assert.AreEqual(context.Stream.Length, context.Stream.Position);
         }
 
         private static async ValueTask<TNextReader?> ReadWhitespace<TNextReader>(WhitespaceReader<TNextReader>? whitespaceReader, Context context, int count)
