@@ -19,9 +19,9 @@
                 return false;
             }
 
-            for (; continuationToken < literal.Length; ++continuationToken)
+            for (nextContinuationToken = continuationToken; nextContinuationToken < literal.Length; ++nextContinuationToken)
             {
-                if (!Helpers.TryReadChar(context, literal[continuationToken]))
+                if (!Helpers.TryReadChar(context, literal[nextContinuationToken]))
                 {
                     value = default;
                     return false;
