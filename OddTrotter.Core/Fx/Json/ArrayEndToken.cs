@@ -1,6 +1,6 @@
 ﻿namespace Fx.Json
 {
-    public readonly ref struct ArrayEndToken
+    public readonly struct ArrayEndToken
     {
     }
 }
