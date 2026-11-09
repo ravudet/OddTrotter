@@ -49,6 +49,18 @@
     //// TODO add `assert.that` to code quality
     //// TODO add "good lambda parameter names" to code quality
     //// TODO add `await="true"` exception documentation to code quality
+    //// TODO add csproj to code quality:
+    ////    compilation properties
+    ////    nuget properties
+    ////        build
+    ////        package
+    ////        asset
+    ////    package references
+    ////    project references
+    ////    binary references
+    ////    content
+    ////    embedded resources
+    ////    targets, in build order
     //// TODO you have to use `is null` for null checks because `==` can be overridden; add this to code quality //// TODO but i think you already use object.referenceequal for this though?
     //// TODO add to code quality that if an exception has additional properties, the `tostring` method should be overloaded to include those properties? (NOTE: .NET doesn't do this)
     //// TODO add covariance and contravariance to code quality

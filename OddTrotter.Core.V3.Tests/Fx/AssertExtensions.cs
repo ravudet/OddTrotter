@@ -42,6 +42,17 @@
             {
                 //// TODO use the caller's `assert` instance
                 return CommitImpl<TException>(Assert.That, this.awaitable.ConfigureAwait(false).GetAwaiter(), action);
+
+                /*try
+                {
+                    var state = await this.awaitable.ConfigureAwait(false);
+                    action(state);
+                    return Assert.That.ThrowsException<TException>(() => { });
+                }
+                catch (Exception exception)
+                {
+                    return Assert.That.ThrowsException<TException>(() => throw exception); //// TODO this loses the call stack
+                }*/
             }
 
             private static async Task<TException> CommitImpl<TException>(Assert assert, TAwaiter awaitable, Action<TValue> action)
